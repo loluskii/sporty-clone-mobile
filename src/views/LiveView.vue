@@ -22,13 +22,13 @@
                   :id="'live_' + sport.sportID"
                 >
                   <span class="m-event-size">{{ sport.count }}</span>
-                  <img
+                  <!-- <img
                     :src="getImageSrc(sport.sportID)"
                     loading="lazy"
                     width="22"
                     height="22"
                     style="filter: invert(1)"
-                  />
+                  /> -->
                   <div class="m-sport-text">
                     {{ sport.sportName }}
                   </div>
@@ -132,19 +132,19 @@ const getImageSrc = (sportId) => {
   return imageUrl;
 };
 
-const {
-  data: completeLiveData,
-  isLoading,
-  refetch
-} = useQuery('liveData', getLiveHighlights, {
-  refetchInterval: 60000 * 3, // 5 minutes in milliseconds
-  onError: (err) => {
-    console.error(err)
-  },
-  onSuccess: (response) => {
-    if (response.fixtures) {
-      // activeSportID.value = response.fixtures[0].sportID
-    }
+const { data: completeLiveData, isLoading, refetch } = useQuery(
+  "liveData",
+  getLiveHighlights,
+  {
+    refetchInterval: 60000 * 3, // 5 minutes in milliseconds
+    onError: (err) => {
+      console.error(err);
+    },
+    onSuccess: (response) => {
+      if (response.fixtures) {
+        // activeSportID.value = response.fixtures[0].sportID
+      }
+    },
   }
 );
 

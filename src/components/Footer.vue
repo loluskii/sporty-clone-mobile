@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/logo-white.png" />
+      <img src="@/assets/images/logo-white.png" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -31,15 +31,17 @@
         </div>
       </div>
       <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is
-        licensed by the Oyo State Gaming Board, according to the License No: OYSGB/SPB/232975 issued
-        by the Oyo State Gaming Board.
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play
+        Responsibly. Betting is addictive and can be psychologically harmful. |
+        {{ utilsStore.brandName }} is licensed by the Oyo State Gaming Board, according to
+        the License No: OYSGB/SPB/232975 issued by the Oyo State Gaming Board.
       </p>
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">
-      <h5 class="underline" @click="$router.push({ name: 't-and-c' })">Terms &amp; Conditions</h5>
+      <h5 class="underline" @click="$router.push({ name: 't-and-c' })">
+        Terms &amp; Conditions
+      </h5>
       <h5 class="divider">|</h5>
       <h5 class="underline" @click="$router.push({ name: 'about-us' })">About Us</h5>
       <h5 class="divider">|</h5>
@@ -48,44 +50,48 @@
       </h5>
     </div>
     <div class="t_c-about_us">
-      <h5 class="underline" @click="$router.push({ name: 'privacy-policy' })">Privacy &amp; Policy</h5>
+      <h5 class="underline" @click="$router.push({ name: 'privacy-policy' })">
+        Privacy &amp; Policy
+      </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'account-deletion' })">Account Deletion</h5>
+      <h5 class="underline" @click="$router.push({ name: 'account-deletion' })">
+        Account Deletion
+      </h5>
     </div>
     <div class="btn" @click="handleClick">
       <button>
-        {{ route.name == 'account-me' && authStore.token ? 'Logout' : 'Back to Top' }}
+        {{ route.name == "account-me" && authStore.token ? "Logout" : "Back to Top" }}
       </button>
     </div>
   </footer>
 </template>
 <script setup>
-import { useRoute } from 'vue-router'
-import { useAuthStore, useUtilstStore } from '@/stores'
-import { defineComponent } from 'vue'
+import { useRoute } from "vue-router";
+import { useAuthStore, useUtilstStore } from "@/stores";
+import { defineComponent } from "vue";
 
-const route = useRoute()
-const authStore = useAuthStore()
-const utilsStore = useUtilstStore()
+const route = useRoute();
+const authStore = useAuthStore();
+const utilsStore = useUtilstStore();
 
 async function doLogout() {
-  return authStore.logout()
+  return authStore.logout();
 }
 
 async function handleClick() {
-  if (route.name == 'account-me' && authStore.token) {
-    return authStore.logout()
+  if (route.name == "account-me" && authStore.token) {
+    return authStore.logout();
   } else {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
-    })
+      behavior: "smooth",
+    });
   }
 }
 
 defineComponent({
-  name: 'global-footer'
-})
+  name: "global-footer",
+});
 </script>
 <style>
 footer {
@@ -231,7 +237,7 @@ footer .hr {
 }
 footer .hr::before {
   background-color: #35465a;
-  content: '';
+  content: "";
   height: 1px;
   width: 100%;
 }
