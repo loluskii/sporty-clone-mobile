@@ -649,7 +649,7 @@ defineComponent({
   width: 100%;
 }
 .m-event-list .m-outright-bar .m-match-type-item.active {
-  border-bottom: 4px solid var(--brand-text-secondary);
+  border-bottom: 4px solid var(--brand-secondary);
 }
 .m-event-list .m-outright-bar .m-match-type-item.m-snap-nav-item--disabled {
   background-color: #eaecef;

@@ -797,7 +797,7 @@ onMounted(() => {
 }
 .submit.real-theme {
   background: #0d9737;
-  background: var(--brand-text-secondary);
+  background: var(--brand-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
 }
@@ -877,7 +877,7 @@ onMounted(() => {
 }
 .button-wrap .flexibet-confirm-edit {
   background: #0d9737;
-  background: var(--brand-text-secondary);
+  background: var(--brand-secondary);
   border: none;
   border-radius: 0;
   -webkit-box-flex: 1;

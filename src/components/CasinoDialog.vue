@@ -201,7 +201,7 @@ onMounted(() => {})
 }
 .es-dialog .es-dialog-footer .es-dialog-btn {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   cursor: pointer;
   display: inline-block;
   font-family: Arial, Helvetica, sans-serif;

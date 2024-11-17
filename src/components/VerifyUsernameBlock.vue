@@ -421,7 +421,7 @@ function restartProcess() {}
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   background-color: #0d9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   border: none;
   height: 3.95833333rem;
   font-size: 1.066rem;
@@ -691,7 +691,7 @@ function restartProcess() {}
   color: #3656a3;
 }
 .enter-mobile-container .enter-mobile-btn {
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   color: white;
   border: none;
   -webkit-box-sizing: border-box;
@@ -705,7 +705,7 @@ function restartProcess() {}
 }
 .enter-mobile-container .action-label {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 1.066rem;
   margin-top: 1.75rem;
   text-align: center;
@@ -818,7 +818,7 @@ function restartProcess() {}
   width: 100%;
 }
 #resetPassword .reset-password-container .reset-password-btn {
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   border: none;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;

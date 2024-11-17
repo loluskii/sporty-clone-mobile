@@ -712,7 +712,7 @@
 #direct-bank-container .visit-link,
 #direct-bank-container .btn {
   background-color: #0d9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   border: 1px solid #0d9737;
   border-radius: 0.16666667rem;
   display: block;
@@ -725,19 +725,19 @@
   color: #ffffff;
   color: var(--brand-tertiary);
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 #direct-bank-container .visit-link.secondary,
 #direct-bank-container .btn.secondary {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #direct-bank-container .transaction-link,
 #direct-bank-container .btn__line {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   display: block;
   font-size: 1.066rem;
   margin: 1.33333333rem 0;
@@ -746,7 +746,7 @@
 #direct-bank-container .transaction-link .arrow-right::before,
 #direct-bank-container .btn__line .arrow-right::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   content: '﹥';
   font-size: 1.066rem;
 }
@@ -772,7 +772,7 @@
 #direct-bank-container .bank-content-rule__item a,
 #direct-bank-container .bank-content-rule__item .bank-link {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .accordion-item {
   font-size: 14px;

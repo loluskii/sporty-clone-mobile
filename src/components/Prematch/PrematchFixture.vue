@@ -342,7 +342,7 @@ defineComponent({
 .m-event-sport .m-market-cell .m-market .m-outcome--up:before,
 .m-event-sport .m-market-cell .m-market .m-outcome--down:before {
   color: #096b27;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .m-event-sport .m-info-cell > div {
   line-height: 1.4;
@@ -471,7 +471,7 @@ defineComponent({
 }
 .af-select.af-select-open .af-select-title {
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .af-select.disable {
   background-color: #dcdee5;
