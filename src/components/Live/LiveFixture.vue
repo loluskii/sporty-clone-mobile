@@ -40,7 +40,7 @@
           <template v-if="outcomes && outcomes.length">
             <template v-if="getOdds.length">
               <LiveOdds
-                v-for="(odd, index) in getOdds"
+                v-for="(odd, index) in uniqueOutcomes(getOdds)"
                 @click="addToBetslip(gameData, odd)"
                 :selectionClass="
                   isSelected(
@@ -107,6 +107,14 @@ const getOdds = computed(() => {
     return []
   }
 })
+
+const uniqueOutcomes = (outcomes) => {
+  let x = outcomes.filter(
+    (outcome, index, self) =>
+      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
+  );
+  return x;
+};
 
 watch(
   () => props.gameData,
