@@ -17,11 +17,7 @@
                 />
                 {{ selection.outcomeName }}
               </div>
-              <div
-                class="m-outcome-odds"
-                :class="oddUp ? 'm-outcome-up' : oddDown ? 'm-outcome-down' : ''"
-                v-show="!isEventSuspended && !isUnavailable"
-              >
+              <div class="m-outcome-odds">
                 {{ getSelectionOdds(selection.odds) }}
               </div>
             </div>
@@ -68,8 +64,6 @@ const emit = defineEmits(["toggle-betslip", "on-selection-input"]);
 const router = useRouter();
 
 const keyboardVisible = ref(false);
-const oddUp = ref(false);
-const oddDown = ref(false);
 
 const props = defineProps({
   selection: Object,
@@ -145,6 +139,7 @@ function onKeyClick(type, value) {
   let finalStake;
   switch (type) {
     case "number":
+      // Append clicked number to the display
       if (stake.length < 7) {
         if (typeof value === "number") {
           if (stake === "") {
@@ -165,12 +160,14 @@ function onKeyClick(type, value) {
       }
       break;
     case "double-zero":
+      // Append double zero to the display
       if (stake.length < 6) {
         stake += "00";
         handleStakeChange(stake);
       }
       break;
     case "clear":
+      // Clear the display
       stake = "";
       handleStakeChange(stake);
       break;
@@ -199,30 +196,6 @@ function goToGame() {
     },
   });
 }
-
-watch(
-  () => props.selection.odds,
-  (newValue, oldValue) => {
-    if (newValue && oldValue) {
-      const nVal = parseFloat(newValue).toFixed(2);
-      const oVal = parseFloat(oldValue).toFixed(2);
-
-      if (parseFloat(nVal) > parseFloat(oVal)) {
-        oddUp.value = true;
-        oddDown.value = false;
-      } else if (parseFloat(nVal) < parseFloat(oVal)) {
-        oddUp.value = false;
-        oddDown.value = true;
-      }
-      // reset indicators
-      setTimeout(() => {
-        oddDown.value = false;
-        oddUp.value = false;
-      }, 10000);
-    }
-  },
-  { immediate: true }
-);
 </script>
 
 <style>

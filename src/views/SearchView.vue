@@ -73,104 +73,104 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { debounce } from 'lodash'
-import PrematchGroup from '@/components/Search/PrematchGroup.vue'
-import LiveGroup from '@/components/Search/LiveGroup.vue'
-import { searchFixtures } from '@/helpers'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { ref, computed } from "vue";
+import { debounce } from "lodash";
+import PrematchGroup from "@/components/Search/PrematchGroup.vue";
+import LiveGroup from "@/components/Search/LiveGroup.vue";
+import { searchFixtures } from "@/helpers";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 
-const searchQuery = ref('')
+const searchQuery = ref("");
 const results = ref({
-  fixtures: []
-})
-const isLoading = ref(false)
+  fixtures: [],
+});
+const isLoading = ref(false);
 
 const resultsIsEmpty = computed(() => {
-  return results.value.fixtures === undefined
-})
+  return results.value.fixtures === undefined;
+});
 
 const handleInput = (event) => {
-  debouncedSearch(event.target.value)
-}
+  debouncedSearch(event.target.value);
+};
 
 const handleEnter = async (event) => {
-  event.preventDefault()
-  isLoading.value = true
+  event.preventDefault();
+  isLoading.value = true;
   searchFixtures(event.target.value)
     .then((res) => {
-      results.value = res
-      isLoading.value = false
+      results.value = res;
+      isLoading.value = false;
     })
     .catch((err) => {
-      console.error(err)
-      isLoading.value = false
-    })
-}
+      console.error(err);
+      isLoading.value = false;
+    });
+};
 
 // Debounced search function
 const debouncedSearch = debounce((query) => {
   if (isLoading.value || results.value.fixtures.length) {
-    return
+    return;
   }
-  isLoading.value = true
-  console.log('Searching for:', query)
+  isLoading.value = true;
+  console.log("Searching for:", query);
   // Place your search logic here, e.g., making an API call
   searchFixtures(query)
     .then((res) => {
-      results.value = res
-      isLoading.value = false
+      results.value = res;
+      isLoading.value = false;
     })
     .catch((err) => {
-      console.error(err)
-      isLoading.value = false
-    })
-}, 3000) // Adjust the debounce delay as needed
+      console.error(err);
+      isLoading.value = false;
+    });
+}, 3000); // Adjust the debounce delay as needed
 const prematchSports = computed(() => {
   if (results.value.fixtures) {
-    const arr = []
+    const arr = [];
     results.value.fixtures.forEach((fixture) => {
-      if (fixture?.matchStatus === 'Not started') {
-        const sport = arr.find((item) => item.sportName === fixture.sportName)
+      if (fixture?.matchStatus === "Not started") {
+        const sport = arr.find((item) => item.sportName === fixture.sportName);
         if (sport) {
-          sport.fixtures.push(fixture)
+          sport.fixtures.push(fixture);
         } else {
           arr.push({
             sportID: fixture.sportID,
             sportName: fixture.sportName,
-            fixtures: [fixture]
-          })
+            fixtures: [fixture],
+          });
         }
       }
-    })
-    return arr
+    });
+    return arr;
   } else {
-    return []
+    return [];
   }
-})
+});
 
 const liveSports = computed(() => {
   if (results.value.fixtures) {
-    const arr = []
+    const arr = [];
     results.value.fixtures.forEach((fixture) => {
-      if (fixture?.matchStatus !== 'Not started' && fixture?.matchStatus !== 'Ended') {
-        const sport = arr.find((item) => item.sportName === fixture.sportName)
+      if (fixture?.matchStatus !== "Not started" && fixture?.matchStatus !== "Ended") {
+        const sport = arr.find((item) => item.sportName === fixture.sportName);
         if (sport) {
-          sport.fixtures.push(fixture)
+          sport.fixtures.push(fixture);
         } else {
           arr.push({
             sportID: fixture.sportID,
             sportName: fixture.sportName,
-            fixtures: [fixture]
-          })
+            fixtures: [fixture],
+          });
         }
       }
-    })
-    return arr
+    });
+    return arr;
   } else {
-    return []
+    return [];
   }
-})
+});
 </script>
 
 <style type="text/css">
@@ -242,8 +242,8 @@ const liveSports = computed(() => {
   text-align: center;
 }
 .m-search .m-error-wrapper .m-icon-loading::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -270,8 +270,8 @@ const liveSports = computed(() => {
   margin-bottom: 2.25rem;
 }
 .m-search .m-error-wrapper .m-error-msg::before {
-  content: '\e624';
-  font-family: 'iconfont' !important;
+  content: "\e624";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -295,8 +295,8 @@ const liveSports = computed(() => {
   padding: 0 2.33333333rem;
 }
 .m-search .m-error-wrapper .m-empty::before {
-  content: '\e61b';
-  font-family: 'iconfont' !important;
+  content: "\e61b";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -421,8 +421,8 @@ const liveSports = computed(() => {
   line-height: 2.5rem;
 }
 .m-search--bar .m-icon-back::before {
-  content: '\e620';
-  font-family: 'iconfont' !important;
+  content: "\e620";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -432,10 +432,10 @@ const liveSports = computed(() => {
   font-size: 1.066rem;
   line-height: 1;
 }
-.m-search--bar input[type='search']::-webkit-search-cancel-button {
+.m-search--bar input[type="search"]::-webkit-search-cancel-button {
   display: none;
 }
-.m-search--bar input[type='search'] {
+.m-search--bar input[type="search"] {
   -webkit-appearance: none;
 }
 

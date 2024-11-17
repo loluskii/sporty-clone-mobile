@@ -6,16 +6,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-const props = defineProps(['bonus'])
+import { computed } from "vue";
+const props = defineProps(["bonus"]);
 
 const bonusPerc = computed(() => {
-  if(props.bonus){
-    return  parseFloat((props.bonus.rolledAmount / props.bonus.pendingAmount) * 100);
-  }else{
-    return 0.00
+  if (props.bonus) {
+    return parseFloat((props.bonus.rolledAmount / props.bonus.pendingAmount) * 100);
+  } else {
+    return 0.0;
   }
-})
+});
 </script>
 <style>
 #bonus-progress-bar {
@@ -71,7 +71,7 @@ const bonusPerc = computed(() => {
   background-color: #d6ebdc;
   background-color: var(--c-betslip-to-win-bg);
   /* color: v; */
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
 #bonus-progress-bar.real-theme .progress {
   background-color: rgba(13, 151, 55, 0.5);
