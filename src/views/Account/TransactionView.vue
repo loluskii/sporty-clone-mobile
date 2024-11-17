@@ -467,7 +467,7 @@ onMounted(async () => {
 }
 #transaction-list-container .m-custom-selection-wrapper .m-custom-type.m-custom-type-active {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #transaction-list-container .m-custom-selection-wrapper .m-calendar {
   -webkit-box-align: center;
@@ -486,11 +486,11 @@ onMounted(async () => {
 }
 #transaction-list-container .m-custom-selection-wrapper .m-calendar.m-custom-date-active {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-family: 'iconfont';
   width: auto;
 }
@@ -503,7 +503,7 @@ onMounted(async () => {
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon.open:before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);

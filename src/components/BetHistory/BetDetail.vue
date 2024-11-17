@@ -173,7 +173,7 @@ defineProps({
 }
 .ticket-selection-list .tracker-comments-warp .tracker {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 0.83333333rem;
   padding-right: 1.66666667rem;
 }
@@ -193,7 +193,7 @@ defineProps({
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 0.83333333rem;
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch .arrow {
@@ -209,7 +209,7 @@ defineProps({
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch .arrow::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   display: inline-block;
   font-size: 1.066rem;
   vertical-align: middle;
@@ -268,7 +268,7 @@ defineProps({
 }
 .ticket-selection-list .won::before {
   color: #43d66f;
-  /* color: var(--brand-text-secondary); */
+  /* color: var(--brand-secondary); */
   font-size: 1.66666667rem;
   font-weight: normal;
   line-height: 1;
@@ -292,7 +292,7 @@ defineProps({
 }
 .ticket-selection-list .pick-info .pick-right:before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 1rem;
   margin-left: 0.41666667rem;
 }
@@ -310,10 +310,10 @@ defineProps({
 .ticket-selection-list .not-seperate .banker {
   border: solid 0.08333333rem #0d9737;
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
   border-radius: 0.66666667rem;
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   display: inline-block;
   font-weight: bold;
   height: 1.33333333rem;
@@ -325,10 +325,10 @@ defineProps({
 .ticket-selection-list .to-live {
   border: 0.08333333rem solid #0d9737;
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
   border-radius: 0.16666667rem;
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   height: 2.83333333rem;
   line-height: 2.83333333rem;
   text-align: center;
@@ -343,7 +343,7 @@ defineProps({
 }
 .ticket-selection-list .to-live .arrow::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 1.33333333rem;
   left: 0.83333333rem;
   margin-right: 1.25rem;

@@ -32,7 +32,7 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty('--brand-tertiary', config.colors.tertiaryColor)
 
     document.documentElement.style.setProperty(
-      '--brand-text-secondary',
+      '--brand-secondary',
       config.colors.secondaryColor
     )
     document.documentElement.style.setProperty(
@@ -59,7 +59,7 @@ export const applyBranding = async () => {
       config.colors.primaryTextColor
     )
     document.documentElement.style.setProperty(
-      '--brand-text-secondary',
+      '--brand-secondary',
       config.colors.secondaryTextColor
     )
 
@@ -113,7 +113,7 @@ export const applyBranding = async () => {
       config.fonts.primaryFont
     )
     document.documentElement.style.setProperty(
-      '--brand-text-secondary-font-family',
+      '--brand-secondary-font-family',
       config.fonts.secondaryFont
     )
 

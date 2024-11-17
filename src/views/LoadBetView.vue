@@ -341,7 +341,7 @@ async function loadBet() {
 }
 .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   cursor: pointer;
 }
 .m-input-wrapper .m-input-icon.m-input-icon--show {

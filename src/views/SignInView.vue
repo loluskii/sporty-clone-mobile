@@ -71,7 +71,9 @@
                 class="x-input-wap fs-exclude"
               />
             </div>
-            <div data-op="login-pswd-err" class="error-message">{{ authStore.authError }}</div>
+            <div data-op="login-pswd-err" class="error-message">
+              {{ authStore.authError }}
+            </div>
             <button
               @click.prevent="login"
               class="af-button login-btn af-button--primary"
@@ -99,42 +101,42 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores'
-import VerifyUsernameBlock from '@/components/VerifyUsernameBlock.vue'
-import { CLIENT_ID, formattedPhoneNumber } from '../helpers'
+import { ref, onMounted } from "vue";
+import { useAuthStore } from "@/stores";
+import VerifyUsernameBlock from "@/components/VerifyUsernameBlock.vue";
+import { CLIENT_ID, formattedPhoneNumber } from "../helpers";
 
-const authStore = useAuthStore()
-const phoneNumber = ref('')
-const password = ref('')
-const showPassword = ref(false)
+const authStore = useAuthStore();
+const phoneNumber = ref("");
+const password = ref("");
+const showPassword = ref(false);
 
 const togglePassword = () => {
-  return (showPassword.value = !showPassword.value)
-}
+  return (showPassword.value = !showPassword.value);
+};
 
-const isForgotPasswordView = ref(false)
+const isForgotPasswordView = ref(false);
 
 function showForgotPassword() {
-  isForgotPasswordView.value = true
+  isForgotPasswordView.value = true;
 }
 
 function restartProcess() {
-  isForgotPasswordView.value = false
+  isForgotPasswordView.value = false;
 }
 
 async function login() {
   let payload = {
     username: formattedPhoneNumber(phoneNumber.value),
     password: password.value,
-    clientId: CLIENT_ID
-  }
-  authStore.doLogin(payload)
+    clientId: CLIENT_ID,
+  };
+  authStore.doLogin(payload);
 }
 
 onMounted(() => {
-  authStore.authError = ''
-})
+  authStore.authError = "";
+});
 </script>
 
 <style scoped>
@@ -157,8 +159,8 @@ onMounted(() => {
 }
 
 #loginStep .change-region-wrap .m-icon-right::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -166,14 +168,14 @@ onMounted(() => {
 }
 #loginStep .change-region-wrap .m-icon-right::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #loginStep .change-region-wrap .close {
   float: right;
 }
 #loginStep .change-region-wrap .close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -212,8 +214,8 @@ onMounted(() => {
   width: 100%;
 }
 #loginStep .login-container .verifyInputs .m-loading-circle-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -247,7 +249,7 @@ onMounted(() => {
   border-radius: 4px;
 }
 #loginStep .login-container .login-btn {
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
 }
 
 #loginStep .login-container .login-btn:disabled {
@@ -273,7 +275,7 @@ onMounted(() => {
   text-decoration: none;
 }
 #loginStep .login-container .action-wrap a {
-  color: var(--brand-text-secondary) !important;
+  color: var(--brand-secondary) !important;
 }
 #loginStep .login-container .action-wrap div {
   -webkit-box-flex: 0;

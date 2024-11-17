@@ -418,7 +418,7 @@ onMounted(() => {
 }
 #enterMobile .change-region-wrap .m-icon-right::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #enterMobile .change-region-wrap .close {
   float: right;
@@ -508,7 +508,7 @@ onMounted(() => {
   color: #3656a3;
 }
 #enterMobile .enter-mobile-container .enter-mobile-btn {
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   color: white;
   border: none;
   -webkit-box-sizing: border-box;
@@ -522,7 +522,7 @@ onMounted(() => {
 }
 #enterMobile .enter-mobile-container .action-label {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 1.066rem;
   margin-top: 1.75rem;
   text-align: center;
@@ -640,12 +640,12 @@ onMounted(() => {
 }
 .m-input-wap-wrapper .m-input-wap-icon.m-input-wap-icon--clickable:hover {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   cursor: pointer;
 }
 .m-input-wap-wrapper .m-input-wap-icon.m-input-wap-icon--clickable:hover + .m-input-wap {
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .m-input-wap-wrapper .m-input-wap-icon.m-input-wap-icon--show {
   visibility: visible;
@@ -682,7 +682,7 @@ onMounted(() => {
 }
 .m-input-wap-wrapper.m-input-wap-wrapper--active .m-input-transform-text {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .m-input-wap-wrapper.m-input-wap-wrapper--disabled .m-input-wap,
 .m-input-wap-wrapper.m-input-wap-wrapper--disabled .m-input-wap-append,
@@ -773,7 +773,7 @@ onMounted(() => {
 .m-input-wap-wrapper--active .m-input-wap-prepend--default i,
 .m-input-wap-wrapper--active .m-input-wap-prepend--default svg {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .m-input-wap-wrapper--active .m-input-wap-prepend--default img {
   -webkit-filter: grayscale(0%);
@@ -853,7 +853,7 @@ onMounted(() => {
 .m-pin-code-wrapper .m-pin-code-input:focus {
   border: solid 1px #0d9737;
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .m-pin-code-wrapper .m-pin-code-input.error {
   border: solid 1px #e41827;

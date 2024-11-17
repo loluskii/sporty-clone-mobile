@@ -109,7 +109,7 @@ onMounted(async () => {
 }
 .withdraw-success .manual-text {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 16px;
   line-height: 18px;
   padding: 0 6.66666667rem;

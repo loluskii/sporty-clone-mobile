@@ -487,7 +487,7 @@ onUnmounted(() => {})
 .m-choose-odds .m-title.active::before,
 .m-choose-time .m-title.active::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 0.83333333rem;
 }
 .m-choose-sort .m-title.used,
@@ -525,7 +525,7 @@ onUnmounted(() => {})
 }
 .m-list li:not(.tournament).checked::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   position: absolute;
   right: 1.33333333rem;
 }

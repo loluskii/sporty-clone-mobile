@@ -476,7 +476,7 @@ function addToBetslip(event, odd) {
 .outcomes .m-outcome--up:before,
 .outcomes .m-outcome--down:before {
   color: #096b27;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-weight: lighter;
   -webkit-transform-origin: 100% 0%;
   -ms-transform-origin: 100% 0%;

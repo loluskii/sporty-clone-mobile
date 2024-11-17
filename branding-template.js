@@ -11,7 +11,7 @@ export const brandDetails = {
     secondaryBackground: '#353A45',
 
     primaryTextColor: '#353a45',
-    secondaryTextColor: '#fca311',
+    secondaryTextColor: '#0D9737',
 
     prematchOddBackgroundColor: '#D6EBDC',
     prematchOddTextColor: '#096B27',

@@ -252,9 +252,10 @@ const matchHasEnded = computed(() => {
 
 function isTotalOrHandicap(market) {
   return (
-    (market.specifier.includes('total') && market.markets[0].outcomes.length === 2) ||
-    market.specifier.includes('hcp')
-  )
+    (market.specifier.includes("total") &&
+      uniqueOutcomes(market.markets[0].outcomes).length === 2) ||
+    market.specifier.includes("hcp")
+  );
 }
 
 const getMarketCode = (name) => {

@@ -295,7 +295,7 @@ defineComponent({
   font-weight: bold;
   border-bottom: 0.25rem solid #0d9737;
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 } */
 
 .m-order .list-wrapper {
@@ -639,7 +639,7 @@ defineComponent({
 .m-order .edit-bet-button {
   bottom: 1.66666667rem;
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   position: absolute;
   right: 0px;
 }

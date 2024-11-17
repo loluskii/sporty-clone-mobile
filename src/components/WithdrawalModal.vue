@@ -205,7 +205,7 @@ function confirmWithdrawal() {
 .es-dialog.m-wd-pop-cfm .payment-wrapper .item-wrapper .m-icon-help:active,
 .es-dialog.m-wd-pop-cfm .payment-wrapper .item-wrapper .m-icon-help:hover {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .es-dialog.m-wd-pop-cfm .payment-container {
   display: -webkit-box;

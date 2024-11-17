@@ -180,7 +180,7 @@
 
 #deposit .deposit-account .static .static-content .static-card-label {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 10px;
   height: 12px;
   line-height: 12px;
@@ -245,7 +245,7 @@
 
 #deposit .deposit-account .switch-container .switch-card {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;

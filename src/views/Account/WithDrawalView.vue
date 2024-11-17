@@ -528,7 +528,7 @@ onMounted(async () => {
 }
 #withdraw .m-tabs-nav .m-tabs-ink-bar {
   background-color: #0d9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   bottom: 0;
   height: 0.33333333rem;
 }
@@ -723,7 +723,7 @@ onMounted(async () => {
 }
 #withdraw .withdraw-bank .switch-container .switch-bank {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
@@ -793,7 +793,7 @@ onMounted(async () => {
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:active,
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:hover {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 #withdraw .withdraw-footer .withdraw-amount {
   -webkit-box-sizing: border-box;
@@ -841,9 +841,9 @@ onMounted(async () => {
   text-align: center;
   width: 100%;
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 #withdraw .p-x-16 {
   padding: 0 1.33333333rem;
@@ -903,7 +903,7 @@ body {
 }
 #popup-select .select-container .m-head .action {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 16px;
   height: 19px;
   line-height: normal;
@@ -951,7 +951,7 @@ body {
 }
 #popup-select .select-container .m-body .select-list .select-item .item-left.selected::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 1.5rem;
   line-height: 1;
 }

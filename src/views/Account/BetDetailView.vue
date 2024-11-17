@@ -473,7 +473,7 @@ defineComponent({
 }
 .m-ticket-detail .rebet-wrapper span:first-child .copy {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   display: inline-block;
   padding-left: 1.066rem;
 }
@@ -534,7 +534,7 @@ defineComponent({
 }
 .m-ticket-detail .bets-info .arrow::before {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   font-size: 0.83333333rem;
   left: 0.66666667rem;
   margin-right: 0.41666667rem;

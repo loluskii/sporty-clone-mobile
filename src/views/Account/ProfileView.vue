@@ -388,11 +388,11 @@ async function saveUpdate() {
 }
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover {
   color: #0d9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover + .m-input {
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .m-uc-wrapper .m-input-wrapper .m-input-text--icon {
   -webkit-box-sizing: border-box;
@@ -420,11 +420,11 @@ async function saveUpdate() {
 }
 .m-uc-wrapper .m-input-wrapper.m-input-wrapper--active .m-input {
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .m-uc-wrapper .m-input-wrapper:nth-of-type(2).m-input-wrapper--active .m-input {
   border-color: #0d9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
 }
 .m-uc-wrapper .m-input-group--prepend {
   border: 1px solid #0d9737 !important;
@@ -433,7 +433,7 @@ async function saveUpdate() {
   box-sizing: border-box;
   padding: 0.33333333rem 0.5rem;
   border-color: #0d9737 !important;
-  border-color: var(--brand-text-secondary) !important;
+  border-color: var(--brand-secondary) !important;
 }
 .m-uc-wrapper .m-input-group--prepend .m-input-prepend,
 .m-uc-wrapper .m-input-group--prepend .m-input {
@@ -446,7 +446,7 @@ async function saveUpdate() {
 .m-uc-wrapper .m-input-group--prepend.m-input-wrapper--active {
   border: 1px solid #0d9737 !important;
   border-color: #0d9737 !important;
-  border-color: var(--brand-text-secondary) !important;
+  border-color: var(--brand-secondary) !important;
 }
 .m-uc-wrapper .m-input-group--prepend.m-input-wrapper--error {
   border: 1px solid #e41827 !important;
@@ -729,7 +729,7 @@ async function saveUpdate() {
 
 .af-button--success {
   background-color: #0d9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   color: #ffffff;
 }
 .af-button--success:active {

@@ -949,11 +949,11 @@
 .m-cashout-pop .m-btn-wrapper .m-btn-item {
   border: 0.08333333rem solid #0D9737;
   border-color: #0D9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #0D9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   display: inline-block;
   height: 4rem;
   line-height: 4rem;
@@ -1042,7 +1042,7 @@
 
 .m-cashout-pop .m-slider-bar .m-slider-process {
   background-color: #0D9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
 }
 
 .m-cashout-pop .m-slider-bar .m-slider-dot {
@@ -1077,7 +1077,7 @@
 
 .m-cashout-pop .m-cashout-tips {
   color: #0D9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   margin-top: 1.066rem;
 }
 
@@ -1182,12 +1182,12 @@
 .m-cashout-nav .m-cashout-nav-item.active {
   border-bottom: 4px solid #0D9737;
   border-bottom-color: #0D9737;
-  border-bottom-color: var(--brand-text-secondary);
+  border-bottom-color: var(--brand-secondary);
 }
 
 .m-cashout-nav .m-cashout-nav-item.highlight {
   color: #0D9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
 }
 
 .m-cashout-nav .m-cashout-nav-item:first-child {
@@ -1227,10 +1227,10 @@
 
 .instant-dialog.es-dialog .es-dialog-footer .es-dialog-btn {
   background-color: #0D9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   border: 1px solid #0D9737;
   border-color: #0D9737;
-  border-color: var(--brand-text-secondary);
+  border-color: var(--brand-secondary);
   border-radius: 2px;
   color: #FFFFFF;
   color: var(--brand-tertiary);
@@ -1244,7 +1244,7 @@
   background-color: #FFFFFF;
   background-color: var(--background-type1-quaternary);
   color: #0D9737;
-  color: var(--brand-text-secondary);
+  color: var(--brand-secondary);
   margin: 0;
 }
 
