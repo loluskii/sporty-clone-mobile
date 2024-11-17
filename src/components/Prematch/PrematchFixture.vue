@@ -68,7 +68,7 @@
                 </div>
                 <Odds
                   @click="addToBetslip(eventData, odd)"
-                  v-for="(odd, index) in outcomes"
+                  v-for="(odd, index) in uniqueOutcomes(outcomes)"
                   :key="index"
                   :odds="odd"
                   :selectionClass="
@@ -161,6 +161,15 @@ const setActiveSpecifier = (spec) => {
     toggleList()
   }
 }
+
+const uniqueOutcomes = (outcomes) => {
+  let x = outcomes.filter(
+    (outcome, index, self) =>
+      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
+  );
+  return x;
+};
+
 const toggleList = () => {
   specifierOpen.value = !specifierOpen.value
 }
