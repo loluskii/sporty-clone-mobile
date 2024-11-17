@@ -34,9 +34,9 @@ async function getCasinoURL(data) {
     isMobile: true,
     homeUrl: import.meta.env.VITE_SITE_URL,
     authCode: currentUser?.authCode || 'demo',
-    balance_type: data
+    balanceType: data
   }
-  const res = await getCasinoStartUrl(payload, data)
+  const res = await getCasinoStartUrl(payload)
   isLoading.value = false
   gameURL.value = res.url
 }

@@ -26,6 +26,7 @@ import TermsandConditions from '@/views/CMS/TermsandConditions.vue'
 import AboutUs from '@/views/CMS/AboutUs.vue'
 import PrivacyPolicy from '@/views/CMS/PrivacyPolicy.vue'
 import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
+import AccountDeletion from '@/views/CMS/AccountDeletion.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
 
@@ -249,6 +250,11 @@ export const router = createRouter({
       path: '/CMS/PrivacyPolicy',
       name: 'privacy-policy',
       component: PrivacyPolicy
+    },
+    {
+      path: '/CMS/AccountDeletion',
+      name: 'account-deletion',
+      component: AccountDeletion
     },
     // Catch-all route to redirect to home
     {

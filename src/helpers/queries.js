@@ -382,3 +382,11 @@ export const ResponsibleGaming = async () => {
 export const TermsandConditions = async () => {
   return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/terms-and-conditions`))
 }
+
+export const PrivacyPolicy = async () => {
+  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/privacy-policy`))
+}
+
+export const AccountDeletion = async () => {
+  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/account-deletion`))
+}

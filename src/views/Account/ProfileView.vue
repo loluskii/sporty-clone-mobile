@@ -715,7 +715,7 @@ async function saveUpdate() {
 }
 .af-button--primary {
   background-color: #226262;
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   color: #ffffff;
   /* color: var(--brand-tertiary); */
 }

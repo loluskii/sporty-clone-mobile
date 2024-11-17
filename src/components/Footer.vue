@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/logo.svg" />
+      <img src="/logo-white.png" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -46,6 +46,11 @@
       <h5 class="underline" @click="$router.push({ name: 'responsible-gaming' })">
         Responsible Gaming
       </h5>
+    </div>
+    <div class="t_c-about_us">
+      <h5 class="underline" @click="$router.push({ name: 'privacy-policy' })">Privacy &amp; Policy</h5>
+      <h5 class="divider">|</h5>
+      <h5 class="underline" @click="$router.push({ name: 'account-deletion' })">Account Deletion</h5>
     </div>
     <div class="btn" @click="handleClick">
       <button>

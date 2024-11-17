@@ -107,7 +107,7 @@ const {
   isLoading,
   refetch
 } = useQuery('liveData', getLiveHighlights, {
-  // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
+  refetchInterval: 60000 * 3, // 3 minutes in milliseconds
   onError: (err) => {
     console.error(err)
   },

@@ -3,6 +3,7 @@
   line-height: 3.66666667rem;
   position: relative;
   width: 100%;
+  overflow: hidden;
 }
 
 .mobile-navbar-wrap {
@@ -42,9 +43,9 @@
   height: 100%;
 }
 
-.mobile-navbar .mobile-navbar-logo img {
-  height: 45px;
-  padding-left: 8px;
+.mobile-navbar .mobile-navbar-logo img{
+  height: 120px;
+  /* padding-left: 8px; */
 }
 
 /* .mobile-navbar .mobile-navbar-logo::before {

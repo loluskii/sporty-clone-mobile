@@ -442,7 +442,7 @@ onMounted(async () => {
 
 <style>
 .af-button--primary {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   border: 0;
   border-radius: 2px;
   color: #ffffff;

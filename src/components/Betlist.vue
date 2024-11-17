@@ -16,7 +16,7 @@
                     style="
                       padding: 5px 10px;
                       border-radius: 50%;
-                      background-color: var(--brand-secondary);
+                      background-color: #fca311;
                       margin-right: 5px;
                     "
                     >{{ betslipSelections.length }}</span
@@ -31,6 +31,16 @@
             <template v-if="betslipSelections.length > 0">
               <div style="border: 0.5px solid #dbdbdb; margin: 10px 0px 10px 0px"></div>
               <div class="wrapper separate-part">
+                <div class="operate-button">
+                  <div class="icon icon-font-base" style="font-size: 1rem">
+                    <span style="margin-right: 5px">Accept changes</span>
+                    <input
+                      type="checkbox"
+                      v-model="couponStore.coupon.acceptChanges"
+                      style="accent-color: var(--brand-primary)"
+                    />
+                  </div>
+                </div>
                 <div
                   @click="clearBetslip"
                   class="remove-all operate-button"
@@ -73,12 +83,12 @@
 
                   <span>Remove all</span>
                 </div>
-                <div class="wrapper separate-part" @click="showBetSettings = true">
+                <!-- <div class="wrapper separate-part" @click="showBetSettings = true">
                   <div class="bet-settings bet-settings operate-button flex">
                     <div class="icon icon-font-base mr-1" style="font-size: 1.33333rem"></div>
                     <span>Bet Settings</span>
                   </div>
-                </div>
+                </div> -->
               </div>
             </template>
           </div>
@@ -114,9 +124,9 @@
             <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <!-- Odd Change Notification -->
-          <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
+          <!-- <div class="betslip-notification">
             <div class="change-wrong-message">Note: changes in odds or availability</div>
-          </div>
+          </div> -->
         </div>
         <div v-if="betslipSelections.length > 0" class="m-bet-detail-wrap">
           <div class="m-scroll">
@@ -208,7 +218,7 @@ import BetListEvent from '@/components/BetListEvent.vue'
 import BetListStake from '@/components/BetListStake.vue'
 import BookBetModal from '@/components/BookBetModal.vue'
 import SuccessBet from '@/components/SuccessBet.vue'
-import { computed, ref, defineComponent, onMounted } from 'vue'
+import { computed, ref, defineComponent } from 'vue'
 import { useCouponStore, useUsersStore } from '../stores'
 import { formatNumber } from '../helpers'
 import emitter from '../plugins/emitter'
@@ -330,55 +340,6 @@ function setActiveSelectionInput(data) {
 defineComponent({
   name: 'bet-list'
 })
-
-onMounted(() => {
-  // emitter.on(`odds-change`, (data) => {
-  //   console.log(`received odds change for ${data?.match_id}`, data.markets);
-  //   // clone outcomes value
-  //   const newOutcomes = [...outcomes.value]
-  //   // odds change markets
-  //   const markets = data.markets
-  //   // build new outcomes
-  //   for (let index = 0; index < newOutcomes.length; index++) {
-  //     const outcome = { ...newOutcomes[index] }
-  //     // find market
-  //     const market = markets.find(
-  //       (item) => item.id === outcome.marketID && item.specifiers === outcome.specifier
-  //     )
-  //     if (market) {
-  //       if (market.outcomes) {
-  //         market.outcomes.forEach((odd) => {
-  //           if (odd.id === outcome.outcomeID && outcome.specifier === market.specifiers) {
-  //             outcome.odds = odd.odds
-  //             outcome.active = odd.active ? 1 : 0
-  //           }
-  //         })
-  //       } else {
-  //         outcome.odds = 0
-  //       }
-  //     }
-  //     newOutcomes[index] = outcome
-  //   }
-  //   // update outcomes state
-  //   outcomes.value = newOutcomes
-  // })
-  // when a bet_stop message is received, all odds should be closed;
-  // emitter.on(`bet-stop-${props.gameData.matchID}`, (data) => {
-  //   // console.log(`received bet stop for ${data?.match_id}`);
-  //   // clone outcomes value
-  //   const newOutcomes = [...outcomes.value]
-  //   // loop through current outcomes and updated odds to 0;
-  //   for (let index = 0; index < newOutcomes.length; index++) {
-  //     const outcome = { ...newOutcomes[index] }
-  //     outcome.odds = 0
-  //     outcome.active = 0
-  //     newOutcomes[index] = outcome
-  //     // console.log('active: ' + outcome)
-  //   }
-  //   // update outcomes state
-  //   outcomes.value = newOutcomes
-  // })
-})
 </script>
 
 <style>
@@ -419,14 +380,6 @@ onMounted(() => {
   -ms-flex-pack: center;
   justify-content: center;
 }
-.betslip-notification .change-wrong-message {
-  background: #7b0911;
-  color: #ffffff;
-  height: 1.83333333rem;
-  line-height: 1.83333333rem;
-  text-align: center;
-}
-
 .m-betslip-header .wrapper .wrapper-item.bet-info-panel {
   position: relative;
 }
@@ -968,5 +921,95 @@ onMounted(() => {
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
+}
+.m-flexibet-confirm {
+  background-color: #ffffff;
+  bottom: 0;
+  padding-top: 2.16666667rem;
+  position: relative;
+  width: 100%;
+}
+.m-flexibet-confirm .about-to-pay {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.33333333rem;
+  text-align: center;
+}
+.m-flexibet-confirm .stake-num {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-size: 1.66666667rem;
+  font-weight: 500;
+  line-height: 2.16666667rem;
+  text-align: center;
+}
+.m-flexibet-confirm .form-wrap.flexibet-change .form-item .value {
+  background: #d6ebdc;
+  background: var(--brand-background-secondary);
+}
+.m-flexibet-confirm .form-item {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1rem;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  line-height: 1.5rem;
+  margin-top: 0.16666667rem;
+  padding: 0 1.33333333rem;
+}
+.m-flexibet-confirm .form-item .label {
+  color: #9ca0ab;
+  color: var(--text-type1-secondary);
+  -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  text-align: left;
+}
+.m-flexibet-confirm .form-item .value {
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  padding: 0 0.33333333rem;
+  text-align: right;
+}
+.m-flexibet-confirm .blank-area {
+  height: 2.33333333rem;
+  width: 100%;
+}
+.m-flexibet-confirm .betslip-confirm-bottom {
+  margin: 0.41666667rem 0 0.83333333rem 0;
+  padding: 0 1.33333333rem;
+}
+.m-flexibet-confirm .betslip-confirm-bottom .m-coupon-wrapper .m-loading-wrap {
+  background-color: #ffffff;
+  min-height: initial;
+}
+.m-flexibet-confirm .betslip-confirm-bottom .m-coupon-wrapper .m-loading-wrap .m-loading .loading {
+  background-color: #ffffff;
+}
+.m-flexibet-confirm .betslip-confirm-bottom .m-coupon-wrapper .m-loading-wrap {
+  background-color: var(--c-betslip-confirm-bg);
+  min-height: initial;
+}
+.m-flexibet-confirm .betslip-confirm-bottom .m-coupon-wrapper .m-loading-wrap .m-loading .loading {
+  background-color: var(--c-betslip-confirm-bg);
+}
+.m-flexibet-confirm .betslip-confirm-bottom .m-coupon-wrapper .m-loading-wrap {
+  background-color: #ffffff !important;
+  background-color: var(--c-betslip-confirm-bg) !important;
 }
 </style>

@@ -923,7 +923,7 @@
 }
 
 .m-cashout-pop .m-btn-wrapper .af-button--primary {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   color: #FFFFFF !important;
 }
 

@@ -63,8 +63,9 @@
             <EmptyOdds
               v-for="(odd, index) in activeMarket.outcomes"
               :key="index"
-              v-else
+              v-else-if="!getOdds.length && activeMarket.length"
             ></EmptyOdds>
+            <EmptyOdds v-else></EmptyOdds>
           </template>
         </div>
       </div>

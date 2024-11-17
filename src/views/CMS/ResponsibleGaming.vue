@@ -27,7 +27,9 @@
       const res = await ResponsibleGaming()
       isLoading.value = false
       html.value = res.body
-    } catch (error) { }
+    } catch (error) {
+      console.log(error)
+    }
   })
 </script>
 <style scoped>

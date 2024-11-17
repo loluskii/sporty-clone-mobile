@@ -52,7 +52,7 @@
                   <div class="m-table market-content">
                     <div
                       class="m-table-row"
-                      v-for="(market, m) in chunks(marketGroup.markets[0].outcomes)"
+                      v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
                       :key="m"
                     >
                       <template
@@ -92,18 +92,18 @@
                       </template>
                       <template v-else>
                         <div v-if="isTotalOrHandicap(marketGroup)" class="m-table">
-                          <div class="m-table-row">
+                          <!-- <div class="m-table-row">
                             <div
                               class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
                               :class="{
                                 'm-outcome-row-three':
-                                  marketGroup.markets[0].outcomes.length + 1 === 3,
+                                  (marketGroup.markets[0].outcomes).length + 1 === 3,
                                 'm-outcome-row-four':
-                                  marketGroup.markets[0].outcomes.length + 1 === 4
+                                  (marketGroup.markets[0].outcomes).length + 1 === 4
                               }"
                             ></div>
                             <div
-                              v-for="(name, index) in marketGroup.markets[0].outcomes"
+                              v-for="(name, index) in uniqueOutcomes(marketGroup.markets[0].outcomes)"
                               :key="index"
                               class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
                               :class="{
@@ -113,11 +113,11 @@
                                   marketGroup.markets[0].outcomes.length + 1 === 4
                               }"
                             >
-                              {{ name.displayName }}
+                              {{ getOutcomeName(name.displayName) }}
                             </div>
-                          </div>
+                          </div> -->
                           <div
-                            v-for="(mg, idx) in marketGroup.markets"
+                            v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)"
                             class="m-table-row"
                             :key="idx"
                           >
@@ -125,13 +125,13 @@
                             <div
                               class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
                               :class="{
-                                'm-outcome-three': mg.outcomes.length + 1 === 3,
-                                'm-outcome-four': mg.outcomes.length + 1 === 4
+                                'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                                'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4
                               }"
                             >
                               <em>{{ getSpecifierValue(mg.specifier) }}</em>
                             </div>
-                            <template v-for="(outcome, o) in mg.outcomes" :key="o">
+                            <template v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)" :key="o">
                               <div
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
                                 @click="addToBetslip(mg, outcome)"
@@ -146,8 +146,8 @@
                                     ),
                                     couponStore.coupon
                                   ),
-                                  'm-outcome-three': mg.outcomes.length + 1 === 3,
-                                  'm-outcome-four': mg.outcomes.length + 1 === 4,
+                                  'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                                  'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
                                   'm-outcome--disabled': outcome.odds < 1
                                 }"
                               >
@@ -332,6 +332,26 @@ function sortByKey(array, key, ascending = true) {
 
     return ascending ? valA - valB : valB - valA
   })
+}
+
+const getChunks = (outcomes) => {
+  let x = uniqueOutcomes(outcomes)
+  return chunks(x)
+}
+
+const uniqueMarkets = (markets) => {
+  console.log(markets)
+  let x = markets.filter(
+    (market, index, self) => index === self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
+  )
+  return x
+}
+
+const uniqueOutcomes = (outcomes) => {
+  let x = outcomes.filter(
+    (outcome, index, self) => index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
+  )
+  return x
 }
 
 function groupByMarketID(data) {

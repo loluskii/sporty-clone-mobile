@@ -91,14 +91,26 @@ import emitter from '@/plugins/emitter'
 const utilsStore = useUtilstStore()
 const router = useRouter()
 const usersStore = useUsersStore()
-const token = ref('111111')
-const group = ref(import.meta.env.VITE_APP_KEY)
-const mode = ref(0)
+// const token = ref('111111')
+// const group = ref(import.meta.env.VITE_APP_KEY)
+// const mode = ref(0)
 
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
   return imageUrl
 }
+
+const token = computed(() => {
+  return usersStore.currentUser ? usersStore.details.authCode : '111111'
+})
+
+const mode = computed(() => {
+  return usersStore.currentUser ? 1 : 0
+})
+
+const group = computed(() => {
+  return usersStore.currentUser ? usersStore.details.group : import.meta.env.VITE_APP_KEY
+})
 
 const sportsList = computed(() => {
   return utilsStore.sportsMenu
@@ -140,7 +152,11 @@ const goToStatistics = () => {
 }
 
 function openVirtual() {
-  window.location.href = generatedURL.value
+  window.location.href = `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
+    token.value
+  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${mode.value}&group=${
+    group.value
+  }&clientPlatform=mobile&h=${hashStr.value}`
 }
 
 async function playJetX() {
@@ -152,11 +168,11 @@ async function playJetX() {
 }
 
 onMounted(() => {
-  if (usersStore.details) {
-    token.value = usersStore.details.authCode
-    mode.value = 1
-    group.value = usersStore.details.group
-  }
+  // if (usersStore.details) {
+  //   token.value = usersStore.details.authCode
+  //   mode.value = 1
+  //   group.value = usersStore.details.group
+  // }
 })
 </script>
 <style scoped>
