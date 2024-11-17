@@ -17,10 +17,7 @@
                 />
                 {{ selection.outcomeName }}
               </div>
-              <div
-                class="m-outcome-odds"
-                :class="oddUp ? 'm-outcome-up' : oddDown ? 'm-outcome-down' : ''"
-              >
+              <div class="m-outcome-odds">
                 {{ getSelectionOdds(selection.odds) }}
               </div>
             </div>
@@ -65,7 +62,7 @@ const utilsStore = useUtilstStore()
 const emit = defineEmits(['toggle-betslip', 'on-selection-input'])
 const router = useRouter()
 
-const keyboardVisible = ref(false)
+const keyboardVisible = ref(false);
 
 const props = defineProps({
   selection: Object,
@@ -132,7 +129,7 @@ function onKeyClick(type, value) {
   let stake = props.selection.stake.toString()
   let finalStake
   switch (type) {
-    case 'number':
+    case "number":
       // Append clicked number to the display
       if (stake.length < 7) {
         if (typeof value === 'number') {
@@ -153,20 +150,20 @@ function onKeyClick(type, value) {
         stake += '.'
         handleStakeChange(stake)
       }
-      break
-    case 'double-zero':
+      break;
+    case "double-zero":
       // Append double zero to the display
       if (stake.length < 6) {
         stake += '00'
         handleStakeChange(stake)
       }
-      break
-    case 'clear':
+      break;
+    case "clear":
       // Clear the display
-      stake = ''
-      handleStakeChange(stake)
-      break
-    case 'delete':
+      stake = "";
+      handleStakeChange(stake);
+      break;
+    case "delete":
       // Remove the last character from the display
       stake = stake.toString().slice(0, -1)
       handleStakeChange(stake)
@@ -191,24 +188,6 @@ function goToGame() {
     }
   })
 }
-
-onMounted(() => {
-  // scores.value = {
-  //   homeScore: props.gameData.homeScore,
-  //   awayScore: props.gameData.awayScore
-  // }
-
-  emitter.on(`odds-change-${props.selection.matchId}`, (data) => {
-    // set scores
-    scores.value = {
-      homeScore: data.sport_event_status.home_score,
-      awayScore: data.sport_event_status.away_score
-    }
-  })
-
-  // when a bet_stop message is received, all odds should be closed;
-  emitter.on(`bet-stop-${props.selection.matchID}`, (data) => {})
-})
 </script>
 
 <style>
