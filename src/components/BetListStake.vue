@@ -488,7 +488,7 @@ onMounted(() => {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   height: 4rem;
-  line-height: 4rem;
+  line-height: 4rem !important;
   text-align: center;
   color: #fff;
 }
