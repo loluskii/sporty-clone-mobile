@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, provide, onBeforeUnmount, onUnmounted } from 'vue'
+import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from 'vue'
 import { useUtilstStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
@@ -130,11 +130,11 @@ function initMqtt() {
         switch (topicArr[2]) {
           case 'odds_change':
             emitter.emit(`odds-change-${payload.match_id}`, payload)
-            updateBetslip(payload, 'odds_change')
+            // updateBetslip(payload, 'odds_change')
             break
           case 'bet_stop':
             emitter.emit(`bet-stop-${payload.match_id}`, payload)
-            updateBetslip(payload, 'bet_stop')
+            // updateBetslip(payload, 'bet_stop')
             break
           default:
             break
@@ -296,59 +296,8 @@ onMounted(async () => {
   emitter.on('showCasinoDialog', showCasinoDialog)
   emitter.on('showCustomDatePicker', toggleDatePicker)
 
-  // listen to live odds change
-  // $mqtt.subscribe(`live/odds_change/+`, (message) => {
-  //   try {
-  //     const data = JSON.parse(message)
-  //     // console.log(`received odds change for ${data.match_id}`);
-  //     emitter.emit(`odds-change-${data.match_id}`, data);
-  //   } catch(e) {
-  //     console.log('error processing odds change', e.message)
-  //   }
-  // })
-  // // listen to live bet_stop
-  // $mqtt.subscribe(`live/bet_stop/+`, (message) => {
-  //   try {
-  //     const data = JSON.parse(message)
-  //     // console.log(`received bet stop for ${data.match_id}`);
-  //     emitter.emit(`bet-stop-${data.match_id}`, data);
-  //   } catch(e) {
-  //     console.log('error processing bet stop', e.message)
-  //   }
-  // })
-
-  // emitter.on('added-selection', (matchId) => {
-  //   console.log('added selection')
-
-  //   // listen to odds change for new selection
-  //   $mqtt.subscribe(`+/odds_change/${matchId}`, (message) => {
-  //     console.log(`Received odds change message for ${matchId}:`,  message);
-  //   });
-  //   // listen to bet stop for match
-  //   $mqtt.subscribe(`+/bet_stop/${matchId}`, (message) => {
-  //     console.log(`Received bet stop message for ${matchId}:`,  message);
-  //   });
-  // })
-
-  // emitter.on('removed-selection', (matchId) => {
-  //   console.log('removed selection')
-  //   // unsubscribe from odds change message for match
-  //   $mqtt.unsubscribe(`+/odds_change/${matchId}`);
-  //   // unsubscribe from bet stop message for match
-  //   $mqtt.unsubscribe(`+/bet_stop/${matchId}`);
-  // })
-
-  // // unsubscribe from all subscription when betslip is cleared
-  // emitter.on('clear-selections', () => {
-  //   console.log('cleared selection')
-  //   // $mqtt.unsubscribeAll();
-  // })
 })
 
-onUnmounted(() => {
-  // $mqtt.unsubscribe(`live/odds_change/+`, true)
-  // $mqtt.unsubscribe(`live/bet_stop/+`, true)
-})
 onBeforeUnmount(() => {
   if (mqttClient.value !== false) mqttClient.value.end()
 })
@@ -404,11 +353,6 @@ defineComponent({
     />
   </div>
 </template>
-
-{ "match_id": 54227925, "event_id": 54227925, "event_prefix": "sr", "event_type": "match",
-"timestamp": 1728122025056, "sport_event_status": { "status": 1, "match_status": 8, "home_score":
-"0", "away_score": "0", "clock": { "stopped": false } }, "markets":[], "product": 1 }
-
 <style>
 @import url('./assets/css/loading.css');
 html,
