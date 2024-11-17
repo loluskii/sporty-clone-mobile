@@ -34,5 +34,4 @@ coverage
 package-lock.json
 package-lock.json
 *.webmanifest
-branding.js
-# /public
+/public
