@@ -1,11 +1,12 @@
 <template>
   <div class="m-nav-secondary withHome">
     <div class="m-nav-left">
-      <span @click="$router.go(-1)" class="m-icon m-icon--back"></span>
+      <!-- <span @click="$router.go(-1)" class="m-icon m-icon--back"></span> -->
       <span class="title"> {{ brandName }} Games </span>
     </div>
     <div class="info-container">
       <div class="m-nav-right">
+        <span class="x-icon-search"></span>
         <div @click="$router.push({ name: 'home' })" class="home-link">
           <div class="home-icon"></div>
         </div>
@@ -77,7 +78,7 @@ defineProps({
   display: -ms-flexbox;
   display: flex;
   height: 100%;
-  margin-right: 1.58333333rem;
+  /* margin-right: 1.58333333rem; */
 }
 .m-nav-secondary .m-nav-left .m-icon :before {
   font-size: 1.33333333rem !important;
@@ -102,7 +103,7 @@ defineProps({
   font-size: 1.5rem !important;
 }
 .m-nav-secondary.withHome {
-  padding: 0 0 0 1.66666667rem;
+  /* padding: 0 0 0 1.66666667rem; */
 }
 .m-nav-secondary a :visited,
 .m-nav-secondary a :active,
@@ -113,7 +114,7 @@ defineProps({
   text-decoration: none;
 }
 .m-nav-secondary .title {
-  font-size: 1.36666667rem;
+  font-size: 1.16666667rem;
   line-height: 2rem;
 }
 .m-nav-secondary .title.small-font-height {
@@ -171,7 +172,8 @@ defineProps({
   display: -ms-flexbox;
   display: flex;
   height: 100%;
-  padding: 0 1.5rem 0 1.33333333rem;
+  padding: 0;
+  margin-left: 15px;
 }
 .m-nav-secondary .home-link .home-icon::before {
   content: '\e6cb';
@@ -182,6 +184,19 @@ defineProps({
   font-style: normal;
 }
 .m-nav-secondary .home-link .home-icon:before {
+  font-size: 1.5rem;
+}
+.x-icon-search::before {
+  content: '\e613';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.x-icon-search:before {
+  color: #ffffff;
   font-size: 1.5rem;
 }
 </style>

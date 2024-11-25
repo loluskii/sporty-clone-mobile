@@ -28,6 +28,7 @@ import PrivacyPolicy from '@/views/CMS/PrivacyPolicy.vue'
 import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
+import GroupView from '@/views/Games/GroupView.vue'
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -215,9 +216,16 @@ export const router = createRouter({
       path: '/Games',
       name: 'casino-games',
       component: GamesView,
-      meta: {
-        showMobileNavigation: true
-      }
+    },
+    {
+      path: '/Games/Category/:category',
+      name: 'games-by-category',
+      component: GroupView,
+    },
+    {
+      path: '/Games/Providers',
+      name: 'casino-providers',
+      component: GroupView,
     },
     {
       path: '/Games/:game_name/:game_id/Play',

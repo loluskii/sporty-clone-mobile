@@ -303,8 +303,8 @@ export const loadBetslipByCode = async (betslipId) => {
   )
 }
 
-export const getGames = async (page) => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/casino/web-games?paginate=1&page=${page}`))
+export const getProviders = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/provider`))
 }
 
 export const getCasinoStartUrl = async (payload) => {
