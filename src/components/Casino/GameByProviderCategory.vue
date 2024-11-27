@@ -1,42 +1,41 @@
 <template>
-  <div class="title-bg">
-    <h3 class="h3 text-white fw-bold">{{ titleText }}</h3>
+  <div class="title-bg mb-3">
+    <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
+
+    <h3 class="h4 text-white fw-bold">
+      <img
+        :src="getProviderLogo()"
+        alt=""
+        height="25"
+        srcset=""
+        v-if="type === 'provider'"
+      />
+      {{ titleText }}
+    </h3>
   </div>
-  <div class="games-container">
-    <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
-      <div class="grouped-games-section">
-        <div class="group">
-          <div class="row mb-3 pb-3" ref="scrollComponent">
-            <div class="col-6 mb-3" v-for="(game, index) in props.games" :key="index">
-              <div
-                class="card bg-dark rounded-3"
-                style="min-width: 150px"
-                @click="redirectToGamePlay(game)"
-              >
-                <img
-                  :src="getImagePath(game)"
-                  class="card-img-top"
-                  alt="..."
-                  @error="handleImageError($event, game)"
-                />
-                <div
-                  class="card-body d-flex align-items-center justify-content-center p-2"
-                >
-                  <span class="text-truncate text-white" style="max-width: 150px">
-                    {{ game.title }}
-                  </span>
-                </div>
-              </div>
+
+  <CategoryProvider />
+  <div class="games-container" ref="myElement">
+    <div class="games-grid mt-3">
+      <div class="row mb-3 pb-3" style="overflow-x: hidden">
+        <div class="col-6 mb-3" v-for="(game, index) in props.games" :key="index">
+          <div
+            class="card bg-dark rounded-3"
+            style="min-width: 150px"
+            @click="redirectToGamePlay(game)"
+          >
+            <img
+              :src="getImagePath(game)"
+              class="card-img-top"
+              alt="..."
+              @error="handleImageError($event, game)"
+            />
+            <div class="card-body d-flex align-items-center justify-content-center p-2">
+              <span class="text-truncate text-white" style="max-width: 150px">
+                {{ game.title }}
+              </span>
             </div>
           </div>
-
-          <!-- <LoadingSpinner v-else></LoadingSpinner>
-              <div v-else-if="!top.isLoading && !top.games.length" class="no-data">
-                <div style="white-space: pre-line">
-                  Sorry, there are no games currently<br />available in this category.
-                  Please try later.<br />Thank you.
-                </div>
-              </div> -->
         </div>
       </div>
     </div>
@@ -46,19 +45,29 @@
 <script setup>
 import HeaderOther from "@/components/HeaderOther.vue";
 import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import router from "@/router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
+import CategoryProvider from "./CategoryProvider.vue";
 import $ from "jquery";
 
-const props = defineProps(["games", "titleText"]);
+const props = defineProps(["games", "titleText", "type"]);
 
 const scrollComponent = ref(null);
 const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
+
+const getProviderLogo = () => {
+  let prov = props.titleText.toLowerCase().replace(/ /g, "-");
+  const imageUrl = new URL(
+    `../../assets/images/casino/providers/${prov}.svg`,
+    import.meta.url
+  );
+  return imageUrl;
+};
 
 const getImagePath = (game) => {
   return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
@@ -79,58 +88,69 @@ async function redirectToGamePlay(game) {
 }
 
 const updateCSSVar = () => {
+  console.log(myElement.value);
   if (myElement.value) {
-    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY;
+    const distanceFromTop =
+      myElement.value.getBoundingClientRect().top + document.documentElement.scrollTop;
     // Assign the distance to a CSS variable
     document.documentElement.style.setProperty(
       "--distance-from-top",
       `${distanceFromTop}px`
     );
+  } else {
+    console.log("sdfsdf");
   }
 };
 
-onBeforeMount(async () => {
+onMounted(() => {
   updateCSSVar();
-  $("body").addClass("no-scroll");
+  document.body.classList.add("no-scroll");
 });
 </script>
 
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("@/assets/css/casino.css");
+.m-icon {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #ffffff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+  /* margin-right: 1.58333333rem; */
+}
+.m-icon :before {
+  font-size: 1.33333333rem !important;
+}
+.m-icon.m-icon--back::before {
+  content: "\e620";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
 
 .title-bg {
-  font-size: 28px;
-  line-height: 1.4;
+  font-size: 20px;
+  /* line-height: 1.4; */
   font-weight: 500;
   width: 100%;
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
   text-transform: uppercase;
-  text-align: center;
+  /* text-align: center; */
   font-family: var(--stb-font-helper);
   color: rgb(var(--stb-white-1000));
-  padding: 22px 0;
-  min-height: 80px;
+  /* padding: 22px 0; */
+  /* min-height: 80px; */
   z-index: 1;
-}
-
-.title-bg:after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-bottom: 1px solid rgb(var(--stb-unique-color-1));
-  background-color: rgb(var(--stb-green-1000));
-  background-image: url(/ornament-title.svg);
-  background-repeat: repeat-x;
-  background-position: center;
-  background-size: 40px 70px;
 }
 
 .card-img-top {
@@ -159,6 +179,7 @@ onBeforeMount(async () => {
 .games-container {
   height: 100%;
   width: 100%;
+  overflow-x: hidden;
   /* padding: 15px; */
 }
 
@@ -175,7 +196,7 @@ onBeforeMount(async () => {
 .games-grid {
   height: 100%;
   max-height: calc(100vh - var(--distance-from-top));
-  overflow: scroll !important;
+  /* overflow: scroll !important; */
   width: 100%;
   /* padding: 0 15px; */
 }
@@ -194,28 +215,6 @@ onBeforeMount(async () => {
   text-align: center;
   /* background-color: #373737; */
   /* white-space: nowrap; */
-}
-.head-top .game-provider {
-  padding: 10px;
-  font-size: 18px;
-  font-weight: bold;
-  /* border-radius: 10px; */
-  /* border-right: 1px solid white; */
-  /* background-color: #333; */
-  color: #fff;
-  text-align: center;
-  height: 40px;
-  /* width: 40px; */
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.head-top .divider {
-  margin: 0 10px;
-  font-size: 18px;
-  border: 0.2px solid white;
-  height: 32px;
 }
 
 .game-search {

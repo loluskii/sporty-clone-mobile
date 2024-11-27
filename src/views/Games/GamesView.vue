@@ -6,10 +6,7 @@
     </div>
     <div class="games-container">
       <div class="head-top d-flex align-items-center">
-        <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
-          <span class="">Providers</span>
-        </div>
-        <div class="divider"></div>
+        <!-- <div class="divider"></div> -->
         <div class="categories-list">
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
@@ -18,17 +15,24 @@
               @click="getGameByTopCategory(top)"
               v-if="top.slug !== 'all'"
             >
+              <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
               <span>{{ top.name }}</span>
             </div>
           </template>
         </div>
+        <div class="game-search">
+          <span class="x-icon-search"></span>
+        </div>
+      </div>
+      <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
+        <span class="">Providers</span>
       </div>
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div class="group" v-if="top.slug !== 'all'">
               <div class="header d-flex justify-content-between align-items-center">
-                <h1 class="card-title text-white fw-normal fs-4">{{ top.name }}</h1>
+                <h1 class="h4 text-white fw-normal fs-4">{{ top.name }}</h1>
                 <span
                   class="text-decoration-none text-uppercase"
                   style="color: var(--brand-secondary)"
@@ -126,7 +130,7 @@ import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
 import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
 import router from "@/router";
-import { useAuthStore } from "@/stores";
+import { useAuthStore, useUsersStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
@@ -138,10 +142,16 @@ const gamesList = ref([]);
 const activeTopCategory = ref(null);
 const scrollComponent = ref(null);
 const authStore = useAuthStore();
+const userStore = useUsersStore();
 const isLoading = ref(true);
 const myElement = ref(null);
 const currentView = ref("grouped_category");
 const providers = ref([]);
+
+const getImageSrc = (cat) => {
+  const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
+  return imageUrl;
+};
 
 async function getCategories() {
   try {
@@ -197,16 +207,20 @@ const getImagePath = (game) => {
 const handleImageError = (event, game) => {
   // Replace the failed image with a placeholder
   let name = encodeURIComponent(game.title);
-  event.target.src = `https://placehold.co/..150x175?text=${name}`; // Specify your placeholder image path
+  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
   event.target.alt = `${game.title}`;
 };
 
 async function redirectToGamePlay(game) {
-  emitter.emit("showCasinoDialog");
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
-  });
+  // emitter.emit("showCasinoDialog");
+  if (userStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } else {
+    return router.push({ name: "sign-in" });
+  }
 }
 
 const updateCSSVar = () => {
@@ -228,8 +242,7 @@ onBeforeMount(async () => {
 </script>
 
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("@/assets/css/casino.css");
 
 .x-icon-search::before {
   content: "\e613";
@@ -302,22 +315,26 @@ onBeforeMount(async () => {
   /* background-color: #373737; */
   /* white-space: nowrap; */
 }
-.head-top .game-provider {
-  padding: 10px;
+.game-provider {
+  padding: 0 15px;
+}
+
+.game-provider > span {
   font-size: 18px;
   font-weight: bold;
-  /* border-radius: 10px; */
-  /* border-right: 1px solid white; */
-  /* background-color: #333; */
+  border-radius: 10px;
+  /* border-right: 1px solid white;
+  border-bottom: 1px solid white; */
+  background-color: #333;
   color: #fff;
-  text-align: center;
+  justify-content: center;
+  align-items: center;
   height: 40px;
   /* width: 40px; */
   display: flex;
   align-items: center;
   white-space: nowrap;
 }
-
 .head-top .divider {
   margin: 0 10px;
   font-size: 18px;
@@ -326,16 +343,15 @@ onBeforeMount(async () => {
 }
 
 .game-search {
-  margin-top: 10px;
   padding: 10px;
   font-size: 2.8vw;
   border-radius: 10px;
-  border: 1px solid #333;
+  border: 1px solid #4f4f4f;
   color: #fff;
   text-align: center;
   margin-left: 10px;
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   display: flex;
   align-items: center;
 }
@@ -351,16 +367,18 @@ onBeforeMount(async () => {
   display: grid;
   /* display: flex; */
   overflow-x: scroll;
-  white-space: no;
-  grid-template-columns: repeat(6, 1fr);
+  white-space: nowrap;
+  grid-template-columns: repeat(12, 1fr); /* Set total items in a single row */
+  grid-auto-rows: minmax(100px, auto);
   gap: 10px;
   padding: 20px 0px 0px;
 }
 
 .games-container .categories-list {
   display: flex;
-  overflow: auto;
-  margin-right: 10px;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow: auto; /* Enable horizontal scrolling if items overflow */
+  gap: 10px; /* Space between items */
 }
 
 .games-container .categories-list::-webkit-scrollbar {
@@ -369,50 +387,29 @@ onBeforeMount(async () => {
 
 .games-container .categories-list .category {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 10px 15px;
-  font-size: 14px;
-  /* font-weight: bold; */
+  justify-content: center;
+  font-size: 16px;
   border-radius: 10px;
-  /* border: 1px solid #333; */
-  margin-right: 5px;
   color: #b3bec1;
   white-space: nowrap;
-  height: 40px;
+  flex: 0 0 auto;
+  margin-right: 15px;
+}
+
+.games-container .categories-list .category img {
+  height: 25px;
+  margin-bottom: 5px;
+  padding-right: 10px;
 }
 
 .games-container .categories-list .category.active {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
   background-color: #333;
   color: white;
   border-radius: 10px;
-}
-
-.games-container .categories-list .category img {
-  height: 30px;
-  width: 100%;
-  object-fit: cover;
-}
-
-.sg-confirm-cancel-modal-container-v2 .modal-dialog .modal-footer .btn.btn-primary {
-  background-color: #0f9737;
-  border: 1px solid #0f9737;
-  border-color: #0f9737;
-  color: #fff;
-  -webkit-box-flex: 2;
-  -ms-flex: 2;
-  flex: 2;
-}
-
-.sg-confirm-cancel-modal-container-v2 .modal-dialog .modal-footer .btn.btn-secondary {
-  background-color: #333;
-  border-color: #333;
-  color: #fff;
-  -webkit-box-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
+  padding: 5px 15px;
 }
 </style>

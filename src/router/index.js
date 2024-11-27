@@ -13,8 +13,6 @@ import ProfileView from '@/views/Account/ProfileView.vue'
 import FixtureDetail from '@/views/Sport/FixtureDetail.vue'
 import LiveFixtureDetail from '@/views/Sport/LiveFixtureDetail.vue'
 import TransactionView from '@/views/Account/TransactionView.vue'
-import GamesView from '@/views/Games/GamesView.vue'
-import PlayView from '@/views/Games/PlayView.vue'
 import SportsView from '@/views/SportsView.vue'
 import LiveView from '@/views/LiveView.vue'
 import LoadBetView from '@/views/LoadBetView.vue'
@@ -29,6 +27,10 @@ import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
 import GroupView from '@/views/Games/GroupView.vue'
+
+const GamesView = () => import('@/views/Games/GamesView.vue')
+const PlayView = () => import('@/views/Games/PlayView.vue')
+
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -225,6 +227,11 @@ export const router = createRouter({
     {
       path: '/Games/Providers',
       name: 'casino-providers',
+      component: GroupView,
+    },
+    {
+      path: '/Games/Providers/:provider',
+      name: 'games-by-provider',
       component: GroupView,
     },
     {

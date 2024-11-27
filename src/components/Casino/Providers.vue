@@ -5,9 +5,25 @@
     </div>
     <div class="row mt-4">
       <div class="col-12 mb-3" v-for="provider in providers" :key="provider.id">
-        <div class="provider-card">
+        <div
+          class="provider-card"
+          @click="
+            $router.push({
+              name: 'games-by-provider',
+              params: { provider: slugify(provider.name) },
+              query: { providerId: provider.id },
+            })
+          "
+        >
           <div class="card rounded-0 border-0">
-            <div class="card-body">
+            <div class="card-body p-2">
+              <img
+                :src="getImageSrc(provider.slug)"
+                class="mr-3"
+                alt=""
+                srcset=""
+                height="25"
+              />
               <span class="provider-name">{{ provider.name }}</span>
             </div>
           </div>
@@ -29,24 +45,21 @@ import { useRouter, useRoute } from "vue-router";
 
 const props = defineProps(["providers"]);
 
-const topGameCategoriefes = ref([]);
 const gamesList = ref([]);
 const activeTopCategory = ref("all");
-const activeGroup = ref("category");
-const scrollComponent = ref(null);
-const authStore = useAuthStore();
 const isLoading = ref(true);
 const route = useRoute();
 const router = useRouter();
 const viewMode = ref("providers");
 const titleText = ref("Providers");
-const myElement = ref(null);
 
-// const filterQuery = ref()
-
-const activeSport = computed(() => {
-  return utilsStore.activeSport;
-});
+const getImageSrc = (prov) => {
+  const imageUrl = new URL(
+    `../../assets/images/casino/providers/${prov}.svg`,
+    import.meta.url
+  );
+  return imageUrl;
+};
 
 watch(
   () => [route.name],
@@ -98,8 +111,7 @@ onBeforeMount(async () => {
 </script>
 
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("@/assets/css/casino.css");
 
 .title-bg {
   font-size: 28px;

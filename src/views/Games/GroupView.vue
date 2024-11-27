@@ -1,34 +1,38 @@
 <template>
   <div class="casino">
-    <HeaderOther :headerTitle="viewHeaderTitle" />
+    <HeaderHome />
     <div class="carousel">
       <Carousel></Carousel>
     </div>
     <div class="games-container">
-      <Providers v-if="viewMode === 'providers'" :providers="providers" />
-      <GameByCategory
-        v-if="viewMode === 'category'"
+      <Providers v-if="viewMode === 'games-group-view'" :providers="providers" />
+      <GameByProviderCategory
+        v-if="viewMode === 'games-list-view'"
         :games="gamesList"
         :titleText="categoryName"
+        :type="viewType"
       />
-      <!-- <div v-else-if="!isLoading && !gamesList.length" class="no-data">
-          <div style="white-space: pre-line">
-            Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-            you.
-          </div>
-        </div> -->
-      <!-- <LoadingSpinner v-else></LoadingSpinner> -->
+      <LoadingSpinner v-if="isLoading"></LoadingSpinner>
+    </div>
+    <div
+      v-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'"
+      class="no-data"
+    >
+      <div style="white-space: pre-line">
+        Sorry, there are no games currently<br />available in this category. Please try
+        later.<br />Thank you.
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import GameByCategory from "@/components/Casino/GameByCategory.vue";
+import HeaderHome from "@/components/HeaderHome.vue";
+import GameByProviderCategory from "@/components/Casino/GameByProviderCategory.vue";
 import Providers from "../../components/Casino/Providers.vue";
 import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, watch, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory, getProviders } from "@/helpers";
+import { ref, onBeforeMount, watch, computed, onMounted } from "vue";
+import { getGamesByProviders, gamesByTopCategory, getProviders } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
@@ -36,15 +40,12 @@ import emitter from "@/plugins/emitter";
 import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";
 
-const topGameCategoriefes = ref([]);
-const activeTopCategory = ref("all");
-const activeGroup = ref("category");
-const scrollComponent = ref(null);
-const authStore = useAuthStore();
+const myElement = ref();
 const isLoading = ref(true);
 const route = useRoute();
 const router = useRouter();
 const viewMode = ref(null);
+const viewType = ref();
 const viewHeaderTitle = ref("Providers");
 const providers = ref([]);
 const gamesList = ref([]);
@@ -57,8 +58,14 @@ const activeSport = computed(() => {
 });
 
 watch(
-  () => [route.name, route.params.category, route.query.category_id],
-  async ([routeName, categoryName, gameCategoryId]) => {
+  () => [
+    route.name,
+    route.params.category,
+    route.params.provider,
+    route.query.category_id,
+    route.query.providerId,
+  ],
+  async ([routeName, categoryName, providerName, gameCategoryId, gameProviderId]) => {
     // Check the route name
     switch (routeName) {
       case "casino-providers":
@@ -66,6 +73,9 @@ watch(
         break;
       case "games-by-category":
         handleGamesByCategoryView(categoryName, gameCategoryId);
+        break;
+      case "games-by-provider":
+        handleGamesByProviderView(providerName, gameProviderId);
         break;
       default:
         // Handle other routes or provide a default behavior
@@ -76,40 +86,39 @@ watch(
 );
 
 async function handleProvidersView() {
-  viewMode.value = "providers";
+  viewMode.value = "games-group-view";
   viewHeaderTitle.value = "Providers";
   const res = await getProviders();
   providers.value = res.data;
+  isLoading.value = false;
 }
 
 async function handleGamesByCategoryView(name, id) {
-  viewMode.value = "category";
-  viewHeaderTitle.value = name;
-  categoryName.value = name;
+  viewMode.value = "games-list-view";
+  viewHeaderTitle.value = name.replace(/_/g, " ");
+  categoryName.value = name.replace(/_/g, " ");
   const res = await gamesByTopCategory(id);
   gamesList.value = res.games ? res.games : [];
+  viewType.value = "category";
 }
 
-const getImagePath = (game) => {
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
-};
-
-async function redirectToGamePlay(game) {
-  emitter.emit("showCasinoDialog");
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
-  });
+async function handleGamesByProviderView(name, id) {
+  viewMode.value = "games-list-view";
+  viewHeaderTitle.value = name.replace(/_/g, " ");
+  categoryName.value = name.replace(/_/g, " ");
+  const res = await getGamesByProviders(id);
+  gamesList.value = res.games ? res.games : [];
+  viewType.value = "provider";
 }
 
-onBeforeMount(async () => {
-  //   await getCategories();
-});
+// onMounted( () => {
+//   updateCSSVar();
+//   // $("body").addClass("no-scroll");
+// });
 </script>
 
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("@/assets/css/casino.css");
 
 .title-bg {
   font-size: 28px;
@@ -198,32 +207,36 @@ onBeforeMount(async () => {
   /* white-space: nowrap; */
 }
 .game-provider {
-  margin-top: 10px;
-  padding: 10px;
-  font-size: 2.8vw;
+  padding: 0 15px;
+}
+
+.game-provider > span {
+  font-size: 18px;
+  font-weight: bold;
   border-radius: 10px;
-  border: 1px solid var(--brand-secondary);
+  /* border-right: 1px solid white;
+  border-bottom: 1px solid white; */
   background-color: #333;
   color: #fff;
-  text-align: center;
-  margin-left: 10px;
+  justify-content: center;
+  align-items: center;
   height: 40px;
   /* width: 40px; */
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 .game-search {
-  margin-top: 10px;
   padding: 10px;
   font-size: 2.8vw;
   border-radius: 10px;
-  border: 1px solid #333;
+  border: 1px solid #4f4f4f;
   color: #fff;
   text-align: center;
   margin-left: 10px;
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   display: flex;
   align-items: center;
 }
@@ -247,9 +260,9 @@ onBeforeMount(async () => {
 
 .games-container .categories-list {
   display: flex;
-  padding-top: 10px;
-  overflow: auto;
-  margin-right: 10px;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow: auto; /* Enable horizontal scrolling if items overflow */
+  gap: 10px; /* Space between items */
 }
 
 .games-container .categories-list::-webkit-scrollbar {
@@ -258,26 +271,30 @@ onBeforeMount(async () => {
 
 .games-container .categories-list .category {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 10px 25px;
-  font-size: 3vw;
-  font-weight: bold;
+  justify-content: center;
+  font-size: 16px;
   border-radius: 10px;
-  /* border: 1px solid #333; */
-  margin-right: 5px;
   color: #b3bec1;
   white-space: nowrap;
-  height: 40px;
+  flex: 0 0 auto;
+  margin-right: 15px;
+}
+
+.games-container .categories-list .category img {
+  height: 25px;
+  margin-bottom: 5px;
+  padding-right: 10px;
 }
 
 .games-container .categories-list .category.active {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
   background-color: #333;
   color: white;
   border-radius: 10px;
+  padding: 5px 15px;
 }
 
 .games-container .categories-list .category img {
