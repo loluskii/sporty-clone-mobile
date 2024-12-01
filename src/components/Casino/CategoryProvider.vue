@@ -21,9 +21,7 @@
           <span class="x-icon-search"></span>
         </div>
     </div>
-    <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
-    <span class="">Providers</span>
-    </div>
+    
 </template>
 <script setup>
 import { ref, onBeforeMount, computed } from "vue";
@@ -68,7 +66,7 @@ onBeforeMount(async () => {
 });
 </script>
 
-<style>
+<style scoped>
 @import url("@/assets/css/casino.css");
 
 .x-icon-search::before {

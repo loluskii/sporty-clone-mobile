@@ -6,7 +6,6 @@
     </div>
     <div class="info-container">
       <div class="m-nav-right">
-        <span class="x-icon-search"></span>
         <div @click="$router.push({ name: 'home' })" class="home-link">
           <div class="home-icon"></div>
         </div>

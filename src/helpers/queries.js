@@ -302,6 +302,15 @@ export const loadBetslipByCode = async (betslipId) => {
   )
 }
 
+export const getGames = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games`))
+}
+
+export const getGamesBySearch = async (gameName) => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/game-list?gameName=${gameName}`))
+}
+
+
 export const getGamesByProviders = async (providerId) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/${CLIENT_ID}/list?providerId=${providerId}`))
 }

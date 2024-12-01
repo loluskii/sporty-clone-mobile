@@ -1,11 +1,14 @@
 <template>
   <div class="casino">
-    <HeaderHome />
+    <HeaderCasino />
     <div class="carousel">
       <Carousel></Carousel>
     </div>
     <div class="games-container">
-      <Providers v-if="viewMode === 'games-group-view'" :providers="providers" />
+      <template v-if="viewMode === 'games-group-view'">
+        <Providers v-if="viewType === 'provider'" :providers="providers" />
+        <Categories v-else :categories="categories" />
+      </template>
       <GameByProviderCategory
         v-if="viewMode === 'games-list-view'"
         :games="gamesList"
@@ -27,18 +30,24 @@
 </template>
 
 <script setup>
-import HeaderHome from "@/components/HeaderHome.vue";
 import GameByProviderCategory from "@/components/Casino/GameByProviderCategory.vue";
 import Providers from "../../components/Casino/Providers.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, watch, computed, onMounted } from "vue";
-import { getGamesByProviders, gamesByTopCategory, getProviders } from "@/helpers";
+import {
+  getGamesByProviders,
+  gamesByTopCategory,
+  getProviders,
+  getTopGameCategories,
+} from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";
+import Categories from "../../components/Casino/Categories.vue";
+import HeaderCasino from "../../components/HeaderCasino.vue";
 
 const myElement = ref();
 const isLoading = ref(true);
@@ -48,6 +57,7 @@ const viewMode = ref(null);
 const viewType = ref();
 const viewHeaderTitle = ref("Providers");
 const providers = ref([]);
+const categories = ref([]);
 const gamesList = ref([]);
 const categoryName = ref(null);
 
@@ -71,6 +81,9 @@ watch(
       case "casino-providers":
         handleProvidersView();
         break;
+      case "casino-category":
+        handleCategoriesView();
+        break;
       case "games-by-category":
         handleGamesByCategoryView(categoryName, gameCategoryId);
         break;
@@ -86,11 +99,21 @@ watch(
 );
 
 async function handleProvidersView() {
+  viewType.value = "provider";
   viewMode.value = "games-group-view";
   viewHeaderTitle.value = "Providers";
   const res = await getProviders();
   providers.value = res.data;
   isLoading.value = false;
+}
+
+async function handleCategoriesView() {
+  viewMode.value = "games-group-view";
+  viewHeaderTitle.value = "Categories";
+  const res = await getTopGameCategories();
+  categories.value = res.data;
+  isLoading.value = false;
+  viewType.value = "category";
 }
 
 async function handleGamesByCategoryView(name, id) {
@@ -111,10 +134,9 @@ async function handleGamesByProviderView(name, id) {
   viewType.value = "provider";
 }
 
-// onMounted( () => {
-//   updateCSSVar();
-//   // $("body").addClass("no-scroll");
-// });
+onMounted( () => {
+  $("body").removeClass("no-scroll");
+});
 </script>
 
 <style scoped>
@@ -185,7 +207,7 @@ async function handleGamesByProviderView(name, id) {
 
 .games-grid {
   height: 100%;
-  max-height: calc(100vh - var(--distance-from-top));
+  max-height: calc(100vh - (var(--distance-from-top) + 50px));
   overflow: scroll !important;
   width: 100%;
   padding: 0 15px;

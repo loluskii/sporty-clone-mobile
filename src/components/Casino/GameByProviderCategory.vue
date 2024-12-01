@@ -1,5 +1,5 @@
 <template>
-  <div class="title-bg mb-3">
+  <div class="title-bg">
     <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
 
     <h3 class="h4 text-white fw-bold">
@@ -184,7 +184,7 @@ onMounted(() => {
 }
 
 .head-top {
-  padding: 15px;
+  padding: 15px 0;
 }
 
 .game-group {
@@ -195,7 +195,7 @@ onMounted(() => {
 
 .games-grid {
   height: 100%;
-  max-height: calc(100vh - var(--distance-from-top));
+  max-height: calc(100vh - (var(--distance-from-top) + 50px));
   /* overflow: scroll !important; */
   width: 100%;
   /* padding: 0 15px; */

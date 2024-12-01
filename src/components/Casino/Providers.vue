@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div class="container px-0">
     <div class="title-bg">
-      <h3 class="h3 text-white fw-bold">{{ titleText }}</h3>
+      <h3 class="h3 text-white fw-bold mb-0">{{ titleText }}</h3>
     </div>
     <div class="row mt-4">
       <div class="col-12 mb-3" v-for="provider in providers" :key="provider.id">
@@ -129,6 +129,7 @@ onBeforeMount(async () => {
   padding: 22px 0;
   min-height: 80px;
   z-index: 1;
+  white-space: nowrap;
 }
 
 .title-bg:after {

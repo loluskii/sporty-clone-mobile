@@ -27,6 +27,7 @@ import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
 import GroupView from '@/views/Games/GroupView.vue'
+import Search from '../views/Games/SearchView.vue'
 
 const GamesView = () => import('@/views/Games/GamesView.vue')
 const PlayView = () => import('@/views/Games/PlayView.vue')
@@ -218,22 +219,50 @@ export const router = createRouter({
       path: '/Games',
       name: 'casino-games',
       component: GamesView,
+      meta: {
+        showMobileNavigation: true
+      }
     },
     {
-      path: '/Games/Category/:category',
-      name: 'games-by-category',
-      component: GroupView,
+      path: '/Games/Search',
+      name: 'casino-search',
+      component: Search,
+      meta: {
+        showMobileNavigation: true
+      }
     },
+
     {
       path: '/Games/Providers',
       name: 'casino-providers',
       component: GroupView,
+      children: [
+        {
+          path: '/:provider',
+          name: 'games-by-provider',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      },
     },
     {
-      path: '/Games/Providers/:provider',
-      name: 'games-by-provider',
+      path: '/Games/Category',
+      name: 'casino-category',
       component: GroupView,
+      children: [
+        {
+          path: '/:category',
+          name: 'games-by-category',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      }
     },
+
     {
       path: '/Games/:game_name/:game_id/Play',
       name: 'game-play',

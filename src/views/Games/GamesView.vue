@@ -4,38 +4,64 @@
     <div class="carousel">
       <Carousel></Carousel>
     </div>
-    <div class="games-container">
+    <div v-if="!isLoading" class="games-container">
       <div class="head-top d-flex align-items-center">
-        <!-- <div class="divider"></div> -->
         <div class="categories-list">
+          <div
+            class="category"
+            :class="!activeTopCategory ? 'active' : ''"
+            @click="getGameByTopCategory()"
+            id="discover"
+          >
+            <img
+              src="@/assets/images/casino/all.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>Discover</span>
+          </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
               :class="activeTopCategory?.id == top.id ? 'active' : ''"
               @click="getGameByTopCategory(top)"
               v-if="top.slug !== 'all'"
+              :id="'category_' + top.id"
             >
               <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
               <span>{{ top.name }}</span>
             </div>
           </template>
         </div>
-        <div class="game-search">
-          <span class="x-icon-search"></span>
-        </div>
       </div>
       <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
-        <span class="">Providers</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="25"
+          height="25"
+          viewBox="0 0 25 25"
+          fill="none"
+          stroke="#f2f2f2"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-gem icon providers"
+        >
+          <path d="M6 3h12l4 6-10 13L2 9Z" />
+          <path d="M11 3 8 9l4 13 4-13-3-6" />
+          <path d="M2 9h20" />
+        </svg>
+        <span class="pl-2">Providers</span>
       </div>
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div class="group" v-if="top.slug !== 'all'">
               <div class="header d-flex justify-content-between align-items-center">
-                <h1 class="h4 text-white fw-normal fs-4">{{ top.name }}</h1>
+                <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
                 <span
-                  class="text-decoration-none text-uppercase"
-                  style="color: var(--brand-secondary)"
+                  class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
                   @click="
                     $router.push({
                       name: 'games-by-category',
@@ -43,7 +69,7 @@
                       query: { category_id: top.id },
                     })
                   "
-                  >See All
+                  >Show More
                 </span>
               </div>
               <template v-if="top.games.length && !top.isLoading">
@@ -61,12 +87,14 @@
                       alt="..."
                       @error="handleImageError($event, game)"
                     />
-                    <div
-                      class="card-body d-flex align-items-center justify-content-center p-2"
-                    >
-                      <span class="text-truncate text-white" style="max-width: 150px">
+                    <div class="card-body d-flex flex-column p-2">
+                      <div
+                        class="text-truncate fw-bold"
+                        style="max-width: 150px; color: var(--brand-highlight-text)"
+                      >
                         {{ game.title }}
-                      </span>
+                      </div>
+                      <div class="text-muted">{{ game.type }}</div>
                     </div>
                   </div>
                 </div>
@@ -121,6 +149,38 @@
         </div>
       </div>
     </div>
+
+    <div v-else class="games-container placeholder-glow">
+      <div class="head-top d-flex align-items-center">
+        <div class="categories-list">
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+        </div>
+      </div>
+      <div class="game-provider placeholder p-4 rounded"></div>
+      <div class="games-grid mt-3">
+        <div class="grouped-games-section">
+          <div v-for="x in 4" :key="x" class="group">
+            <div class="header d-flex justify-content-between align-items-center">
+              <h1
+                class="fw-normal placeholder h4 p-2 rounded"
+                style="width: 50px"
+              ></h1>
+              <span
+                style="width: 50px"
+                class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+              >
+              </span>
+            </div>
+            <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+              <div class="card bg-dark rounded-3 placeholder" v-for="i in 3" :key="i" style="width: 150px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -156,7 +216,6 @@ const getImageSrc = (cat) => {
 async function getCategories() {
   try {
     const response = await getTopGameCategories();
-    isLoading.value = false;
     const categories = response.data;
     for (const category of categories) {
       topGameCategories.value.push({
@@ -194,11 +253,31 @@ async function getCategories() {
 
 async function getGameByTopCategory(category) {
   isLoading.value = true;
-  currentView.value = "single_category";
-  activeTopCategory.value = category;
-  const res = await gamesByTopCategory(category.id);
-  isLoading.value = false;
-  gamesList.value = res.games ? res.games : [];
+  try {
+    if (category) {
+      document.getElementById("category_" + category.id).scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+      currentView.value = "single_category";
+      activeTopCategory.value = category;
+      const res = await gamesByTopCategory(category.id);
+      isLoading.value = false;
+      gamesList.value = res.games ? res.games : [];
+    } else {
+      document.getElementById("discover").scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+      currentView.value = "grouped_category";
+      activeTopCategory.value = null;
+      await getCategories();
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const getImagePath = (game) => {
@@ -219,6 +298,7 @@ async function redirectToGamePlay(game) {
       params: { game_name: slugify(game.title), game_id: game.id },
     });
   } else {
+    authStore.returnUrl = "/Games";
     return router.push({ name: "sign-in" });
   }
 }
@@ -272,7 +352,7 @@ onBeforeMount(async () => {
   background-color: transparent;
 }
 .casino {
-  background-color: #000;
+  background-color: #121212;
   min-height: 100vh;
 }
 
@@ -294,7 +374,7 @@ onBeforeMount(async () => {
 
 .games-grid {
   height: 100%;
-  max-height: calc(100vh - var(--distance-from-top));
+  max-height: calc(100vh - (var(--distance-from-top) + 50px));
   overflow: scroll !important;
   width: 100%;
   padding: 0 15px;
@@ -316,17 +396,22 @@ onBeforeMount(async () => {
   /* white-space: nowrap; */
 }
 .game-provider {
-  padding: 0 15px;
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 15px;
 }
 
 .game-provider > span {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
   border-radius: 10px;
+  padding: 0 15px;
   /* border-right: 1px solid white;
   border-bottom: 1px solid white; */
-  background-color: #333;
-  color: #fff;
+
   justify-content: center;
   align-items: center;
   height: 40px;
@@ -381,15 +466,16 @@ onBeforeMount(async () => {
   gap: 10px; /* Space between items */
 }
 
-.games-container .categories-list::-webkit-scrollbar {
+.games-container .grid-container::-webkit-scrollbar,
+.categories-list::-webkit-scrollbar {
   display: none;
 }
 
 .games-container .categories-list .category {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   border-radius: 10px;
   color: #b3bec1;
   white-space: nowrap;
@@ -400,7 +486,7 @@ onBeforeMount(async () => {
 .games-container .categories-list .category img {
   height: 25px;
   margin-bottom: 5px;
-  padding-right: 10px;
+  /* padding-right: 10px; */
 }
 
 .games-container .categories-list .category.active {
