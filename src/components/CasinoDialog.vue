@@ -20,39 +20,44 @@
             <div class="demo-btn-text">Demo</div>
           </div>
         </div>
+        <div class="button-row">
+          <div class="real-money-btn-cancel" @click="$emit('hide-dialogue')">
+            <div class="real-money-btn-text">Cancel</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUsersStore } from '@/stores'
-import emitter from '@/plugins/emitter'
+import { defineProps, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useUsersStore } from "@/stores";
+import emitter from "@/plugins/emitter";
 
-const emits = defineEmits(['hide-dialogue'])
-const userStore = useUsersStore()
+const emits = defineEmits(["hide-dialogue"]);
+const userStore = useUsersStore();
 const props = defineProps({
   errorMessage: String,
   dialogueMessage: Object,
   dialogueType: String,
-  nextRoute: String
-})
+  nextRoute: String,
+});
 
-const router = useRouter()
+const router = useRouter();
 
 const hasBonus = computed(() => {
-  return userStore.currentUser && userStore.currentUser.casinoBonusBalance > 0
-})
+  return userStore.currentUser && userStore.currentUser.casinoBonusBalance > 0;
+});
 
 const setBalanceType = (type) => {
-  emits('hide-dialogue')
-  if (!userStore.currentUser && type !== 'demo') return router.push({ name: 'sign-in' })
-  emitter.emit('setBalanceType', type)
-}
+  emits("hide-dialogue");
+  if (!userStore.currentUser && type !== "demo") return router.push({ name: "sign-in" });
+  emitter.emit("setBalanceType", type);
+};
 
-onMounted(() => {})
+onMounted(() => {});
 </script>
 
 <style scoped>
@@ -76,8 +81,8 @@ onMounted(() => {})
 }
 .button-row div {
   font-weight: 500;
-  height: 3rem;
-  line-height: 3rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
   text-align: center;
   width: 100%;
   color: white;
@@ -91,14 +96,19 @@ onMounted(() => {})
 .button-row div.real-money-btn {
   background-color: var(--brand-secondary);
 }
+
+.button-row div.real-money-btn-cancel,
+.button-row div.real-money-btn-cancel .real-money-btn-text {
+  border: 0.5px solid;
+  height: 2rem !important;
+  line-height: 2rem !important;
+}
 .es-dialog {
   background-color: #373b41;
   border-radius: 0.3rem;
-  box-shadow:
-    0 0 24px 0 rgba(0, 0, 0, 0.25),
-    0 0 24px 0 rgba(112, 76, 76, 0.25);
+  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25), 0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
-  font-family: 'Roboto', 'Microsoft Yahei', 'simsun';
+  font-family: "Roboto", "Microsoft Yahei", "simsun";
   font-size: 1rem;
   line-height: 2rem;
   overflow: hidden;
@@ -107,7 +117,7 @@ onMounted(() => {})
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60%;
+  width: 85%;
   z-index: 1001;
 }
 .es-dialog-close {
@@ -121,8 +131,8 @@ onMounted(() => {})
   font-size: 0;
 }
 .es-dialog-close em::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -183,7 +193,7 @@ onMounted(() => {})
 }
 .es-dialog .es-dialog-head .es-dialog-close {
   background: none;
-  font-family: 'Microsoft YaHei', arial, simsun, SimHei;
+  font-family: "Microsoft YaHei", arial, simsun, SimHei;
   position: absolute;
   right: 5px;
   top: 1px;
@@ -218,31 +228,10 @@ onMounted(() => {})
   width: 30%;
 }
 .es-dialog.es-ani-show {
-  -webkit-transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
+  -webkit-transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s, -webkit-transform 3s;
 }
 .es-dialog.es-ani-hide {
   -webkit-transition: all 0.3s linear;

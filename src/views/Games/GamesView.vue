@@ -4,96 +4,346 @@
     <div class="carousel">
       <Carousel></Carousel>
     </div>
-    <div class="games-container">
-      <div class="categories-list">
-        <div
-          class="category"
-          :class="activeTopCategory.id == top.id ? 'active' : ''"
-          v-for="(top, index) in topGameCategories"
-          :key="index"
-          @click="getGameByTopCategory(top)"
-        >
-          <span>{{ top.name }}</span>
-        </div>
-      </div>
-      <div v-if="!isLoading && gamesList.length" class="games-grid">
-        <div class="grid-container" ref="scrollComponent">
-          <template v-for="(game, index) in gamesList" :key="index">
+    <div v-if="!isLoading" class="games-container">
+      <div class="head-top d-flex align-items-center">
+        <div class="categories-list">
+          <div
+            class="category"
+            :class="!activeTopCategory ? 'active' : ''"
+            @click="getGameByTopCategory()"
+            id="discover"
+          >
+            <img
+              src="@/assets/images/casino/all.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>Discover</span>
+          </div>
+          <template v-for="(top, index) in topGameCategories" :key="index">
             <div
-              v-if="game.status && game.gameId !== null"
-              @click="redirectToGamePlay(game)"
-              class="grid-item"
+              class="category"
+              :class="activeTopCategory?.id == top.id ? 'active' : ''"
+              @click="getGameByTopCategory(top)"
+              v-if="top.slug !== 'all'"
+              :id="'category_' + top.id"
             >
-              <img :src="getImagePath(game)" loading="lazy" alt="" srcset="" />
-              <div class="grid-item-footer">
-                {{ game.title }}
-              </div>
+              <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
+              <span>{{ top.name }}</span>
             </div>
           </template>
         </div>
       </div>
-      <div v-else-if="!isLoading && !gamesList.length" class="no-data">
-        <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-          you.
+      <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="25"
+          height="25"
+          viewBox="0 0 25 25"
+          fill="none"
+          stroke="#f2f2f2"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-gem icon providers"
+        >
+          <path d="M6 3h12l4 6-10 13L2 9Z" />
+          <path d="M11 3 8 9l4 13 4-13-3-6" />
+          <path d="M2 9h20" />
+        </svg>
+        <span class="pl-2">Providers</span>
+      </div>
+      <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
+        <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
+          <template v-for="(top, index) in topGameCategories" :key="index">
+            <div class="group" v-if="top.slug !== 'all'">
+              <div class="header d-flex justify-content-between align-items-center">
+                <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
+                <span
+                  class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+                  @click="
+                    $router.push({
+                      name: 'games-by-category',
+                      params: { category: slugify(top.name) },
+                      query: { category_id: top.id },
+                    })
+                  "
+                  >Show More
+                </span>
+              </div>
+              <template v-if="top.games.length && !top.isLoading">
+                <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+                  <div
+                    class="card bg-dark rounded-3"
+                    style="width: 150px"
+                    @click="redirectToGamePlay(game)"
+                    v-for="(game, index) in top.games"
+                    :key="index"
+                  >
+                    <img
+                      :src="getImagePath(game)"
+                      class="card-img-top"
+                      alt="..."
+                      @error="handleImageError($event, game)"
+                    />
+                    <div class="card-body d-flex flex-column p-2">
+                      <div
+                        class="text-truncate fw-bold"
+                        style="max-width: 150px; color: var(--brand-highlight-text)"
+                      >
+                        {{ game.title }}
+                      </div>
+                      <div class="text-muted">{{ game.type }}</div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div v-else-if="!top.isLoading && !top.games.length" class="no-data">
+                <div style="white-space: pre-line">
+                  Sorry, there are no games currently<br />available in this category.
+                  Please try later.<br />Thank you.
+                </div>
+              </div>
+              <LoadingSpinner v-else></LoadingSpinner>
+            </div>
+          </template>
+        </div>
+        <div v-if="currentView === 'single_category'" class="grouped-games-section">
+          <div class="group">
+            <div class="header d-flex justify-content-between align-items-center mb-3">
+              <h1 class="card-title h2 fw-bold text-white">
+                {{ activeTopCategory.name }}
+              </h1>
+            </div>
+            <div class="row mb-3 pb-3" v-if="gamesList.length" ref="scrollComponent">
+              <div class="col-6" v-for="(game, index) in gamesList" :key="index">
+                <div
+                  class="card bg-dark rounded-3 mb-3"
+                  @click="redirectToGamePlay(game)"
+                >
+                  <img
+                    :src="getImagePath(game)"
+                    class="card-img-top"
+                    alt="..."
+                    @error="handleImageError($event, game)"
+                  />
+                  <div
+                    class="card-body d-flex align-items-center justify-content-center p-2"
+                  >
+                    <span class="text-truncate text-white" style="max-width: 150px">
+                      {{ game.title }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="!singleCategoryLoading && !gamesList.length" class="no-data">
+              <div style="white-space: pre-line">
+                Sorry, there are no games currently<br />available in this category.
+                Please try later.<br />Thank you.
+              </div>
+            </div>
+            <LoadingSpinner v-else></LoadingSpinner>
+          </div>
         </div>
       </div>
-      <LoadingSpinner v-else></LoadingSpinner>
+    </div>
+
+    <div v-else class="games-container placeholder-glow">
+      <div class="head-top d-flex align-items-center">
+        <div class="categories-list">
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category px-5 py-4 placeholder" id="discover"></div>
+        </div>
+      </div>
+      <div class="game-provider placeholder p-4 rounded"></div>
+      <div class="games-grid mt-3">
+        <div class="grouped-games-section">
+          <div v-for="x in 4" :key="x" class="group">
+            <div class="header d-flex justify-content-between align-items-center">
+              <h1
+                class="fw-normal placeholder h4 p-2 rounded"
+                style="width: 50px"
+              ></h1>
+              <span
+                style="width: 50px"
+                class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+              >
+              </span>
+            </div>
+            <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+              <div class="card bg-dark rounded-3 placeholder" v-for="i in 3" :key="i" style="width: 150px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import HeaderCasino from '@/components/HeaderCasino.vue'
-import Carousel from '@/components/Home/Carousel.vue'
-import { ref, onBeforeMount } from 'vue'
-import { getTopGameCategories, gamesByTopCategory } from '@/helpers'
-import router from '@/router'
-import { useAuthStore } from '@/stores'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { slugify } from '../../helpers'
-import emitter from '@/plugins/emitter'
+import HeaderCasino from "@/components/HeaderCasino.vue";
+import Carousel from "@/components/Home/Carousel.vue";
+import { ref, onBeforeMount, computed } from "vue";
+import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
+import router from "@/router";
+import { useAuthStore, useUsersStore } from "@/stores";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { slugify } from "../../helpers";
+import emitter from "@/plugins/emitter";
+import $ from "jquery";
+import Providers from "@/components/Casino/Providers.vue";
 
-const topGameCategories = ref([])
-const gamesList = ref([])
-const activeTopCategory = ref('all')
-const scrollComponent = ref(null)
-const authStore = useAuthStore()
-const isLoading = ref(true)
+const topGameCategories = ref([]);
+const gamesList = ref([]);
+const activeTopCategory = ref(null);
+const scrollComponent = ref(null);
+const authStore = useAuthStore();
+const userStore = useUsersStore();
+const isLoading = ref(true);
+const singleCategoryLoading = ref(true);
+const myElement = ref(null);
+const currentView = ref("grouped_category");
+const providers = ref([]);
 
+const getImageSrc = (cat) => {
+  const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
+  return imageUrl;
+};
 
 async function getCategories() {
-  const response = await getTopGameCategories()
-  topGameCategories.value = response.data
-  await getGameByTopCategory(topGameCategories.value[0])
+  try {
+    const response = await getTopGameCategories();
+    const categories = response.data;
+    for (const category of categories) {
+      topGameCategories.value.push({
+        ...category,
+        games: [],
+        isLoading: true,
+        hasError: false, // Track errors for individual categories
+      });
+    }
+
+    // Fetch games for each category
+    await Promise.all(
+      topGameCategories.value.map(async (category) => {
+        if (category.slug !== "all") {
+          try {
+            const gamesResponse = await gamesByTopCategory(category.id); // Replace `id` with the appropriate field
+            category.games = gamesResponse.games ? gamesResponse.games.slice(0, 12) : [];
+          } catch (error) {
+            console.error(`Error fetching games for category ${category.name}:`, error);
+            category.hasError = true; // Set error state for this category
+          } finally {
+            category.isLoading = false; // Ensure loading state is updated
+          }
+        } else {
+          category.isLoading = false; // Skip fetching for the "all" category
+        }
+      })
+    );
+  } catch (error) {
+    console.error("Error fetching categories or games:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function getGameByTopCategory(category) {
-  isLoading.value = true
-  activeTopCategory.value = category
-  const res = await gamesByTopCategory(category.id)
-  isLoading.value = false
-  gamesList.value = res.games ? res.games : []
+  singleCategoryLoading.value = true;
+  try {
+    if (category) {
+      document.getElementById("category_" + category.id).scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+      currentView.value = "single_category";
+      activeTopCategory.value = category;
+      const res = await gamesByTopCategory(category.id);
+      isLoading.value = false;
+      gamesList.value = res.games ? res.games : [];
+    } else {
+      document.getElementById("discover").scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+      currentView.value = "grouped_category";
+      activeTopCategory.value = null;
+      await getCategories();
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const getImagePath = (game) => {
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`
-}
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
+};
+const handleImageError = (event, game) => {
+  // Replace the failed image with a placeholder
+  let name = encodeURIComponent(game.title);
+  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
+  event.target.alt = `${game.title}`;
+};
 
 async function redirectToGamePlay(game) {
-  emitter.emit('showCasinoDialog')
-  return router.push({
-    name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.id }
-  })
+  // emitter.emit("showCasinoDialog");
+  if (userStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } else {
+    authStore.returnUrl = "/Games";
+    return router.push({ name: "sign-in" });
+  }
 }
 
+const updateCSSVar = () => {
+  if (myElement.value) {
+    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY;
+    // Assign the distance to a CSS variable
+    document.documentElement.style.setProperty(
+      "--distance-from-top",
+      `${distanceFromTop}px`
+    );
+  }
+};
+
 onBeforeMount(async () => {
-  await getCategories()
-})
+  await getCategories();
+  updateCSSVar();
+  $("body").addClass("no-scroll");
+});
 </script>
 
 <style scoped>
+@import url("@/assets/css/casino.css");
+
+.x-icon-search::before {
+  content: "\e613";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.card-img-top {
+  width: 100%;
+  height: 175px;
+  object-fit: cover;
+}
+
+.x-icon-search:before {
+  color: #ffffff;
+  /* font-size: 1.5rem; */
+}
 .no-data {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
@@ -103,24 +353,122 @@ onBeforeMount(async () => {
   background-color: transparent;
 }
 .casino {
-  background-color: #000;
+  background-color: #121212;
   min-height: 100vh;
+}
+
+.games-container {
+  height: 100%;
+  width: 100%;
+  /* padding: 15px; */
+}
+
+.head-top {
+  padding: 15px;
+}
+
+.game-group {
+  background-color: #373737;
+  border-radius: 10px;
+  margin: 10px 15px 0px;
+}
+
+.games-grid {
+  height: 100%;
+  max-height: calc(100vh - (var(--distance-from-top) + 50px));
+  overflow: scroll !important;
+  width: 100%;
+  padding: 0 15px;
+}
+
+.game-group .group {
+  /* /* display: flex; */
+  /* flex-direction: column; */
+  /* align-items: center; */
+  padding: 10px 25px;
+  font-size: 2.8vw;
+  border-radius: 10px;
+  border: 1px solid #333;
+  /* margin-left: 5px; */
+  /* margin-right: 5px; */
+  color: #fff;
+  text-align: center;
+  /* background-color: #373737; */
+  /* white-space: nowrap; */
+}
+.game-provider {
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 15px;
+}
+
+.game-provider > span {
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 0 15px;
+  /* border-right: 1px solid white;
+  border-bottom: 1px solid white; */
+
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  /* width: 40px; */
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.head-top .divider {
+  margin: 0 10px;
+  font-size: 18px;
+  border: 0.2px solid white;
+  height: 32px;
+}
+
+.game-search {
+  padding: 10px;
+  font-size: 2.8vw;
+  border-radius: 10px;
+  border: 1px solid #4f4f4f;
+  color: #fff;
+  text-align: center;
+  margin-left: 10px;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.game-group .group.active {
+  background-color: var(--brand-secondary);
+  -webkit-box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.5);
+  /* color: var(--brand-secondary); */
 }
 
 .games-container .grid-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
-  gap: 10px; /* Adjust the gap between columns */
-  padding: 20px;
+  /* display: flex; */
+  overflow-x: scroll;
+  white-space: nowrap;
+  grid-template-columns: repeat(12, 1fr); /* Set total items in a single row */
+  grid-auto-rows: minmax(100px, auto);
+  gap: 10px;
+  padding: 20px 0px 0px;
 }
 
 .games-container .categories-list {
   display: flex;
-  padding: 10px 20px 0 20px;
-  overflow: auto;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow: auto; /* Enable horizontal scrolling if items overflow */
+  gap: 10px; /* Space between items */
 }
 
-.games-container .categories-list::-webkit-scrollbar {
+.games-container .grid-container::-webkit-scrollbar,
+.categories-list::-webkit-scrollbar {
   display: none;
 }
 
@@ -128,72 +476,29 @@ onBeforeMount(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 25px;
-  font-size: 2.6vw;
+  justify-content: center;
   border-radius: 10px;
-  border: 1px solid #333;
-  margin-left: 5px;
-  margin-right: 5px;
-  color: #fff;
+  color: #b3bec1;
   white-space: nowrap;
+  flex: 0 0 auto;
+  background-color: #2c2c2c;
+  padding: 5px 15px;
+}
+
+.games-container .categories-list .category img {
+  height: 25px;
+  margin-bottom: 5px;
+  /* padding-right: 10px; */
 }
 
 .games-container .categories-list .category.active {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
-  background-color: var(--brand-secondary);
+  background-color: #494949;
+  color: white;
   border-radius: 10px;
-}
-
-.games-container .categories-list .category img {
-  height: 30px;
-  width: 100%;
-  object-fit: cover;
-}
-
-.grid-item {
-  position: relative;
-  border: 1px solid #2a2a2a;
-  /* padding: 20px 0; */
-  text-align: center;
-  border-radius: 7px;
-  min-height: 150px;
-  display: flex;
-  flex-direction: column;
-}
-
-.grid-item img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-.grid-item-footer {
-  /* position: absolute;
-  bottom: 0; */
-  width: 100%;
-  background-color: #2a2a2a;
-  border-bottom-left-radius: 7px;
-  border-bottom-right-radius: 7px;
-  padding: 10px 0;
-  color: #fff;
-  /* white-space: nowrap; */
-  text-overflow: ellipsis;
-  font-size: 14px;
-}
-
-button.btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 25px;
-  font-size: 2.6vw;
-  border-radius: 10px;
-  /* border: non; */
-  margin: 15px 5px;
-  color: #fff;
-  white-space: nowrap;
-  background-color: var(--brand-primary);
+  padding: 5px 15px;
+  border: 1px solid var(--brand-highlight-text)
 }
 </style>
