@@ -138,7 +138,7 @@
                 </div>
               </div>
             </div>
-            <div v-else-if="!isLoading && !gamesList.length" class="no-data">
+            <div v-else-if="!singleCategoryLoading && !gamesList.length" class="no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no games currently<br />available in this category.
                 Please try later.<br />Thank you.
@@ -204,6 +204,7 @@ const scrollComponent = ref(null);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
 const isLoading = ref(true);
+const singleCategoryLoading = ref(true);
 const myElement = ref(null);
 const currentView = ref("grouped_category");
 const providers = ref([]);
@@ -252,7 +253,7 @@ async function getCategories() {
 }
 
 async function getGameByTopCategory(category) {
-  isLoading.value = true;
+  singleCategoryLoading.value = true;
   try {
     if (category) {
       document.getElementById("category_" + category.id).scrollIntoView({
@@ -480,7 +481,8 @@ onBeforeMount(async () => {
   color: #b3bec1;
   white-space: nowrap;
   flex: 0 0 auto;
-  margin-right: 15px;
+  background-color: #2c2c2c;
+  padding: 5px 15px;
 }
 
 .games-container .categories-list .category img {
@@ -493,9 +495,10 @@ onBeforeMount(async () => {
   display: flex;
   /* flex-direction: column; */
   align-items: center;
-  background-color: #333;
+  background-color: #494949;
   color: white;
   border-radius: 10px;
   padding: 5px 15px;
+  border: 1px solid var(--brand-highlight-text)
 }
 </style>
