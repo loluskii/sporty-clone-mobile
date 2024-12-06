@@ -52,6 +52,7 @@ import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import CategoryProvider from "./CategoryProvider.vue";
 import $ from "jquery";
+import { useUsersStore } from "../../stores";
 
 const props = defineProps(["games", "titleText", "type"]);
 
@@ -59,6 +60,7 @@ const scrollComponent = ref(null);
 const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
+const usersStore = useUsersStore()
 
 const getProviderLogo = () => {
   let prov = props.titleText.toLowerCase().replace(/ /g, "-");
@@ -80,11 +82,15 @@ const handleImageError = (event, game) => {
 };
 
 async function redirectToGamePlay(game) {
-  emitter.emit("showCasinoDialog");
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
-  });
+  if (usersStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } else {
+    authStore.returnUrl = "/Games";
+    return router.push({ name: "sign-in" });
+  }
 }
 
 const updateCSSVar = () => {
