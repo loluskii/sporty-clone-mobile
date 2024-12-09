@@ -51,6 +51,8 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useUsersStore } from '../../stores';
+import { slugify } from '../../helpers';
+
 const props = defineProps(["showPopup", "gamesList"]);
 const emit = defineEmits(["exit", "continue"]);
 const usersStore = useUsersStore()
@@ -117,13 +119,14 @@ body {
   border-radius: 8px;
   overflow: hidden;
   background-color: #f9f9f9;
+  height: 200px;
 }
 
 /* Game image */
 .game-image {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 200px;
+  object-fit: cover;
 }
 
 /* Game caption */
