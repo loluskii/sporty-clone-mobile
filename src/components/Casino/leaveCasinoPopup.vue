@@ -17,7 +17,7 @@
             <!-- Carousel -->
             <div class="game-carousel">
               <div class="game-carousel-inner">
-                <div v-for="game in gamesList" :key="game.id" class="game-carousel-item">
+                <div v-for="game in gamesList" :key="game.id" class="game-carousel-item" @click="redirectToGamePlay(game)">
                   <img :src="game.imagePath" class="game-image" :alt="game.name" />
                   <div class="game-caption bg-dark text-white">
                     <h5 class="mb-0">{{ game.title }}</h5>
@@ -49,8 +49,12 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+import { useUsersStore } from '../../stores';
 const props = defineProps(["showPopup", "gamesList"]);
 const emit = defineEmits(["exit", "continue"]);
+const usersStore = useUsersStore()
+const router = useRouter()
 
 const getImagePath = (game) => {
   return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
@@ -63,6 +67,18 @@ function exitGame() {
 function continueGame() {
   emit("continue");
 }
+
+async function redirectToGamePlay(game) {
+  if (usersStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } else {
+    return router.push({ name: "sign-in" });
+  }
+}
+
 </script>
 <style scoped>
 @import url("@/assets/css/casino.css");
