@@ -2,12 +2,12 @@
   <div class="game-play">
     <HeaderCasinoPlay></HeaderCasinoPlay>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-    <!-- <iframe
+    <iframe
       v-if="!isLoading"
       title="casino"
       style="border-style: none; width: 100%; height: calc(100% - 60px)"
       :src="gameURL"
-    /> -->
+    />
     <div class="recommended-games">
       <!-- Leave Confirmation Popup -->
       <leaveCasinoPopup
