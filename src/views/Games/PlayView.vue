@@ -40,22 +40,26 @@ const gamesList = ref([]);
 const confirmLeave = ref(null);
 
 async function getCasinoURL() {
-  isLoading.value = true;
-  const game_id = parseInt(route.params.game_id);
-  let data = "real";
-  const payload = {
-    gameId: game_id,
-    username: currentUser?.username,
-    userId: currentUser?.id,
-    demo: false,
-    isMobile: true,
-    homeUrl: import.meta.env.VITE_SITE_URL,
-    authCode: currentUser?.authCode,
-    balanceType: "real",
-  };
-  const res = await getCasinoStartUrl(payload, data);
-  isLoading.value = false;
-  gameURL.value = res.url;
+  try {
+    isLoading.value = true;
+    const game_id = parseInt(route.params.game_id);
+    let data = "real";
+    const payload = {
+      gameId: game_id,
+      username: currentUser?.username,
+      userId: currentUser?.id,
+      demo: false,
+      isMobile: true,
+      homeUrl: import.meta.env.VITE_SITE_URL,
+      authCode: currentUser?.authCode,
+      balanceType: "real",
+    };
+    const res = await getCasinoStartUrl(payload, data);
+    isLoading.value = false;
+    gameURL.value = res.url;
+  } catch (error) {
+    alert(error);
+  }
 }
 
 async function getRecommendedGames() {
