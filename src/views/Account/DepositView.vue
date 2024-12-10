@@ -17,15 +17,7 @@
         </div>
         <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
-            <img
-              src="@/assets/images/monnify.svg"
-              v-if="activeTab == 'monnify'"
-              alt=""
-              style="height: 23px"
-              srcset=""
-            />
-            <img src="@/assets/images/paystack.png" v-else alt="" style="height: 30px" srcset="" />
-            <br /><br />
+            
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
@@ -235,5 +227,10 @@ html,
 html[theme='light'] {
   color: #000;
   background-color: #fafafa;
+}
+
+.m-tabs-tab-active{
+  font-weight: bold;
+  
 }
 </style>
