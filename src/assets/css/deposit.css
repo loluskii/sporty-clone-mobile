@@ -81,7 +81,8 @@
 #deposit .m-tabs-nav .m-tabs-tab.m-tabs-tab-active {
   color: #353a45;
   color: var(--text-type1-primary);
-  font-weight: bold;
+  font-weight: bold !important;
+  border-bottom: 2px solid var(--brand-secondary);
 }
 
 #deposit .error-msg {

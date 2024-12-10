@@ -37,6 +37,14 @@ watch(
       ref = route.query.paymentReference;
     }
 
+    if (method === 'flutterwave') {
+      ref = route.query.tx_ref;
+    }
+
+    if (method === 'korapay') {
+      ref = route.query.reference;
+    }
+
     await verifyPaymentRef(method, ref)
   },
   { immediate: true }
