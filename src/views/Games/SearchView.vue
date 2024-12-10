@@ -94,7 +94,6 @@ import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
-import { Search, Box } from "lucide-vue-next";
 import $ from "jquery";
 
 const topGameCategories = ref([]);

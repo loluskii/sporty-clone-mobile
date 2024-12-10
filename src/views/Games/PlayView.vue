@@ -1,6 +1,6 @@
 <template>
   <div class="game-play">
-    <HeaderCasinoPlay></HeaderCasinoPlay>
+    <HeaderCasinoPlay @open-leave-modal="showRecommendedGames = true"></HeaderCasinoPlay>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     <iframe
       v-if="!isLoading"
@@ -15,6 +15,7 @@
         @exit="exitGame"
         @continue="showRecommendedGames = false"
         :games-list="gamesList"
+        @select-game="moveToNewGame"
       />
     </div>
   </div>
@@ -22,7 +23,7 @@
 
 <script setup>
 import { watch, ref, onMounted, onBeforeMount } from "vue";
-import { getCasinoStartUrl, getGames } from "@/helpers";
+import { getCasinoStartUrl, getGames, slugify } from "@/helpers";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useUsersStore } from "@/stores";
@@ -38,6 +39,14 @@ const { currentUser } = useUsersStore();
 const showRecommendedGames = ref(false);
 const gamesList = ref([]);
 const confirmLeave = ref(null);
+
+watch(
+  () => route.params.game_id,
+  async () => {
+    await getCasinoURL()
+  },
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
 
 async function getCasinoURL() {
   try {
@@ -61,6 +70,14 @@ async function getCasinoURL() {
     alert(error);
     isLoading.value = false;
   }
+}
+
+function moveToNewGame(game){
+  showRecommendedGames.value = false
+  return router.push({
+    name: "game-play",
+    params: { game_name: slugify(game.title), game_id: game.id },
+  });
 }
 
 async function getRecommendedGames() {

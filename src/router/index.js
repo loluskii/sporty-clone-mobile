@@ -29,8 +29,8 @@ import SearchView from '@/views/SearchView.vue'
 import GroupView from '@/views/Games/GroupView.vue'
 import Search from '../views/Games/SearchView.vue'
 
-const GamesView = () => import('@/views/Games/GamesView.vue')
-const PlayView = () => import('@/views/Games/PlayView.vue')
+import GamesView from '@/views/Games/GamesView.vue'
+import PlayView from '@/views/Games/PlayView.vue'
 
 
 export const router = createRouter({
@@ -244,7 +244,7 @@ export const router = createRouter({
         },
       ],
       meta: {
-        showMobileNavigation: true
+        showMobileNavigation: false
       },
     },
     {

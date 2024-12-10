@@ -54,7 +54,7 @@ import { useUsersStore } from '../../stores';
 import { slugify } from '../../helpers';
 
 const props = defineProps(["showPopup", "gamesList"]);
-const emit = defineEmits(["exit", "continue"]);
+const emit = defineEmits(["exit", "continue", "select-game"]);
 const usersStore = useUsersStore()
 const router = useRouter()
 
@@ -71,14 +71,7 @@ function continueGame() {
 }
 
 async function redirectToGamePlay(game) {
-  if (usersStore.currentUser) {
-    return router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
-  } else {
-    return router.push({ name: "sign-in" });
-  }
+  return emit('select-game', game)
 }
 
 </script>
@@ -119,13 +112,13 @@ body {
   border-radius: 8px;
   overflow: hidden;
   background-color: #f9f9f9;
-  height: 200px;
+  /* height: 200px; */
 }
 
 /* Game image */
 .game-image {
   width: 100%;
-  height: 200px;
+  height: 150px;
   object-fit: cover;
 }
 
@@ -134,5 +127,12 @@ body {
   padding: 8px;
   font-size: 14px;
   font-weight: bold;
+}
+
+/* Add these properties to handle text truncation */
+.game-caption h5 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

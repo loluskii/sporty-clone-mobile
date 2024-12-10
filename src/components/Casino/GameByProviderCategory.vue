@@ -17,8 +17,8 @@
   <CategoryProvider />
   <div class="games-container" ref="myElement">
     <div class="games-grid mt-3">
-      <div class="row mb-3 pb-3" style="overflow-x: hidden">
-        <div class="col-6 mb-3" v-for="(game, index) in props.games" :key="index">
+      <div class="row mb-3 pb-5" style="overflow-x: hidden">
+        <div class="col-6 mb-3" v-for="(game, index) in displayedGames" :key="index">
           <div
             class="card bg-dark rounded-3"
             style="min-width: 150px"
@@ -38,6 +38,18 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Load More section with increased height to overlap games -->
+    <div class="load-more-container" v-if="hasMoreGames">
+      <div class="load-more-overlay"></div>
+      <button 
+        class="btn btn-primary load-more-btn"
+        @click="loadMore"
+        :disabled="isLoading"
+      >
+        {{ isLoading ? 'Loading...' : 'Load More' }}
+      </button>
     </div>
   </div>
 </template>
@@ -61,6 +73,28 @@ const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
 const usersStore = useUsersStore()
+
+const itemsPerLoad = 15;
+const displayLimit = ref(itemsPerLoad);
+
+// Computed property for displayed games
+const displayedGames = computed(() => {
+  return props.games.slice(0, displayLimit.value);
+});
+
+// Check if more games are available
+const hasMoreGames = computed(() => {
+  return displayLimit.value < props.games.length;
+});
+
+// Load more function
+const loadMore = async () => {
+  isLoading.value = true;
+  // Simulate loading delay for better UX
+  await new Promise(resolve => setTimeout(resolve, 500));
+  displayLimit.value += itemsPerLoad;
+  isLoading.value = false;
+};
 
 const getProviderLogo = () => {
   let prov = props.titleText.toLowerCase().replace(/ /g, "-");
@@ -201,10 +235,9 @@ onMounted(() => {
 
 .games-grid {
   height: 100%;
-  max-height: calc(100vh - (var(--distance-from-top) + 50px));
-  /* overflow: scroll !important; */
+  max-height: calc(100vh - (var(--distance-from-top) + 80px));
   width: 100%;
-  /* padding: 0 15px; */
+  padding-bottom: 100px; /* Add space for the load more section */
 }
 
 .game-group .group {
@@ -242,5 +275,63 @@ onMounted(() => {
   height: 30px;
   width: 100%;
   object-fit: cover;
+}
+
+.load-more-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px; /* Increased height to overlap more of the games */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 20px;
+  z-index: 10;
+}
+
+.load-more-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.9) 70%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  pointer-events: none; /* Allows clicking through to the button */
+}
+
+.load-more-btn {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 10px;
+}
+
+.load-more-btn {
+  position: relative;
+  z-index: 2;
+  min-width: 120px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  background-color: #2563eb; /* Adjust color to match your theme */
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+  background-color: #1d4ed8; /* Darker shade for hover */
+  transform: translateY(-1px);
+}
+
+.load-more-btn:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+  transform: none;
 }
 </style>

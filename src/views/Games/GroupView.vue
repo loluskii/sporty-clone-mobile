@@ -123,6 +123,8 @@ async function handleGamesByCategoryView(name, id) {
   const res = await gamesByTopCategory(id);
   gamesList.value = res.games ? res.games : [];
   viewType.value = "category";
+  isLoading.value = false;
+
 }
 
 async function handleGamesByProviderView(name, id) {
@@ -132,6 +134,8 @@ async function handleGamesByProviderView(name, id) {
   const res = await getGamesByProviders(id);
   gamesList.value = res.games ? res.games : [];
   viewType.value = "provider";
+  isLoading.value = false;
+
 }
 
 onMounted( () => {
