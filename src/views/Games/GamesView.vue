@@ -34,8 +34,8 @@
       </div>
       <div v-else-if="!isLoading && !gamesList.length" class="no-data">
         <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-          you.
+          Sorry, there are no games currently<br />available in this category. Please try
+          later.<br />Thank you.
         </div>
       </div>
       <LoadingSpinner v-else></LoadingSpinner>
@@ -44,53 +44,56 @@
 </template>
 
 <script setup>
-import HeaderCasino from '@/components/HeaderCasino.vue'
-import Carousel from '@/components/Home/Carousel.vue'
-import { ref, onBeforeMount } from 'vue'
-import { getTopGameCategories, gamesByTopCategory } from '@/helpers'
-import router from '@/router'
-import { useAuthStore } from '@/stores'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { slugify } from '../../helpers'
-import emitter from '@/plugins/emitter'
+import HeaderCasino from "@/components/HeaderCasino.vue";
+import Carousel from "@/components/Home/Carousel.vue";
+import { ref, onBeforeMount } from "vue";
+import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
+import { useAuthStore } from "@/stores";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { slugify } from "../../helpers";
+import { useRouter } from "vue-router";
 
-const topGameCategories = ref([])
-const gamesList = ref([])
-const activeTopCategory = ref('all')
-const scrollComponent = ref(null)
-const authStore = useAuthStore()
-const isLoading = ref(true)
-
+const router = useRouter();
+const topGameCategories = ref([]);
+const gamesList = ref([]);
+const activeTopCategory = ref("all");
+const scrollComponent = ref(null);
+const authStore = useAuthStore();
+const isLoading = ref(true);
 
 async function getCategories() {
-  const response = await getTopGameCategories()
-  topGameCategories.value = response.data
-  await getGameByTopCategory(topGameCategories.value[0])
+  const response = await getTopGameCategories();
+  topGameCategories.value = response.data;
+  await getGameByTopCategory(topGameCategories.value[0]);
 }
 
 async function getGameByTopCategory(category) {
-  isLoading.value = true
-  activeTopCategory.value = category
-  const res = await gamesByTopCategory(category.id)
-  isLoading.value = false
-  gamesList.value = res.games ? res.games : []
+  isLoading.value = true;
+  activeTopCategory.value = category;
+  const res = await gamesByTopCategory(category.id);
+  isLoading.value = false;
+  gamesList.value = res.games ? res.games : [];
 }
 
 const getImagePath = (game) => {
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`
-}
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
+};
 
 async function redirectToGamePlay(game) {
-  emitter.emit('showCasinoDialog')
-  return router.push({
-    name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.id }
-  })
+  // emitter.emit('showCasinoDialog')
+  if (authStore.token) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } else {
+    return router.push("/sign-in");
+  }
 }
 
 onBeforeMount(async () => {
-  await getCategories()
-})
+  await getCategories();
+});
 </script>
 
 <style scoped>

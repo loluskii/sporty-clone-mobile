@@ -103,8 +103,8 @@
           </div>
           <div v-else class="no-data">
             <div style="white-space: pre-line">
-              Sorry, there are no games currently<br />available in this category. Please
-              try later.<br />Thank you.
+              Sorry, there are no games currently<br />available in this category. Please try
+              later.<br />Thank you.
             </div>
           </div>
         </template>
@@ -114,144 +114,134 @@
 </template>
 
 <script setup>
-import LiveFixture from "@/components/Live/LiveFixture.vue";
-import { useUtilstStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useQuery } from "vue-query";
-import { getLiveHighlights } from "@/helpers";
-import { defineComponent, onMounted, ref, computed, watch } from "vue";
-import HeaderOther from "@/components/HeaderOther.vue";
-import _ from "lodash";
+import LiveFixture from '@/components/Live/LiveFixture.vue'
+import { useUtilstStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { useQuery } from 'vue-query'
+import { getLiveHighlights } from '@/helpers'
+import { defineComponent, onMounted, ref, computed, watch } from 'vue'
+import HeaderOther from '@/components/HeaderOther.vue'
+import _ from 'lodash'
 
-const activeSportID = ref(1);
-const isEmptyResponse = ref(false);
-const utilsStore = useUtilstStore();
+const activeSportID = ref(1)
+const isEmptyResponse = ref(false)
+const utilsStore = useUtilstStore()
 
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url);
-  return imageUrl;
-};
+  const imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url)
+  return imageUrl
+}
 
-const { data: completeLiveData, isLoading, refetch } = useQuery(
-  "liveData",
-  getLiveHighlights,
-  {
-    // refetchInterval: 60000 * 3, // 5 minutes in milliseconds
-    onError: (err) => {
-      console.error(err);
-    },
-    onSuccess: (response) => {
-      if (response.fixtures) {
-        // activeSportID.value = response.fixtures[0].sportID
-      }
-    },
+const {
+  data: completeLiveData,
+  isLoading,
+  refetch
+} = useQuery('liveData', getLiveHighlights, {
+  // refetchInterval: 60000 * 3, // 5 minutes in milliseconds
+  onError: (err) => {
+    console.error(err)
+  },
+  onSuccess: (response) => {
+    if (response.fixtures) {
+      // activeSportID.value = response.fixtures[0].sportID
+    }
   }
-);
+})
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value) {
-    return [];
+    return []
   } else {
-    const sportCountMap = new Map();
+    const sportCountMap = new Map()
 
     completeLiveData.value?.fixtures?.forEach((fixture) => {
-      const key = fixture.sportName;
+      const key = fixture.sportName
       if (sportCountMap.has(key)) {
-        const sportData = sportCountMap.get(key);
-        sportData.count += 1;
+        const sportData = sportCountMap.get(key)
+        sportData.count += 1
       } else {
         sportCountMap.set(key, {
           sportID: fixture.sportID,
           sportName: fixture.sportName,
-          count: 1,
-        });
+          count: 1
+        })
       }
-    });
+    })
 
     // Convert Map to array and sort it by sportID
-    const uniqueList = Array.from(sportCountMap.values()).sort(
-      (a, b) => a.sportID - b.sportID
-    );
+    const uniqueList = Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
 
-    return uniqueList;
+    return uniqueList
   }
-});
+})
 
 const filteredLiveData = computed(() => {
   let fixtures =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
       ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value)
-      : [];
+      : []
 
-  return _.groupBy(fixtures, "categoryName");
-});
+  return _.groupBy(fixtures, 'categoryName')
+})
 
 const marketsGroup = computed(() => {
   let markets =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.markets.filter((market) => market.specifier === "")
-      : [];
+      ? completeLiveData.value?.markets
+      : []
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]
-  return markets;
-});
+  return markets
+})
 
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value);
-  return activeMarkets ? _.sortBy(activeMarkets, "marketID") : [];
-});
+  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
+  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
+})
 
 const activeMarket = computed(() => {
-  return utilsStore.activeLiveMarkets;
-});
+  return utilsStore.activeLiveMarkets
+})
 
 watch(activeSportMarkets, (newValue) => {
   // Update activeMarket when activeSportMarkets changes
   if (newValue.length) {
-    utilsStore.activeLiveMarkets = newValue[0];
+    utilsStore.activeLiveMarkets = newValue[0]
   } else {
-    utilsStore.activeLiveMarkets = [];
+    utilsStore.activeLiveMarkets = []
   }
-});
-
-const uniqueOutcomes = (outcomes) => {
-  let x = outcomes.filter(
-    (outcome, index, self) =>
-      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
-  );
-  return x;
-};
+})
 
 function setActiveSport(sid) {
-  activeSportID.value = parseInt(sid);
+  activeSportID.value = parseInt(sid)
   // let markets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]
-  document.getElementById("live_" + sid).scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center",
-  });
+  document.getElementById('live_' + sid).scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 
 function selectMarket(market) {
-  utilsStore.activeLiveMarkets = market;
+  utilsStore.activeLiveMarkets = market
 }
 
 onMounted(async () => {
   if (completeLiveData.value.fixtures.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID;
+    activeSportID.value = completeLiveData.value.fixtures[0].sportID
   }
-});
+})
 
 defineComponent({
   methods: {
     // Manually trigger a refetch without making a new network request
     handleManualRefetch() {
-      refetch();
-    },
-  },
-});
+      refetch()
+    }
+  }
+})
 </script>
 
 <style>
@@ -289,7 +279,7 @@ defineComponent({
   padding: 2.5rem 0 0.83333333rem;
 }
 .m-overview .m-live .no-live-virtual-data {
-  font-family: "Roboto-Regular";
+  font-family: 'Roboto-Regular';
   font-size: 1.066rem;
   padding: 10rem 1.33333333rem;
   text-align: center;
@@ -301,8 +291,8 @@ defineComponent({
   text-align: center;
 }
 .m-overview .m-live .no-data::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -472,13 +462,7 @@ defineComponent({
   padding-bottom: 0.33333333rem;
   padding-top: 0.83333333rem;
 }
-.m-overview
-  .m-live
-  .m-league
-  .m-league-conent
-  .m-live-table
-  .m-live-title-row
-  .m-market-size {
+.m-overview .m-live .m-league .m-league-conent .m-live-table .m-live-title-row .m-market-size {
   color: var(--brand-secondary);
   text-align: right;
 }
@@ -490,9 +474,9 @@ defineComponent({
   .m-live-title-row
   .m-market-size:after {
   color: var(--brand-secondary);
-  content: "\e608";
+  content: '\e608';
   display: inline-block;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   text-indent: 0.83333333rem;
 }
 .m-overview .m-live .m-league .m-league-conent .m-live-table .m-live-title-row .game-id {
