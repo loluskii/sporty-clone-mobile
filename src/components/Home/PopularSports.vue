@@ -71,7 +71,7 @@
               class="featured-nav-item m-snap-nav-item"
               :class="activeFeaturedTab == 'featuredGames' ? 'active featured-active' : ''"
             >
-              <span>Featured Games</span>
+              <span>Featured Casino</span>
             </li>
           </ul>
         </div>

@@ -99,13 +99,13 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore } from '../stores'
-import { formatNumber } from '../helpers'
+import { useCouponStore, useUsersStore } from '../../stores'
+import { formatNumber } from '../../helpers'
 import BetslipBonusBar from './BetslipBonusBar.vue'
 import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import BetlistStakeKeyboard from '@/components/BetlistStakeKeyboard.vue'
-import emitter from '../plugins/emitter'
+import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
+import emitter from '../../plugins/emitter'
 // import placeBet2
 defineProps({
   betSlipType: String,
@@ -488,7 +488,7 @@ onMounted(() => {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   height: 4rem;
-  line-height: 4rem !important;
+  line-height: 4rem;
   text-align: center;
   color: #fff;
 }

@@ -1,21 +1,14 @@
 <template>
   <div id="bonus-progress-bar" class="real-theme">
-    <div class="progress" :style="`width: ${bonusPerc}%`"></div>
-    <p>{{ bonusPerc }}%</p>
+    <div class="progress" :style="`width: ${(coupon.selections.length / 50) * 100}%`"></div>
+    <p>Add more qualifying selections to boost your bonus</p>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
-const props = defineProps(["bonus"]);
+import { useCouponStore } from '../../stores'
 
-const bonusPerc = computed(() => {
-  if (props.bonus) {
-    return parseFloat((props.bonus.rolledAmount / props.bonus.pendingAmount) * 100);
-  } else {
-    return 0.0;
-  }
-});
+const { coupon } = useCouponStore()
 </script>
 <style>
 #bonus-progress-bar {
@@ -71,12 +64,12 @@ const bonusPerc = computed(() => {
   background-color: #d6ebdc;
   background-color: var(--c-betslip-to-win-bg);
   /* color: v; */
-  color: var(--brand-secondary);
+  color: var(--brand-primary);
 }
 #bonus-progress-bar.real-theme .progress {
   background-color: rgba(13, 151, 55, 0.5);
   background-color: var(--brand-primary);
-  opacity: 0.3;
+  opacity: .3;
 }
 #bonus-progress-bar.sim-theme {
   background-color: rgba(250, 253, 0, 0.2);

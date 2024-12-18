@@ -164,7 +164,7 @@ async function loadBet() {
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--active {
   border-color: #0d9737;
-  border-color: var(--brand-secondary);
+  border-color: var(--brand-text-secondary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--error {
   border-color: #e41827;
@@ -225,7 +225,7 @@ async function loadBet() {
 }
 .share-code-btn {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   border-radius: 2px;
   display: block;
   -webkit-box-flex: 1;
@@ -255,7 +255,7 @@ async function loadBet() {
 }
 .share-code-btn--loading {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
 }

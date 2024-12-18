@@ -5,17 +5,17 @@
     class="m-outcome m-event-outcome-default"
     :class="[
       selectionClass,
-      odds <= 1 ? 'm-outcome--disabled' : 'x',
+      odds.odds <= 1 ? 'm-outcome--disabled' : 'x',
       oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : ''
     ]"
   >
-    <span v-if="odds <= 1" class="m-outcome-odds m-icon-lock"></span>
+    <span v-if="odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
     <span
       v-else
       data-op="label-odds-amount"
       class="m-outcome-odds"
     >
-      {{ odds.toFixed(2) }}
+      {{ odds.odds.toFixed(2) }}
     </span>
   </div>
 </template>
@@ -27,12 +27,12 @@ const oddUp = ref(false)
 const oddDown = ref(false)
 
 const props = defineProps({
-  odds: Number,
+  odds: Object,
   selectionClass: String
 })
 
 watch(
-  () => props.odds,
+  () => props.odds.odds,
   (newValue, oldValue) => {
     if (newValue && oldValue) {
       const nVal = newValue.toFixed(2);
@@ -61,7 +61,7 @@ defineComponent({
 <!-- <style scoped>
 .m-outcome-odds.m-outcome-up:before {
   color: #0d9737;
-  /* color: var(--brand-secondary); */
+  /* color: var(--brand-text-secondary); */
   display: inline-block;
   padding-right: 0.83333333rem;
 }

@@ -1,10 +1,13 @@
 <template lang="">
   <div class="m-outcome m-event-outcome-default" :class="selectionClass">
-    <span data-op="label-odds-amount" class="m-outcome-odds">{{ odds.odds.toFixed(2) }}</span>
+    <span v-if="odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
+    <span v-else data-op="label-odds-amount" class="m-outcome-odds">{{
+      odds.odds.toFixed(2)
+    }}</span>
   </div>
 </template>
 <script setup>
-import { formatOdd } from '../../helpers';
+import { formatOdd } from '../../helpers'
 import { defineComponent } from 'vue'
 defineProps({
   odds: Object,
