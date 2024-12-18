@@ -14,7 +14,7 @@ import {
   applyBranding,
   CLIENT_ID
 } from '@/helpers'
-import Betlist from './components/Betlist.vue'
+import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
 import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
