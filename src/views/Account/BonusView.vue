@@ -94,8 +94,8 @@ import { getUserBonus, formatNumber } from '@/helpers'
 import { useUsersStore, useCouponStore } from '@/stores'
 import moment from 'moment'
 // import dayjs from 'dayjs'
-import BonusBar from '../../components/BonusBar.vue'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import BonusBar from "@/components/Betslip/BonusBar.vue";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 
 const userStore = useUsersStore()
 const isLoading = ref(true)

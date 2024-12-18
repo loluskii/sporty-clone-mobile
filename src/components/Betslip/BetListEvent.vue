@@ -51,9 +51,9 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, onMounted } from 'vue'
+import { defineProps, defineEmits, computed, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCouponStore, useUtilstStore } from '../stores'
+import { useCouponStore, useUtilstStore } from '../../stores'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
 

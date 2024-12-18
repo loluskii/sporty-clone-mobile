@@ -147,7 +147,7 @@ function redirectToPlatform(platform) {
 }
 .booking-code .m-holding-icon:before {
   color: #0d9737;
-  color: var(--brand-secondary);
+  color: var(--brand-text-secondary);
   font-size: 30px;
   line-height: 1;
   vertical-align: top;

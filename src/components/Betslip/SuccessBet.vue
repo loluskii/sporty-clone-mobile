@@ -82,7 +82,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { formatNumber } from '../helpers'
+import { formatNumber } from '../../helpers'
 const router = useRouter()
 const props = defineProps({
   response: Object

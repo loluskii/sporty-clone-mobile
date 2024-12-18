@@ -137,7 +137,9 @@ const getSpecifiers = computed(() => {
         (item) => item.marketID === parseInt(props.activeMarket.marketID)
       )
 
-      filtered.forEach((outcome) => {
+      let uniqueFiltered = uniqueOutcomes(filtered)
+
+      uniqueFiltered.forEach((outcome) => {
         let specifier = outcome.specifier
         let found = result.find((item) => item.specifier === specifier)
         if (!found)
@@ -151,24 +153,39 @@ const getSpecifiers = computed(() => {
   }
 })
 
-const setActiveSpecifier = (spec) => {
-  if (props.eventData.outcomes) {
-    const odds = props.eventData.outcomes
-    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
-    filtered = filtered.filter((item) => item.specifier === spec.specifier)
-    outcomes.value = filtered
-    activeSpecifier.value = spec.value
-    toggleList()
-  }
+const uniqueMarkets = (markets) => {
+  console.log(markets)
+  let x = markets.filter(
+    (market, index, self) =>
+      index ===
+      self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
+  )
+  return x
 }
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
     (outcome, index, self) =>
-      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
-  );
-  return x;
-};
+      index ===
+      self.findIndex((o) => o.outcomeID === outcome.outcomeID && o.specifier === outcome.specifier)
+  )
+  return x
+}
+
+const setActiveSpecifier = (spec) => {
+  if (props.eventData.outcomes) {
+    const odds = props.eventData.outcomes
+    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+    if (filtered) {
+      let uniqueFiltered = uniqueOutcomes(filtered)
+      uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
+      outcomes.value = uniqueFiltered
+      activeSpecifier.value = spec.value
+      toggleList()
+    }
+    // filtered = filtered.filter((item) => item.specifier === spec.specifier)
+  }
+}
 
 const toggleList = () => {
   specifierOpen.value = !specifierOpen.value
@@ -188,16 +205,17 @@ const getOdds = () => {
     if (props.eventData.outcomes) {
       const odds = props.eventData.outcomes
       let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+      let uniqueFiltered = uniqueOutcomes(filtered)
       if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = filtered[0]?.specifier
+        let defaultSpecifier = uniqueFiltered[0]?.specifier
         if (defaultSpecifier) {
-          filtered = filtered.filter((item) => item.specifier === defaultSpecifier)
+          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
           activeSpecifier.value = defaultSpecifier.split('=')[1]
         }
       }
-      if (filtered.length) {
-        // console.log(_.sortBy(filtered, 'outcomeID'))
-        outcomes.value = sortArr(filtered, 'outcomeID')
+      if (uniqueFiltered.length) {
+        // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
+        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
       } else {
         outcomes.value = []
       }
@@ -407,120 +425,6 @@ defineComponent({
   color: #ffffff !important;
 }
 
-.grid-specifier-select {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-}
-.grid-specifier-select .grid-specifier-select-icon {
-  margin-left: auto;
-  padding-right: 0.16666667rem;
-}
-.grid-specifier-select .grid-specifier-select-label {
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-  -ms-flex-positive: 1;
-  flex-grow: 1;
-}
-.grid-specifier-select .grid-specifier-wrapper {
-  position: fixed;
-  z-index: 999;
-}
-
-.grid-specifier-select {
-  width: 100%;
-}
-.grid-specifier-select .grid-specifier-select-icon::before {
-  content: '\e603';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.grid-specifier-select .grid-specifier-select-icon:before {
-  display: inline-block;
-  font-size: 1.066rem;
-}
-.grid-specifier-select .grid-specifier-select-icon .icon {
-  display: none;
-  font-size: 0px;
-}
-.grid-specifier-select .grid-specifier-select-icon.is-open::before {
-  content: '\e6a5';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-
-.af-select-list {
-  border: 1px solid #d7d7d7;
-  margin-top: -1px;
-  overflow-y: auto;
-  position: absolute;
-  z-index: 888;
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-}
-.af-select-list.live {
-  background-color: #353a45;
-  background-color: var(--background-type2-secondary);
-}
-.af-select-list.prematch {
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-}
-.af-select {
-  outline: none;
-  position: relative;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-.af-select.af-select-open .af-select-title {
-  border-color: #0d9737;
-  border-color: var(--brand-secondary);
-}
-.af-select.disable {
-  background-color: #dcdee5;
-  background-color: var(--disable-brand-secondary);
-  color: #9ca0ab;
-  color: var(--text-disable-type1-primary);
-}
-.af-select .af-select-title {
-  border: 1px solid #eaecef;
-  display: inline-table;
-  height: 24px;
-  line-height: 24px;
-  width: 100%;
-  border-color: #eaecef;
-  border-color: var(--brand-border-type1);
-}
-.af-select .af-select-title .af-select-input {
-  display: table-cell;
-  height: 100%;
-  outline: none;
-  vertical-align: top;
-  width: 100%;
-}
-.af-select .af-select-title .af-select-input.input {
-  border: 0px;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-.af-select .af-select-title .af-select-input .placeholder {
-  color: #9ca0ab;
-  color: var(--text-disable-type1-primary);
-}
-.af-select .af-select-title .af-select-icon-item {
-  display: table-cell;
-}
-.af-select .af-select-title .af-select-icon-item .icon {
-  display: block;
-  height: 100%;
-  text-align: center;
-  width: 24px;
-}
 .m-sports-table .m-date-row {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);

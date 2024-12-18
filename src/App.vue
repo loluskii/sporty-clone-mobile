@@ -12,13 +12,13 @@ import {
   loadBetslipByCode,
   getBets,
   applyBranding,
-  CLIENT_ID,
-} from "@/helpers";
-import Betlist from "./components/Betlist.vue";
-import ErrorDialogue from "./components/ErrorDialogue.vue";
-import { useRoute, useRouter } from "vue-router";
-import emitter from "./plugins/emitter";
-import { useUsersStore } from "./stores";
+  CLIENT_ID
+} from '@/helpers'
+import Betlist from '@/components//Betslip/Betlist.vue'
+import ErrorDialogue from './components/ErrorDialogue.vue'
+import { useRoute, useRouter } from 'vue-router'
+import emitter from './plugins/emitter'
+import { useUsersStore } from './stores'
 // import { $mqtt } from 'vue-paho-mqtt';
 import mqtt from "mqtt";
 

@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { useCouponStore } from '../stores'
+import { useCouponStore } from '../../stores'
 
 const { coupon } = useCouponStore()
 </script>

@@ -37,6 +37,14 @@ watch(
       ref = route.query.paymentReference;
     }
 
+    if (method === 'flutterwave') {
+      ref = route.query.tx_ref;
+    }
+
+    if (method === 'korapay') {
+      ref = route.query.reference;
+    }
+
     await verifyPaymentRef(method, ref)
   },
   { immediate: true }
@@ -50,7 +58,6 @@ async function verifyPaymentRef(method, ref) {
   console.log(method, ref);
   isLoading.value = true
   const res = await verifyDeposit(method, ref);
-  console.log(res);
   isLoading.value = false
   if (res.success) {
     isPaymentSuccess.value = true

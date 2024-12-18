@@ -96,13 +96,13 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore } from '../stores'
-import { formatNumber } from '../helpers'
+import { useCouponStore, useUsersStore } from '../../stores'
+import { formatNumber } from '../../helpers'
 import BetslipBonusBar from './BetslipBonusBar.vue'
 import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import BetlistStakeKeyboard from '@/components/BetlistStakeKeyboard.vue'
-import emitter from '../plugins/emitter'
+import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
+import emitter from '../../plugins/emitter'
 // import placeBet2
 defineProps({
   betSlipType: String,

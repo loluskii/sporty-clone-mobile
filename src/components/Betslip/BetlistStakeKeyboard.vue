@@ -183,10 +183,10 @@ defineEmits(['button-click'])
 }
 .m-keyboard .save-prefer-row .m-icon-check--checked::before {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   border: 1px solid #0d9737;
   border-color: #0d9737;
-  border-color: var(--brand-secondary);
+  border-color: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
   font-size: 0.83333333rem;
@@ -280,7 +280,7 @@ defineEmits(['button-click'])
 }
 .m-keyboard .m-keyboard-row .m-keyboard-done {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   -webkit-box-flex: 2;
   -webkit-flex: 2;
   -ms-flex: 2;

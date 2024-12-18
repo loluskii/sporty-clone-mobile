@@ -11,39 +11,39 @@
 </template>
 
 <script setup>
-import { watch, ref, onMounted } from 'vue'
-import { getCasinoStartUrl } from '@/helpers'
-import { useRoute } from 'vue-router'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { useUsersStore } from '@/stores'
-import emitter from '@/plugins/emitter'
+import { watch, ref, onMounted } from "vue";
+import { getCasinoStartUrl } from "@/helpers";
+import { useRoute } from "vue-router";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { useUsersStore } from "@/stores";
+import emitter from "@/plugins/emitter";
 
-const route = useRoute()
-const gameURL = ref('')
-const isLoading = ref(false)
-const { currentUser } = useUsersStore()
+const route = useRoute();
+const gameURL = ref("");
+const isLoading = ref(false);
+const { currentUser } = useUsersStore();
 
-async function getCasinoURL(data) {
-  isLoading.value = true
-  const game_id = parseInt(route.params.game_id)
+async function getCasinoURL() {
+  isLoading.value = true;
+  const game_id = parseInt(route.params.game_id);
   const payload = {
     gameId: game_id,
-    username: currentUser?.username || 'guest',
-    userId: currentUser?.id || 0,
-    demo: !!currentUser && data !== 'demo' ? false : !!currentUser && data === 'demo',
+    username: currentUser?.username,
+    userId: currentUser?.id,
+    demo: false,
     isMobile: true,
     homeUrl: import.meta.env.VITE_SITE_URL,
-    authCode: currentUser?.authCode || 'demo',
-    balanceType: data
-  }
-  const res = await getCasinoStartUrl(payload)
-  isLoading.value = false
-  gameURL.value = res.url
+    authCode: currentUser?.authCode,
+    balanceType: "real",
+  };
+  const res = await getCasinoStartUrl(payload);
+  isLoading.value = false;
+  gameURL.value = res.url;
 }
 
-onMounted(() => {
-  emitter.on('setBalanceType', getCasinoURL)
-})
+onMounted(async () => {
+  await getCasinoURL()
+});
 </script>
 
 <style>

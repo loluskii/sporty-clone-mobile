@@ -29,8 +29,8 @@ export const brandDetails = {
     highlightTextColor: '#096B27'
   },
   fonts: {
-    primaryFont: 'Inter',
-    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+    primaryFont: 'Avenir',
+    primaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
     secondaryFont: 'Montserrat',
     secondaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
   },

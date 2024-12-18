@@ -81,7 +81,7 @@
         <router-link :to="{ name: 'casino-games' }">
           <img src="@/assets/images/games.png" width="16" height="16" alt="" srcset="" />
         </router-link>
-        <span class="label" data-cms-key="games">Games</span>
+        <span class="label" data-cms-key="games">Casino</span>
       </div>
       <div class="m-btn-button active">
         <router-link :to="{ name: 'open-bets' }">

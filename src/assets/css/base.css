@@ -1,9 +1,85 @@
+/* @import url('./fonts.css'); */
+
+:root {
+  /* Common Colors */
+  --brand-primary: #262262;
+  --brand-text-secondary: #fca311;
+  --brand-background-primary: #ffffff;
+  --brand-background-secondary: #E0E0F5;
+  --brand-primary-font-family: 'Montserrat';
+  --brand-text-secondary-font-family: 'Poppins';
+
+  /* Light Mode */
+  --light-text-primary: #353a45;
+  --light-text-secondary: #262262;
+  --light-text-tertiary: #fca311;
+  --light-background-primary: #f2f3f5;
+  --light-background-secondary: #fafafa;
+  --light-background-tertiary: #eaecef;
+
+  /* Text */
+  --brand-text-primary: #353a45;
+  --brand-text-secondary: #757575;
+  /* Added */
+  --brand-text-live: #f1f1f1;
+  --brand-text-error: #e41827;
+  --brand-text-success: #0d9737;
+
+  /* Buttons */
+  --brand-button-primary: #262262;
+  --brand-button-secondary: #fca311;
+  --brand-button-disabled: #9ca0ab;
+  --brand-button-border-radius: 4px;
+  --brand-button-outline-border: #262262;
+
+  /* Specific Section Styling */
+  --dark-section-background: #121212;
+  --dark-section-text-primary: #e0e0e0;
+  --dark-section-text-secondary: #b0b0b0;
+
+  /* Common Elements */
+  --brand-button-primary: var(--brand-primary);
+  --brand-button-secondary: var(--brand-text-secondary);
+  --brand-button-disabled: #9ca0ab;
+  --brand-button-border-radius: 4px;
+  --brand-button-outline-border: var(--brand-primary);
+
+  --brand-shadow-default: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --brand-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  --brand-spacing-small: 4px;
+  --brand-spacing-medium: 8px;
+  --brand-spacing-large: 16px;
+
+  --brand-transition-default: all 0.3s ease-in-out;
+
+  --brand-font-size-small: 12px;
+  --brand-font-size-medium: 16px;
+  --brand-font-size-large: 20px;
+
+  --brand-font-weight-regular: 400;
+  --brand-font-weight-bold: 700;
+
+  --brand-z-index-dropdown: 1000;
+  --brand-z-index-modal: 1050;
+  --brand-z-index-tooltip: 1070;
+
+  --brand-opacity-disabled: 0.5;
+  --brand-opacity-hover: 0.8;
+
+  --brand-border-type1: #eaecef;
+  --brand-border-type2: #f2f3f5;
+  --brand-border-type3: #dcdee5;
+
+
+  --brand-live-disabled: #ffffff1a;
+}
+
 * {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  line-height: 1.5rem;
   font-family:
     var(--brand-primary-font-family),
     sans-serif !important;

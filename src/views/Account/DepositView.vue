@@ -12,19 +12,21 @@
             class="m-tabs-tab"
             @click="setActiveTab(method.provider)"
           >
-            Deposit with <span style="text-transform: capitalize">{{ method.provider }}</span>
+            <span style="text-transform: capitalize">{{ method.provider === 'sbengine' ? 'Shop' : method.provider }}</span>
           </div>
         </div>
         <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
             <img
               src="@/assets/images/monnify.svg"
-              v-if="activeTab == 'monnify'"
+              v-show="activeTab == 'monnify'"
               alt=""
               style="height: 23px"
               srcset=""
             />
-            <img src="@/assets/images/paystack.png" v-else alt="" style="height: 30px" srcset="" />
+            <img src="@/assets/images/paystack.png" v-show="activeTab == 'paystack'" alt="" style="height: 30px" srcset="" />
+            <img src="@/assets/images/flutterwave.png" v-show="activeTab == 'flutterwave'" alt="" style="height: 30px" srcset="" />
+            <img src="@/assets/images/korapay.png" v-show="activeTab == 'korapay'" alt="" style="height: 30px" srcset="" />
             <br /><br />
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
@@ -105,7 +107,7 @@ const availableBonus = ref(null)
 const usersStore = useUsersStore()
 
 const balance = computed(() => {
-  return usersStore.balance
+  return parseFloat(usersStore.balance).toFixed(2)
 })
 
 const bonus = computed(() => {
