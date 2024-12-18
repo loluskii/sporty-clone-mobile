@@ -24,6 +24,7 @@ import TermsandConditions from '@/views/CMS/TermsandConditions.vue'
 import AboutUs from '@/views/CMS/AboutUs.vue'
 import PrivacyPolicy from '@/views/CMS/PrivacyPolicy.vue'
 import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
+import CMSPage from '@/views/CMS.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
 import GroupView from '@/views/Games/GroupView.vue'
@@ -275,24 +276,9 @@ export const router = createRouter({
       component: LoadBetView
     },
     {
-      path: '/CMS/AboutUs',
-      name: 'about-us',
-      component: AboutUs
-    },
-    {
-      path: '/CMS/TandC',
-      name: 't-and-c',
-      component: TermsandConditions
-    },
-    {
-      path: '/CMS/ResponsibleGaming',
-      name: 'responsible-gaming',
-      component: ResponsibleGaming
-    },
-    {
-      path: '/CMS/PrivacyPolicy',
-      name: 'privacy-policy',
-      component: PrivacyPolicy
+      path: '/CMS/:page',
+      name: 'cms-page',
+      component: CMSPage
     },
     // Catch-all route to redirect to home
     {

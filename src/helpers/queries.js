@@ -383,14 +383,6 @@ export const awardBonus = async (payload) => {
   )
 }
 
-export const AboutUs = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/about-us`))
-}
-
-export const ResponsibleGaming = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/responsible-gaming`))
-}
-
-export const TermsandConditions = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/terms-and-conditions`))
+export const getCMS = async (page) => {
+  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/${page}`))
 }
