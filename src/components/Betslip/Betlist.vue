@@ -204,16 +204,16 @@
 </template>
 
 <script setup>
-import BetListEvent from '@/components/BetListEvent.vue'
-import BetListStake from '@/components/BetListStake.vue'
-import BookBetModal from '@/components/BookBetModal.vue'
-import SuccessBet from '@/components/SuccessBet.vue'
+import BetListEvent from '@/components/Betslip/BetListEvent.vue'
+import BetListStake from '@/components/Betslip/BetListStake.vue'
+import BookBetModal from '@/components/Betslip/BookBetModal.vue'
+import SuccessBet from '@/components/Betslip/SuccessBet.vue'
 import { computed, ref, defineComponent, onMounted } from 'vue'
-import { useCouponStore, useUsersStore } from '../stores'
-import { formatNumber } from '../helpers'
-import emitter from '../plugins/emitter'
+import { useCouponStore, useUsersStore } from '../../stores'
+import { formatNumber } from '../../helpers'
+import emitter from '../../plugins/emitter'
 import BetlistBookingCode from './BetlistBookingCode.vue'
-import BetSettings from './Betslip/BetSettings.vue'
+import BetSettings from './BetSettings.vue'
 
 const emit = defineEmits(['toggle-betslip', 'update-betcount'])
 const couponStore = useCouponStore()
@@ -797,7 +797,7 @@ onMounted(() => {
 }
 .submit.real-theme {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
 }
@@ -877,7 +877,7 @@ onMounted(() => {
 }
 .button-wrap .flexibet-confirm-edit {
   background: #0d9737;
-  background: var(--brand-secondary);
+  background: var(--brand-text-secondary);
   border: none;
   border-radius: 0;
   -webkit-box-flex: 1;

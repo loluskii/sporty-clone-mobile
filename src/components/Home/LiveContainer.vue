@@ -107,7 +107,7 @@ const {
   isLoading,
   refetch
 } = useQuery('liveData', getLiveHighlights, {
-  refetchInterval: 60000 * 3, // 3 minutes in milliseconds
+  // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
   onError: (err) => {
     console.error(err)
   },
@@ -172,7 +172,7 @@ const filteredLiveData = computed(() => {
 const marketsGroup = computed(() => {
   let markets =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.markets.filter((market) => market.specifier === '')
+      ? completeLiveData.value?.markets
       : []
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]

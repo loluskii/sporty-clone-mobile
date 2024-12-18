@@ -36,37 +36,56 @@
       </div>
 
       <div class="x-table-cell m-market-cell">
-        <div class="m-market m-event-market-default">
+        <div class="m-market m-event-market-default" style="position: relative">
           <template v-if="outcomes && outcomes.length">
-            <template v-if="getOdds.length">
-              <LiveOdds
-                v-for="(odd, index) in uniqueOutcomes(getOdds)"
-                @click="addToBetslip(gameData, odd)"
-                :selectionClass="
-                  isSelected(
-                    createID(
-                      gameData.gameID,
-                      gameData.matchID,
-                      odd.outcomeName,
-                      odd.oddID,
-                      gameData.name
-                    ),
-                    couponStore.coupon
-                  )
-                    ? 'm-outcome--checked'
-                    : ''
-                "
-                :key="index"
-                :odds="odd.odds"
-              ></LiveOdds>
-            </template>
-            <EmptyOdds
-              v-for="(odd, index) in activeMarket.outcomes"
+            <div
+              v-if="activeMarket.specifier !== ''"
+              @click="toggleList"
+              class="m-outcome m-event-outcome-default specifiers-select"
+            >
+              <div tabindex="0" class="grid-specifier-select">
+                <div class="grid-specifier-select-label">{{ activeSpecifier }}</div>
+                <div class="grid-specifier-select-icon">
+                  <em class="icon">^</em>
+                </div>
+              </div>
+            </div>
+            <div
+              class="af-select-list m-event-specifiers-order"
+              v-if="specifierOpen"
+              :class="'af-select-list-' + gameData.matchID"
+              style="width: 71px; opacity: 1; position: absolute; top: 37px; left: 0"
+            >
+              <span
+                class="af-select-item"
+                @click="setActiveSpecifier(item)"
+                v-for="(item, i) in getSpecifiers"
+                :key="i"
+                >{{ item.value }}</span
+              >
+            </div>
+            <LiveOdds
+              v-for="(odd, index) in uniqueOutcomes(outcomes)"
+              @click="addToBetslip(gameData, odd)"
+              :selectionClass="
+                isSelected(
+                  createID(
+                    gameData.gameID,
+                    gameData.matchID,
+                    odd.outcomeName,
+                    odd.oddID,
+                    gameData.name
+                  ),
+                  couponStore.coupon
+                )
+                  ? 'm-outcome--checked'
+                  : ''
+              "
               :key="index"
-              v-else-if="!getOdds.length && activeMarket.length"
-            ></EmptyOdds>
-            <EmptyOdds v-else></EmptyOdds>
+              :odds="odd"
+            ></LiveOdds>
           </template>
+          <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index" v-else></EmptyOdds>
         </div>
       </div>
     </div>
@@ -80,7 +99,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import LiveOdds from './LiveOdds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
-import { slugify, createID, isSelected } from '@/helpers'
+import { sortArr, createID, isSelected } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 
@@ -91,26 +110,86 @@ const props = defineProps({
   activeMarket: Object
 })
 
+const activeSpecifier = ref()
+const specifierOpen = ref(false)
+
 const scores = ref()
 const outcomes = ref([])
 
-const getOdds = computed(() => {
-  if (outcomes.value) {
-    // Find and return the odds based on marketID and outcomeID
-    const odds = outcomes.value.filter((o) => o.marketID == props.activeMarket.marketID)
-    return odds.sort((a, b) => a.outcomeID - b.outcomeID)
+const getOdds = () => {
+  if (props.activeMarket && props.gameData.activeMarkets > 0) {
+    if (props.gameData.outcomes) {
+      // Find and return the odds based on marketID and outcomeID
+      const odds = props.gameData.outcomes
+      let filtered = odds.filter((item) => item.marketID == props.activeMarket.marketID)
+      let uniqueFiltered = uniqueOutcomes(filtered)
+      console.log(uniqueFiltered)
+      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+        let defaultSpecifier = uniqueFiltered[0]?.specifier
+        if (defaultSpecifier) {
+          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
+          activeSpecifier.value = defaultSpecifier.split('=')[1]
+        }
+      }
+      if (uniqueFiltered.length) {
+        // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
+        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+      } else {
+        outcomes.value = []
+      }
+    }
+  }
+}
+
+const getSpecifiers = computed(() => {
+  if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+    const result = []
+
+    const outcomes = props.gameData.outcomes
+    if (outcomes.length > 0) {
+      const filtered = outcomes.filter(
+        (item) => item.marketID === parseInt(props.activeMarket.marketID)
+      )
+
+      let uniqueFiltered = uniqueOutcomes(filtered)
+
+      uniqueFiltered.forEach((outcome) => {
+        let specifier = outcome.specifier
+        let found = result.find((item) => item.specifier === specifier)
+        if (!found)
+          // check if specifier has been listed
+          result.push({ specifier, value: specifier.split('=')[1] }) //push value to array
+      })
+    }
+    return result.sort((a, b) => a.value - b.value)
   } else {
     return []
   }
 })
 
-const uniqueOutcomes = (outcomes) => {
-  let x = outcomes.filter(
-    (outcome, index, self) =>
-      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
-  );
-  return x;
-};
+// set active specifier value
+const setActiveSpecifier = (spec) => {
+  if (props.gameData.outcomes) {
+    // console.log(spec)
+    const odds = props.gameData.outcomes
+    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+    if (filtered) {
+      let uniqueFiltered = uniqueOutcomes(filtered)
+      uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
+      console.log(uniqueFiltered)
+      outcomes.value = uniqueFiltered
+      activeSpecifier.value = spec.value
+      toggleList()
+    }
+    // filtered = filtered.filter((item) => item.specifier === spec.specifier)
+  } else {
+    console.log('sdfdf')
+  }
+}
+
+const toggleList = () => {
+  specifierOpen.value = !specifierOpen.value
+}
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
@@ -128,17 +207,25 @@ function addToBetslip(event, odd) {
     event_id: event.gameID,
     specifier: props.activeMarket.specifier
   }
-
   // return couponStore.addToCoupon(data)
 
   const existsInBetslip = isSelected(id, couponStore.coupon)
   return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
 }
 
+const uniqueOutcomes = (outcomes) => {
+  let x = outcomes.filter(
+    (outcome, index, self) =>
+      index ===
+      self.findIndex((o) => o.outcomeID == outcome.outcomeID && o.specifier == outcome.specifier)
+  )
+  return x
+}
+
 watch(
-  () => props.gameData,
+  [() => props.activeMarket, () => props.gameData.outcomes],
   () => {
-    outcomes.value = props.gameData.outcomes || []
+    getOdds()
   },
   { immediate: true }
 )
@@ -150,6 +237,7 @@ onMounted(() => {
   }
 
   outcomes.value = props.gameData.outcomes || []
+  getOdds()
 
   emitter.on(`odds-change-${props.gameData.matchID}`, (data) => {
     // console.log(`received odds change for ${data?.match_id}`, data.markets);

@@ -2,7 +2,7 @@
   <div class="m-nav-secondary withHome">
     <div class="m-nav-left">
       <!-- <span @click="$router.go(-1)" class="m-icon m-icon--back"></span> -->
-      <span class="title"> {{ brandName }} Games </span>
+      <span class="title"> {{ brandName }} Casino </span>
     </div>
     <div class="info-container">
       <div class="m-nav-right">

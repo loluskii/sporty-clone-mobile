@@ -25,21 +25,26 @@
         <div style="position: relative"></div>
         <div class="m-tab-navs-wrap">
           <ul class="m-tab-navs">
-            <li class="m-nav-item active">
+            <li
+              class="m-nav-item"
+              @click="isH2HShowing = false"
+              :class="isH2HShowing ? '' : 'active'"
+            >
               <i class="m-icon m-icon-market"></i>
               <span class="m-text">Markets</span>
             </li>
-            <li class="m-nav-item" @click="showFixtureAnalysis(eventDetail.matchID)">
+            <li
+              class="m-nav-item"
+              :class="!isH2HShowing ? '' : 'active'"
+              @click="showFixtureAnalysis(eventDetail.matchID)"
+            >
               <i class="m-icon m-icon-stat"></i>
               <span class="m-text">Stats</span>
             </li>
           </ul>
         </div>
-        <div class="m-sub-tab">
-          <div
-            v-if="eventDetail.statusCode === 0"
-            class="m-market-group pre-match event-detail"
-          >
+        <div v-show="!isH2HShowing" class="m-sub-tab">
+          <div v-if="eventDetail.statusCode === 0" class="m-market-group pre-match event-detail">
             <div class="m-sport-market">
               <div
                 v-for="(marketGroup, index) in groupedMarkets"
@@ -220,6 +225,11 @@
             </div>
           </div>
         </div>
+        <div v-show="isH2HShowing" class="m-sub-tab">
+          <div class="m-h2h">
+            <div id="sr-widget"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -231,47 +241,47 @@
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { defineComponent, watch, ref } from "vue";
-import { useRoute } from "vue-router";
-import { getFixtureMarkets, chunks, formatDate, createID, isSelected } from "@/helpers";
+import HeaderOther from '@/components/HeaderOther.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { defineComponent, watch, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { getFixtureMarkets, chunks, formatDate, createID, isSelected } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from "@/components/ErrorDialogue.vue";
 import { useCouponStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 
-const eventMarkets = ref();
-const eventDetail = ref();
-const groupedMarkets = ref([]);
-const isLoading = ref(false);
-const route = useRoute();
-const errorMessage = ref();
-const couponStore = useCouponStore();
-const homeTeam = ref();
-const awayTeam = ref();
+const eventMarkets = ref()
+const eventDetail = ref()
+const groupedMarkets = ref([])
+const isLoading = ref(false)
+const route = useRoute()
+const errorMessage = ref()
+const couponStore = useCouponStore()
+const homeTeam = ref()
+const awayTeam = ref()
+const isH2HShowing = ref(false)
 
 watch(
-  () => route.params.event_id,
-  async (provider_id) => {
-    // Check which route is matched and handle accordingly
-    // fetch event markets with event id
-    await getEventDetail(provider_id);
+  () => [route.params.event_id, route.name],
+  async ([event_id, route_name]) => {
+    if (route_name === 'fixtures-detail') {
+      await getEventDetail(event_id)
+    }
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-);
+  { immediate: true }
+)
 
 async function getEventDetail(id) {
   isLoading.value = true;
   try {
     const res = await getFixtureMarkets(id);
     if (Object.keys(res).length && res.markets) {
-      eventDetail.value = res;
-      eventMarkets.value = res.markets;
-      groupedMarkets.value = groupByMarketID(res.markets);
-      homeTeam.value = res.competitor1;
-      awayTeam.value = res.competitor2;
-      isLoading.value = false;
+      eventDetail.value = res
+      eventMarkets.value = res.markets
+      groupedMarkets.value = groupByMarketID(res.markets)
+      homeTeam.value = res.competitor1
+      awayTeam.value = res.competitor2
     } else {
       emitter.emit("showErrorMessage", {
         message: "This event is no longer available",
@@ -279,10 +289,13 @@ async function getEventDetail(id) {
       });
     }
   } catch (error) {
-    eventDetail.value = null;
-    // errorMessage.value = res.message
-    console.log(error);
-    isLoading.value = false;
+    eventDetail.value = null
+    emitter.emit('showErrorMessage', {
+      message: error.message || 'Failed to load event details',
+      next_route: 'home'
+    })
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -425,16 +438,35 @@ function addToBetslip(market, outcome) {
     : couponStore.addToCoupon(data);
 }
 
-function showFixtureAnalysis(id) {
-  return window.open(
-    `https://s5.sir.sportradar.com/betradar/en/match/${id}`,
-    "stats",
-    "width=1078,height=768"
-  );
+const showFixtureAnalysis = (id, widgetName = 'headToHead.standalone') => {
+  isH2HShowing.value = true
+  const statWrapper = document.getElementById('sr-widget')
+  window.SIR('addWidget', '#sr-widget', 'headToHead.standalone', {
+    gamePulseBtnEnable: true,
+    matchId: `${eventDetail.value.matchID}`
+  })
 }
+
 defineComponent({
-  name: "fixture-detail",
-});
+  name: 'fixture-detail'
+})
+
+onMounted(() => {
+  let script = document.createElement('script')
+  script.text = `
+    (function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,
+    g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h)
+    )})(window,document,"script", "https://widgets.sir.sportradar.com/9a7545262c211f21e8cdaf98d9b86856/widgetloader", "SIR", {
+        theme: false, // using custom theme
+        language: "en"
+    });
+    `
+  // // script.type = 'text/javascript';
+  // script.id = 'sr-tracker'
+  // // script.src = 'https://widgets.sir.sportradar.com/sportradar/widgetloader';
+
+  document.body.appendChild(script)
+})
 </script>
 
 <style scoped>
