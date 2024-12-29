@@ -18,7 +18,10 @@
                 {{ selection.outcomeName }}
               </div>
               <div class="m-outcome-odds">
-                {{ getSelectionOdds(selection.odds) }}
+                <span v-if="!selectionIsExpired"
+                  >{{ getSelectionOdds(selection.odds) }}
+                </span>
+                <div class="m-outcome-suspended" v-else>Unavailable</div>
               </div>
             </div>
             <div class="m-vs-wrapper">
@@ -27,7 +30,7 @@
             </div>
             <div class="m-market-desc-wrapper">
               <div class="m-market-desc">{{ selection.marketName }}</div>
-              <div class="m-outcome-suspended" v-if="selectionIsExpired">Unavailable</div>
+
               <span
                 tabindex="0"
                 class="m-keybord-input"
@@ -52,11 +55,11 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useCouponStore, useUtilstStore } from '../../stores'
-import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
-import emitter from '@/plugins/emitter'
+import { defineProps, defineEmits, computed, ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCouponStore, useUtilstStore } from "../../stores";
+import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
+import emitter from "@/plugins/emitter";
 
 const couponStore = useCouponStore();
 const utilsStore = useUtilstStore();
@@ -116,7 +119,7 @@ const getSelectionOdds = (odds) => {
 };
 
 async function removeSelection() {
-  await couponStore.removeSelection(props.selection.selectionId);
+  await couponStore.removeSelection(props.selection.selectionId || props.selection.id);
 }
 
 function handleStakeChange(stake) {

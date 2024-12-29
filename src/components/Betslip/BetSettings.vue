@@ -109,7 +109,7 @@ const acceptChanges = computed(() => {
   return couponStore.coupon.acceptChanges
 })
 </script>
-<style>
+<style scoped>
 .popup-modal {
   background-color: rgba(0, 0, 0, 0.7);
   height: 100%;

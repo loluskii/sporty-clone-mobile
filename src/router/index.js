@@ -28,6 +28,7 @@ import Search from '../views/Games/SearchView.vue'
 
 import GamesView from '@/views/Games/GamesView.vue'
 import PlayView from '@/views/Games/PlayView.vue'
+import CodeHubView from '@/views/CodeHubView.vue'
 
 
 export const router = createRouter({
@@ -270,6 +271,12 @@ export const router = createRouter({
       path: '/LoadBet',
       name: 'load-bet',
       component: LoadBetView
+    },
+    // Load Bet
+    {
+      path: '/CodeHub',
+      name: 'code-hub',
+      component: CodeHubView
     },
     {
       path: '/CMS/:page',
