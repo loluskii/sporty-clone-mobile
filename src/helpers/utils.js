@@ -590,3 +590,39 @@ export const getDateRange = (period) => {
     endDate: endDate.format('YYYY-MM-DD')
   }
 }
+
+
+
+export function debounce(func, delay = 300) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}
+
+export const getNext7Days = () => {
+  const today = new Date();
+  const dateRanges = [];
+
+  for (let i = 0; i <= 7; i++) {
+    const nextDate = new Date(today);
+    nextDate.setDate(today.getDate() + i);
+    const formattedDate = nextDate.toISOString().split('T')[0]; // Format: yyyy-mm-dd
+    dateRanges.push(formattedDate);
+  }
+
+  return dateRanges;
+};
+
+
+export const getStartAndEndOfMonth = () => {
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); // First day of the month
+  const formattedStartDate = startOfMonth.toISOString().split('T')[0]; // Format: yyyy-mm-dd
+  const formattedEndDate = today.toISOString().split('T')[0]; // Today's date in yyyy-mm-dd format
+
+  return { startDate: formattedStartDate, endDate: formattedEndDate };
+};

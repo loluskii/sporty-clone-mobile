@@ -21,6 +21,32 @@
         </a>
       </div>
     </div>
+    <div v-if="dialogIsBetslip" class="es-dialog m-dialog">
+      <div class="es-dialog-body m-dialog-body">
+        <div class="es-dialog-main m-dialog-main" style="height: auto">
+          <div>
+            You have items in Betslip. Are you sure to replace Betslip with this new
+            selections?
+          </div>
+        </div>
+      </div>
+      <div class="m-dialog-footer es-dialog-footer">
+        <a
+          href="javascript:void(0);"
+          @click.prevent="$emit('hide-dialogue')"
+          class="es-dialog-btn es-dialog-focus-btn"
+        >
+          <span>Cancel</span>
+        </a>
+        <a
+          href="javascript:void(0);"
+          @click.prevent="replaceBetslip"
+          class="es-dialog-btn es-dialog-focus-btn"
+        >
+          <span>OK</span>
+        </a>
+      </div>
+    </div>
     <WithdrawalModal
       v-if="dialogIsWithdrawal"
       @close-modal="$emit('hide-dialogue')"
@@ -29,7 +55,14 @@
     <div
       v-if="dialogIsToast"
       class="es-dialog-toast es-dialog m-dialog"
-      style="z-index: 1003; position: fixed; width: 22.91rem; left: 50%; top: 50%; padding: 0"
+      style="
+        z-index: 1003;
+        position: fixed;
+        width: 22.91rem;
+        left: 50%;
+        top: 50%;
+        padding: 0;
+      "
     >
       <div class="es-dialog-body m-dialog-body">
         <div class="es-dialog-main m-dialog-main" style="height: auto">
@@ -41,61 +74,87 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, ref } from 'vue'
-import WithdrawalModal from '@/components/WithdrawalModal.vue'
-import { useRouter } from 'vue-router'
+import { defineProps, onMounted, ref } from "vue";
+import WithdrawalModal from "@/components/WithdrawalModal.vue";
+import { useRouter } from "vue-router";
+import { useCouponStore } from "../stores";
+import emitter from "@/plugins/emitter";
 
-const emits = defineEmits(['hide-dialogue'])
+const emits = defineEmits(["hide-dialogue"]);
 const props = defineProps({
   errorMessage: String,
   dialogueMessage: Object,
   dialogueType: String,
-  nextRoute: String
-})
+  nextRoute: String,
+});
 
-const dialogIsError = ref(false)
-const dialogIsWithdrawal = ref(false)
-const dialogIsToast = ref(false)
-const router = useRouter()
+const dialogIsError = ref(false);
+const dialogIsWithdrawal = ref(false);
+const dialogIsToast = ref(false);
+const dialogIsBetslip = ref(false);
+const router = useRouter();
+const couponStore = useCouponStore();
 
 const dialogueType = () => {
   switch (props.dialogueType) {
-    case 'error':
-      dialogIsError.value = true
-      break
-    case 'withdrawal':
-      dialogIsWithdrawal.value = true
-      break
-    case 'toaster':
-      dialogIsToast.value = true
-      break
+    case "error":
+      dialogIsError.value = true;
+      break;
+    case "withdrawal":
+      dialogIsWithdrawal.value = true;
+      break;
+    case "toaster":
+      dialogIsToast.value = true;
+      break;
+    case "betslip":
+      dialogIsBetslip.value = true;
+      break;
 
     default:
-      break
+      break;
+  }
+};
+
+function nextAction() {
+  emits("hide-dialogue");
+  if (props.nextRoute !== null || props.nextRoute !== undefined) {
+    return router.push(props.nextRoute);
   }
 }
 
-function nextAction() {
-  emits('hide-dialogue')
-  if (props.nextRoute !== null || props.nextRoute !== undefined) {
-    return router.push(props.nextRoute)
-  }
+function replaceBetslip() {
+  try {
+    emits('hide-dialogue')
+    couponStore.clearBetslip();
+    couponStore.coupon.selections = props.dialogueMessage.selections;
+    couponStore.coupon.totalOdds = parseFloat(props.dialogueMessage.totalOdd);
+    couponStore.coupon.totalStake = parseFloat(props.dialogueMessage.stake);
+    couponStore.coupon.stake = parseFloat(props.dialogueMessage.stake);
+    couponStore.coupon.maxWin = parseFloat(props.dialogueMessage.possibleWin);
+    couponStore.coupon.source = props.dialogueMessage.source;
+    if (props.dialogueMessage.selections.length === 1) {
+      couponStore.coupon.bet_type = "Single";
+      couponStore.coupon.betslip_type = "Single";
+    } else {
+      couponStore.coupon.bet_type = "Multiple";
+      couponStore.coupon.betslip_type = "Multiple";
+    }
+    emitter.emit("openBetslip");
+  } catch (error) {}
 }
 
 onMounted(() => {
-  dialogueType()
-})
+  dialogueType();
+});
 </script>
 
 <style>
 .es-dialog {
   background-color: #fafafa;
   border-radius: 0.3rem;
-  box-shadow:
-    0 0 24px 0 rgba(0, 0, 0, 0.25),
-    0 0 24px 0 rgba(112, 76, 76, 0.25);
+  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25), 0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
-  font-family: 'Roboto', 'Microsoft Yahei', 'simsun';
+  font-family: "Roboto", "Microsoft Yahei", "simsun";
   font-size: 1rem;
   line-height: 2rem;
   overflow: hidden;
@@ -118,8 +177,8 @@ onMounted(() => {
   font-size: 0;
 }
 .es-dialog-close em::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -180,7 +239,7 @@ onMounted(() => {
 }
 .es-dialog .es-dialog-head .es-dialog-close {
   background: none;
-  font-family: 'Microsoft YaHei', arial, simsun, SimHei;
+  font-family: "Microsoft YaHei", arial, simsun, SimHei;
   position: absolute;
   right: 5px;
   top: 1px;
@@ -229,31 +288,10 @@ onMounted(() => {
   width: 30%;
 }
 .es-dialog.es-ani-show {
-  -webkit-transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
+  -webkit-transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s, -webkit-transform 3s;
 }
 .es-dialog.es-ani-hide {
   -webkit-transition: all 0.3s linear;

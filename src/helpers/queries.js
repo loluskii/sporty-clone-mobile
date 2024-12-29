@@ -94,8 +94,12 @@ export const getTopBets = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/sports/${CLIENT_ID}/top-bets`))
 }
 
+export const getCodeHubItems = async (data) => {
+  return parseData(fetchWrapper.post(`https://sports.api.sportsbookengine.com/api/v2/bets/1/codehub/tickets`, data))
+}
+
 export const getSportsMenu = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`))
+  return parseData(fetchWrapper.get(`https://sports.api.sportsbookengine.com/api/v2/sports/menu?timeoffset=${sign}${offsetHours}`))
 }
 
 export const getCategoriesBySport = async (sportID, period) => {

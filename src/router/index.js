@@ -25,7 +25,7 @@ import BonusView from '@/views/Account/BonusView.vue'
 import CMSPage from '@/views/CMS.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
-
+import CodeHubView from '@/views/CodeHubView.vue'
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   linkActiveClass: 'x-active',
@@ -226,6 +226,12 @@ export const router = createRouter({
       path: '/LoadBet',
       name: 'load-bet',
       component: LoadBetView
+    },
+    // Load Bet
+    {
+      path: '/CodeHub',
+      name: 'code-hub',
+      component: import CodeHubView from '@/views/CodeHubView.vue'
     },
     {
       path: '/CMS/:page',

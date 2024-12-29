@@ -59,74 +59,78 @@
 
 <script setup>
 const props = defineProps({
-  betDetails: Object
-})
+  betDetails: Object,
+});
 
-const emit = defineEmits(['hide-modal'])
+const emit = defineEmits(["hide-modal"]);
 
 function hideModal(e) {
-  if (e && e.target.classList.contains('booking-code')) {
-    emit('hide-modal')
+  if (e && e.target.classList.contains("booking-code")) {
+    emit("hide-modal");
   }
 }
 
 function copyBookingCode() {
-  const textToCopy = props.betDetails.data.betslipId
-  const textarea = document.createElement('textarea')
-  textarea.value = textToCopy
-  document.body.appendChild(textarea)
-  textarea.select()
+  const textToCopy = props.betDetails.data.betslipId;
+  const textarea = document.createElement("textarea");
+  textarea.value = textToCopy;
+  document.body.appendChild(textarea);
+  textarea.select();
 
   try {
-    navigator.clipboard.writeText(textToCopy)
-    alert('Copied!')
-    emit('hide-modal')
+    navigator.clipboard.writeText(textToCopy);
+    alert("Copied!");
+    emit("hide-modal");
   } catch (err) {
-    console.error('Unable to copy to clipboard', err)
+    console.error("Unable to copy to clipboard", err);
   }
 }
 
 function copyToClipboard() {
-  const textToCopy = `${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
-  const textarea = document.createElement('textarea')
-  textarea.value = textToCopy
-  document.body.appendChild(textarea)
-  textarea.select()
+  const textToCopy = `${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`;
+  const textarea = document.createElement("textarea");
+  textarea.value = textToCopy;
+  document.body.appendChild(textarea);
+  textarea.select();
 
   try {
-    navigator.clipboard.writeText(textToCopy)
+    navigator.clipboard.writeText(textToCopy);
   } catch (err) {
-    console.error('Unable to copy to clipboard', err)
+    console.error("Unable to copy to clipboard", err);
   }
 }
 
 function redirectToPlatform(platform) {
-  let message = `Hey I just placed on Cubetbet! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
+  let message = `Hey I just placed on Cubetbet! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`;
   switch (platform) {
-    case 'whatsapp':
-      return window.open('https://wa.me/?text=' + encodeURIComponent(message))
-    case 'x':
-      return window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(message))
-    case 'facebook':
+    case "whatsapp":
+      return window.open("https://wa.me/?text=" + encodeURIComponent(message));
+    case "x":
       return window.open(
-        'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(message)
-      )
+        "https://x.com/intent/tweet?text=" + encodeURIComponent(message)
+      );
+    case "facebook":
+      return window.open(
+        "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(message)
+      );
   }
 }
 </script>
 
 <style>
 .booking-code {
+  background-color: rgba(0, 0, 0, 0.7);
   bottom: 0;
-  color: #1b1e25;
-  color: var(--text-type1-tertiary);
   height: 100%;
   left: 0;
   overflow: auto;
   position: absolute;
+  position: fixed;
   text-align: center;
   width: 100%;
-  z-index: 23;
+  z-index: 1000;
+  color: #1b1e25;
+  color: var(--text-type1-tertiary);
 }
 .booking-code .invisiable-item {
   left: 300vw;
@@ -138,8 +142,8 @@ function redirectToPlatform(platform) {
   display: inline-block;
 }
 .booking-code .m-holding-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -274,7 +278,11 @@ function redirectToPlatform(platform) {
   justify-content: space-between;
   padding: 0 32px;
 }
-.booking-code .booking-code-int .booking-code-desc .booking-code-desc-content .desc-content {
+.booking-code
+  .booking-code-int
+  .booking-code-desc
+  .booking-code-desc-content
+  .desc-content {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;

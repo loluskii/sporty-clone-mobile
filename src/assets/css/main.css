@@ -1,3 +1,87 @@
+.dialog-mask {
+  background-color: #353A45;
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  overflow: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+.dialog-mask .dialog-wrapper {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  position: relative;
+  width: 100%;
+}
+.dialog-mask .dialog-container {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  max-height: 100%;
+  overflow: auto;
+  width: 100%;
+}
+.dialog-mask .dialog-container::-webkit-scrollbar {
+  width: 3px;
+}
+.dialog-mask .dialog-container::-webkit-scrollbar-track {
+  background: #F2F3F5;
+}
+.dialog-mask .dialog-container::-webkit-scrollbar-thumb {
+  background: #9CA0AB;
+}
+.dialog-mask .dialog-container::-webkit-scrollbar-thumb:hover {
+  background: #353A45;
+}
+.fade-enter-active,
+.fade-leave-active {
+  -webkit-transition: opacity 0.2s;
+  transition: opacity 0.2s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+.slide-enter-active,
+.slide-leave-active {
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: -webkit-transform 0.2s;
+  transition: transform 0.2s;
+  transition: transform 0.2s, -webkit-transform 0.2s;
+}
+.slide-enter,
+.slide-leave-to {
+  -webkit-transform: translateY(100%);
+      -ms-transform: translateY(100%);
+          transform: translateY(100%);
+}
+.slide-enter-to,
+.slide-leave {
+  -webkit-transform: translateY(0);
+      -ms-transform: translateY(0);
+          transform: translateY(0);
+}
+
+
 .x-table {
   display: block;
   width: 100%;
@@ -1620,4 +1704,59 @@
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   width: 24%;
+}
+
+/*  */
+.button {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 700;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  padding: 0 1rem;
+}
+.loading-button-container {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+}
+.loading-button-container .loading-button-click-area {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+.loading-button-container .hide-title {
+  visibility: hidden;
+}
+.loading-button-container .loading-icon-container {
+  left: calc(50% - 12px / 2);
+  position: absolute;
+  top: calc(50% - 12px / 2);
+}
+.loading-button-container .loading-icon {
+  -webkit-animation: 1s linear 0s infinite circles;
+          animation: 1s linear 0s infinite circles;
+}
+.loading-button-container span {
+  line-height: 1.1rem;
+  overflow: hidden;
 }

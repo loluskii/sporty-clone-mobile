@@ -193,12 +193,14 @@ export const useCouponStore = defineStore({
       const globalVars = this.SportsbookGlobalVariable
 
       const res = this.coupon.selections ? [...this.coupon.selections] : []
-      const data = res.find((item) => item.selectionId === id)
+      const data = res.find((item) => item.selectionId === id || item.id === id);
 
       const bonusList = this.sportsbookBonusList
       //
       // get the new selections
-      const newSelection = this.coupon.selections.filter((item) => item.selectionId !== id)
+      const newSelection = this.coupon.selections.filter(
+        (item) => item.selectionId !== id && item.id !== id
+      );
 
       this.coupon.selections = newSelection
 
