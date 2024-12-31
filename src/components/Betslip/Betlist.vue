@@ -677,7 +677,7 @@ onMounted(() => {
   max-height: 0%;
 }
 #betslip-container .m-betslips-show {
-  max-height: calc(100% - 15rem);
+  max-height: calc(100% - 5rem);
 }
 #betslip-container .sim-selection-empty-panel {
   background-color: #f2f3f5;

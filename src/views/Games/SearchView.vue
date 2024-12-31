@@ -136,7 +136,8 @@ const searchEmtpyResult = computed(() => {
 });
 
 const getImagePath = (game) => {
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`;
+  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.toLowerCase()}.png?alt=media`;
 };
 
 async function redirectToGamePlay(game) {
