@@ -229,7 +229,7 @@ footer .hr {
   -ms-flex-pack: center;
   justify-content: center;
   margin-bottom: 1.33333333rem;
-  padding: 0 1.33333333rem;
+   padding: 0 1.33333333rem;
 }
 footer .hr::before {
   background-color: #35465a;
