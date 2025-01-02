@@ -86,7 +86,7 @@ const getImageSrc = (slug) => {
 
 const getImagePath = (game) => {
   // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.toLowerCase()}.png?alt=media`;
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
 };
 
 async function redirectToGamePlay(game) {
