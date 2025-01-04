@@ -17,6 +17,7 @@ import {
   // bookBet2,
   CLIENT_ID
 } from '@/helpers'
+import { bookBet2 } from '../helpers/queries'
 
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
@@ -457,7 +458,7 @@ export const useCouponStore = defineStore({
       } else if (type == 'book') {
         try {
           coupondata.isBooking = 1
-          const res = await placeBet2(coupondata)
+          const res = await bookBet2(coupondata)
           this.isBetslipLoading = false
           return res
         } catch (error) {

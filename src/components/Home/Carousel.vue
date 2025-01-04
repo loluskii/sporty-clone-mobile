@@ -42,7 +42,9 @@ function nextSlide() {
 }
 
 function goToSlide(image) {
-  window.location.href = image.link
+  if (image.link) {
+    window.location.href = image.link
+  }
 }
 
 onMounted(async () => {
