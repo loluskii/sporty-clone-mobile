@@ -378,11 +378,3 @@ export const awardBonus = async (payload) => {
 export const getCMS = async (page) => {
   return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/${page}`))
 }
-
-export const PrivacyPolicy = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/privacy-policy`))
-}
-
-export const AccountDeletion = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/account-deletion`))
-}

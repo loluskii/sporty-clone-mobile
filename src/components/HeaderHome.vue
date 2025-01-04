@@ -5,7 +5,7 @@
       <header class="mobile-navbar">
         <div class="navbar-wraper">
           <a href="/" class="mobile-navbar-logo">
-            <img src="/default.png" alt="" />
+            <img src="@/assets/images/logo-white.png" alt="" />
           </a>
           <div class="mobile-navbar-right">
             <span class="x-icon-search" @click="$router.push({ name: 'search' })"></span>

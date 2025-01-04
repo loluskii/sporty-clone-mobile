@@ -132,7 +132,7 @@
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                color="#0D9737"
+                color="#fca311"
                 class="svg-icon-base"
                 style="height: 1.66667rem; width: 1.66667rem"
               >
@@ -631,7 +631,7 @@ onMounted(async () => {
   color: var(--c-prematch-sport-item-text);
 }
 .featured-nav-item .feature-nav-span.active {
-  color: #0d9737;
+  color: var(--brand-secondary);
   font-weight: bold;
 }
 .featured-active {

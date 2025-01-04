@@ -238,11 +238,6 @@ export const router = createRouter({
       name: 'cms-page',
       component: CMSPage
     },
-    {
-      path: '/CMS/AccountDeletion',
-      name: 'account-deletion',
-      component: AccountDeletion
-    },
     // Catch-all route to redirect to home
     {
       path: '/:pathMatch(.*)*', // Catch-all pattern

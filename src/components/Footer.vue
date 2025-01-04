@@ -55,11 +55,11 @@
       </h5>
     </div>
     <div class="t_c-about_us">
-      <h5 class="underline" @click="$router.push({ name: 'privacy-policy' })">
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'privacy-policy' } })">
         Privacy &amp; Policy
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'account-deletion' })">
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'account-deletion' } })">
         Account Deletion
       </h5>
     </div>
