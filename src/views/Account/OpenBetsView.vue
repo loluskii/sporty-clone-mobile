@@ -149,6 +149,11 @@
                             {{ event.marketName }}
                           </span>
                         </div>
+                        <div v-if="event.matchStatus !== 'Not started' && event.matchStatuss !== 'Ended'">
+                          <span class="bg-green-200 p-1">Live Odds</span>
+                          <span class="m-l-5" style="font-weight: bold;">{{ event.currentOdds.toFixed(2) }}</span>
+
+                        </div>
                         <div
                           @click="
                             $router.push({
@@ -167,11 +172,19 @@
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div data-v-f5461f3c="" class="m-score">
+                        <div v-if="event.matchStatus === 'Not started'" data-v-f5461f3c="" class="m-score">
                           <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
                           <span data-v-f5461f3c="" class="m-t-12"></span>
+                        </div>
+                        <div v-else data-v-f5461f3c="" class="m-score">
+                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                            {{ event.matchStatus === 'Ended' ? 'FT' : event.eventTime }}'
+                          </span>
+                          <span data-v-f5461f3c="" class="m-t-12 m-l-12" style="margin-left: 10px;">
+                            {{ event.score }}
+                          </span>
                         </div>
                       </div>
                     </li>
