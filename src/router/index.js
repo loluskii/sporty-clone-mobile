@@ -231,7 +231,7 @@ export const router = createRouter({
     {
       path: '/CodeHub',
       name: 'code-hub',
-      component: import CodeHubView from '@/views/CodeHubView.vue'
+      component:  CodeHubView
     },
     {
       path: '/CMS/:page',

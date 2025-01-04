@@ -47,7 +47,6 @@ const bookBetResponse = ref(null);
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
 //   return specificPages.includes(route.path)
 // })
-
 function toggleBetslip() {
   showBetslip.value = !showBetslip.value;
   if (showBetslip.value) {
@@ -68,7 +67,7 @@ function handleError(error) {
   dialogueType.value = "error";
 }
 
-function handleBetslipConfirmation(data){
+function handleBetslipConfirmation(data) {
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "betslip";
@@ -228,50 +227,6 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
-function updateBetslip(eventMessage, event_type) {
-  const matchIdFromEvent = eventMessage.match_id;
-  // Find the selection with the matching match_id in the betslip
-  const selection = couponStore.coupon.selections.find(
-    (sel) => sel.matchId === matchIdFromEvent
-  );
-
-  // If a matching selection is found
-  if (selection) {
-    // Handle bet_stop event
-    if (event_type === "bet_stop") {
-      selection.suspended = true;
-    }
-
-    // Handle odds_change event
-    if (event_type === "odds_change") {
-      couponStore.coupon.acceptChanges = false;
-      selection.suspended = false;
-      selection.changed = true;
-
-      const market = eventMessage.markets.find(
-        (m) => m.id === selection.marketId && m.specifiers === selection.specifier
-      );
-
-      if (market && market.outcomes) {
-        let newOutcome = market.outcomes.find(
-          (m) => m.id === selection.outcomeId && m.specifier === selection.specifier
-        );
-
-        selection.odds = newOutcome.odds;
-        selection.suspended = !newOutcome.active;
-        couponStore.updateWinnings({
-          stake: couponStore.coupon.totalStake,
-          id: selection.selectionId,
-        });
-      } else {
-        selection.suspended = true;
-        selection.unavailable = true;
-        selection.odds = 0;
-      }
-    }
-  }
-}
-
 onMounted(async () => {
   // connect to mqtt
   initMqtt();
@@ -284,7 +239,7 @@ onMounted(async () => {
     // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
-        console.log(res[2]);
+        // console.log(res[2])
       })
       .catch(() => {
         isLoading.value = false;
