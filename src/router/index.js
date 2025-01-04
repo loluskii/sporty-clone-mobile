@@ -22,14 +22,10 @@ import DepositView from '@/views/Account/DepositView.vue'
 import VerifyPaymentView from '@/views/Account/VerifyPaymentView.vue'
 import WithDrawalView from '@/views/Account/WithDrawalView.vue'
 import BonusView from '@/views/Account/BonusView.vue'
-import TermsandConditions from '@/views/CMS/TermsandConditions.vue'
-import AboutUs from '@/views/CMS/AboutUs.vue'
-import PrivacyPolicy from '@/views/CMS/PrivacyPolicy.vue'
-import ResponsibleGaming from '@/views/CMS/ResponsibleGaming.vue'
-import AccountDeletion from '@/views/CMS/AccountDeletion.vue'
+import CMSPage from '@/views/CMS.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
-
+import CodeHubView from '@/views/CodeHubView.vue'
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   linkActiveClass: 'x-active',
@@ -231,25 +227,16 @@ export const router = createRouter({
       name: 'load-bet',
       component: LoadBetView
     },
+    // Load Bet
     {
-      path: '/CMS/AboutUs',
-      name: 'about-us',
-      component: AboutUs
+      path: '/CodeHub',
+      name: 'code-hub',
+      component: CodeHubView
     },
     {
-      path: '/CMS/TandC',
-      name: 't-and-c',
-      component: TermsandConditions
-    },
-    {
-      path: '/CMS/ResponsibleGaming',
-      name: 'responsible-gaming',
-      component: ResponsibleGaming
-    },
-    {
-      path: '/CMS/PrivacyPolicy',
-      name: 'privacy-policy',
-      component: PrivacyPolicy
+      path: '/CMS/:page',
+      name: 'cms-page',
+      component: CMSPage
     },
     {
       path: '/CMS/AccountDeletion',

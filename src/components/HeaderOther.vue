@@ -1,5 +1,5 @@
 <template>
-  <div class="m-nav-secondary withHome">
+  <div class="m-nav-secondary withHome" :style="styles">
     <div class="m-nav-left">
       <span @click="$router.go(-1)" class="m-icon m-icon--back"></span>
       <span class="title"> {{ headerTitle }} </span>
@@ -18,7 +18,8 @@
 import { defineProps } from 'vue'
 
 defineProps({
-  headerTitle: String
+  headerTitle: String,
+  styles: String
 })
 </script>
 

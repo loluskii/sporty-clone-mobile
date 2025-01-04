@@ -1,10 +1,11 @@
 <script setup>
-import AppFooter from '@/components/Footer.vue'
-import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from 'vue'
-import { useUtilstStore, useCouponStore } from '@/stores'
-import CasinoDialog from '@/components/CasinoDialog.vue'
-import CalendarBox from '@/components/CalendarBox.vue'
+import AppFooter from "@/components/Footer.vue";
+import MobileFooter from "@/components/MobileFooter.vue";
+import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from "vue";
+import { useUtilstStore, useCouponStore } from "@/stores";
+import CasinoDialog from "@/components/CasinoDialog.vue";
+import CalendarBox from "@/components/CalendarBox.vue";
+import BookBetModal from "@/components/Betslip/BookBetModal.vue";
 import {
   fetchBonusList,
   fetchGlobalVars,
@@ -12,13 +13,13 @@ import {
   loadBetslipByCode,
   getBets,
   applyBranding,
-  CLIENT_ID
-} from '@/helpers'
-import Betlist from '@/components//Betslip/Betlist.vue'
-import ErrorDialogue from './components/ErrorDialogue.vue'
-import { useRoute, useRouter } from 'vue-router'
-import emitter from './plugins/emitter'
-import { useUsersStore } from './stores'
+  CLIENT_ID,
+} from "@/helpers";
+import Betlist from "@/components//Betslip/Betlist.vue";
+import ErrorDialogue from "./components/ErrorDialogue.vue";
+import { useRoute, useRouter } from "vue-router";
+import emitter from "./plugins/emitter";
+import { useUsersStore } from "./stores";
 // import { $mqtt } from 'vue-paho-mqtt';
 import mqtt from "mqtt";
 
@@ -39,12 +40,13 @@ const casinoDailogShown = ref(false);
 const customDatePickerShown = ref(false);
 const dateRange = ref(null);
 const mqttClient = ref(false);
+const bookBetModalShown = ref(false);
+const bookBetResponse = ref(null);
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
 //   return specificPages.includes(route.path)
 // })
-
 function toggleBetslip() {
   showBetslip.value = !showBetslip.value;
   if (showBetslip.value) {
@@ -63,6 +65,12 @@ function handleError(error) {
   errorMessage.value = typeof error === "object" ? error.message : error;
   nextRoute.value = error.next_route ? error.next_route : null;
   dialogueType.value = "error";
+}
+
+function handleBetslipConfirmation(data) {
+  dialogueShown.value = true;
+  dialogueMessage.value = data;
+  dialogueType.value = "betslip";
 }
 
 function showDialogue(data) {
@@ -209,6 +217,11 @@ function toggleDatePicker() {
   customDatePickerShown.value = !customDatePickerShown.value;
 }
 
+function toggleBookBetModal(data) {
+  bookBetResponse.value = data;
+  bookBetModalShown.value = true;
+}
+
 function handleCustomDatePicker(data) {
   // console.log(data)
   emitter.emit("dateRangeSet", data);
@@ -226,7 +239,7 @@ onMounted(async () => {
     // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
-        console.log(res[2]);
+        // console.log(res[2])
       })
       .catch(() => {
         isLoading.value = false;
@@ -249,13 +262,14 @@ onMounted(async () => {
 
   emitter.on("openBetslip", toggleBetslip);
   emitter.on("showErrorMessage", handleError);
+  emitter.on("showBetslipConfirmation", handleBetslipConfirmation);
   emitter.on("showDialogueMessage", showDialogue);
   emitter.on("showDialogueToaster", showToaster);
   emitter.on("hideDialogueToaster", toggleDialogue);
   emitter.on("showCasinoDialog", showCasinoDialog);
   emitter.on("showCustomDatePicker", toggleDatePicker);
-
-})
+  emitter.on("showBookBetModal", toggleBookBetModal);
+});
 
 onBeforeUnmount(() => {
   if (mqttClient.value !== false) mqttClient.value.end();
@@ -316,6 +330,23 @@ defineComponent({
       @hide="toggleDatePicker"
       @set-date="handleCustomDatePicker"
     />
+    <div
+      class="dialog-mask"
+      v-if="bookBetModalShown"
+      style="background-color: rgba(0, 0, 0, 0); z-index: 1000"
+    >
+      <div
+        class="dialog-wrapper"
+        style="align-items: center; inset: auto; overflow: auto"
+      >
+        <div class="dialog-container" style="overflow: auto">
+          <BookBetModal
+            @hide-modal="bookBetModalShown = false"
+            :betDetails="bookBetResponse"
+          ></BookBetModal>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <style>

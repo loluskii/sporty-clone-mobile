@@ -17,6 +17,7 @@ import {
   // bookBet2,
   CLIENT_ID
 } from '@/helpers'
+import { bookBet2 } from '../helpers/queries'
 
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
@@ -193,12 +194,14 @@ export const useCouponStore = defineStore({
       const globalVars = this.SportsbookGlobalVariable
 
       const res = this.coupon.selections ? [...this.coupon.selections] : []
-      const data = res.find((item) => item.selectionId === id)
+      const data = res.find((item) => item.selectionId === id || item.id === id);
 
       const bonusList = this.sportsbookBonusList
       //
       // get the new selections
-      const newSelection = this.coupon.selections.filter((item) => item.selectionId !== id)
+      const newSelection = this.coupon.selections.filter(
+        (item) => item.selectionId !== id && item.id !== id
+      );
 
       this.coupon.selections = newSelection
 
@@ -455,7 +458,7 @@ export const useCouponStore = defineStore({
       } else if (type == 'book') {
         try {
           coupondata.isBooking = 1
-          const res = await placeBet2(coupondata)
+          const res = await bookBet2(coupondata)
           this.isBetslipLoading = false
           return res
         } catch (error) {

@@ -94,6 +94,10 @@ export const getTopBets = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/sports/${CLIENT_ID}/top-bets`))
 }
 
+export const getCodeHubItems = async (data) => {
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/${CLIENT_ID}/codehub/tickets`, data))
+}
+
 export const getSportsMenu = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`))
 }
@@ -371,16 +375,8 @@ export const awardBonus = async (payload) => {
   )
 }
 
-export const AboutUs = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/about-us`))
-}
-
-export const ResponsibleGaming = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/responsible-gaming`))
-}
-
-export const TermsandConditions = async () => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/terms-and-conditions`))
+export const getCMS = async (page) => {
+  return parseData(fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/${page}`))
 }
 
 export const PrivacyPolicy = async () => {

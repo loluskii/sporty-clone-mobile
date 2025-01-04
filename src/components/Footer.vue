@@ -39,13 +39,18 @@
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">
-      <h5 class="underline" @click="$router.push({ name: 't-and-c' })">
+      <h5
+        class="underline"
+        @click="
+          $router.push({ name: 'cms-page', params: { page: 'terms-and-conditions' } })
+        "
+      >
         Terms &amp; Conditions
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'about-us' })">About Us</h5>
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })">About Us</h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'responsible-gaming' })">
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })">
         Responsible Gaming
       </h5>
     </div>
@@ -233,7 +238,7 @@ footer .hr {
   -ms-flex-pack: center;
   justify-content: center;
   margin-bottom: 1.33333333rem;
-  padding: 0 1.33333333rem;
+   padding: 0 1.33333333rem;
 }
 footer .hr::before {
   background-color: #35465a;
