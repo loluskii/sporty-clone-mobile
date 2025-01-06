@@ -306,6 +306,10 @@ export const loadBetslipByCode = async (betslipId) => {
   )
 }
 
+export const getPromotions = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/promotions`))
+}
+
 export const getGames = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games`))
 }

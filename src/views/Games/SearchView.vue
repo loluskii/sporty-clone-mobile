@@ -340,7 +340,7 @@ watch(isSearchMode, async (newVal) => {
 }
 .card-img-top {
   width: 100%;
-  height: 175px;
+  height: 105px;
   object-fit: cover;
 }
 </style>

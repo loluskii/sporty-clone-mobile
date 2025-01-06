@@ -29,6 +29,7 @@ import Search from '../views/Games/SearchView.vue'
 import GamesView from '@/views/Games/GamesView.vue'
 import PlayView from '@/views/Games/PlayView.vue'
 import CodeHubView from '@/views/CodeHubView.vue'
+import Promotions from '@/views/Promotions.vue'
 
 
 export const router = createRouter({
@@ -282,6 +283,11 @@ export const router = createRouter({
       path: '/CMS/:page',
       name: 'cms-page',
       component: CMSPage
+    },
+    {
+      path: '/Promotions',
+      name: 'promotions',
+      component: Promotions
     },
     // Catch-all route to redirect to home
     {
