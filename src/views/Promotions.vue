@@ -31,6 +31,12 @@
         </div>
       </div>
     </div>
+    <div v-if="pageMode === 'single-mode'" class="m-main-info p-3">
+        <img :src="selectedPromotion.imageUrl" alt="" />
+        <br />
+        <div class="mt-3" v-html="selectedPromotion.content"></div>
+        <button class="btn btn-block border mt-3" @click="pageMode = 'general-mode'">Go Back</button>
+    </div>
   </div>
 </template>
 
@@ -50,9 +56,11 @@ const couponStore = useCouponStore();
 const router = useRouter();
 const errorMesssage = ref("");
 const promotions = ref([]);
+const selectedPromotion = ref({})
 
 function goToPromotion(promo) {
   pageTitle.value = promo.title;
+  selectedPromotion.value = promo
   pageMode.value = "single-mode";
 }
 
