@@ -32,10 +32,6 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty('--brand-tertiary', config.colors.tertiaryColor)
 
     document.documentElement.style.setProperty(
-      '--brand-secondary',
-      config.colors.secondaryColor
-    )
-    document.documentElement.style.setProperty(
       '--brand-background-primary',
       config.colors.primaryBackground
     )

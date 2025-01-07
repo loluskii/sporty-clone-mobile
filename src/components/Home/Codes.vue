@@ -46,26 +46,6 @@
                 class="code-selection-item d-flex code-selection-item"
                 :key="selection.id"
               >
-                <div class="icon-container">
-                  <div class="icon is-dark">
-                    <svg
-                      viewBox="0 0 48 48"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="icon svg-icon-base"
-                      alt="Tournament Icon"
-                      style="height: 1.33333rem; width: 1.33333rem"
-                    >
-                      <circle cx="24" cy="24" r="20" fill="#9CA0AB"></circle>
-                      <!-- <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M30.526 18.518c1.32 0 2.509-.763 3.014-1.933a3.041 3.041 0 00-.707-3.414 3.363 3.363 0 00-3.556-.678c-1.22.484-2.014 1.626-2.014 2.893 0 1.73 1.46 3.133 3.263 3.133zm-4.913 2.386c-.073 0-.147 0-.22.005v-.005h-2.137a1.492 1.492 0 01-1.077-.505 1.405 1.405 0 01-.337-1.115c.113-.88.854-1.56 1.766-1.621h2.168l-1.225-5.409h-.64c-4.011 0-7.606 3.147-8.027 7.03-.422 3.882 2.489 7.029 6.5 7.029h.189v.006h2.178c.415.015.804.2 1.072.508.267.308.389.711.334 1.111-.115.881-.856 1.56-1.769 1.618H22.22l1.226 5.407h.646c4.01 0 7.603-3.146 8.024-7.028.422-3.881-2.488-7.026-6.498-7.026l-.005-.005zm-11.401 11.71c0-1.73 1.46-3.132 3.262-3.132s3.263 1.402 3.263 3.132c0 1.73-1.46 3.132-3.262 3.132-1.803 0-3.263-1.402-3.263-3.132z"
-                        fill="#fff"
-                      ></path> -->
-                    </svg>
-                  </div>
-                </div>
                 <div class="content-container">
                   <div class="top d-flex">
                     <div class="outcome text-700">
@@ -195,7 +175,7 @@ async function addToBetslip(code) {
             couponStore.coupon.bet_type = "Multiple";
             couponStore.coupon.betslip_type = "Multiple";
           }
-          emitter.emit('openBetslip')
+          emitter.emit("openBetslip");
         } else {
           emitter.emit("showDialogueToaster", "All selections have expired");
         }
@@ -302,7 +282,7 @@ function shareCode(data) {
   color: var(--text-type1-primary);
 }
 .booking-code-list-item .header {
-  background-color:#eff5f4;
+  background-color: #eff5f4;
   /* background-color: var(--brand-type1-secondary); */
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -659,5 +639,26 @@ function shareCode(data) {
 }
 .booking-code-action-bar .mr-8 {
   margin-right: 0.66666667rem;
+}
+.featured-code-container #featuredCodeCardBox {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+}
+.featured-code-container #featuredCodeCardBox > * {
+  margin-right: 0.66666667rem;
+}
+@media only screen and (max-width: 320px) {
+  .featured-code-container #featuredCodeCardBox > * {
+    margin-right: 0.33333333rem;
+  }
+}
+.featured-code-container #featuredCodeCardBox > * {
+  margin-bottom: 1rem;
+}
+.featured-code-container #featuredCodeCardBox .featured-code-card-container {
+  max-height: 16.66666667rem;
 }
 </style>

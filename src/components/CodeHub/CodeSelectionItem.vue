@@ -1,13 +1,13 @@
 <template>
   <div class="code-selection-item d-flex code-selection-item">
-    <div class="icon-container">
+    <!-- <div class="icon-container">
       <div class="icon is-dark">
         
         <img :src="getImageURL(data.tournament)"
           alt="Tournament Icon"
         />
       </div>
-    </div>
+    </div> -->
     <div class="content-container">
       <div class="top d-flex">
         <div class="outcome text-700">{{ data.outcomeName }}</div>
