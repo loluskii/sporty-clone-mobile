@@ -1,5 +1,15 @@
 <template>
   <div class="m-default">
+    <div class="featured-code-container">
+      <div
+        class="recommended-code"
+        data-cms-key="recommended_code"
+        data-cms-page="cashout"
+      >
+        Recommended Code
+      </div>
+      <Codes :codes="codes" />
+    </div>
     <p class="m-default-info">
       <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
         >Enter a booking code</span
@@ -30,7 +40,7 @@
       @click.prevent="loadBet"
       :class="[
         isLoading ? 'share-code-btn--disabled' : '',
-        bookingCode == '' ? 'share-code-btn--disabled' : ''
+        bookingCode == '' ? 'share-code-btn--disabled' : '',
       ]"
     >
       <span>Load</span>
@@ -39,54 +49,74 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { loadBetslipByCode } from '@/helpers'
-import { useCouponStore } from '@/stores'
-import emitter from '@/plugins/emitter'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from "vue";
+import { loadBetslipByCode, getNext7Days, getCodeHubItems } from "@/helpers";
+import { useCouponStore } from "@/stores";
+import emitter from "@/plugins/emitter";
+import { useRouter } from "vue-router";
+import Codes from '@/components/Home/Codes.vue'
 
-const isInvalidCode = ref()
-const bookingCode = ref('')
-const isLoading = ref(false)
-const couponStore = useCouponStore()
-const router = useRouter()
-const errorMesssage = ref('')
+const isInvalidCode = ref();
+const bookingCode = ref("");
+const isLoading = ref(false);
+const codeHubLoading = ref(false)
+const couponStore = useCouponStore();
+const router = useRouter();
+const errorMesssage = ref("");
+const codes = ref([])
 
 async function loadBet() {
-  isLoading.value = true
-  isInvalidCode.value = false
+  isLoading.value = true;
+  isInvalidCode.value = false;
   try {
-    const res = await loadBetslipByCode(bookingCode.value)
-    isLoading.value = false
+    const res = await loadBetslipByCode(bookingCode.value);
+    isLoading.value = false;
     if (res.success) {
       if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections
-        couponStore.coupon.totalOdds = res.data.totalOdd
-        couponStore.coupon.totalStake = res.data.stake
-        couponStore.coupon.stake = res.data.stake
-        couponStore.coupon.maxWin = res.data.possibleWin
-        couponStore.coupon.source = 'mobile'
+        couponStore.coupon.selections = res.data.selections;
+        couponStore.coupon.totalOdds = res.data.totalOdd;
+        couponStore.coupon.totalStake = res.data.stake;
+        couponStore.coupon.stake = res.data.stake;
+        couponStore.coupon.maxWin = res.data.possibleWin;
+        couponStore.coupon.source = "mobile";
         if (res.data.selections.length === 1) {
-          couponStore.coupon.bet_type = 'Single'
-          couponStore.coupon.betslip_type = 'Single'
+          couponStore.coupon.bet_type = "Single";
+          couponStore.coupon.betslip_type = "Single";
         } else {
-          couponStore.coupon.bet_type = 'Multiple'
-          couponStore.coupon.betslip_type = 'Multiple'
+          couponStore.coupon.bet_type = "Multiple";
+          couponStore.coupon.betslip_type = "Multiple";
         }
         // emitter.emit('openBetslip')
-        return router.push({ name: 'home' })
+        return router.push({ name: "home" });
       } else {
-        emitter.emit('showDialogueToaster', 'All selections have expired')
+        emitter.emit("showDialogueToaster", "All selections have expired");
       }
     } else {
-      throw new Error(res.message)
+      throw new Error(res.message);
     }
   } catch (error) {
-    isInvalidCode.value = true
-    isLoading.value = false
-    errorMesssage.value = error
+    isInvalidCode.value = true;
+    isLoading.value = false;
+    errorMesssage.value = error;
   }
 }
+
+async function getCodes() {
+  codeHubLoading.value = true
+  let payload = {
+    from: getNext7Days()[0],
+    to: getNext7Days()[7],
+    betType: 0,
+  };
+  const res = await getCodeHubItems(payload);
+  codeHubLoading.value = false
+  codes.value = res.data.data
+}
+
+onMounted(async () => {
+  await getCodes()
+})
+
 </script>
 
 <style scoped>
@@ -113,8 +143,8 @@ async function loadBet() {
   padding-left: 0.41666667rem;
 }
 .m-default .m-default-info .m-dialog-tip::before {
-  content: '\e651';
-  font-family: 'iconfont' !important;
+  content: "\e651";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -171,8 +201,8 @@ async function loadBet() {
   border-color: var(--warning-primary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper .m-icon-delete::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -208,7 +238,7 @@ async function loadBet() {
 .m-default .divider:before,
 .m-default .divider:after {
   background: #9ca0ab;
-  content: '';
+  content: "";
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -260,8 +290,8 @@ async function loadBet() {
   color: var(--brand-tertiary);
 }
 .share-code-btn--loading::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -296,5 +326,45 @@ async function loadBet() {
   padding-bottom: 0.33333333rem;
   text-align: center;
   width: 100%;
+}
+
+.loading-container {
+  height: 18.33333333rem;
+}
+.featured-code-container {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  height: 100%;
+  overflow: hidden;
+}
+.featured-code-container .recommended-code {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-size: 1.33333333rem;
+  font-weight: 700;
+  margin: 1.04166667rem 0 1.04166667rem 1.66666667rem;
+}
+.featured-code-container #emptyCodeCardBox {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+}
+.featured-code-container #emptyCodeCardBox > * {
+  margin-right: 0.66666667rem;
+}
+@media only screen and (max-width: 320px) {
+  .featured-code-container #emptyCodeCardBox > * {
+    margin-right: 0.33333333rem;
+  }
+}
+.featured-code-container #emptyCodeCardBox > * {
+  margin-bottom: 1rem;
+}
+.featured-code-container #emptyCodeCardBox .featured-code-card-container {
+  max-height: 16.66666667rem;
 }
 </style>
