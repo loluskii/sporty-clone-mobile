@@ -640,4 +640,25 @@ function shareCode(data) {
 .booking-code-action-bar .mr-8 {
   margin-right: 0.66666667rem;
 }
+.featured-code-container #featuredCodeCardBox {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+}
+.featured-code-container #featuredCodeCardBox > * {
+  margin-right: 0.66666667rem;
+}
+@media only screen and (max-width: 320px) {
+  .featured-code-container #featuredCodeCardBox > * {
+    margin-right: 0.33333333rem;
+  }
+}
+.featured-code-container #featuredCodeCardBox > * {
+  margin-bottom: 1rem;
+}
+.featured-code-container #featuredCodeCardBox .featured-code-card-container {
+  max-height: 16.66666667rem;
+}
 </style>

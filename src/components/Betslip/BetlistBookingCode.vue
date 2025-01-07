@@ -8,7 +8,8 @@
       >
         Recommended Code
       </div>
-      <Codes :codes="codes" />
+      <Codes :codes="codes" v-if="!codeHubLoading" />
+      <LoadingSpinner v-else />
     </div>
     <p class="m-default-info">
       <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
@@ -55,11 +56,12 @@ import { useCouponStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
 import Codes from '@/components/Home/Codes.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
 const isInvalidCode = ref();
 const bookingCode = ref("");
 const isLoading = ref(false);
-const codeHubLoading = ref(false)
+const codeHubLoading = ref(true)
 const couponStore = useCouponStore();
 const router = useRouter();
 const errorMesssage = ref("");
@@ -102,7 +104,7 @@ async function loadBet() {
 }
 
 async function getCodes() {
-  codeHubLoading.value = true
+  // codeHubLoading.value = true
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
@@ -345,26 +347,5 @@ onMounted(async () => {
   font-size: 1.33333333rem;
   font-weight: 700;
   margin: 1.04166667rem 0 1.04166667rem 1.66666667rem;
-}
-.featured-code-container #emptyCodeCardBox {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  height: 100%;
-  margin-top: 0.33333333rem;
-  padding-bottom: 0.33333333rem;
-}
-.featured-code-container #emptyCodeCardBox > * {
-  margin-right: 0.66666667rem;
-}
-@media only screen and (max-width: 320px) {
-  .featured-code-container #emptyCodeCardBox > * {
-    margin-right: 0.33333333rem;
-  }
-}
-.featured-code-container #emptyCodeCardBox > * {
-  margin-bottom: 1rem;
-}
-.featured-code-container #emptyCodeCardBox .featured-code-card-container {
-  max-height: 16.66666667rem;
 }
 </style>
