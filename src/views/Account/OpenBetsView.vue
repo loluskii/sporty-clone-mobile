@@ -338,7 +338,7 @@ function closeCashoutModal() {
 }
 
 function handleCashout(bet) {
-  console.log(bet);
+  // console.log(bet);
   showCashoutModal.value = true;
   cashoutData.value = bet;
 }
