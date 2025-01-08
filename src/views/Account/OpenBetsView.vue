@@ -2,13 +2,41 @@
   <div class="m-sportBets">
     <div style="width: 100%; height: 87px"></div>
     <BetHistoryHeader :active="'open_bets'"></BetHistoryHeader>
-    <div style="margin-top: 20px">
-      <div v-if="!openBets" class="m-error-wrapper">
-        <div v-if="!isAuthenticated">
-          <span class="m-error-msg">Please Log In to see your Open Bets and Cashout Bets</span>
-          <div class="m-btn" @click="$router.push('/sign-in')">Login</div>
+    <div v-if="!isAuthenticated" class="m-openbet">
+      <!-- <span class="m-error-msg"
+        >Please Log In to see your Open Bets and Cashout Bets</span
+      >
+      <div class="m-btn" @click="$router.push('/sign-in')">Login</div> -->
+
+      <!--  -->
+      <div class="none-login-wrapper">
+        <div class="login-tip">
+          <div class="error-msg">
+            Please Log In to see your Open Bets and Cashout Bets
+          </div>
+          <div class="login-btn" @click="$router.push('/sign-in')">Login</div>
         </div>
-        <div v-else-if="!openBets & !isLoading">
+        <div class="empty-recommended-code-container">
+          <div class="recommended-code">
+            <span data-cms-key="recommended_code" data-cms-page="cashout"
+              >Recommended Football Codes</span
+            >
+          </div>
+          <div class="code-hub-list-item-container" style="position: relative">
+            <div class="m-loading-wrap m-loading-wrap__center">
+              <div class="m-loading light">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+            <div class="mb-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else style="margin-top: 20px">
+      <div v-if="!openBets" class="m-error-wrapper">
+        <div v-if="!openBets & !isLoading">
           <span class="m-error-msg"> You currently have no Open Bets. </span>
         </div>
         <div v-if="isLoading">
@@ -96,7 +124,9 @@
                         <div class="m-t-14 m-t-l16 m-t-dark f-wrap">
                           <i class="m-r-5" :class="'m-icon-' + event.sport"></i>
                           <span class="m-r-5 m-t-bold">{{ event.outcomeName }}</span>
-                          <span class="m-t-bold m-r-5 m-b-5"> @ {{ event.odds.toFixed(2) }} </span>
+                          <span class="m-t-bold m-r-5 m-b-5">
+                            @ {{ event.odds.toFixed(2) }}
+                          </span>
                           <span class="m-t-14 m-t-gray m-b-5">
                             {{ event.marketName }}
                           </span>
@@ -109,8 +139,8 @@
                                 sport: slugify(event.sport),
                                 tournament_name: slugify(event.tournament),
                                 event_name: slugify(event.eventName),
-                                event_id: event.matchId
-                              }
+                                event_id: event.matchId,
+                              },
                             })
                           "
                           class="m-aginst m-t-black m-t-14"
@@ -121,27 +151,13 @@
                         </div>
                         <div data-v-f5461f3c="" class="m-score">
                           <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
-                            {{ formatDate(event.eventDate, 'DD/MM HH:mm') }}
+                            {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
                           <span data-v-f5461f3c="" class="m-t-12"></span>
                         </div>
                       </div>
                     </li>
                   </ul>
-                  <div class="m-more f-flex m-t-12 m-t-l14">
-                    <div class="m-l-left">
-                      <!-- <span v-if="bet.selections?.length > 2" class="m-t-gray"
-                        >and {{ remainingMatchesCount(bet.selections) }} other match{{
-                          remainingMatchesCount(bet.selections) > 1 ? 'es' : ''
-                        }}</span
-                      > -->
-                    </div>
-                    <!-- <div>
-                      <span class="m-t-black"
-                        ><span> Match Details </span> <i class="m-icon-more"></i
-                      ></span>
-                    </div> -->
-                  </div>
                 </div>
 
                 <div
@@ -174,10 +190,17 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout NGN ${bet.cashOutAmount.toFixed(2)}`
-                        : 'Cashout Unavailable'
+                        ? `Cashout KES ${bet.cashOutAmount.toFixed(2)}`
+                        : "Cashout Unavailable"
                     }}</span>
-                    <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
+                    <img
+                      v-else
+                      src="/loader.gif"
+                      height="24"
+                      width="24"
+                      alt=""
+                      srcset=""
+                    />
                   </button>
                 </div>
               </div>
@@ -194,7 +217,9 @@
               <div class="m-head f-alg-side">
                 <div class="f-alg-side-item">
                   <div class="m-t-12 m-t-l16 m-t-gray">Stake</div>
-                  <div class="m-t-14 m-t-l16 m-t-default">{{ cashoutData.stake.toFixed(2) }}</div>
+                  <div class="m-t-14 m-t-l16 m-t-default">
+                    {{ cashoutData.stake.toFixed(2) }}
+                  </div>
                 </div>
                 <div class="f-alg-side-item">
                   <div class="m-t-12 m-t-l16 m-t-gray">Pot. Win</div>
@@ -210,18 +235,32 @@
                       >Full Cashout
                     </span>
                     <div class="number-grow-warp">
-                      <span class="number-grow">{{ cashoutData.cashOutAmount.toFixed(2) }}</span>
+                      <span class="number-grow">{{
+                        cashoutData.cashOutAmount.toFixed(2)
+                      }}</span>
                     </div>
                   </div>
                 </div>
                 <div class="m-btn-wrapper">
                   <div>
-                    <button @click.prevent="confirmCashout" class="af-button af-button--primary">
+                    <button
+                      @click.prevent="confirmCashout"
+                      class="af-button af-button--primary"
+                    >
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
-                        <span class="money"> NGN {{ cashoutData.cashOutAmount.toFixed(2) }} </span>
+                        <span class="money">
+                          KES {{ cashoutData.cashOutAmount.toFixed(2) }}
+                        </span>
                       </span>
-                      <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
+                      <img
+                        v-else
+                        src="/loader.gif"
+                        height="24"
+                        width="24"
+                        alt=""
+                        srcset=""
+                      />
                     </button>
                   </div>
                 </div>
@@ -235,71 +274,90 @@
 </template>
 
 <script setup>
-import BetHistoryHeader from '@/components/BetHistoryHeader.vue'
+import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
-import OpenBet from '@/components/BetHistory/OpenBet.vue'
-import { ref, defineComponent, onMounted } from 'vue'
-import { getBets, formatNumber, formatDate, slugify } from '@/helpers'
-import { useAuthStore } from '@/stores'
-import $ from 'jquery'
-import { useUsersStore } from '@/stores'
-import { CLIENT_ID, performCashout } from '@/helpers'
-import emitter from '@/plugins/emitter'
+import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
+import OpenBet from "@/components/BetHistory/OpenBet.vue";
+import { ref, defineComponent, onMounted } from "vue";
+import {
+  getBets,
+  formatNumber,
+  formatDate,
+  slugify,
+  getNext7Days,
+  getCodeHubItems,
+} from "@/helpers";
+import { useAuthStore } from "@/stores";
+import $ from "jquery";
+import { useUsersStore } from "@/stores";
+import { CLIENT_ID, performCashout } from "@/helpers";
+import emitter from "@/plugins/emitter";
 
-const openBets = ref(null)
-const isLoading = ref(false)
-const { isAuthenticated } = useAuthStore()
-const userStore = useUsersStore()
-const showCashoutModal = ref(false)
-const cashoutData = ref({})
-const cashingOut = ref(false)
+const openBets = ref(null);
+const isLoading = ref(false);
+const { isAuthenticated } = useAuthStore();
+const userStore = useUsersStore();
+const showCashoutModal = ref(false);
+const cashoutData = ref({});
+const cashingOut = ref(false);
+const codes = ref([]);
 
 async function getBetsData() {
-  isLoading.value = true
+  isLoading.value = true;
   try {
     let payload = {
       clientId: CLIENT_ID,
-      date: '',
+      date: "",
       status: 0,
-      userId: userStore.currentUser.id
-    }
-    const res = await getBets(payload)
-    openBets.value = res.bets
-    isLoading.value = false
+      userId: userStore.currentUser.id,
+    };
+    const res = await getBets(payload);
+    openBets.value = res.bets;
+    isLoading.value = false;
   } catch (error) {
-    isLoading.value = false
+    isLoading.value = false;
   }
+}
+
+async function getCodes() {
+  let payload = {
+    from: getNext7Days()[0],
+    to: getNext7Days()[7],
+    betType: 0,
+  };
+  const res = await getCodeHubItems(payload);
+  codes.value = res.data.data;
 }
 
 function closeCashoutModal() {
   if (!cashingOut.value) {
-    showCashoutModal.value = false
+    showCashoutModal.value = false;
   } else {
-    return
+    return;
   }
 }
 
 function handleCashout(bet) {
-  console.log(bet)
-  showCashoutModal.value = true
-  cashoutData.value = bet
+  console.log(bet);
+  showCashoutModal.value = true;
+  cashoutData.value = bet;
 }
 
 async function confirmCashout() {
-  cashingOut.value = true
+  cashingOut.value = true;
   const res = await performCashout({
     betId: cashoutData.value.id,
-    amount: cashoutData.value.cashOutAmount
-  })
-  cashingOut.value = false
-  showCashoutModal.value = false
+    amount: cashoutData.value.cashOutAmount,
+  });
+  cashingOut.value = false;
+  showCashoutModal.value = false;
 
   if (res.success) {
-    console.log('cashout successful')
-    emitter.emit('showDialogueToaster', 'Cashout Successful!')
-    await getBetsData()
+    console.log("cashout successful");
+    emitter.emit("showDialogueToaster", "Cashout Successful!");
+    await getBetsData();
   } else {
-    emitter.emit('showDialogueToaster', res.message)
+    emitter.emit("showDialogueToaster", res.message);
   }
 }
 
@@ -312,31 +370,102 @@ async function confirmCashout() {
 // }
 
 function showChild(e, index) {
-  let y = $(e.target).hasClass('hide')
+  let y = $(e.target).hasClass("hide");
   if (y) {
-    $(e.target).removeClass('hide')
+    $(e.target).removeClass("hide");
   } else {
-    $(e.target).addClass('hide')
+    $(e.target).addClass("hide");
   }
-  $('#' + index + '_bop').toggleClass('d-none')
-  $('#' + index + '_child').toggleClass('d-none')
+  $("#" + index + "_bop").toggleClass("d-none");
+  $("#" + index + "_child").toggleClass("d-none");
 }
 
 onMounted(async () => {
   if (isAuthenticated) {
-    getBetsData()
+    getBetsData();
 
     setInterval(() => {
-      getBetsData()
-    }, 10000)
+      getBetsData();
+    }, 10000);
+  } else {
+    await getCodes();
   }
-})
+});
 defineComponent({
-  name: 'open-bets',
-  components: { BetHistoryHeader }
-})
+  name: "open-bets",
+  components: { BetHistoryHeader },
+});
 </script>
 
 <style scoped>
-@import url('@/assets/css/bet-history.css');
+@import url("@/assets/css/bet-history.css");
+.m-btn--text {
+  color: #0d9737;
+}
+.m-btn--text + .m-btn {
+  margin-top: 1.66666667rem;
+}
+.no_bets {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-size: 1rem;
+  line-height: 1.19333333rem;
+  padding: 1.66666667rem 0 1.91666667rem;
+  text-align: center;
+}
+.no_bets .content {
+  margin-top: 0.66666667rem;
+}
+.none-login-wrapper .login-tip {
+  margin: 0 auto;
+  padding: 2.33333333rem 0;
+  text-align: center;
+}
+.none-login-wrapper .login-tip .error-msg {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  display: block;
+  font-size: 1rem;
+  line-height: 1.58333333rem;
+  margin: 0 auto 1.33333333rem;
+  width: 17.08333333rem;
+}
+.none-login-wrapper .login-tip .login-btn {
+  border: 1px solid var(--brand-secondary);
+  border-radius: 0.25rem;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: var(--brand-secondary);
+  display: inline-block;
+  height: 2.33333333rem;
+  line-height: 2.33333333rem;
+  min-width: 4.66666667rem;
+  padding: 0 0.58333333rem;
+}
+.empty-recommended-code-container .recommended-code {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1.33333333rem;
+  font-weight: 700;
+  padding-left: 0.66666667rem;
+}
+.empty-recommended-code-container .recommended-code span {
+  display: inline-block;
+  margin-left: 1rem;
+}
+.empty-recommended-code-container .code-hub-list-item-container {
+  padding: 0.66666667rem;
+  position: relative;
+}
+.code-hub-list-item-container .code-hub-list-item-wrap + .code-hub-list-item-wrap {
+  margin-top: 0.66666667rem;
+}
 </style>

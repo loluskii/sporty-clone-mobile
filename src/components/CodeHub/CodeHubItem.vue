@@ -320,4 +320,7 @@ function shareCode(data) {
 .booking-code-action-bar .mr-8 {
   margin-right: 0.66666667rem;
 }
+.code-hub-list-item-intersection-observer-wrap {
+  margin-top: 0.66666667rem;
+}
 </style>
