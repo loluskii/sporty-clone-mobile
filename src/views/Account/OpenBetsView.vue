@@ -17,7 +17,7 @@
           <div class="login-btn" @click="$router.push('/sign-in')">Login</div>
         </div>
         <div class="empty-recommended-code-container">
-          <div class="recommended-code">
+          <div v-if="codes.length" class="recommended-code">
             <span data-cms-key="recommended_code" data-cms-page="cashout"
               >Recommended Football Codes</span
             >

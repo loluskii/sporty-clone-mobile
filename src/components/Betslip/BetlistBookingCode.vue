@@ -1,6 +1,6 @@
 <template>
   <div class="m-default">
-    <div class="featured-code-container">
+    <div class="featured-code-container" v-if="codes.length">
       <div
         class="recommended-code"
         data-cms-key="recommended_code"
