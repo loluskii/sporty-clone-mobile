@@ -35,15 +35,33 @@
       </div>
     </div>
     <div v-else style="margin-top: 20px">
-      <div v-if="!openBets" class="m-error-wrapper">
+      <template v-if="!openBets">
         <div v-if="!openBets & !isLoading">
-          <span class="m-error-msg"> You currently have no Open Bets. </span>
+          <div class="m-error-wrapper">
+            <span class="m-error-msg"> You currently have no Open Bets. </span>
+          </div>
+          <div class="empty-recommended-code-container">
+            <div class="recommended-code">
+              <span data-cms-key="recommended_code" data-cms-page="cashout"
+                >Recommended Football Codes</span
+              >
+            </div>
+            <div class="code-hub-list-item-container" style="position: relative">
+              <div class="m-loading-wrap m-loading-wrap__center">
+                <div class="m-loading light">
+                  <div class="loading"></div>
+                </div>
+              </div>
+              <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+              <div class="mb-3"></div>
+            </div>
+          </div>
         </div>
         <div v-if="isLoading">
           <i class="m-icon-loading"></i>
           <span class="m-text-msg" data-cms-key="loading_with_dot">Loading...</span>
         </div>
-      </div>
+      </template>
       <div v-else class="m-openbet">
         <div class="m-sportsBet--bets cashout-loading">
           <ul class="m-bet-list">
@@ -294,7 +312,7 @@ import { CLIENT_ID, performCashout } from "@/helpers";
 import emitter from "@/plugins/emitter";
 
 const openBets = ref(null);
-const isLoading = ref(false);
+const isLoading = ref(true);
 const { isAuthenticated } = useAuthStore();
 const userStore = useUsersStore();
 const showCashoutModal = ref(false);
@@ -303,7 +321,6 @@ const cashingOut = ref(false);
 const codes = ref([]);
 
 async function getBetsData() {
-  isLoading.value = true;
   try {
     let payload = {
       clientId: CLIENT_ID,
@@ -385,11 +402,11 @@ onMounted(async () => {
     getBetsData();
 
     setInterval(() => {
+      isLoading.value = false;
       getBetsData();
     }, 10000);
-  } else {
-    await getCodes();
   }
+  await getCodes();
 });
 defineComponent({
   name: "open-bets",
