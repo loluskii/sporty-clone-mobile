@@ -208,7 +208,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout KES ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout NGN ${bet.cashOutAmount.toFixed(2)}`
                         : "Cashout Unavailable"
                     }}</span>
                     <img
@@ -268,7 +268,7 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          KES {{ cashoutData.cashOutAmount.toFixed(2) }}
+                          NGN {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
                       <img
