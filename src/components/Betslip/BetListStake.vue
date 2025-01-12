@@ -30,6 +30,16 @@
         ></BetlistStakeKeyboard>
       </div>
 
+      <template v-if="taxEnabled">
+        <div class="bonus mg-b-10">
+          <span>Stake After Tax</span>
+          <span
+            >{{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ parseFloat(stakeAfterTax).toFixed(2) }}</span
+          >
+        </div>
+      </template>
+
       <div class="total-odds mg-b-10" v-if="betSlipType === 'Multiple'">
         <span>Total Odds</span>
         <span>{{ totalOdds }}</span>
@@ -39,7 +49,7 @@
         <span>Max Bonus</span>
         <span
           >{{ couponStore.SportsbookGlobalVariable.Currency }}
-          {{ parseFloat(maxBonus).toFixed(2) }}</span
+          {{ formatNumber(maxBonus) }}</span
         >
       </div>
 
@@ -52,11 +62,11 @@
           >
         </div>
 
-        <div class="bonus mg-b-10">
+        <div v-if="wthTax > 0" class="bonus mg-b-10">
           <span>Withholding Tax</span>
           <span
             >{{ couponStore.SportsbookGlobalVariable.Currency }}
-            {{ parseFloat(wthTax).toFixed(2) }}</span
+            {{ formatNumber(wthTax) }}</span
           >
         </div>
       </template>
@@ -164,28 +174,35 @@ const taxEnabled = computed(
 const exciseTax = computed(() =>
   parseFloat(couponStore.SportsbookGlobalVariable.exciseTax || 0)
 );
-const wthTax = computed(() =>
-  parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0)
-); // Defaults to 0 if undefined
+
+const stakeAfterTax = computed(() => {
+  const excise = betlistStake.value * (exciseTax.value / 100);
+  return betlistStake.value - excise;
+});
+
+const wthTax = computed(() => {
+  return (
+    (stakeAfterTax.value * couponStore.coupon.totalOdds - couponStore.coupon.totalStake) *
+    0.2
+  );
+});
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
   const stake = betlistStake.value;
   const totalOdd = couponStore.coupon.totalOdds;
+  let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0);
 
   if (taxEnabled.value) {
     let finalPayout = stake * totalOdds;
 
     if (exciseTax.value > 0) {
-      const excise = stake * (exciseTax.value / 100);
-      const stakeAfterTax = stake - excise;
-      finalPayout = stakeAfterTax * totalOdd;
+      finalPayout = stakeAfterTax.value * totalOdd;
     }
 
-    if (wthTax.value > 0) {
+    if (wth > 0) {
       // wth tax
-      const witholdingTax = finalPayout * (wthTax.value / 100);
-      finalPayout = finalPayout - witholdingTax;
+      finalPayout = finalPayout - wthTax.value;
     }
     return finalPayout;
   }
