@@ -181,9 +181,10 @@ const stakeAfterTax = computed(() => {
 });
 
 const wthTax = computed(() => {
+  let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0)/100
   return (
     (stakeAfterTax.value * couponStore.coupon.totalOdds - couponStore.coupon.totalStake) *
-    0.2
+    wth
   );
 });
 
@@ -204,7 +205,7 @@ const potentialWin = computed(() => {
       // wth tax
       finalPayout = finalPayout - wthTax.value;
     }
-    return finalPayout;
+    return finalPayout + maxBonus.value;
   }
 
   const isSingleBet = betSlipType === "Single" && selectionsLength === 1;
