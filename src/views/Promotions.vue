@@ -8,7 +8,7 @@
             <img class="card-img-top" :src="promo.imageUrl" alt="Card image cap" />
             <div class="card-body p-2">
               <h5 class="card-title">{{ promo.title }}</h5>
-              <p>{{ promo.content.slice(0,100) }}...</p>
+              <!-- <p>{{ promo.content.slice(0,100) }}...</p> -->
             </div>
             <div
               class="card-footer d-flex justify-content-between align-items-center p-2"
@@ -32,9 +32,10 @@
       </div>
     </div>
     <div v-if="pageMode === 'single-mode'" class="m-main-info p-3">
-        <img :src="selectedPromotion.imageUrl" alt="" />
+        <img :src="selectedPromotion.imageUrl" class="img-fluid" alt="" />
         <br />
         <div class="mt-3" v-html="selectedPromotion.content"></div>
+        <button class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)" @click.prevent="goToLink(selectedPromotion.targetUrl)">Play Now</button>
         <button class="btn btn-block border mt-3" @click="pageMode = 'general-mode'">Go Back</button>
     </div>
   </div>
