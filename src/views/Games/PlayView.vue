@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { watch, ref, onMounted, onBeforeMount } from "vue";
+import { watch, ref, onMounted, onBeforeMount, computed } from "vue";
 import { getCasinoStartUrl, getGames, slugify } from "@/helpers";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
