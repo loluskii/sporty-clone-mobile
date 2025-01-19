@@ -36,16 +36,21 @@ const router = useRouter();
 const gameURL = ref("");
 const isLoading = ref(false);
 const { currentUser } = useUsersStore();
+const usersStore = useUsersStore();
 const showRecommendedGames = ref(false);
 const gamesList = ref([]);
 const confirmLeave = ref(null);
+
+const userHasBonus = computed(() => {
+  return usersStore.casinoBonusBalance > 0
+})
 
 watch(
   () => route.params.game_id,
   async () => {
     await getCasinoURL()
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
+  { immediate: true } 
 )
 
 async function getCasinoURL() {
@@ -63,6 +68,11 @@ async function getCasinoURL() {
       authCode: currentUser?.authCode,
       balanceType: "real",
     };
+
+    if(userHasBonus){
+      payload.isBonus = true
+      payload.bonusType = "free_round"
+    }
     const res = await getCasinoStartUrl(payload, data);
     isLoading.value = false;
     gameURL.value = res.url;
