@@ -1,15 +1,15 @@
 <template>
-  <div class="title-bg">
+  <div class="title-bg d-flex align-items-center">
     <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
 
-    <h3 class="h4 text-white fw-bold">
-      <img
+    <h3 class="h4 text-white fw-bold mb-0">
+      <!-- <img
         :src="getProviderLogo()"
         alt=""
         height="25"
         srcset=""
         v-if="type === 'provider'"
-      />
+      /> -->
       {{ titleText }}
     </h3>
   </div>

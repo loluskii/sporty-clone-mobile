@@ -16,9 +16,6 @@
           <div v-if="hasBonus" class="bonus-btn" @click="setBalanceType('bonus')">
             <div class="bonus-btn-text">Bonus</div>
           </div>
-          <div v-else class="demo-btn" @click="setBalanceType('demo')">
-            <div class="demo-btn-text">Demo</div>
-          </div>
         </div>
         <div class="button-row">
           <div class="real-money-btn-cancel" @click="$emit('hide-dialogue')">
@@ -35,26 +32,22 @@ import { defineProps, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
+import { slugify } from "@/helpers";
 
 const emits = defineEmits(["hide-dialogue"]);
-const userStore = useUsersStore();
 const props = defineProps({
-  errorMessage: String,
-  dialogueMessage: Object,
-  dialogueType: String,
-  nextRoute: String,
+  data: Object,
 });
 
 const router = useRouter();
 
-const hasBonus = computed(() => {
-  return userStore.currentUser && userStore.currentUser.casinoBonusBalance > 0;
-});
-
 const setBalanceType = (type) => {
   emits("hide-dialogue");
-  if (!userStore.currentUser && type !== "demo") return router.push({ name: "sign-in" });
-  emitter.emit("setBalanceType", type);
+  return router.push({
+    name: "game-play",
+    params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
+    query: { bonusId: props.data.bonus.bonusId },
+  });
 };
 
 onMounted(() => {});

@@ -42,6 +42,7 @@ const dateRange = ref(null);
 const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
+const casinoGameData = ref(null)
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -210,8 +211,9 @@ async function getBetsData() {
   }
 }
 
-function showCasinoDialog() {
+function showCasinoDialog(data) {
   casinoDailogShown.value = true;
+  casinoGameData.value = data
 }
 
 function toggleDatePicker() {
@@ -348,6 +350,7 @@ defineComponent({
         <CasinoDialog
           v-if="casinoDailogShown"
           @hide-dialogue="casinoDailogShown = false"
+          :data="casinoGameData"
         />
       </div>
       <Betlist

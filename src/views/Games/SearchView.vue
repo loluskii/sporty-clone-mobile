@@ -141,11 +141,11 @@ const getImagePath = (game) => {
 };
 
 async function redirectToGamePlay(game) {
-  emitter.emit("showCasinoDialog");
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
-  });
+  if(userStore.currentUser){
+    emitter.emit("showCasinoDialog");
+  }else{
+    return router.push({ name: "sign-in" });
+  }
 }
 
 const handleImageError = (event, game) => {

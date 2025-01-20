@@ -164,10 +164,7 @@
         <div class="grouped-games-section">
           <div v-for="x in 4" :key="x" class="group">
             <div class="header d-flex justify-content-between align-items-center">
-              <h1
-                class="fw-normal placeholder h4 p-2 rounded"
-                style="width: 50px"
-              ></h1>
+              <h1 class="fw-normal placeholder h4 p-2 rounded" style="width: 50px"></h1>
               <span
                 style="width: 50px"
                 class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
@@ -175,7 +172,12 @@
               </span>
             </div>
             <div class="grid-container mb-3 pb-3" ref="scrollComponent">
-              <div class="card bg-dark rounded-3 placeholder" v-for="i in 3" :key="i" style="width: 150px"></div>
+              <div
+                class="card bg-dark rounded-3 placeholder"
+                v-for="i in 3"
+                :key="i"
+                style="width: 150px"
+              ></div>
             </div>
           </div>
         </div>
@@ -188,7 +190,7 @@
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
+import { getTopGameCategories, gamesByTopCategory, getUserBonus } from "@/helpers";
 import router from "@/router";
 import { useAuthStore, useUsersStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -207,7 +209,7 @@ const isLoading = ref(true);
 const singleCategoryLoading = ref(true);
 const myElement = ref(null);
 const currentView = ref("grouped_category");
-const providers = ref([]);
+const bonus = ref(null);
 
 const getImageSrc = (cat) => {
   const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
@@ -283,7 +285,9 @@ async function getGameByTopCategory(category) {
 
 const getImagePath = (game) => {
   // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title
+    .replace(/\s/g, "")
+    .toLowerCase()}.png?alt=media`;
 };
 const handleImageError = (event, game) => {
   // Replace the failed image with a placeholder
@@ -293,16 +297,27 @@ const handleImageError = (event, game) => {
 };
 
 async function redirectToGamePlay(game) {
-  // emitter.emit("showCasinoDialog");
   if (userStore.currentUser) {
-    return router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
+    if (bonus.value) {
+      emitter.emit("showCasinoDialog", {bonus: bonus.value, game: game});
+    } else {
+      return router.push({
+        name: "game-play",
+        params: { game_name: slugify(game.title), game_id: game.id },
+      });
+    }
   } else {
-    authStore.returnUrl = "/Games";
     return router.push({ name: "sign-in" });
   }
+  // if (userStore.currentUser) {
+  //   return router.push({
+  //     name: "game-play",
+  //     params: { game_name: slugify(game.title), game_id: game.id },
+  //   });
+  // } else {
+  //   authStore.returnUrl = "/Games";
+  //   return router.push({ name: "sign-in" });
+  // }
 }
 
 const updateCSSVar = () => {
@@ -316,8 +331,17 @@ const updateCSSVar = () => {
   }
 };
 
+async function getBonus() {
+  const res = await getUserBonus();
+  if (res && res.bonus) {
+    // find active bonus
+    const active = res.bonus.find((item) => item.status === 1);
+    bonus.value = active;
+  }
+}
+
 onBeforeMount(async () => {
-  await getCategories();
+  Promise.all([getCategories(), getBonus()]);
   updateCSSVar();
   $("body").addClass("no-scroll");
 });
@@ -500,6 +524,6 @@ onBeforeMount(async () => {
   color: white;
   border-radius: 10px;
   padding: 5px 15px;
-  border: 1px solid var(--brand-highlight-text)
+  border: 1px solid var(--brand-highlight-text);
 }
 </style>

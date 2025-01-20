@@ -23,7 +23,7 @@
 
 <script setup>
 import { watch, ref, onMounted, onBeforeMount, computed } from "vue";
-import { getCasinoStartUrl, getGames, slugify } from "@/helpers";
+import { getCasinoStartUrl, getGames, slugify, getUserBonus } from "@/helpers";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useUsersStore } from "@/stores";
@@ -40,10 +40,7 @@ const usersStore = useUsersStore();
 const showRecommendedGames = ref(false);
 const gamesList = ref([]);
 const confirmLeave = ref(null);
-
-const userHasBonus = computed(() => {
-  return usersStore.casinoBonusBalance > 0
-})
+const bonus = ref(null)
 
 watch(
   () => route.params.game_id,
@@ -52,6 +49,16 @@ watch(
   },
   { immediate: true } 
 )
+
+async function getBonus() {
+  const res = await getUserBonus();
+  isLoading.value = false;
+  if (res && res.bonus) {
+    // find active bonus
+    const active = res.bonus.find((item) => item.status === 1);
+    bonus.value = active;
+  }
+}
 
 async function getCasinoURL() {
   try {
@@ -69,9 +76,10 @@ async function getCasinoURL() {
       balanceType: "real",
     };
 
-    if(userHasBonus){
+    if(bonus.value){
       payload.isBonus = true
       payload.bonusType = "free_round"
+      payload.bonusId = bonus.value.bonusId
     }
     const res = await getCasinoStartUrl(payload, data);
     isLoading.value = false;

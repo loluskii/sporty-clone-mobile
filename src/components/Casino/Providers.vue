@@ -17,13 +17,13 @@
         >
           <div class="card rounded-0 border-0">
             <div class="card-body p-2">
-              <img
+              <!-- <img
                 :src="getImageSrc(provider.slug)"
                 class="mr-3"
                 alt=""
                 srcset=""
                 height="25"
-              />
+              /> -->
               <span class="provider-name">{{ provider.name }}</span>
             </div>
           </div>
@@ -99,11 +99,15 @@ const getImagePath = (game) => {
 };
 
 async function redirectToGamePlay(game) {
-  emitter.emit("showCasinoDialog");
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
-  });
+  if(userStore.currentUser){
+    emitter.emit("showCasinoDialog");
+  }else{
+    return router.push({ name: "sign-in" });
+  }
+  // return router.push({
+  //   name: "game-play",
+  //   params: { game_name: slugify(game.title), game_id: game.id },
+  // });
 }
 
 onBeforeMount(async () => {
