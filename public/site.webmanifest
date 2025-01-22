@@ -1,0 +1,8 @@
+{
+  "name": "Cubebet NG",
+  "short_name": "cubebet",
+  "icons": [],
+  "theme_color": "#262262",
+  "background_color": "#262262",
+  "display": "standalone"
+}
