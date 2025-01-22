@@ -101,26 +101,19 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div v-if="event.matchStatus !== 'Not started' && event.matchStatuss !== 'Ended'">
+                        <div
+                          v-if="
+                            parseInt(event.statusCode) !== 1 &&
+                            parseInt(event.statusCode) !== 3 &&
+                            event.currentOdds
+                          "
+                        >
                           <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="ml-1" style="font-weight: bold"> {{
+                          <span class="m-l-5" style="font-weight: bold">{{
                             event.currentOdds.toFixed(2)
                           }}</span>
                         </div>
-                        <div
-                          @click="
-                            $router.push({
-                              name: 'fixtures-detail',
-                              params: {
-                                sport: slugify(event.sport),
-                                tournament_name: slugify(event.tournament),
-                                event_name: slugify(event.eventName),
-                                event_id: event.matchId
-                              }
-                            })
-                          "
-                          class="m-aginst m-t-black m-t-14"
-                        >
+                        <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
                           </span>
@@ -265,22 +258,33 @@
 <script setup>
 import BetHistoryHeader from '@/components/BetHistoryHeader.vue'
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
-import OpenBet from '@/components/BetHistory/OpenBet.vue'
-import { ref, defineComponent, onMounted } from 'vue'
-import { getBets, formatNumber, formatDate, slugify } from '@/helpers'
-import { useAuthStore } from '@/stores'
-import $ from 'jquery'
-import { useUsersStore } from '@/stores'
-import { CLIENT_ID, performCashout } from '@/helpers'
-import emitter from '@/plugins/emitter'
+import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
+import OpenBet from "@/components/BetHistory/OpenBet.vue";
+import { ref, defineComponent, onMounted } from "vue";
+import {
+  getBets,
+  formatNumber,
+  formatDate,
+  slugify,
+  getNext7Days,
+  getCodeHubItems,
+} from "@/helpers";
+import { useAuthStore } from "@/stores";
+import $ from "jquery";
+import { useUsersStore } from "@/stores";
+import { CLIENT_ID, performCashout } from "@/helpers";
+import emitter from "@/plugins/emitter";
+import { useRouter } from "vue-router";
 
-const openBets = ref(null)
-const isLoading = ref(false)
-const { isAuthenticated } = useAuthStore()
-const userStore = useUsersStore()
-const showCashoutModal = ref(false)
-const cashoutData = ref({})
-const cashingOut = ref(false)
+const openBets = ref(null);
+const isLoading = ref(true);
+const { isAuthenticated } = useAuthStore();
+const userStore = useUsersStore();
+const showCashoutModal = ref(false);
+const cashoutData = ref({});
+const cashingOut = ref(false);
+const codes = ref([]);
+const router = useRouter();
 
 async function getBetsData() {
   isLoading.value = true
@@ -328,6 +332,30 @@ async function confirmCashout() {
     await getBetsData()
   } else {
     emitter.emit('showDialogueToaster', res.message)
+  }
+}
+
+function goToEvent(event) {
+  if (event.statusCode == 0) {
+    return router.push({
+      name: "fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
+  } else {
+    return router.push({
+      name: "live-fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
   }
 }
 
