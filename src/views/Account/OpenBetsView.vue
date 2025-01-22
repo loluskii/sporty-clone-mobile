@@ -149,30 +149,28 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div v-if="event.matchStatus !== 'Not started' && event.matchStatuss !== 'Ended'">
-                          <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="m-l-5" style="font-weight: bold;">{{ event.currentOdds.toFixed(2) }}</span>
-
-                        </div>
                         <div
-                          @click="
-                            $router.push({
-                              name: 'fixtures-detail',
-                              params: {
-                                sport: slugify(event.sport),
-                                tournament_name: slugify(event.tournament),
-                                event_name: slugify(event.eventName),
-                                event_id: event.matchId,
-                              },
-                            })
+                          v-if="
+                            parseInt(event.statusCode) !== 1 &&
+                            parseInt(event.statusCode) !== 3 &&
+                            event.currentOdds
                           "
-                          class="m-aginst m-t-black m-t-14"
                         >
+                          <span class="bg-green-200 p-1">Live Odds</span>
+                          <span class="m-l-5" style="font-weight: bold">{{
+                            event.currentOdds.toFixed(2)
+                          }}</span>
+                        </div>
+                        <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div v-if="event.matchStatus === 'Not started'" data-v-f5461f3c="" class="m-score">
+                        <div
+                          v-if="event.matchStatus == 0"
+                          data-v-f5461f3c=""
+                          class="m-score"
+                        >
                           <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
@@ -180,9 +178,19 @@
                         </div>
                         <div v-else data-v-f5461f3c="" class="m-score">
                           <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
-                            {{ event.matchStatus === 'Ended' ? 'FT' : event.eventTime }}'
+                            {{
+                              parseInt(event.matchStatus) === 3
+                                ? "FT"
+                                : event.eventTime
+                                ? `${event.eventTime}'`
+                                : ""
+                            }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12 m-l-12" style="margin-left: 10px;">
+                          <span
+                            data-v-f5461f3c=""
+                            class="m-t-12 m-l-12"
+                            style="margin-left: 10px; font-weight: bold"
+                          >
                             {{ event.score }}
                           </span>
                         </div>
@@ -323,6 +331,7 @@ import $ from "jquery";
 import { useUsersStore } from "@/stores";
 import { CLIENT_ID, performCashout } from "@/helpers";
 import emitter from "@/plugins/emitter";
+import { useRouter } from "vue-router";
 
 const openBets = ref(null);
 const isLoading = ref(true);
@@ -332,6 +341,7 @@ const showCashoutModal = ref(false);
 const cashoutData = ref({});
 const cashingOut = ref(false);
 const codes = ref([]);
+const router = useRouter();
 
 async function getBetsData() {
   try {
@@ -388,6 +398,30 @@ async function confirmCashout() {
     await getBetsData();
   } else {
     emitter.emit("showDialogueToaster", res.message);
+  }
+}
+
+function goToEvent(event) {
+  if (event.statusCode == 0) {
+    return router.push({
+      name: "fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
+  } else {
+    return router.push({
+      name: "live-fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
   }
 }
 
