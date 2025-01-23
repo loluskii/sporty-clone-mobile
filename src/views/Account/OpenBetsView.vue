@@ -67,7 +67,7 @@
           <ul class="m-bet-list">
             <li v-for="(bet, index) in openBets" :key="index" class="m-bet-item">
               <div class="m-item-wrap">
-                <div @click="showChild($event, bet.betslipId)" class="m-title">
+                <div class="m-title">
                   <div>
                     <span class="m-t-14 m-t-bold m-t-black">
                       {{ bet.betCategory }}
@@ -81,7 +81,7 @@
                     <div style="color: #322c84" @click="shareTicket"></div>
                   </div>
                 </div>
-                <div>
+                <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">
                     <li
                       v-for="event in bet.selections.slice(0, 3)"
@@ -149,7 +149,13 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div v-if="event.isLive && event.currentOdds">
+                        <div
+                          v-if="
+                            event.isLive &&
+                            event.currentOdds &&
+                            event.matchStatus.toLowerCase() !== 'not started'
+                          "
+                        >
                           <span class="bg-green-200 p-1">Live Odds</span>
                           <span class="p-l-5" style="font-weight: bold">{{
                             event.currentOdds.toFixed(2)
@@ -161,7 +167,7 @@
                           </span>
                         </div>
                         <div
-                          v-if="!event.isLive && event.matchStatus !== 'Ended'"
+                          v-if="event.matchStatus.toLowerCase() === 'not started'"
                           class="m-score"
                         >
                           <span class="m-t-12 capitalize m-t-gray">
@@ -184,12 +190,23 @@
                       </div>
                     </li>
                   </ul>
+                  <div class="m-more f-flex m-t-12 m-t-l14">
+                    <div class="m-l-left">
+                      <!-- <span v-if="bet.selections?.length > 2" class="m-t-gray"
+                        >and {{ remainingMatchesCount(bet.selections) }} other match{{
+                          remainingMatchesCount(bet.selections) > 1 ? 'es' : ''
+                        }}</span
+                      > -->
+                    </div>
+                    <!-- <div>
+                      <span class="m-t-black"
+                        ><span> Match Details </span> <i class="m-icon-more"></i
+                      ></span>
+                    </div> -->
+                  </div>
                 </div>
 
-                <div
-                  @click="showChild($event, bet.betslipId)"
-                  class="m-money f-flex m-t-black f-btwn m-t-12"
-                >
+                <div class="m-money f-flex m-t-black f-btwn m-t-12">
                   <div class="m-money__lr m-r-20">
                     <div>Stake</div>
                     <div class="m-t-bold amount m-t-14">
@@ -350,13 +367,13 @@ async function getBetsData() {
     const res = await getBets(payload);
     openBets.value = res.bets;
     res.bets.forEach((bet) => {
-      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live');
-      if(hasLiveSelection.length > 0){
-        bet.hasLiveSelection = true
-      }else{
-        bet.hasLiveSelection = false
+      let hasLiveSelection = bet.selections.filter((s) => s.type === "live");
+      if (hasLiveSelection.length > 0) {
+        bet.hasLiveSelection = true;
+      } else {
+        bet.hasLiveSelection = false;
       }
-    })
+    });
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
