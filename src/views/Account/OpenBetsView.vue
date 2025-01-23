@@ -105,12 +105,30 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div v-if="event.isLive && event.currentOdds && event.matchStatus.toLowerCase() !== 'not started'">
-                          <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="p-l-5" style="font-weight: bold">{{
-                            event.currentOdds.toFixed(2)
-                          }}</span>
+                        <div class="m-live-odds" v-if="event.type === 'live'">
+                          <template
+                            v-if="
+                              event.isLive &&
+                              event.currentOdds > 1 &&
+                              event.matchStatus.toLowerCase() !== 'not started'
+                            "
+                          >
+                            <div>
+                              <span class="bg-green-200 p-1">Live Odds</span>
+                              <span class="p-l-5" style="font-weight: bold">{{
+                                event.currentOdds.toFixed(2)
+                              }}</span>
+                            </div>
+                          </template>
+
+                          <div
+                            v-else-if="event.isLive && event.currentOdds >= 1"
+                            class="m-odds-desc m-b-5"
+                          >
+                            Live Odds Suspended
+                          </div>
                         </div>
+
                         <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
@@ -424,4 +442,74 @@ defineComponent({
 
 <style scoped>
 @import url("@/assets/css/bet-history.css");
+
+.m-btn--text {
+  color: #0d9737;
+}
+.m-btn--text + .m-btn {
+  margin-top: 1.66666667rem;
+}
+.no_bets {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-size: 1rem;
+  line-height: 1.19333333rem;
+  padding: 1.66666667rem 0 1.91666667rem;
+  text-align: center;
+}
+.no_bets .content {
+  margin-top: 0.66666667rem;
+}
+.none-login-wrapper .login-tip {
+  margin: 0 auto;
+  padding: 2.33333333rem 0;
+  text-align: center;
+}
+.none-login-wrapper .login-tip .error-msg {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  display: block;
+  font-size: 1rem;
+  line-height: 1.58333333rem;
+  margin: 0 auto 1.33333333rem;
+  width: 17.08333333rem;
+}
+.none-login-wrapper .login-tip .login-btn {
+  border: 1px solid var(--brand-secondary);
+  border-radius: 0.25rem;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: var(--brand-secondary);
+  display: inline-block;
+  height: 2.33333333rem;
+  line-height: 2.33333333rem;
+  min-width: 4.66666667rem;
+  padding: 0 0.58333333rem;
+}
+.empty-recommended-code-container .recommended-code {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1.33333333rem;
+  font-weight: 700;
+  padding-left: 0.66666667rem;
+}
+.empty-recommended-code-container .recommended-code span {
+  display: inline-block;
+  margin-left: 1rem;
+}
+.empty-recommended-code-container .code-hub-list-item-container {
+  padding: 0.66666667rem;
+  position: relative;
+}
+.code-hub-list-item-container .code-hub-list-item-wrap + .code-hub-list-item-wrap {
+  margin-top: 0.66666667rem;
+}
 </style>
