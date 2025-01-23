@@ -105,7 +105,7 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div v-if="event.isLive && event.currentOdds">
+                        <div v-if="event.isLive && event.currentOdds && event.matchStatus.toLowerCase() !== 'not started'">
                           <span class="bg-green-200 p-1">Live Odds</span>
                           <span class="p-l-5" style="font-weight: bold">{{
                             event.currentOdds.toFixed(2)
@@ -117,7 +117,7 @@
                           </span>
                         </div>
                         <div
-                          v-if="!event.isLive && event.matchStatus !== 'Ended'"
+                          v-if="event.matchStatus.toLowerCase() === 'not started'"
                           class="m-score"
                         >
                           <span class="m-t-12 capitalize m-t-gray">
@@ -157,7 +157,6 @@
                 </div>
 
                 <div
-                  @click="showChild($event, bet.betslipId)"
                   class="m-money f-flex m-t-black f-btwn m-t-12"
                 >
                   <div class="m-money__lr m-r-20">
