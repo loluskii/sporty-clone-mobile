@@ -149,15 +149,9 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div
-                          v-if="
-                            parseInt(event.statusCode) !== 1 &&
-                            parseInt(event.statusCode) !== 3 &&
-                            event.currentOdds
-                          "
-                        >
+                        <div v-if="event.isLive && event.currentOdds">
                           <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="m-l-5" style="font-weight: bold">{{
+                          <span class="p-l-5" style="font-weight: bold">{{
                             event.currentOdds.toFixed(2)
                           }}</span>
                         </div>
@@ -167,31 +161,24 @@
                           </span>
                         </div>
                         <div
-                          v-if="event.matchStatus == 0"
-                          data-v-f5461f3c=""
+                          v-if="!event.isLive && event.matchStatus !== 'Ended'"
                           class="m-score"
                         >
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                          <span class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12"></span>
+                          <span class="m-t-12"></span>
                         </div>
-                        <div v-else data-v-f5461f3c="" class="m-score">
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                          <span class="m-t-12 capitalize">
                             {{
-                              parseInt(event.matchStatus) === 3
+                              !event.isLive
                                 ? "FT"
-                                : event.eventTime
-                                ? `${event.eventTime}'`
-                                : ""
+                                : `${event.eventTime} ${getMatchStatus(event)}`
                             }}
                           </span>
-                          <span
-                            data-v-f5461f3c=""
-                            class="m-t-12 m-l-12"
-                            style="margin-left: 10px; font-weight: bold"
-                          >
-                            {{ event.score }}
+                          <span class="m-t-12" style="font-weight: bold">
+                            {{ ` | ${event.score}` }}
                           </span>
                         </div>
                       </div>
@@ -229,7 +216,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout KES ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout NGN ${bet.cashOutAmount.toFixed(2)}`
                         : "Cashout Unavailable"
                     }}</span>
                     <img
@@ -289,7 +276,7 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          KES {{ cashoutData.cashOutAmount.toFixed(2) }}
+                          NGN {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
                       <img
@@ -317,7 +304,7 @@ import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
 import OpenBet from "@/components/BetHistory/OpenBet.vue";
-import { ref, defineComponent, onMounted } from "vue";
+import { ref, defineComponent, onMounted, computed } from "vue";
 import {
   getBets,
   formatNumber,
@@ -343,7 +330,16 @@ const cashingOut = ref(false);
 const codes = ref([]);
 const router = useRouter();
 
+const getMatchStatus = (event) => {
+  return event.matchStatus == "1st half"
+    ? "H1"
+    : event.matchStatus == "2nd half"
+    ? "H2"
+    : event.matchStatus;
+};
+
 async function getBetsData() {
+  isLoading.value = true;
   try {
     let payload = {
       clientId: CLIENT_ID,
@@ -402,7 +398,7 @@ async function confirmCashout() {
 }
 
 function goToEvent(event) {
-  if (event.statusCode == 0) {
+  if (!event.isLive) {
     return router.push({
       name: "fixtures-detail",
       params: {
@@ -449,11 +445,9 @@ onMounted(async () => {
     getBetsData();
 
     setInterval(() => {
-      isLoading.value = false;
       getBetsData();
     }, 10000);
   }
-  await getCodes();
 });
 defineComponent({
   name: "open-bets",
