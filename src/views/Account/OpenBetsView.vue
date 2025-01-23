@@ -73,7 +73,7 @@
                       {{ bet.betCategory }}
                     </span>
                     <span v-if="bet.hasLiveSelection"
-                      ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
+                      ><span class="m-i-live m-t-b5 rounded" style="font-weight: bold; background-color: var(--brand-secondary); color: white">Live</span></span
                     >
                   </div>
                   <div class="actions">
@@ -149,28 +149,17 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div class="m-live-odds" v-if="event.type === 'live'">
-                          <template
-                            v-if="
-                              event.isLive &&
-                              event.currentOdds > 1 &&
-                              event.matchStatus.toLowerCase() !== 'not started'
-                            "
-                          >
+                        <div class="m-live-odds" v-if="matchIsLive(event)">
+                          <template v-if="event.currentOdds > 1">
                             <div>
-                              <span class="bg-green-200 p-1">Live Odds</span>
-                              <span class="p-l-5" style="font-weight: bold">{{
+                              <span class="p-1 m-t-gray small">Live Odds @</span>
+                              <span class="p-l-5" style="font-weight: bold; color: var(--brand-secondary)">{{
                                 event.currentOdds.toFixed(2)
                               }}</span>
                             </div>
                           </template>
 
-                          <div
-                            v-else-if="event.isLive && event.currentOdds >= 1"
-                            class="m-odds-desc m-b-5"
-                          >
-                            Live Odds Suspended
-                          </div>
+                          <div v-else class="m-odds-desc m-b-5">Live Odds Suspended</div>
                         </div>
 
                         <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
@@ -178,24 +167,31 @@
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div
-                          v-if="event.matchStatus.toLowerCase() === 'not started'"
-                          class="m-score"
-                        >
+                        <div v-if="matchIsNotLive(event)" class="m-score">
                           <span class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
                           <span class="m-t-12"></span>
                         </div>
-                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                        <div
+                          v-else-if="matchIsLive(event) || matchIsEnded(event)"
+                          class="m-score"
+                          :class="{ 'm-t-gray': matchIsEnded(event) }"
+                          :style="
+                            matchIsLive(event) ? 'color: var(--brand-secondary)' : ''
+                          "
+                        >
                           <span class="m-t-12 capitalize">
                             {{
-                              !event.isLive
+                              matchIsEnded(event)
                                 ? "FT"
                                 : `${event.eventTime} ${getMatchStatus(event)}`
                             }}
                           </span>
-                          <span class="m-t-12" style="font-weight: bold">
+                          <span
+                            class="m-t-12"
+                            :style="matchIsLive(event) ? 'font-weight: bold' : ''"
+                          >
                             {{ ` | ${event.score}` }}
                           </span>
                         </div>
@@ -218,9 +214,7 @@
                   </div>
                 </div>
 
-                <div
-                  class="m-money f-flex m-t-black f-btwn m-t-12"
-                >
+                <div class="m-money f-flex m-t-black f-btwn m-t-12">
                   <div class="m-money__lr m-r-20">
                     <div>Stake</div>
                     <div class="m-t-bold amount m-t-14">
@@ -369,6 +363,21 @@ const getMatchStatus = (event) => {
     : event.matchStatus;
 };
 
+const matchIsNotLive = (event) => {
+  return event.matchStatus.toLowerCase() === "not started";
+};
+
+const matchIsLive = (event) => {
+  return (
+    event.matchStatus.toLowerCase() !== "not started" &&
+    event.matchStatus.toLowerCase() !== "ended"
+  );
+};
+
+const matchIsEnded = (event) => {
+  return event.matchStatus.toLowerCase() === "ended";
+};
+
 async function getBetsData() {
   isLoading.value = true;
   try {
@@ -381,13 +390,13 @@ async function getBetsData() {
     const res = await getBets(payload);
     openBets.value = res.bets;
     res.bets.forEach((bet) => {
-      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live');
-      if(hasLiveSelection.length > 0){
-        bet.hasLiveSelection = true
-      }else{
-        bet.hasLiveSelection = false
+      let hasLiveSelection = bet.selections.filter((s) => s.type === "live");
+      if (hasLiveSelection.length > 0) {
+        bet.hasLiveSelection = true;
+      } else {
+        bet.hasLiveSelection = false;
       }
-    })
+    });
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
