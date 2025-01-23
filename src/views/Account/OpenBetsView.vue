@@ -67,21 +67,21 @@
           <ul class="m-bet-list">
             <li v-for="(bet, index) in openBets" :key="index" class="m-bet-item">
               <div class="m-item-wrap">
-                <div @click="showChild($event, bet.betslipId)" class="m-title">
+                <div class="m-title">
                   <div>
                     <span class="m-t-14 m-t-bold m-t-black">
                       {{ bet.betCategory }}
                     </span>
-                    <!-- <span v-if="bet.eventType === 'live'"
-                      ><span class="m-i-live m-t-b5">Live</span></span
-                    > -->
+                    <span v-if="bet.hasLiveSelection"
+                      ><span class="m-i-live m-t-b5 rounded" style="font-weight: bold; background-color: var(--brand-secondary); color: white">Live</span></span
+                    >
                   </div>
                   <div class="actions">
                     <span class="divider"></span>
                     <div style="color: #322c84" @click="shareTicket"></div>
                   </div>
                 </div>
-                <div>
+                <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">
                     <li
                       v-for="event in bet.selections.slice(0, 3)"
@@ -149,32 +149,51 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div
-                          v-if="
-                            parseInt(event.statusCode) !== 1 &&
-                            parseInt(event.statusCode) !== 3 &&
-                            event.currentOdds
-                          "
-                        >
-                          <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="m-l-5" style="font-weight: bold">{{
-                            event.currentOdds.toFixed(2)
-                          }}</span>
+                        <div class="m-live-odds" v-if="matchIsLive(event)">
+                          <template v-if="event.currentOdds > 1">
+                            <div>
+                              <span class="p-1 m-t-gray small">Live Odds @</span>
+                              <span class="p-l-5" style="font-weight: bold; color: var(--brand-secondary)">{{
+                                event.currentOdds.toFixed(2)
+                              }}</span>
+                            </div>
+                          </template>
+
+                          <div v-else class="m-odds-desc m-b-5">Live Odds Suspended</div>
                         </div>
+
                         <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div
-                          v-if="event.matchStatus == 0"
-                          data-v-f5461f3c=""
-                          class="m-score"
-                        >
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                        <div v-if="matchIsNotLive(event)" class="m-score">
+                          <span class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12"></span>
+                          <span class="m-t-12"></span>
+                        </div>
+                        <div
+                          v-else-if="matchIsLive(event) || matchIsEnded(event)"
+                          class="m-score"
+                          :class="{ 'm-t-gray': matchIsEnded(event) }"
+                          :style="
+                            matchIsLive(event) ? 'color: var(--brand-secondary)' : ''
+                          "
+                        >
+                          <span class="m-t-12 capitalize">
+                            {{
+                              matchIsEnded(event)
+                                ? "FT"
+                                : `${event.eventTime} ${getMatchStatus(event)}`
+                            }}
+                          </span>
+                          <span
+                            class="m-t-12"
+                            :style="matchIsLive(event) ? 'font-weight: bold' : ''"
+                          >
+                            {{ ` | ${event.score}` }}
+                          </span>
                         </div>
                         <div v-else data-v-f5461f3c="" class="m-score">
                           <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
@@ -197,12 +216,23 @@
                       </div>
                     </li>
                   </ul>
+                  <div class="m-more f-flex m-t-12 m-t-l14">
+                    <div class="m-l-left">
+                      <!-- <span v-if="bet.selections?.length > 2" class="m-t-gray"
+                        >and {{ remainingMatchesCount(bet.selections) }} other match{{
+                          remainingMatchesCount(bet.selections) > 1 ? 'es' : ''
+                        }}</span
+                      > -->
+                    </div>
+                    <!-- <div>
+                      <span class="m-t-black"
+                        ><span> Match Details </span> <i class="m-icon-more"></i
+                      ></span>
+                    </div> -->
+                  </div>
                 </div>
 
-                <div
-                  @click="showChild($event, bet.betslipId)"
-                  class="m-money f-flex m-t-black f-btwn m-t-12"
-                >
+                <div class="m-money f-flex m-t-black f-btwn m-t-12">
                   <div class="m-money__lr m-r-20">
                     <div>Stake</div>
                     <div class="m-t-bold amount m-t-14">
@@ -317,7 +347,7 @@ import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
 import OpenBet from "@/components/BetHistory/OpenBet.vue";
-import { ref, defineComponent, onMounted } from "vue";
+import { ref, defineComponent, onMounted, computed } from "vue";
 import {
   getBets,
   formatNumber,
@@ -343,7 +373,31 @@ const cashingOut = ref(false);
 const codes = ref([]);
 const router = useRouter();
 
+const getMatchStatus = (event) => {
+  return event.matchStatus == "1st half"
+    ? "H1"
+    : event.matchStatus == "2nd half"
+    ? "H2"
+    : event.matchStatus;
+};
+
+const matchIsNotLive = (event) => {
+  return event.matchStatus.toLowerCase() === "not started";
+};
+
+const matchIsLive = (event) => {
+  return (
+    event.matchStatus.toLowerCase() !== "not started" &&
+    event.matchStatus.toLowerCase() !== "ended"
+  );
+};
+
+const matchIsEnded = (event) => {
+  return event.matchStatus.toLowerCase() === "ended";
+};
+
 async function getBetsData() {
+  isLoading.value = true;
   try {
     let payload = {
       clientId: CLIENT_ID,
@@ -353,20 +407,18 @@ async function getBetsData() {
     };
     const res = await getBets(payload);
     openBets.value = res.bets;
+    res.bets.forEach((bet) => {
+      let hasLiveSelection = bet.selections.filter((s) => s.type === "live");
+      if (hasLiveSelection.length > 0) {
+        bet.hasLiveSelection = true;
+      } else {
+        bet.hasLiveSelection = false;
+      }
+    });
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
   }
-}
-
-async function getCodes() {
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
 }
 
 function closeCashoutModal() {
@@ -378,7 +430,7 @@ function closeCashoutModal() {
 }
 
 function handleCashout(bet) {
-  // console.log(bet);
+  console.log(bet);
   showCashoutModal.value = true;
   cashoutData.value = bet;
 }
@@ -402,7 +454,7 @@ async function confirmCashout() {
 }
 
 function goToEvent(event) {
-  if (event.statusCode == 0) {
+  if (!event.isLive) {
     return router.push({
       name: "fixtures-detail",
       params: {
@@ -449,11 +501,9 @@ onMounted(async () => {
     getBetsData();
 
     setInterval(() => {
-      isLoading.value = false;
       getBetsData();
     }, 10000);
   }
-  await getCodes();
 });
 defineComponent({
   name: "open-bets",
@@ -463,6 +513,7 @@ defineComponent({
 
 <style scoped>
 @import url("@/assets/css/bet-history.css");
+
 .m-btn--text {
   color: #0d9737;
 }

@@ -580,10 +580,9 @@ export default {}
 }
 
 .m-sportsBet--bets .m-bet-list .m-i-live {
-  background-color: #574fc246;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #262262;
+  color: var(--brand-secondary);
   display: inline-block;
   font-family: 'Roboto';
   font-size: 1rem;
