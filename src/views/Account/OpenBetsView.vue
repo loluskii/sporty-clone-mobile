@@ -21,7 +21,7 @@
           <ul class="m-bet-list">
             <li v-for="(bet, index) in openBets" :key="index" class="m-bet-item">
               <div class="m-item-wrap">
-                <div @click="showChild($event, bet.betslipId)" class="m-title">
+                <div class="m-title">
                   <div>
                     <span class="m-t-14 m-t-bold m-t-black">
                       {{ bet.betCategory }}
@@ -35,7 +35,7 @@
                     <div style="color: #322c84" @click="shareTicket"></div>
                   </div>
                 </div>
-                <div>
+                <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">
                     <li
                       v-for="event in bet.selections.slice(0, 3)"
@@ -103,8 +103,9 @@
                         </div>
                         <div v-if="event.matchStatus !== 'Not started' && event.matchStatuss !== 'Ended'">
                           <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="m-l-5" style="font-weight: bold;">{{ event.currentOdds.toFixed(2) }}</span>
-
+                          <span class="ml-1" style="font-weight: bold"> {{
+                            event.currentOdds.toFixed(2)
+                          }}</span>
                         </div>
                         <div
                           @click="
@@ -124,18 +125,32 @@
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div v-if="event.matchStatus === 'Not started'" data-v-f5461f3c="" class="m-score">
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
-                            {{ formatDate(event.eventDate, 'DD/MM HH:mm') }}
+                        <div
+                          v-if="!event.isLive"
+                          
+                          class="m-score"
+                        >
+                          <span  class="m-t-12 capitalize m-t-gray">
+                            {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12"></span>
+                          <span  class="m-t-12"></span>
                         </div>
-                        <div v-else data-v-f5461f3c="" class="m-score">
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
-                            {{ event.matchStatus === 'Ended' ? 'FT' : event.eventTime }}'
+                        <div v-else  class="m-score" style="color: var(--brand-secondary)">
+                          <span  class="m-t-12 capitalize">
+                            {{
+                              parseInt(event.matchStatus) === 3
+                                ? "FT"
+                                : event.eventTime
+                                ? `${event.eventTime}`
+                                : ""
+                            }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12 m-l-12" style="margin-left: 10px;">
-                            {{ event.score }}
+                          <span
+                            
+                            class="m-t-12 m-l-12"
+                            style="margin-left: 10px; font-weight: bold"
+                          >
+                            {{ `| ${event.score}` }}
                           </span>
                         </div>
                       </div>
