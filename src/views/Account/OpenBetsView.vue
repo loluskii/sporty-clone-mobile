@@ -149,18 +149,30 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div
-                          v-if="
-                            event.isLive &&
-                            event.currentOdds &&
-                            event.matchStatus.toLowerCase() !== 'not started'
-                          "
-                        >
-                          <span class="bg-green-200 p-1">Live Odds</span>
-                          <span class="p-l-5" style="font-weight: bold">{{
-                            event.currentOdds.toFixed(2)
-                          }}</span>
+                        <div class="m-live-odds" v-if="event.type === 'live'">
+                          <template
+                            v-if="
+                              event.isLive &&
+                              event.currentOdds > 1 &&
+                              event.matchStatus.toLowerCase() !== 'not started'
+                            "
+                          >
+                            <div>
+                              <span class="bg-green-200 p-1">Live Odds</span>
+                              <span class="p-l-5" style="font-weight: bold">{{
+                                event.currentOdds.toFixed(2)
+                              }}</span>
+                            </div>
+                          </template>
+
+                          <div
+                            v-else-if="event.isLive && event.currentOdds >= 1"
+                            class="m-odds-desc m-b-5"
+                          >
+                            Live Odds Suspended
+                          </div>
                         </div>
+
                         <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
@@ -206,7 +218,9 @@
                   </div>
                 </div>
 
-                <div class="m-money f-flex m-t-black f-btwn m-t-12">
+                <div
+                  class="m-money f-flex m-t-black f-btwn m-t-12"
+                >
                   <div class="m-money__lr m-r-20">
                     <div>Stake</div>
                     <div class="m-t-bold amount m-t-14">
@@ -367,27 +381,17 @@ async function getBetsData() {
     const res = await getBets(payload);
     openBets.value = res.bets;
     res.bets.forEach((bet) => {
-      let hasLiveSelection = bet.selections.filter((s) => s.type === "live");
-      if (hasLiveSelection.length > 0) {
-        bet.hasLiveSelection = true;
-      } else {
-        bet.hasLiveSelection = false;
+      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live');
+      if(hasLiveSelection.length > 0){
+        bet.hasLiveSelection = true
+      }else{
+        bet.hasLiveSelection = false
       }
-    });
+    })
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
   }
-}
-
-async function getCodes() {
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
 }
 
 function closeCashoutModal() {
@@ -399,7 +403,7 @@ function closeCashoutModal() {
 }
 
 function handleCashout(bet) {
-  // console.log(bet);
+  console.log(bet);
   showCashoutModal.value = true;
   cashoutData.value = bet;
 }
@@ -482,6 +486,7 @@ defineComponent({
 
 <style scoped>
 @import url("@/assets/css/bet-history.css");
+
 .m-btn--text {
   color: #0d9737;
 }
