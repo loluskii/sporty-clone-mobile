@@ -72,9 +72,9 @@
                     <span class="m-t-14 m-t-bold m-t-black">
                       {{ bet.betCategory }}
                     </span>
-                    <!-- <span v-if="bet.eventType === 'live'"
-                      ><span class="m-i-live m-t-b5">Live</span></span
-                    > -->
+                    <span v-if="bet.hasLiveSelection"
+                      ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
+                    >
                   </div>
                   <div class="actions">
                     <span class="divider"></span>
@@ -349,6 +349,14 @@ async function getBetsData() {
     };
     const res = await getBets(payload);
     openBets.value = res.bets;
+    res.bets.forEach((bet) => {
+      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live');
+      if(hasLiveSelection.length > 0){
+        bet.hasLiveSelection = true
+      }else{
+        bet.hasLiveSelection = false
+      }
+    })
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
