@@ -86,7 +86,7 @@ function moveToNewGame(game){
   showRecommendedGames.value = false
   return router.push({
     name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.id },
+    params: { game_name: slugify(game.title), game_id: game.game_id },
   });
 }
 

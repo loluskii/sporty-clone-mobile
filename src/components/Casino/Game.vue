@@ -44,7 +44,7 @@ async function redirectToGamePlay() {
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(props.game.title), game_id: props.game.id },
+        params: { game_name: slugify(props.game.title), game_id: props.game.game_id },
       });
     }
   } else {
