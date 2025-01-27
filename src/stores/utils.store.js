@@ -16,7 +16,8 @@ export const useUtilstStore = defineStore({
     showFooter: true,
     showMobileNavigation: true,
     errorMessage: null,
-    categoriesList: []
+    categoriesList: [],
+    casinoBonusShown: false
   }),
   getters: {},
   actions: {},

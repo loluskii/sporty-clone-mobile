@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia'
 
 import { getUserDetailsByToken, formatNumber } from '@/helpers'
+import { getUserActiveBonus } from '../helpers'
 
 export const useUsersStore = defineStore({
   id: 'users',
   state: () => ({
     currentUser: null,
     activeBonus: null,
+    casinoActiveBonus: null
   }),
   getters: {
     balance: (state) => (state.currentUser ? state.currentUser.availableBalance : 0),
@@ -25,6 +27,12 @@ export const useUsersStore = defineStore({
     },
     setActiveBonus(bonus) {
       this.activeBonus = bonus;
+    }, 
+    async getActiveBonus() {
+      const res = await getUserActiveBonus()
+      if(res && res.data){
+        this.casinoActiveBonus = res.data
+      }
     }
   },
   persist: {

@@ -243,7 +243,7 @@ export const router = createRouter({
         },
       ],
       meta: {
-        showMobileNavigation: false
+        showMobileNavigation: true
       },
     },
     {

@@ -49,24 +49,7 @@
             </div>
             <div class="row mb-3 pb-3" ref="scrollComponent">
               <div class="col-6" v-for="(game, index) in searchResult" :key="index">
-                <div
-                  class="card bg-dark rounded-3 mb-3"
-                  @click="redirectToGamePlay(game)"
-                >
-                  <img
-                    :src="getImagePath(game)"
-                    class="card-img-top"
-                    alt="..."
-                    @error="handleImageError($event, game)"
-                  />
-                  <div
-                    class="card-body d-flex align-items-center justify-content-center p-2"
-                  >
-                    <span class="text-truncate text-white" style="max-width: 150px">
-                      {{ game.title }}
-                    </span>
-                  </div>
-                </div>
+                <Game :game="game" />
               </div>
             </div>
             <div class="divider mx-3 col-12">
@@ -95,6 +78,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
+import Game from "@/components/Casino/Game.vue"
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -134,26 +118,6 @@ const searchEmtpyResult = computed(() => {
     !isSearching.value
   );
 });
-
-const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
-};
-
-async function redirectToGamePlay(game) {
-  if(userStore.currentUser){
-    emitter.emit("showCasinoDialog");
-  }else{
-    return router.push({ name: "sign-in" });
-  }
-}
-
-const handleImageError = (event, game) => {
-  // Replace the failed image with a placeholder
-  let name = encodeURIComponent(game.title);
-  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
-  event.target.alt = `${game.title}`;
-};
 
 const clearSearch = () => {
   searchQuery.value = "";

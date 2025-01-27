@@ -43,30 +43,21 @@ const confirmLeave = ref(null);
 const bonus = ref(null)
 
 watch(
-  () => route.params.game_id,
-  async () => {
-    await getCasinoURL()
-  },
+  // () => [route.params.game_id, route.query],
+  // async ([game_id, bonusParam]) => {
+  //   await getCasinoURL(game_id, bonusParam)
+  // },
   { immediate: true } 
 )
-
-async function getBonus() {
-  const res = await getUserBonus();
-  isLoading.value = false;
-  if (res && res.bonus) {
-    // find active bonus
-    const active = res.bonus.find((item) => item.status === 1);
-    bonus.value = active;
-  }
-}
 
 async function getCasinoURL() {
   try {
     isLoading.value = true;
     const game_id = parseInt(route.params.game_id);
     let data = "real";
-    const payload = {
+    let payload = {
       gameId: game_id,
+      clientId: import.meta.env.VITE_CLIENT_ID,
       username: currentUser?.username,
       userId: currentUser?.id,
       demo: false,
@@ -76,10 +67,11 @@ async function getCasinoURL() {
       balanceType: "real",
     };
 
-    if(bonus.value){
+    if(route.query.bonusId && route.query.type === "bonus"){
       payload.isBonus = true
       payload.bonusType = "free_round"
-      payload.bonusId = bonus.value.bonusId
+      payload.bonusId = route.query.bonusId
+      payload.balanceType = "bonus"
     }
     const res = await getCasinoStartUrl(payload, data);
     isLoading.value = false;

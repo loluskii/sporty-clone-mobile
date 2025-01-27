@@ -379,6 +379,10 @@ export const getUserBonus = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/bonus/user/list?client_id=${CLIENT_ID}`))
 }
 
+export const getUserActiveBonus = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/bonus/get-active-bonus?client_id=${CLIENT_ID}`))
+}
+
 export const checkFirstDeposit = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/bonus/user/check-deposit-bonus?client_id=${CLIENT_ID}`)

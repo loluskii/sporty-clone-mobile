@@ -118,24 +118,7 @@
             </div>
             <div class="row mb-3 pb-3" v-if="gamesList.length" ref="scrollComponent">
               <div class="col-6" v-for="(game, index) in gamesList" :key="index">
-                <div
-                  class="card bg-dark rounded-3 mb-3"
-                  @click="redirectToGamePlay(game)"
-                >
-                  <img
-                    :src="getImagePath(game)"
-                    class="card-img-top"
-                    alt="..."
-                    @error="handleImageError($event, game)"
-                  />
-                  <div
-                    class="card-body d-flex align-items-center justify-content-center p-2"
-                  >
-                    <span class="text-truncate text-white" style="max-width: 150px">
-                      {{ game.title }}
-                    </span>
-                  </div>
-                </div>
+                <Game :game="game" />
               </div>
             </div>
             <div v-else-if="!singleCategoryLoading && !gamesList.length" class="no-data">
@@ -190,14 +173,13 @@
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory, getUserBonus } from "@/helpers";
+import { getTopGameCategories, gamesByTopCategory, getUserActiveBonus } from "@/helpers";
 import router from "@/router";
 import { useAuthStore, useUsersStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
-import $ from "jquery";
-import Providers from "@/components/Casino/Providers.vue";
+import Game from "@/components/Casino/Game.vue";
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -215,6 +197,10 @@ const getImageSrc = (cat) => {
   const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
   return imageUrl;
 };
+
+const activeBonus = computed(() => {
+  return userStore.casinoActiveBonus;
+});
 
 async function getCategories() {
   try {
@@ -289,6 +275,7 @@ const getImagePath = (game) => {
     .replace(/\s/g, "")
     .toLowerCase()}.png?alt=media`;
 };
+
 const handleImageError = (event, game) => {
   // Replace the failed image with a placeholder
   let name = encodeURIComponent(game.title);
@@ -298,8 +285,8 @@ const handleImageError = (event, game) => {
 
 async function redirectToGamePlay(game) {
   if (userStore.currentUser) {
-    if (bonus.value) {
-      emitter.emit("showCasinoDialog", {bonus: bonus.value, game: game});
+    if (activeBonus.value && activeBonus.value.gameId.includes(game.game_id)) {
+      emitter.emit("showCasinoDialog", {bonus: activeBonus.value, game: game});
     } else {
       return router.push({
         name: "game-play",
@@ -307,18 +294,11 @@ async function redirectToGamePlay(game) {
       });
     }
   } else {
+    authStore.returnUrl = "/Games";
     return router.push({ name: "sign-in" });
   }
-  // if (userStore.currentUser) {
-  //   return router.push({
-  //     name: "game-play",
-  //     params: { game_name: slugify(game.title), game_id: game.id },
-  //   });
-  // } else {
-  //   authStore.returnUrl = "/Games";
-  //   return router.push({ name: "sign-in" });
-  // }
 }
+
 
 const updateCSSVar = () => {
   if (myElement.value) {
@@ -331,19 +311,10 @@ const updateCSSVar = () => {
   }
 };
 
-async function getBonus() {
-  const res = await getUserBonus();
-  if (res && res.bonus) {
-    // find active bonus
-    const active = res.bonus.find((item) => item.status === 1);
-    bonus.value = active;
-  }
-}
-
 onBeforeMount(async () => {
-  Promise.all([getCategories(), getBonus()]);
+  Promise.all([getCategories(), userStore.getActiveBonus()]);
   updateCSSVar();
-  $("body").addClass("no-scroll");
+  // $("body").addClass("no-scroll");
 });
 </script>
 

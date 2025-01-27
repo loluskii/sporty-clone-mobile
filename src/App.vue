@@ -211,7 +211,7 @@ async function getBetsData() {
   }
 }
 
-function showCasinoDialog(data) {
+function showCasinoDialog(data = null) {
   casinoDailogShown.value = true;
   casinoGameData.value = data
 }
@@ -300,6 +300,8 @@ onMounted(async () => {
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
+      utilsStore.sportsbookBonusList = res[0].data;
+      utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
       isLoading.value = false;
     })

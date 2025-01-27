@@ -3,22 +3,43 @@
     <div class="layout mask" style="z-index: 1000; position: fixed"></div>
     <div class="es-dialog m-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto; color: white">
-          <div v-if="hasBonus">You have an active casino bonus</div>
-          <div>Choose the balance to use for this game session.</div>
+        <div
+          v-if="route.name !== 'home'"
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white"
+        >
+          <div>You have an active casino bonus of {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }} for this game</div>
+          <div>Choose the balance to use for this session.</div>
+        </div>
+        <div
+          v-else
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white; text-align: center"
+        >
+          <img
+            src="@/assets/images/party-popper.png"
+            alt="congratulation"
+            style="height: 30px"
+          />
+          <div>Congratulations! You have a casino bonus of {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }}</div>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer" style="margin-top: 1rem; padding: 0">
-        <div class="button-row">
+        <div v-if="route.name !== 'home'" class="button-row">
           <div class="real-money-btn" @click="setBalanceType('real')">
             <div class="real-money-btn-text">Real Money</div>
           </div>
-          <div v-if="hasBonus" class="bonus-btn" @click="setBalanceType('bonus')">
+          <div class="bonus-btn" @click="setBalanceType('bonus')">
             <div class="bonus-btn-text">Bonus</div>
           </div>
         </div>
+        <div v-else class="button-row">
+          <div class="real-money-btn" @click="goToCasino">
+            <div class="real-money-btn-text">Go to Casino</div>
+          </div>
+        </div>
         <div class="button-row">
-          <div class="real-money-btn-cancel" @click="$emit('hide-dialogue')">
+          <div class="real-money-btn-cancel" @click="hideDialog">
             <div class="real-money-btn-text">Cancel</div>
           </div>
         </div>
@@ -29,26 +50,40 @@
 
 <script setup>
 import { defineProps, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import { slugify } from "@/helpers";
+import { useUtilstStore } from "../stores";
 
 const emits = defineEmits(["hide-dialogue"]);
 const props = defineProps({
   data: Object,
 });
 
+const route = useRoute();
 const router = useRouter();
+const { SportsbookGlobalVariable } = useUtilstStore();
+const utilsStore = useUtilstStore();
 
 const setBalanceType = (type) => {
   emits("hide-dialogue");
   return router.push({
     name: "game-play",
     params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
-    query: { bonusId: props.data.bonus.bonusId },
+    query: { bonusId: props.data.bonus.bonusId, type: type },
   });
 };
+
+const goToCasino = () => {
+  emits("hide-dialogue");
+  return router.push("/Games");
+};
+
+const hideDialog = () => {
+  emits('hide-dialogue')
+  utilsStore.casinoBonusShown = true
+}
 
 onMounted(() => {});
 </script>
@@ -110,7 +145,7 @@ onMounted(() => {});
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 85%;
+  width: 80%;
   z-index: 1001;
 }
 .es-dialog-close {

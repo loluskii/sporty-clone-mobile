@@ -3,13 +3,6 @@
     <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
 
     <h3 class="h4 text-white fw-bold mb-0">
-      <!-- <img
-        :src="getProviderLogo()"
-        alt=""
-        height="25"
-        srcset=""
-        v-if="type === 'provider'"
-      /> -->
       {{ titleText }}
     </h3>
   </div>
@@ -19,23 +12,7 @@
     <div class="games-grid mt-3">
       <div class="row mb-3 pb-5" style="overflow-x: hidden">
         <div class="col-6 mb-3" v-for="(game, index) in displayedGames" :key="index">
-          <div
-            class="card bg-dark rounded-3"
-            style="min-width: 150px"
-            @click="redirectToGamePlay(game)"
-          >
-            <img
-              :src="getImagePath(game)"
-              class="card-img-top"
-              alt="..."
-              @error="handleImageError($event, game)"
-            />
-            <div class="card-body d-flex align-items-center justify-content-center p-2">
-              <span class="text-truncate text-white" style="max-width: 150px">
-                {{ game.title }}
-              </span>
-            </div>
-          </div>
+          <Game :game="game" />
         </div>
       </div>
     </div>
@@ -55,20 +32,15 @@
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onMounted, computed } from "vue";
 import router from "@/router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "../../helpers";
-import emitter from "@/plugins/emitter";
 import CategoryProvider from "./CategoryProvider.vue";
-import $ from "jquery";
 import { useUsersStore } from "../../stores";
+import Game from "@/components/Casino/Game.vue"
 
 const props = defineProps(["games", "titleText", "type"]);
 
-const scrollComponent = ref(null);
 const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
@@ -95,38 +67,6 @@ const loadMore = async () => {
   displayLimit.value += itemsPerLoad;
   isLoading.value = false;
 };
-
-const getProviderLogo = () => {
-  let prov = props.titleText.toLowerCase().replace(/ /g, "-");
-  const imageUrl = new URL(
-    `../../assets/images/casino/providers/${prov}.svg`,
-    import.meta.url
-  );
-  return imageUrl;
-};
-
-const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
-};
-const handleImageError = (event, game) => {
-  // Replace the failed image with a placeholder
-  let name = encodeURIComponent(game.title);
-  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
-  event.target.alt = `${game.title}`;
-};
-
-async function redirectToGamePlay(game) {
-  if (usersStore.currentUser) {
-    return router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
-  } else {
-    authStore.returnUrl = "/Games";
-    return router.push({ name: "sign-in" });
-  }
-}
 
 const updateCSSVar = () => {
   console.log(myElement.value);
