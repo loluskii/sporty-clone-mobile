@@ -18,6 +18,8 @@
 import { useAuthStore, useUsersStore } from "@/stores";
 import {computed} from "vue"
 import {slugify} from "@/helpers"
+import emitter from "../../plugins/emitter";
+
 const props = defineProps(["game"])
 const authStore = useAuthStore();
 const userStore = useUsersStore();
