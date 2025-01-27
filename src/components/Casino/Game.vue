@@ -16,7 +16,8 @@
 
 <script setup>
 import { useAuthStore, useUsersStore } from "@/stores";
-
+import {computed} from "vue"
+import {slugify} from "@/helpers"
 const props = defineProps(["game"])
 const authStore = useAuthStore();
 const userStore = useUsersStore();
@@ -39,12 +40,12 @@ const handleImageError = (event) => {
 async function redirectToGamePlay() {
   if (userStore.currentUser) {
     const bonusGameIds = activeBonus.value.gameId;
-    if (bonusGameIds.includes(props.game.game_id)) {
+    if (bonusGameIds.includes(props.game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(props.game.title), game_id: props.game.game_id },
+        params: { game_name: slugify(props.game.title), game_id: props.game.gameId },
       });
     }
   } else {

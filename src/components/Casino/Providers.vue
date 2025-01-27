@@ -106,7 +106,7 @@ async function redirectToGamePlay(game) {
   }
   // return router.push({
   //   name: "game-play",
-  //   params: { game_name: slugify(game.title), game_id: game.game_id },
+  //   params: { game_name: slugify(game.title), game_id: game.gameId },
   // });
 }
 

@@ -285,12 +285,12 @@ const handleImageError = (event, game) => {
 
 async function redirectToGamePlay(game) {
   if (userStore.currentUser) {
-    if (activeBonus.value && activeBonus.value.gameId.includes(game.game_id)) {
+    if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
       emitter.emit("showCasinoDialog", {bonus: activeBonus.value, game: game});
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(game.title), game_id: game.game_id },
+        params: { game_name: slugify(game.title), game_id: game.gameId },
       });
     }
   } else {
