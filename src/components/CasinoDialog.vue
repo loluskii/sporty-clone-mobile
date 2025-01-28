@@ -70,7 +70,7 @@ const setBalanceType = (type) => {
   emits("hide-dialogue");
   return router.push({
     name: "game-play",
-    params: { game_name: slugify(props.data.game.title), game_id: props.data.game.gameId },
+    params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
     query: { bonusId: props.data.bonus.bonusId, type: type },
   });
 };
