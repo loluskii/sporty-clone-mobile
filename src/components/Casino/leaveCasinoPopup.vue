@@ -13,14 +13,33 @@
         <div class="modal-content position-absolute bottom-0">
           <div class="modal-body text-center">
             <!-- Confirmation Message -->
-            <p class="mb-0 fw-bold" style="font-size: 16px">You may also like these games...</p>
+            <p class="mb-0 fw-bold" style="font-size: 16px">
+              You may also like these games...
+            </p>
             <!-- Carousel -->
-            <div class="game-carousel">
+            <div class="game-carousel pb-0">
               <div class="game-carousel-inner">
-                <div v-for="game in gamesList" :key="game.id" class="game-carousel-item" @click="redirectToGamePlay(game)">
-                  <img :src="game.imagePath" class="game-image" :alt="game.name" />
-                  <div class="game-caption bg-dark text-white">
-                    <h5 class="mb-0">{{ game.title }}</h5>
+                <div
+                  v-for="game in gamesList"
+                  :key="game.id"
+                  class="card bg-dark rounded-3 mb-3"
+                  style="width: 150px"
+                  @click="redirectToGamePlay(game)"
+                >
+                  <img
+                    :src="getImagePath(game)"
+                    class="card-img-top"
+                    alt="..."
+                    @error="handleImageError($event, game)"
+                  />
+                  <div class="card-body d-flex flex-column p-2">
+                    <div
+                      class="text-truncate fw-bold"
+                      style="max-width: 150px; color: var(--brand-highlight-text)"
+                    >
+                      {{ game.title }}
+                    </div>
+                    <div class="text-muted">{{ game.type }}</div>
                   </div>
                 </div>
               </div>
@@ -49,18 +68,20 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { useUsersStore } from '../../stores';
-import { slugify } from '../../helpers';
+import { useRouter } from "vue-router";
+import { useUsersStore } from "../../stores";
+import { slugify } from "../../helpers";
 
 const props = defineProps(["showPopup", "gamesList"]);
 const emit = defineEmits(["exit", "continue", "select-game"]);
-const usersStore = useUsersStore()
-const router = useRouter()
+const usersStore = useUsersStore();
+const router = useRouter();
 
 const getImagePath = (game) => {
   // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title
+    .replace(/\s/g, "")
+    .toLowerCase()}.png?alt=media`;
 };
 
 function exitGame() {
@@ -72,9 +93,8 @@ function continueGame() {
 }
 
 async function redirectToGamePlay(game) {
-  return emit('select-game', game)
+  return emit("select-game", game);
 }
-
 </script>
 <style scoped>
 @import url("@/assets/css/casino.css");

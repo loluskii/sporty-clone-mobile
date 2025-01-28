@@ -4,7 +4,7 @@
     <div class="carousel">
       <Carousel></Carousel>
     </div>
-    <div v-if="!isLoading" class="games-container">
+    <div v-if="!isLoading" class="games-container pb-5">
       <div class="head-top d-flex align-items-center">
         <div class="categories-list">
           <div
@@ -26,7 +26,7 @@
               class="category"
               :class="activeTopCategory?.id == top.id ? 'active' : ''"
               @click="getGameByTopCategory(top)"
-              v-if="top.slug !== 'all'"
+              v-if="top.slug !== 'all-games'"
               :id="'category_' + top.id"
             >
               <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
@@ -181,7 +181,15 @@ import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 
-const topGameCategories = ref([]);
+const topGameCategories = ref([
+  {
+    name: "All Games",
+    priority: 0,
+    id: null,
+    slug: "all-games",
+    status: "active",
+  },
+]);
 const gamesList = ref([]);
 const activeTopCategory = ref(null);
 const scrollComponent = ref(null);
@@ -218,7 +226,7 @@ async function getCategories() {
     // Fetch games for each category
     await Promise.all(
       topGameCategories.value.map(async (category) => {
-        if (category.slug !== "all") {
+        if (category.slug) {
           try {
             const gamesResponse = await gamesByTopCategory(category.id); // Replace `id` with the appropriate field
             category.games = gamesResponse.games ? gamesResponse.games.slice(0, 12) : [];
@@ -286,7 +294,7 @@ const handleImageError = (event, game) => {
 async function redirectToGamePlay(game) {
   if (userStore.currentUser) {
     if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
-      emitter.emit("showCasinoDialog", {bonus: activeBonus.value, game: game});
+      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: game });
     } else {
       return router.push({
         name: "game-play",
@@ -298,7 +306,6 @@ async function redirectToGamePlay(game) {
     return router.push({ name: "sign-in" });
   }
 }
-
 
 const updateCSSVar = () => {
   if (myElement.value) {

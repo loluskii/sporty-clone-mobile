@@ -247,6 +247,21 @@ export const router = createRouter({
       },
     },
     {
+      path: '/Games/BonusGames',
+      name: 'casino-bonus',
+      component: GroupView,
+      children: [
+        {
+          path: '/',
+          name: 'bonus-games',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      },
+    },
+    {
       path: '/Games/Category',
       name: 'casino-category',
       component: GroupView,

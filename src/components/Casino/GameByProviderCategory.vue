@@ -2,12 +2,12 @@
   <div class="title-bg d-flex align-items-center">
     <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
 
-    <h3 class="h4 text-white fw-bold mb-0">
+    <h3 class="h4 text-white fw-bold mb-0 text-capitalize">
       {{ titleText }}
     </h3>
   </div>
 
-  <CategoryProvider />
+  <!-- <CategoryProvider /> -->
   <div class="games-container" ref="myElement">
     <div class="games-grid mt-3">
       <div class="row mb-3 pb-5" style="overflow-x: hidden">

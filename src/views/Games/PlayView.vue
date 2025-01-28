@@ -82,17 +82,15 @@ async function getCasinoURL() {
   }
 }
 
-function moveToNewGame(game){
+async function moveToNewGame(game){
   showRecommendedGames.value = false
-  return router.push({
-    name: "game-play",
-    params: { game_name: slugify(game.title), game_id: game.gameId },
-  });
+  await getCasinoURL()
 }
 
 async function getRecommendedGames() {
   const res = await getGames();
-  gamesList.value = res.games.slice(0, 10);
+  let recommended = res.games.filter((g) => g.id.toString() !== route.params.game_id)
+  gamesList.value = recommended.slice(0, 10);
 }
 
 const exitGame = () => {

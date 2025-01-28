@@ -21,9 +21,11 @@ const userStore = useUsersStore();
 const utilsStore = useUtilstStore();
 
 onMounted(async () => {
-  await userStore.getActiveBonus();
-  if (userStore.casinoActiveBonus && !utilsStore.casinoBonusShown) {
-    emitter.emit("showCasinoDialog", {bonus: userStore.casinoActiveBonus});
+  if (userStore.currentUser) {
+    await userStore.getActiveBonus();
+    if (userStore.casinoActiveBonus) {
+      emitter.emit("showCasinoDialog", { bonus: userStore.casinoActiveBonus });
+    }
   }
 });
 </script>

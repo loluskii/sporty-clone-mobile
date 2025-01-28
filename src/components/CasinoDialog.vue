@@ -8,8 +8,10 @@
           class="es-dialog-main m-dialog-main"
           style="height: auto; color: white"
         >
-          <div>You have an active casino bonus of {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }} for this game</div>
-          <div>Choose the balance to use for this session.</div>
+          <div>
+            You have an active casino bonus of {{ SportsbookGlobalVariable.Currency
+            }}{{ props.data.bonus.value }} for this game. Choose the balance to use for this session.
+          </div>
         </div>
         <div
           v-else
@@ -21,7 +23,10 @@
             alt="congratulation"
             style="height: 30px"
           />
-          <div>Congratulations! You have a casino bonus of {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }}</div>
+          <div>
+            Congratulations! You have a casino bonus of
+            {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }}
+          </div>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer" style="margin-top: 1rem; padding: 0">
@@ -36,6 +41,9 @@
         <div v-else class="button-row">
           <div class="real-money-btn" @click="goToCasino">
             <div class="real-money-btn-text">Go to Casino</div>
+          </div>
+          <div class="bonus-btn" @click="goToBonus">
+            <div class="bonus-btn-text">View Bonus</div>
           </div>
         </div>
         <div class="button-row">
@@ -77,13 +85,21 @@ const setBalanceType = (type) => {
 
 const goToCasino = () => {
   emits("hide-dialogue");
-  return router.push("/Games");
+  return router.push({
+    name: "casino-bonus",
+    query: { gameIds: props.data.bonus.gameId.join(',') },
+  });
+};
+
+const goToBonus = () => {
+  emits("hide-dialogue");
+  return router.push("/Account/Bonus");
 };
 
 const hideDialog = () => {
-  emits('hide-dialogue')
-  utilsStore.casinoBonusShown = true
-}
+  emits("hide-dialogue");
+  utilsStore.casinoBonusShown = true;
+};
 
 onMounted(() => {});
 </script>

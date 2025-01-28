@@ -39,6 +39,7 @@ import {
   gamesByTopCategory,
   getProviders,
   getTopGameCategories,
+  getGames
 } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -74,8 +75,9 @@ watch(
     route.params.provider,
     route.query.category_id,
     route.query.providerId,
+    route.query.gameIds
   ],
-  async ([routeName, categoryName, providerName, gameCategoryId, gameProviderId]) => {
+  async ([routeName, categoryName, providerName, gameCategoryId, gameProviderId, gameIds]) => {
     // Check the route name
     switch (routeName) {
       case "casino-providers":
@@ -90,8 +92,10 @@ watch(
       case "games-by-provider":
         handleGamesByProviderView(providerName, gameProviderId);
         break;
+        case "casino-bonus":
+          handleBonusGames(gameIds)
       default:
-        // Handle other routes or provide a default behavior
+        
         break;
     }
   },
@@ -136,6 +140,18 @@ async function handleGamesByProviderView(name, id) {
   viewType.value = "provider";
   isLoading.value = false;
 
+}
+
+async function handleBonusGames(gameIds){
+  viewMode.value = "games-list-view";
+  viewHeaderTitle.value = "Bonus Games";
+  categoryName.value = "Bonus Games";
+  const res = await getGames();
+  const bonusGamesIds = gameIds.split(',')
+  const bonusGamesSet = new Set(bonusGamesIds)
+  gamesList.value = res.games ? res.games.filter(obj => bonusGamesSet.has(obj.gameId) ) : [];
+  viewType.value = "category";
+  isLoading.value = false;
 }
 
 onMounted( () => {
@@ -196,7 +212,7 @@ onMounted( () => {
 .games-container {
   height: 100%;
   width: 100%;
-  padding: 15px;
+  padding: 15px 15px 60px 15px;
 }
 
 .head-top {

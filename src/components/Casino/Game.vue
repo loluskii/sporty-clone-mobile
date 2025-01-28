@@ -1,35 +1,47 @@
 <template>
-  <div class="card bg-dark rounded-3 mb-3" style="min-width: 150px" @click="redirectToGamePlay">
+  <div
+    class="card bg-dark rounded-3 mb-3"
+    style="min-width: 150px"
+    @click="redirectToGamePlay"
+  >
     <img
       :src="getImagePath()"
       class="card-img-top"
       alt="..."
       @error="handleImageError($event, game)"
     />
-    <div class="card-body d-flex align-items-center justify-content-center p-2">
-      <span class="text-truncate text-white" style="max-width: 150px">
+    <div class="card-body d-flex flex-column p-2">
+      <div
+        class="text-truncate fw-bold"
+        style="max-width: 150px; color: var(--brand-highlight-text)"
+      >
         {{ game.title }}
-      </span>
+      </div>
+      <div class="text-muted">{{ game.type }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { useAuthStore, useUsersStore } from "@/stores";
-import {computed} from "vue"
-import {slugify} from "@/helpers"
+import { computed } from "vue";
+import { slugify } from "@/helpers";
 import emitter from "../../plugins/emitter";
+import { useRouter } from "vue-router";
 
-const props = defineProps(["game"])
+const props = defineProps(["game"]);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
+const router = useRouter()
 
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
 });
 const getImagePath = () => {
   // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${props.game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${props.game.title
+    .replace(/\s/g, "")
+    .toLowerCase()}.png?alt=media`;
 };
 
 const handleImageError = (event) => {

@@ -44,22 +44,9 @@ import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";
 
 const props = defineProps(["providers"]);
-
-const gamesList = ref([]);
-const activeTopCategory = ref("all");
-const isLoading = ref(true);
 const route = useRoute();
-const router = useRouter();
 const viewMode = ref("providers");
 const titleText = ref("Providers");
-
-const getImageSrc = (prov) => {
-  const imageUrl = new URL(
-    `../../assets/images/casino/providers/${prov}.svg`,
-    import.meta.url
-  );
-  return imageUrl;
-};
 
 watch(
   () => [route.name],
@@ -79,40 +66,7 @@ watch(
 function handleProvidersView() {
   viewMode.value = "providers";
 }
-async function getCategories() {
-  const response = await getTopGameCategories();
-  //   topGameCategories.value = response.data;
-  //   await getGameByTopCategory(topGameCategories.value[0]);
-}
 
-async function getGameByTopCategory(category) {
-  isLoading.value = true;
-  activeTopCategory.value = category;
-  const res = await gamesByTopCategory(category.id);
-  isLoading.value = false;
-  gamesList.value = res.games ? res.games : [];
-}
-
-const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
-};
-
-async function redirectToGamePlay(game) {
-  if(userStore.currentUser){
-    emitter.emit("showCasinoDialog");
-  }else{
-    return router.push({ name: "sign-in" });
-  }
-  // return router.push({
-  //   name: "game-play",
-  //   params: { game_name: slugify(game.title), game_id: game.gameId },
-  // });
-}
-
-onBeforeMount(async () => {
-  await getCategories();
-});
 </script>
 
 <style scoped>
