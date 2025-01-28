@@ -290,7 +290,7 @@ async function redirectToGamePlay(game) {
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(game.title), game_id: game.gameId },
+        params: { game_name: slugify(game.title), game_id: game.id },
       });
     }
   } else {
