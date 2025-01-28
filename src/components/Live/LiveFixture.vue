@@ -99,7 +99,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import LiveOdds from './LiveOdds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
-import { sortArr, createID, isSelected } from '@/helpers'
+import { sortArr, createID, isSelected, slugify } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 
