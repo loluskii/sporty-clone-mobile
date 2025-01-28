@@ -110,7 +110,7 @@
                             v-if="
                               event.isLive &&
                               event.currentOdds > 1 &&
-                              event.matchStatus.toLowerCase() !== 'not started'
+                              (event.matchStatus ? event.matchStatus.toLowerCase() !== 'not started' : '')
                             "
                           >
                             <div>
@@ -135,7 +135,7 @@
                           </span>
                         </div>
                         <div
-                          v-if="event.matchStatus.toLowerCase() === 'not started'"
+                          v-if="(event.matchStatus ? event.matchStatus.toLowerCase() === 'not started' : '')"
                           class="m-score"
                         >
                           <span class="m-t-12 capitalize m-t-gray">
