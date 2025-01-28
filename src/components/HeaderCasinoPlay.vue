@@ -7,16 +7,15 @@
       <div class="m-nav-right">
         <template v-if="usersStore.currentUser">
           <div class="like-game">
-            <i class="bi bi-star fw-bold"></i>
+            <!-- <i class="bi bi-star fw-bold"></i> -->
             <!-- <span>Love Game</span> -->
           </div>
-          <span class="mx-3 border" style="height: 20px"></span>
-          <div class="balance">
+          <!-- <span class="mx-3 border" style="height: 20px"></span> -->
+          <!-- <div class="balance">
             <span class="fw-bold"
               >N {{ usersStore.currentUser.availableBalance.toLocaleString("en") }}</span
             >
-            <!-- <span>Balance</span> -->
-          </div>
+          </div> -->
         </template>
         <a href="/sign-in" v-else>Log in</a>
       </div>

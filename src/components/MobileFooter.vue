@@ -300,6 +300,7 @@ const routeIsCasino = computed(() => {
     "casino-providers",
     "casino-category",
     "games-by-provider",
+    "casino-bonus"
   ];
   return route_names.includes(route.name);
 });
