@@ -123,7 +123,7 @@ async function getBonus() {
     // find active bonus
     const active = res.bonus.find((item) => item.status === 1);
     activeBonus.value = active;
-    pendingBalance.value = active.pendingAmount;
+    pendingBalance.value = active?.pendingAmount;
     // find non active
     const bHistory = res.bonus;
     bonusHistory.value = bHistory;
