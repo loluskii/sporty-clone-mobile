@@ -319,7 +319,7 @@ const updateCSSVar = () => {
 };
 
 onBeforeMount(async () => {
-  Promise.all([getCategories(), userStore.getActiveBonus()]);
+  Promise.all([getCategories()]);
   updateCSSVar();
   // $("body").addClass("no-scroll");
 });

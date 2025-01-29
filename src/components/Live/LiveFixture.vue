@@ -127,7 +127,7 @@ const getOdds = () => {
       const odds = props.gameData.outcomes
       let filtered = odds.filter((item) => item.marketID == props.activeMarket.marketID)
       let uniqueFiltered = uniqueOutcomes(filtered)
-      console.log(uniqueFiltered)
+      // console.log(uniqueFiltered)
       if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
         let defaultSpecifier = uniqueFiltered[0]?.specifier
         if (defaultSpecifier) {

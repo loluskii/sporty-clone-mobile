@@ -69,7 +69,7 @@ const loadMore = async () => {
 };
 
 const updateCSSVar = () => {
-  console.log(myElement.value);
+  // console.log(myElement.value);
   if (myElement.value) {
     const distanceFromTop =
       myElement.value.getBoundingClientRect().top + document.documentElement.scrollTop;

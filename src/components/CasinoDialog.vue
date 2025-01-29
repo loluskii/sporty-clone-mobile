@@ -4,13 +4,12 @@
     <div class="es-dialog m-dialog">
       <div class="es-dialog-body m-dialog-body">
         <div
-          v-if="route.name !== 'home'"
+          v-if="route.name === 'casino-bonus'"
           class="es-dialog-main m-dialog-main"
           style="height: auto; color: white"
         >
           <div>
-            You have an active casino bonus of {{ SportsbookGlobalVariable.Currency
-            }}{{ props.data.bonus.value }} for this game. Choose the balance to use for this session.
+            {{ gamePlayModalText }}
           </div>
         </div>
         <div
@@ -24,8 +23,7 @@
             style="height: 30px"
           />
           <div>
-            Congratulations! You have a casino bonus of
-            {{ SportsbookGlobalVariable.Currency }}{{ props.data.bonus.value }}
+            {{ modalText }}
           </div>
         </div>
       </div>
@@ -74,6 +72,22 @@ const router = useRouter();
 const { SportsbookGlobalVariable } = useUtilstStore();
 const utilsStore = useUtilstStore();
 
+const modalText = computed(() => {
+  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+    ? `Congratulations! You have been gifted ${props.data.bonus.freeSpins} free spins.`
+    : `Congratulations! You have a casino bonus of
+            ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value}`;
+});
+
+const gamePlayModalText = computed(() => {
+  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+    ? `You have ${props.data.bonus.freeSpins} free spins on this game. Choose the balance to use for
+            this session.`
+    : `You have an active casino bonus of ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value} for this game. Choose the balance to use for
+            this session.
+            `;
+});
+
 const setBalanceType = (type) => {
   emits("hide-dialogue");
   return router.push({
@@ -87,7 +101,7 @@ const goToCasino = () => {
   emits("hide-dialogue");
   return router.push({
     name: "casino-bonus",
-    query: { gameIds: props.data.bonus.gameId.join(',') },
+    query: { gameIds: props.data.bonus.gameId.join(",") },
   });
 };
 

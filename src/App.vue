@@ -212,8 +212,10 @@ async function getBetsData() {
 }
 
 function showCasinoDialog(data = null) {
-  casinoDailogShown.value = true;
-  casinoGameData.value = data
+  if(route.name === 'home' || (data.bonus && data.game)){
+    casinoDailogShown.value = true;
+    casinoGameData.value = data
+  }
 }
 
 function toggleDatePicker() {

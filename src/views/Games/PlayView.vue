@@ -43,10 +43,10 @@ const confirmLeave = ref(null);
 const bonus = ref(null)
 
 watch(
-  // () => [route.params.game_id, route.query],
-  // async ([game_id, bonusParam]) => {
-  //   await getCasinoURL(game_id, bonusParam)
-  // },
+  () => [route.params.game_id],
+  async ([game_id]) => {
+    await getCasinoURL()
+  },
   { immediate: true } 
 )
 
@@ -84,7 +84,10 @@ async function getCasinoURL() {
 
 async function moveToNewGame(game){
   showRecommendedGames.value = false
-  await getCasinoURL()
+  return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
 }
 
 async function getRecommendedGames() {

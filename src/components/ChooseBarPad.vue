@@ -244,7 +244,7 @@ function toggleFilter(name) {
             activeCategory.value = categoryList.value[0]
           }
           selectedTournaments.value = tids
-          console.log(activeCategory.value)
+          // console.log(activeCategory.value)
           setActiveCategory(activeCategory.value)
         }
       })
