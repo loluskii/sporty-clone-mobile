@@ -85,7 +85,7 @@ const updateCSSVar = () => {
 
 onMounted(() => {
   updateCSSVar();
-  document.body.classList.add("no-scroll");
+  // document.body.classList.add("no-scroll");
 });
 </script>
 

@@ -53,8 +53,7 @@ const handleImageError = (event) => {
 
 async function redirectToGamePlay() {
   if (userStore.currentUser) {
-    const bonusGameIds = activeBonus.value.gameId;
-    if (bonusGameIds.includes(props.game.gameId)) {
+    if (activeBonus.value && activeBonus.value.gameId.includes(props.game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
     } else {
       return router.push({
