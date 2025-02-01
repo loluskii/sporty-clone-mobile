@@ -31,6 +31,7 @@ export const useCouponStore = defineStore({
     SportsbookGlobalVariable: {},
     isBetslipLoading: false,
     isBetslipBooking: false,
+    mode: "real",
     coupon: {
       acceptChanges: true,
       selections: [],
@@ -51,7 +52,9 @@ export const useCouponStore = defineStore({
       source: 'mobile'
     }
   }),
-  getters: {},
+  getters: {
+    betslipMode: (state) => (state.mode === 'sim'),
+  },
   actions: {
     async addToCoupon(selection) {
       const couponPayload = selection

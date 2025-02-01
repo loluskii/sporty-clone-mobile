@@ -142,7 +142,7 @@ import { useRouter } from "vue-router";
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
 import emitter from "../../plugins/emitter";
 // import placeBet2
-defineProps({
+const props = defineProps({
   betSlipType: String,
   betType: String,
 });
@@ -208,10 +208,10 @@ const potentialWin = computed(() => {
     return finalPayout + maxBonus.value;
   }
 
-  const isSingleBet = betSlipType === "Single" && selectionsLength === 1;
-  const isMultipleBet = betSlipType === "Multiple";
+  const isSingleBet = props.betSlipType === "Single" && selectionsLength === 1;
+  const isMultipleBet = props.betSlipType === "Multiple";
 
-  return isMultipleBet || isSingleBet ? maxWin : `${minWin} ~ ${maxWin}`;
+  return isMultipleBet || isSingleBet ? maxWin.value : `${minWin.value} ~ ${maxWin.value}`;
 });
 
 const toggleKeyboard = () => {

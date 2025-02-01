@@ -1,27 +1,31 @@
 <template>
   <div class="x-main-right" @click="closeBetslip($event)">
-    <div id="betslip-container" class="betslip-mode-real">
+    <div id="betslip-container" class="betslip-mode-sim">
       <div
         class="m-betslips m-betslips-show"
         v-show="!isPlaceBetSuccessful && !isBookBetSuccessful"
         style="position: absolute"
       >
-        <div class="m-betslip-header real-theme">
+        <div class="m-betslip-header sim-theme">
           <div class="head-container">
             <div class="wrapper separate-part">
               <div class="operate-button">
-                <div class="icon icon-font-base">
-                  <!-- <span
+                <div class="d-flex align-items-center">
+                  <span
                     v-if="betslipSelections.length > 0"
+                    class="d-flex justify-content-center align-items-center mr-2 font-weight-bold"
                     style="
-                      padding: 5px 10px;
-                      border-radius: 50%;
+                      font-size: 13px;
+                      height: 25px;
+                      width: 25px;
                       background-color: var(--brand-secondary);
-                      margin-right: 5px;
+                      border-radius: 50%;
                     "
                     >{{ betslipSelections.length }}</span
-                  > -->
-                  <span style="font-weight: bold; font-size: 1.2rem">Betslip</span>
+                  >
+                  <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
+                  <VueToggles :value="betslipMode" @click="updateBetslipMode" uncheckedText="REAL" checkedText="SIM" :height="30"
+                  :width="80" />
                 </div>
               </div>
               <div class="operate-button">
@@ -75,7 +79,9 @@
                 </div>
                 <div class="wrapper separate-part" @click="showBetSettings = true">
                   <div class="bet-settings bet-settings operate-button flex">
-                    <div class="icon icon-font-base mr-1" style="font-size: 1.33333rem"></div>
+                    <div class="icon icon-font-base mr-1" style="font-size: 1.33333rem">
+                      
+                    </div>
                     <span>Bet Settings</span>
                   </div>
                 </div>
@@ -146,7 +152,7 @@
           <Transition>
             <div v-if="(show && !betslipLoading) || (!show && betslipLoading)">
               <div class="confirm-overlap"></div>
-              <div v-if="show" class="confirm-wrap real-theme">
+              <div v-if="show" class="confirm-wrap sim-theme">
                 <div class="m-flexibet-confirm confirm">
                   <div class="about-to-pay">
                     <span>Confirm to Pay</span><span>&nbsp;</span>
@@ -157,7 +163,10 @@
                   <div class="blank-area"></div>
                 </div>
                 <div class="button-wrap">
-                  <button @click="toggleShow" class="af-button flexibet-cancel af-button--primary">
+                  <button
+                    @click="toggleShow"
+                    class="af-button flexibet-cancel af-button--primary"
+                  >
                     <span><span data-cms-key="cancel">Cancel </span></span>
                   </button>
                   <button
@@ -170,8 +179,8 @@
               </div>
               <!-- Place Bet Submit Modal -->
               <Transition>
-                <div v-if="!show && betslipLoading" class="confirm-wrap real-theme">
-                  <div class="submit real-theme">
+                <div v-if="!show && betslipLoading" class="confirm-wrap sim-theme">
+                  <div class="submit sim-theme">
                     <span style="color: #fff"> Submitting </span>
                   </div>
                 </div>
@@ -198,187 +207,149 @@
         :betDetails="bookBetResponse"
       ></BookBetModal>
       <!-- Book Bet Modal -->
-      <BetSettings @close="showBetSettings = false" v-if="showBetSettings" />
+      <!-- <BetSettings @close="showBetSettings = false" v-if="showBetSettings" /> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import BetListEvent from '@/components/Betslip/BetListEvent.vue'
-import BetListStake from '@/components/Betslip/BetListStake.vue'
-import BookBetModal from '@/components/Betslip/BookBetModal.vue'
-import SuccessBet from '@/components/Betslip/SuccessBet.vue'
-import { computed, ref, defineComponent, onMounted } from 'vue'
-import { useCouponStore, useUsersStore } from '../../stores'
-import { formatNumber } from '../../helpers'
-import emitter from '../../plugins/emitter'
-import BetlistBookingCode from './BetlistBookingCode.vue'
-import BetSettings from './BetSettings.vue'
+import BetListEvent from "@/components/Betslip/BetListEvent.vue";
+import BetListStake from "@/components/Betslip/BetListStake.vue";
+import BookBetModal from "@/components/Betslip/BookBetModal.vue";
+import SuccessBet from "@/components/Betslip/SuccessBet.vue";
+import { computed, ref, defineComponent, onMounted } from "vue";
+import { useCouponStore, useUsersStore } from "@/stores";
+import { formatNumber } from "@/helpers";
+import emitter from "@/plugins/emitter";
+import BetlistBookingCode from "./BetlistBookingCode.vue";
+import BetSettings from "./BetSettings.vue";
+import VueToggles from "vue-toggles";
 
-const emit = defineEmits(['toggle-betslip', 'update-betcount'])
-const couponStore = useCouponStore()
-const show = ref(false)
-const placeBetStatus = ref(false)
-const isPlaceBetSuccessful = ref(false)
-const isBookBetSuccessful = ref(false)
-const placeBetResponse = ref({})
-const bookBetResponse = ref({})
-const usersStore = useUsersStore()
-const activeSelectionInput = ref()
-const showBetSettings = ref(false)
+const emit = defineEmits(["toggle-betslip", "update-betcount"]);
+const couponStore = useCouponStore();
+const show = ref(false);
+const placeBetStatus = ref(false);
+const isPlaceBetSuccessful = ref(false);
+const isBookBetSuccessful = ref(false);
+const placeBetResponse = ref({});
+const bookBetResponse = ref({});
+const usersStore = useUsersStore();
+const activeSelectionInput = ref();
+const showBetSettings = ref(false);
+const value = ref(false);
 
 const betSlipType = computed(() => {
-  return couponStore.coupon.betslip_type
-})
+  return couponStore.coupon.betslip_type;
+});
 
 const betType = computed(() => {
-  return couponStore.coupon.bet_type
-})
+  return couponStore.coupon.bet_type;
+});
 
 const betslipSelections = computed(() => {
-  return couponStore.coupon.selections
-})
+  return couponStore.coupon.selections;
+});
 
 const totalStake = computed(() => {
-  return formatNumber(couponStore.coupon.totalStake)
-})
+  return formatNumber(couponStore.coupon.totalStake);
+});
 
 const betslipLoading = computed(() => {
-  return couponStore.isBetslipLoading
+  return couponStore.isBetslipLoading;
+});
+
+const betslipMode = computed(() => {
+  return couponStore.betslipMode
 })
 
 const balance = computed(() => {
   if (usersStore.currentUser) {
-    return usersStore.balance
+    return usersStore.balance;
   }
-  return 0
-})
+  return 0;
+});
+
+const updateBetslipMode = () => {
+  couponStore.mode = betslipMode.value ? 'real': 'sim'
+}
 
 function closeBetslip(e) {
-  if (e && e.target.classList.contains('x-main-right')) {
-    emit('toggle-betslip')
+  if (e && e.target.classList.contains("x-main-right")) {
+    emit("toggle-betslip");
   }
 }
 
 function toggleShow() {
-  show.value = !show.value
+  show.value = !show.value;
 }
 
 function bookBet(data) {
-  // console.log(data)
-  placeBetStatus.value = false
-  isPlaceBetSuccessful.value = false
-  placeBetResponse.value = {}
-  isBookBetSuccessful.value = true
-  bookBetResponse.value = data
+  placeBetStatus.value = false;
+  isPlaceBetSuccessful.value = false;
+  placeBetResponse.value = {};
+  isBookBetSuccessful.value = true;
+  bookBetResponse.value = data;
 }
 
 async function placeBet(e) {
-  show.value = false
-  couponStore.isBetslipLoading = true
+  show.value = false;
+  couponStore.isBetslipLoading = true;
   try {
-    const res = await couponStore.placeBet(e, 'bet')
-    couponStore.isBetslipLoading = false
+    const res = await couponStore.placeBet(e, "bet");
+    couponStore.isBetslipLoading = false;
     if (res?.success) {
       // const res = await couponStore.placeBet(e, 'book')
       // if (res.success) {
-      isPlaceBetSuccessful.value = true
-      placeBetStatus.value = true
-      placeBetResponse.value = res
-      await usersStore.loadCurrentUser()
-      emit('update-betcount')
+      isPlaceBetSuccessful.value = true;
+      placeBetStatus.value = true;
+      placeBetResponse.value = res;
+      await usersStore.loadCurrentUser();
+      emit("update-betcount");
     } else {
-      emit('toggle-betslip')
-      emitter.emit('showErrorMessage', res)
+      emit("toggle-betslip");
+      emitter.emit("showErrorMessage", res);
     }
   } catch (error) {
-    console.log(error)
-    couponStore.isBetslipLoading = false
-    emit('toggle-betslip')
-    emitter.emit('showErrorMessage', error)
+    console.log(error);
+    couponStore.isBetslipLoading = false;
+    emit("toggle-betslip");
+    emitter.emit("showErrorMessage", error);
   }
 }
 
 async function hideAll() {
-  placeBetStatus.value = false
-  isPlaceBetSuccessful.value = false
-  placeBetResponse.value = {}
-  couponStore.clearBetslip()
-  emit('toggle-betslip')
+  placeBetStatus.value = false;
+  isPlaceBetSuccessful.value = false;
+  placeBetResponse.value = {};
+  couponStore.clearBetslip();
+  emit("toggle-betslip");
 }
 
 async function rebet() {
-  placeBetStatus.value = false
-  isPlaceBetSuccessful.value = false
-  placeBetResponse.value = {}
-  emit('toggle-betslip')
+  placeBetStatus.value = false;
+  isPlaceBetSuccessful.value = false;
+  placeBetResponse.value = {};
+  emit("toggle-betslip");
 }
 
 function hideBookBetModal() {
-  isBookBetSuccessful.value = false
-  bookBetResponse.value = {}
-  emit('toggle-betslip')
+  isBookBetSuccessful.value = false;
+  bookBetResponse.value = {};
+  emit("toggle-betslip");
 }
 function clearBetslip() {
-  return couponStore.clearBetslip()
+  return couponStore.clearBetslip();
 }
 
 function setActiveSelectionInput(data) {
-  activeSelectionInput.value = data
+  activeSelectionInput.value = data;
 }
 
 defineComponent({
-  name: 'bet-list'
-})
+  name: "bet-list",
+});
 
-onMounted(() => {
-  // emitter.on(`odds-change`, (data) => {
-  //   console.log(`received odds change for ${data?.match_id}`, data.markets);
-  //   // clone outcomes value
-  //   const newOutcomes = [...outcomes.value]
-  //   // odds change markets
-  //   const markets = data.markets
-  //   // build new outcomes
-  //   for (let index = 0; index < newOutcomes.length; index++) {
-  //     const outcome = { ...newOutcomes[index] }
-  //     // find market
-  //     const market = markets.find(
-  //       (item) => item.id === outcome.marketID && item.specifiers === outcome.specifier
-  //     )
-  //     if (market) {
-  //       if (market.outcomes) {
-  //         market.outcomes.forEach((odd) => {
-  //           if (odd.id === outcome.outcomeID && outcome.specifier === market.specifiers) {
-  //             outcome.odds = odd.odds
-  //             outcome.active = odd.active ? 1 : 0
-  //           }
-  //         })
-  //       } else {
-  //         outcome.odds = 0
-  //       }
-  //     }
-  //     newOutcomes[index] = outcome
-  //   }
-  //   // update outcomes state
-  //   outcomes.value = newOutcomes
-  // })
-  // when a bet_stop message is received, all odds should be closed;
-  // emitter.on(`bet-stop-${props.gameData.matchID}`, (data) => {
-  //   // console.log(`received bet stop for ${data?.match_id}`);
-  //   // clone outcomes value
-  //   const newOutcomes = [...outcomes.value]
-  //   // loop through current outcomes and updated odds to 0;
-  //   for (let index = 0; index < newOutcomes.length; index++) {
-  //     const outcome = { ...newOutcomes[index] }
-  //     outcome.odds = 0
-  //     outcome.active = 0
-  //     newOutcomes[index] = outcome
-  //     // console.log('active: ' + outcome)
-  //   }
-  //   // update outcomes state
-  //   outcomes.value = newOutcomes
-  // })
-})
+onMounted(() => {});
 </script>
 
 <style>
@@ -567,8 +538,8 @@ onMounted(() => {
   margin-right: 0.5rem;
 }
 #betslip-container .m-betslips .m-bet-head .m-sec-opt .remove-all::before {
-  content: '\e65d';
-  font-family: 'iconfont' !important;
+  content: "\e65d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -629,7 +600,11 @@ onMounted(() => {
   color: #ffffff;
   color: var(--c-betslip-tab-text);
 }
-#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item:last-child {
+#betslip-container
+  .m-betslips
+  .m-bet-head
+  .m-list-bet-type
+  .m-list-bet-type-item:last-child {
   margin: 0;
 }
 #betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item.active {
@@ -766,8 +741,8 @@ onMounted(() => {
   z-index: 200;
 }
 .submit::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -809,9 +784,7 @@ onMounted(() => {
   -webkit-transition: -webkit-transform 300ms ease;
   transition: -webkit-transform 300ms ease;
   transition: transform 300ms ease;
-  transition:
-    transform 300ms ease,
-    -webkit-transform 300ms ease;
+  transition: transform 300ms ease, -webkit-transform 300ms ease;
   z-index: 200;
 }
 .slide-enter,
@@ -828,9 +801,7 @@ onMounted(() => {
   -webkit-transition: -webkit-transform 300ms ease;
   transition: -webkit-transform 300ms ease;
   transition: transform 300ms ease;
-  transition:
-    transform 300ms ease,
-    -webkit-transform 300ms ease;
+  transition: transform 300ms ease, -webkit-transform 300ms ease;
 }
 .one-way-slide-leave-to {
   -webkit-transform: translateY(100%);
@@ -902,7 +873,7 @@ onMounted(() => {
   color: #fff;
 }
 .confirm-wrap.sim-theme .af-button {
-  font-family: 'Roboto-Bold';
+  font-family: "Roboto-Bold";
 }
 .confirm-wrap.sim-theme .af-button.flexibet-cancel {
   background-color: #353a45;
@@ -941,32 +912,5 @@ onMounted(() => {
   right: 0;
   top: 0;
   z-index: 10;
-}
-
-.loading-icon-input {
-  -webkit-animation: rotation 2s infinite linear;
-  animation: rotation 2s infinite linear;
-  left: 21.41666667rem;
-  position: absolute;
-}
-@-webkit-keyframes rotation {
-  from {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(359deg);
-    transform: rotate(359deg);
-  }
-}
-@keyframes rotation {
-  from {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(359deg);
-    transform: rotate(359deg);
-  }
 }
 </style>
