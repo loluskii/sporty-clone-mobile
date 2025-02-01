@@ -1,12 +1,12 @@
 <template>
   <div class="x-main-right" @click="closeBetslip($event)">
-    <div id="betslip-container" class="betslip-mode-sim">
+    <div id="betslip-container" :class="betslipMode ? 'betslip-mode-sim':'betslip-mode-real'">
       <div
         class="m-betslips m-betslips-show"
         v-show="!isPlaceBetSuccessful && !isBookBetSuccessful"
         style="position: absolute"
       >
-        <div class="m-betslip-header sim-theme">
+        <div class="m-betslip-header" :class="betslipMode ? 'sim-theme':'real-theme'">
           <div class="head-container">
             <div class="wrapper separate-part">
               <div class="operate-button">
@@ -14,18 +14,13 @@
                   <span
                     v-if="betslipSelections.length > 0"
                     class="d-flex justify-content-center align-items-center mr-2 font-weight-bold"
-                    style="
-                      font-size: 13px;
-                      height: 25px;
-                      width: 25px;
-                      background-color: var(--brand-secondary);
-                      border-radius: 50%;
-                    "
+                    :style="betslipMode ? 'background-color: #ffd600; color: #000':'background-color: var(--brand-secondary); color: #fff'"
+                    style="font-size: 13px; height: 30px;  width: 30px;  border-radius: 50%;"
                     >{{ betslipSelections.length }}</span
                   >
                   <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
                   <VueToggles :value="betslipMode" @click="updateBetslipMode" uncheckedText="REAL" checkedText="SIM" :height="30"
-                  :width="80" />
+                  :width="70" checkedBg="#ffd600" checkedTextColor="#000" />
                 </div>
               </div>
               <div class="operate-button">
@@ -33,7 +28,7 @@
               </div>
             </div>
             <template v-if="betslipSelections.length > 0">
-              <div style="border: 0.5px solid #dbdbdb; margin: 10px 0px 10px 0px"></div>
+              <div style="margin: 20px 0px 20px 0px"></div>
               <div class="wrapper separate-part">
                 <div
                   @click="clearBetslip"
@@ -89,7 +84,10 @@
             </template>
           </div>
         </div>
-        <div class="m-bet-head" v-if="betslipSelections.length > 1">
+        <div v-if="betslipMode" class="betslip-notification">
+          <div class="sim-operate-sync-to-real-tip">Place bets on real fixtures with virtually simulated results</div>
+        </div>
+        <div class="m-bet-head" v-if="showBetHead">
           <div class="m-snap-nav-wrap m-list-bet-type" style="overflow: hidden">
             <ul class="m-snap-nav flex">
               <li
@@ -124,7 +122,7 @@
             <div class="change-wrong-message">Note: changes in odds or availability</div>
           </div>
         </div>
-        <div v-if="betslipSelections.length > 0" class="m-bet-detail-wrap">
+        <div v-if="betslipSelections.length > 0" class="m-bet-detail-wrap" :class="betslipMode ? 'sim-theme':'real-theme'">
           <div class="m-scroll">
             <div id="j_betList" class="m-betslips-outcomes">
               <div class="m-outcomes-list">
@@ -147,12 +145,13 @@
               @book-bet="bookBet"
               :betSlipType="betSlipType"
               :betType="betType"
+              :isSimulate="betslipMode"
             ></BetListStake>
           </div>
           <Transition>
             <div v-if="(show && !betslipLoading) || (!show && betslipLoading)">
               <div class="confirm-overlap"></div>
-              <div v-if="show" class="confirm-wrap sim-theme">
+              <div v-if="show" class="confirm-wrap" :class="betslipMode ? 'sim-theme':'real-theme'">
                 <div class="m-flexibet-confirm confirm">
                   <div class="about-to-pay">
                     <span>Confirm to Pay</span><span>&nbsp;</span>
@@ -179,8 +178,8 @@
               </div>
               <!-- Place Bet Submit Modal -->
               <Transition>
-                <div v-if="!show && betslipLoading" class="confirm-wrap sim-theme">
-                  <div class="submit sim-theme">
+                <div v-if="!show && betslipLoading" class="confirm-wrap" :class="betslipMode ? 'sim-theme':'real-theme'">
+                  <div class="submit" :class="betslipMode ? 'sim-theme':'real-theme'">
                     <span style="color: #fff"> Submitting </span>
                   </div>
                 </div>
@@ -189,7 +188,8 @@
             </div>
           </Transition>
         </div>
-        <BetlistBookingCode v-else></BetlistBookingCode>
+        <BetlistBookingCode v-if="betslipSelections.length === 0 && !betslipMode"></BetlistBookingCode>
+        <div v-if="betslipSelections.length === 0 && betslipMode" class="sim-selection-empty-panel"><p>Please add at least one outcome.</p></div>
       </div>
       <!-- Place Bet Success Modal -->
       <SuccessBet
@@ -268,6 +268,10 @@ const balance = computed(() => {
   }
   return 0;
 });
+
+const showBetHead = computed(() => {
+  return betslipSelections.value.length > 1 && !betslipMode.value
+})
 
 const updateBetslipMode = () => {
   couponStore.mode = betslipMode.value ? 'real': 'sim'
@@ -390,10 +394,29 @@ onMounted(() => {});
   -ms-flex-pack: center;
   justify-content: center;
 }
+
 .betslip-notification .change-wrong-message {
-  background: #7b0911;
-  color: #ffffff;
+  background: #7B0911;
+  background: var(--warning-secondary);
+  color: #FFFFFF;
   height: 1.83333333rem;
+  line-height: 1.83333333rem;
+  text-align: center;
+}
+.betslip-notification .sim-operate-sync-to-real-tip {
+  background-color: #FAFD00;
+  background-color: var(--sim-primary);
+  color: #1B1E25;
+  font-family: 'Roboto-Bold';
+  font-size: 1rem;
+  padding: 0.33333333rem 1rem;
+  text-align: center;
+}
+.betslip-notification .sim-duplicated-match-error {
+  background-color: #bf1420;
+  color: #FFFFFF;
+  font-family: 'Roboto-Bold';
+  font-size: 1rem;
   line-height: 1.83333333rem;
   text-align: center;
 }
@@ -438,6 +461,18 @@ onMounted(() => {});
   left: 300vw;
   position: fixed;
 }
+
+#betslip-container .sim-selection-empty-panel {
+    background-color: #F2F3F5;
+    background-color: var(--background-type1-primary);
+    color: #9CA0AB;
+    color: var(--text-type1-secondary);
+    font-size: 1.16666667rem;
+    height: 100vh;
+    padding: 8.33333333rem 0;
+    text-align: center;
+}
+
 #betslip-container .m-betslips {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -651,8 +686,13 @@ onMounted(() => {});
 #betslip-container .m-betslips-off {
   max-height: 0%;
 }
-#betslip-container .m-betslips-show {
+#betslip-container.betslip-mode-real .m-betslips-show {
   max-height: calc(100% - 5rem);
+}
+
+#betslip-container.betslip-mode-sim .m-betslips-show {
+  height: calc(100% - 5rem) !important;
+  max-height: 100%
 }
 #betslip-container .sim-selection-empty-panel {
   background-color: #f2f3f5;
@@ -872,9 +912,7 @@ onMounted(() => {});
   background: var(--brand-secondary);
   color: #fff;
 }
-.confirm-wrap.sim-theme .af-button {
-  font-family: "Roboto-Bold";
-}
+
 .confirm-wrap.sim-theme .af-button.flexibet-cancel {
   background-color: #353a45;
   background-color: var(--c-betslip-header-bg);
@@ -912,5 +950,126 @@ onMounted(() => {});
   right: 0;
   top: 0;
   z-index: 10;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme,
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.sim-theme {
+  background-color: rgba(250, 253, 0, 0.2);
+  background-color: var(--c-sim-win-bg);
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme {
+  background-color: rgba(250, 253, 0, 0.2);
+  background-color: var(--c-sim-win-bg);
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-theme {
+  background-color: #FAFD00;
+  background-color: var(--sim-primary);
+  color: #000000;
+}
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-disabled {
+  color: #9CA0AB;
+  color: var(--text-disable-type1-primary);
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .sim-theme {
+  background-color: #FAFD00;
+  background-color: var(--sim-primary);
+  color: #000000;
+}
+
+.m-bet-detail-wrap.sim-theme {
+  height: 100vh;
+}
+.m-bet-detail-wrap.sim-theme .m-scroll {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+.m-bet-detail-wrap.sim-theme .m-betslips-stake-wrapper {
+   margin-top: auto;
+}
+
+.m-flexibet-confirm {
+  background-color: #FFFFFF;
+  bottom: 0;
+  padding-top: 2.16666667rem;
+  position: relative;
+  width: 100%;
+}
+.m-flexibet-confirm .about-to-pay {
+  color: #353A45;
+  color: var(--text-type1-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.33333333rem;
+  text-align: center;
+}
+.m-flexibet-confirm .stake-num {
+  color: #353A45;
+  color: var(--text-type1-primary);
+  font-size: 1.66666667rem;
+  font-weight: 500;
+  line-height: 2.16666667rem;
+  text-align: center;
+}
+.m-flexibet-confirm .form-item {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1rem;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  line-height: 1.5rem;
+  margin-top: 0.16666667rem;
+  padding: 0 1.33333333rem;
+  color: #353A45;
+  color: var(--text-type1-primary);
+}
+.m-flexibet-confirm .form-item .label {
+  color: #9CA0AB;
+  color: var(--text-type1-secondary);
+  -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
+      -ms-flex: 1 1 auto;
+          flex: 1 1 auto;
+  text-align: left;
+}
+.m-flexibet-confirm .form-item .value {
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
+      -ms-flex: 0 0 auto;
+          flex: 0 0 auto;
+  padding: 0 0.33333333rem;
+  text-align: right;
+}
+.m-flexibet-confirm .form-wrap.flexibet-change .form-item .value {
+  background: #D6EBDC;
+  background: var(--brand-type1-secondary);
+}
+.m-flexibet-confirm .blank-area {
+  height: 2.33333333rem;
+  width: 100%;
+}
+.m-flexibet-confirm .betslip-confirm-bottom {
+  margin: 0.41666667rem 0 0.83333333rem 0;
+  padding: 0 1.33333333rem;
+}
+.m-flexibet-confirm .m-0 {
+  margin: 0;
 }
 </style>

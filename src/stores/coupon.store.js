@@ -448,7 +448,7 @@ export const useCouponStore = defineStore({
       }
       if (type === 'bet') {
         this.isBetslipLoading = true
-        coupondata.isBooking = 0
+        coupondata.isBooking = this.mode === "real" ? 0 : 2
         try {
           const res = await placeBet2(coupondata)
           this.isBetslipLoading = false

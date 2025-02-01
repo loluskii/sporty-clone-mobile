@@ -6,7 +6,8 @@
     <div
       v-show="utilsStore.showBetslipCount"
       @click="showBetslip"
-      class="betslip-float-wrapper real-theme"
+      class="betslip-float-wrapper"
+      :class="betslipMode ? 'sim-theme':'real-theme'"
     >
       <!-- <div class="bg"></div> -->
       <div class="count-wrapper">
@@ -39,7 +40,7 @@
             ></path>
           </svg>
         </span>
-        <span class="betslip" style="font-size: 1rem; color: white">BETSLIP</span>
+        <span class="betslip" style="font-size: 1rem;" :style="betslipMode ? 'color: #000;':'color: #fff'">BETSLIP</span>
       </div>
       <div v-if="betslipCount > 0" class="notification">{{ betslipCount }}</div>
     </div>
@@ -277,6 +278,10 @@ const route = useRoute();
 
 const betslipCount = computed(() => {
   return couponStore.coupon.selections.length;
+});
+
+const betslipMode = computed(() => {
+  return couponStore.betslipMode
 });
 
 const totalOdds = computed(() => {
@@ -552,7 +557,7 @@ a {
   color: #ffffff;
 }
 .m-bottom-nav .sim-theme .count-wrapper {
-  background-color: #fafd00;
+  background-color: var(--sim-primary);
   color: #1b1e25;
   color: var(--background-type2-primary);
 }
