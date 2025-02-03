@@ -14,7 +14,7 @@ import {
   calculateBonus,
   getSplitProps,
   placeBet2,
-  // bookBet2,
+  bookBet2,
   CLIENT_ID
 } from '@/helpers'
 
@@ -460,7 +460,7 @@ export const useCouponStore = defineStore({
       } else if (type == 'book') {
         try {
           coupondata.isBooking = 1
-          const res = await placeBet2(coupondata)
+          const res = await bookBet2(coupondata)
           this.isBetslipLoading = false
           return res
         } catch (error) {
