@@ -67,9 +67,9 @@ async function getCasinoURL() {
       balanceType: "real",
     };
 
-    if(route.query.bonusId && route.query.type === "bonus"){
+    if(route.query.bonusId && route.query.balanceType === "bonus"){
       payload.isBonus = true
-      payload.bonusType = "free_round"
+      payload.bonusType = route.query.bonusType
       payload.bonusId = route.query.bonusId
       payload.balanceType = "bonus"
     }

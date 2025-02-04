@@ -93,7 +93,7 @@ const setBalanceType = (type) => {
   return router.push({
     name: "game-play",
     params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
-    query: { bonusId: props.data.bonus.bonusId, type: type },
+    query: { bonusId: props.data.bonus.bonusId, balanceType: type, bonusType: props.data.bonus.bonusType },
   });
 };
 
