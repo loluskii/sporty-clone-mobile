@@ -102,6 +102,7 @@ import EmptyOdds from '@/components/EmptyOdds.vue'
 import { sortArr, createID, isSelected, slugify } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
+import { SIM_ALLOWED_MARKETS } from '../../helpers'
 
 // import _ from 'lodash'
 const couponStore = useCouponStore()
@@ -163,6 +164,11 @@ watch(
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
   const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  let marketId = parseInt(odd.marketID)
+  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
+    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+    return;
+  }
   const data = {
     fixture: event,
     market_name: props.activeMarket.marketName,
