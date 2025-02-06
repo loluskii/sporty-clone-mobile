@@ -19,7 +19,7 @@
         <BetlistStakeKeyboard :keyboard-visible="keyboardVisible" @button-click="onKeyClick"></BetlistStakeKeyboard>
       </div>
 
-      <template v-if="taxEnabled">
+      <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
           <span>Stake After Tax</span>
           <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
@@ -38,7 +38,7 @@
           {{ formatNumber(maxBonus) }}</span>
       </div>
 
-      <template v-if="taxEnabled">
+      <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
           <span>Excise Tax</span>
           <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
@@ -171,7 +171,7 @@ const potentialWin = computed(() => {
   const isSingleBet = props.betSlipType === "Single" && selectionsLength.value === 1;
   const isMultipleBet = props.betSlipType === "Multiple";
 
-  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
+  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value.toFixed(2)) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
 });
 
 const toggleKeyboard = () => {
