@@ -32,6 +32,7 @@ export const useCouponStore = defineStore({
     isBetslipLoading: false,
     isBetslipBooking: false,
     mode: "real",
+    isSimulating: false,
     coupon: {
       acceptChanges: true,
       selections: [],

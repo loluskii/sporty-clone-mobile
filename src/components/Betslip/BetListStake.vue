@@ -165,13 +165,13 @@ const potentialWin = computed(() => {
       // wth tax
       finalPayout = finalPayout - wthTax.value;
     }
-    return finalPayout + maxBonus.value;
+    return (finalPayout + maxBonus.value).toFixed(2);
   }
 
   const isSingleBet = props.betSlipType === "Single" && selectionsLength.value === 1;
   const isMultipleBet = props.betSlipType === "Multiple";
 
-  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value.toFixed(2)) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
+  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
 });
 
 const toggleKeyboard = () => {
