@@ -1,6 +1,7 @@
 <template>
   <div class="casino">
     <HeaderCasino></HeaderCasino>
+    <Winners />
     <div class="carousel">
       <Carousel></Carousel>
     </div>
@@ -170,10 +171,11 @@
 </template>
 
 <script setup>
+import Winners from "./Winners.vue";
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory, getUserActiveBonus } from "@/helpers";
+import { getTopGameCategories, gamesByTopCategory, getJackpotWinners } from "@/helpers";
 import router from "@/router";
 import { useAuthStore, useUsersStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";

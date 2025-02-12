@@ -339,6 +339,14 @@ export const gamesByTopCategory = async (id) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/${CLIENT_ID}/list?categoryId=${id}`))
 }
 
+export const getJackpots = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/active-jackpot`))
+}
+
+export const getJackpotWinners = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/jackpot-winners`))
+}
+
 export const getPaymentMethods = async () => {
   return parseData(
     fetchWrapper.get(
