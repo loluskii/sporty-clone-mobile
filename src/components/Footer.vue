@@ -48,9 +48,19 @@
         Terms &amp; Conditions
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })">About Us</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })"
+      >
+        About Us
+      </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })">
+      <h5
+        class="underline"
+        @click="
+          $router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })
+        "
+      >
         Responsible Gaming
       </h5>
     </div>
@@ -59,8 +69,17 @@
         Privacy &amp; Policy
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'account-deletion' } })">
+
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'account-deletion' } })"
+      >
         Account Deletion
+      </h5>
+      <h5 class="divider">|</h5>
+
+      <h5 class="underline" @click="downloadApp">
+        <a :href="fileUrl" download="app-release.apk" style="text-decoration: none; color: white">Dowload App</a>
       </h5>
     </div>
     <div class="btn" @click="handleClick">
@@ -73,11 +92,12 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { useAuthStore, useUtilstStore } from "@/stores";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
 const utilsStore = useUtilstStore();
+const fileUrl = ref("/app-release.apk");
 
 async function doLogout() {
   return authStore.logout();
@@ -238,7 +258,7 @@ footer .hr {
   -ms-flex-pack: center;
   justify-content: center;
   margin-bottom: 1.33333333rem;
-   padding: 0 1.33333333rem;
+  padding: 0 1.33333333rem;
 }
 footer .hr::before {
   background-color: #35465a;
