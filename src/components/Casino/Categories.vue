@@ -49,7 +49,12 @@ const props = defineProps(["categories"]);
 const titleText = ref("Categories");
 
 const getImageSrc = (prov) => {
-  const imageUrl = new URL(`../../assets/images/casino/${prov}.png`, import.meta.url);
+  let name = prov.split('-')
+  let imageName = name[0]
+  if(name[1] !== 'games'){
+    imageName = prov
+  }
+  const imageUrl = new URL(`../../assets/images/casino/${imageName}.png`, import.meta.url);
   return imageUrl;
 };
 </script>

@@ -57,6 +57,20 @@
       </div>
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
+          <!-- Jackpots -->
+          <template v-if="jackpots.length">
+            <div class="header d-flex justify-content-between align-items-center">
+              <h1 class="h5 text-white fw-normal">Jackpots</h1>
+              <span
+                @click="$router.push({ name: 'casino-jackpots' })"
+                class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+                >Show More
+              </span>
+            </div>
+            <Jackpots :jackpots="jackpots" :games="gamesList"></Jackpots>
+          </template>
+          <!-- Jackpots -->
+
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div class="group" v-if="top.slug !== 'all'">
               <div class="header d-flex justify-content-between align-items-center">
@@ -171,7 +185,8 @@
 </template>
 
 <script setup>
-import Winners from "./Winners.vue";
+import Winners from "../../components/Casino/Winners.vue";
+import Jackpots from "../../components/Casino/Jackpots.vue";
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
@@ -179,7 +194,7 @@ import { getTopGameCategories, gamesByTopCategory, getJackpotWinners } from "@/h
 import router from "@/router";
 import { useAuthStore, useUsersStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "../../helpers";
+import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 
@@ -202,9 +217,18 @@ const singleCategoryLoading = ref(true);
 const myElement = ref(null);
 const currentView = ref("grouped_category");
 const bonus = ref(null);
+const jackpots = ref([]);
 
-const getImageSrc = (cat) => {
-  const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
+const getImageSrc = (prov) => {
+  let name = prov.split("-");
+  let imageName = name[0];
+  if (name[1] !== "games") {
+    imageName = prov;
+  }
+  const imageUrl = new URL(
+    `../../assets/images/casino/${imageName}.png`,
+    import.meta.url
+  );
   return imageUrl;
 };
 
@@ -279,6 +303,11 @@ async function getGameByTopCategory(category) {
   }
 }
 
+const getJK = async () => {
+  const res = await getJackpots();
+  jackpots.value = res.data.jackpots;
+};
+
 const getImagePath = (game) => {
   // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
   return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title
@@ -321,7 +350,7 @@ const updateCSSVar = () => {
 };
 
 onBeforeMount(async () => {
-  Promise.all([getCategories()]);
+  Promise.all([getJK(), getCategories()]);
   updateCSSVar();
   // $("body").addClass("no-scroll");
 });

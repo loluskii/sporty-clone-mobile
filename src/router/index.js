@@ -30,6 +30,7 @@ import GamesView from '@/views/Games/GamesView.vue'
 import PlayView from '@/views/Games/PlayView.vue'
 import CodeHubView from '@/views/CodeHubView.vue'
 import Promotions from '@/views/Promotions.vue'
+import JackpotView from '../views/Games/JackpotView.vue'
 
 
 export const router = createRouter({
@@ -257,6 +258,14 @@ export const router = createRouter({
           component: GroupView,
         },
       ],
+      meta: {
+        showMobileNavigation: true
+      },
+    },
+    {
+      path: '/Games/Jackpots',
+      name: 'casino-jackpots',
+      component: JackpotView,
       meta: {
         showMobileNavigation: true
       },

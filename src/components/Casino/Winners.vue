@@ -2,6 +2,7 @@
   <div>
     <Vue3Marquee>
       <div
+        v-if="winners.length"
         style="
           padding: 3px 10px;
           background-color: var(--brand-secondary);
@@ -14,7 +15,7 @@
           v-for="(winner, index) in winners"
           :key="index"
         >
-          {{ `${winner.username} won ` }}
+          {{ `${winner.username} won ` }} &bull;
           <b style="font-weight: bold">{{
             `${winner.currency} ${winner.winAmount.toLocaleString("en")}`
           }}</b>

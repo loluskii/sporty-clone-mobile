@@ -364,7 +364,7 @@ defineComponent({
       ></Betlist>
     </div>
 
-    <transition name="move">
+    <!-- <transition name="move">
       <div class="loading-overlay" v-if="isLoading">
         <div class="loading-spinner">
           <img
@@ -376,7 +376,7 @@ defineComponent({
           <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
         </div>
       </div>
-    </transition>
+    </transition> -->
     <CalendarBox
       v-if="customDatePickerShown"
       @hide="toggleDatePicker"

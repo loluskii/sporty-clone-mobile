@@ -1,6 +1,7 @@
 <template>
   <div class="casino">
     <HeaderCasino />
+    <Winners />
     <div class="carousel">
       <Carousel></Carousel>
     </div>
@@ -34,12 +35,13 @@ import GameByProviderCategory from "@/components/Casino/GameByProviderCategory.v
 import Providers from "../../components/Casino/Providers.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, watch, computed, onMounted } from "vue";
+import Winners from "../../components/Casino/Winners.vue";
 import {
   getGamesByProviders,
   gamesByTopCategory,
   getProviders,
   getTopGameCategories,
-  getGames
+  getGames,
 } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -75,9 +77,16 @@ watch(
     route.params.provider,
     route.query.category_id,
     route.query.providerId,
-    route.query.gameIds
+    route.query.gameIds,
   ],
-  async ([routeName, categoryName, providerName, gameCategoryId, gameProviderId, gameIds]) => {
+  async ([
+    routeName,
+    categoryName,
+    providerName,
+    gameCategoryId,
+    gameProviderId,
+    gameIds,
+  ]) => {
     // Check the route name
     switch (routeName) {
       case "casino-providers":
@@ -92,10 +101,13 @@ watch(
       case "games-by-provider":
         handleGamesByProviderView(providerName, gameProviderId);
         break;
-        case "casino-bonus":
-          handleBonusGames(gameIds)
+      case "casino-bonus":
+        handleBonusGames(gameIds);
+        break;
+      case "casino-jackpots":
+        handleCasinoJackpots(gameIds);
+        break
       default:
-        
         break;
     }
   },
@@ -128,7 +140,6 @@ async function handleGamesByCategoryView(name, id) {
   gamesList.value = res.games ? res.games : [];
   viewType.value = "category";
   isLoading.value = false;
-
 }
 
 async function handleGamesByProviderView(name, id) {
@@ -139,22 +150,37 @@ async function handleGamesByProviderView(name, id) {
   gamesList.value = res.games ? res.games : [];
   viewType.value = "provider";
   isLoading.value = false;
-
 }
 
-async function handleBonusGames(gameIds){
+async function handleBonusGames(gameIds) {
   viewMode.value = "games-list-view";
   viewHeaderTitle.value = "Bonus Games";
   categoryName.value = "Bonus Games";
   const res = await getGames();
-  const bonusGamesIds = gameIds.split(',')
-  const bonusGamesSet = new Set(bonusGamesIds)
-  gamesList.value = res.games ? res.games.filter(obj => bonusGamesSet.has(obj.gameId) ) : [];
+  const bonusGamesIds = gameIds.split(",");
+  const bonusGamesSet = new Set(bonusGamesIds);
+  gamesList.value = res.games
+    ? res.games.filter((obj) => bonusGamesSet.has(obj.gameId))
+    : [];
   viewType.value = "category";
   isLoading.value = false;
 }
 
-onMounted( () => {
+async function handleCasinoJackpots(gameIds) {
+  viewMode.value = "games-list-view";
+  viewHeaderTitle.value = "Jackpot Games";
+  categoryName.value = "Jackpot Games";
+  const res = await getGames();
+  const bonusGamesIds = gameIds.split(",");
+  const bonusGamesSet = new Set(bonusGamesIds);
+  gamesList.value = res.games
+    ? res.games.filter((obj) => bonusGamesSet.has(obj.gameId))
+    : [];
+  viewType.value = "category";
+  isLoading.value = false;
+}
+
+onMounted(() => {
   $("body").removeClass("no-scroll");
 });
 </script>
