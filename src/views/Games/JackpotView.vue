@@ -67,6 +67,9 @@
                 </tr>
               </tbody>
             </table>
+            <h3 class="h4 text-white fw-bold text-capitalize my-3">
+              Games
+            </h3>
             <div class="row mb-3 pb-3" v-if="jackpotGames.length" ref="scrollComponent">
               <div class="col-6" v-for="(game, index) in jackpotGames" :key="index">
                 <Game :game="game" />
@@ -117,7 +120,7 @@ import Winners from "../../components/Casino/Winners.vue";
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
-import { getGames } from "@/helpers";
+import { gamesByTopCategory } from "@/helpers";
 import router from "@/router";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -150,8 +153,8 @@ const getJK = async () => {
 
 const getAllGames = async () => {
   try {
-    const gamesResponse = await getGames();
-    gamesList.value = gamesResponse.data;
+    const gamesResponse = await gamesByTopCategory();
+    gamesList.value = gamesResponse.games;
   } catch (error) {
     gamesList.value = [];
   }
@@ -163,7 +166,7 @@ const showJackpot = (j) => {
   let activeJackpotGames = j.games.split(",");
   const jackpotGamesSet = new Set(activeJackpotGames);
   jackpotGames.value = gamesList.value
-    ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.game_id))
+    ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.gameId))
     : [];
 };
 
