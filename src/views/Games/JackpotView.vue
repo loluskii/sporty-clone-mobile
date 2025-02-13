@@ -151,7 +151,7 @@ const getJK = async () => {
 const getAllGames = async () => {
   try {
     const gamesResponse = await getGames();
-    gamesList.value = gamesResponse.games;
+    gamesList.value = gamesResponse.data;
   } catch (error) {
     gamesList.value = [];
   }
