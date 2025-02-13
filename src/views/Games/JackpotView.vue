@@ -163,7 +163,7 @@ const showJackpot = (j) => {
   let activeJackpotGames = j.games.split(",");
   const jackpotGamesSet = new Set(activeJackpotGames);
   jackpotGames.value = gamesList.value
-    ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.gameId))
+    ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.game_id))
     : [];
 };
 
