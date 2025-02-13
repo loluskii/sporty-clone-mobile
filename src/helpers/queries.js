@@ -311,7 +311,7 @@ export const getPromotions = async () => {
 }
 
 export const getGames = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/get-games`))
 }
 
 export const getGamesBySearch = async (gameName) => {
