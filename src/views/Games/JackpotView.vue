@@ -117,7 +117,7 @@ import Winners from "../../components/Casino/Winners.vue";
 import HeaderCasino from "@/components/HeaderCasino.vue";
 import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
-import { gamesByTopCategory } from "@/helpers";
+import { getGames } from "@/helpers";
 import router from "@/router";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -148,9 +148,9 @@ const getJK = async () => {
   }
 };
 
-const getGames = async () => {
+const getAllGames = async () => {
   try {
-    const gamesResponse = await gamesByTopCategory(null);
+    const gamesResponse = await getGames();
     gamesList.value = gamesResponse.games;
   } catch (error) {
     gamesList.value = [];
@@ -195,7 +195,7 @@ const updateCSSVar = () => {
 };
 
 onBeforeMount(async () => {
-  Promise.all([getJK(), getGames()]);
+  Promise.all([getJK(), getAllGames()]);
 });
 </script>
 
