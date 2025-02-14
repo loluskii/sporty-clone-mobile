@@ -291,7 +291,7 @@ import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
 import OpenBet from "@/components/BetHistory/OpenBet.vue";
-import { ref, defineComponent, onMounted, computed } from "vue";
+import { ref, defineComponent, onMounted, onUnmounted } from "vue";
 import {
   getBets,
   formatNumber,
@@ -316,6 +316,7 @@ const cashoutData = ref({});
 const cashingOut = ref(false);
 const codes = ref([]);
 const router = useRouter();
+const intervalId = ref()
 
 const getMatchStatus = (event) => {
   return event.matchStatus == "1st half"
@@ -429,11 +430,16 @@ onMounted(async () => {
   if (isAuthenticated) {
     getBetsData();
 
-    setInterval(() => {
+    intervalId.value = setInterval(() => {
       getBetsData();
     }, 10000);
   }
 });
+
+onUnmounted(() => {
+  clearInterval(intervalId.value);
+});
+
 defineComponent({
   name: "open-bets",
   components: { BetHistoryHeader },
