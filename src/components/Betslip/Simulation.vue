@@ -12,10 +12,16 @@
         justify-content: center;
         color: green;
       "
+      :style="timerEnded && props.simulationResults.statusCode === 2 ? `background-image: url('/confetti2.gif'); background-position: center; background-size: cover;`:``"
     >
-      <span style="font-size: 30px">{{
+      <span v-if="!timerEnded" style="font-size: 30px">{{
         timerStarted || timerEnded ? `${currentTime * 10}'` : "Starting Game..."
       }}</span>
+
+      <span v-else style="font-size: 20px; font-weight: bolder;">
+        <span v-if="props.simulationResults.statusCode === 2">Congratulations! <br /> You won {{ SportsbookGlobalVariable.Currency }}{{ props.simulationResults.possibleWin.toLocaleString('en') }}</span>
+        <span v-else>Sorry you lost!</span>
+      </span>
     </div>
     <div class="ticket-wrapper">
       <div class="ticket">
@@ -25,9 +31,40 @@
             v-for="selection in couponStore.coupon.selections"
             :key="selection.matchId"
             class="simulate-card pd-h-16 sim-card-mb-8"
+            style="position: relative"
           >
+            <span style="position: absolute; top:5px; right: 5px;" v-if="timerEnded">
+              <template v-if="simulationData[selection.matchId].status === 1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  fill="green"
+                  class="bi bi-shield-fill-check"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m2.146 5.146a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793z"
+                  />
+                </svg>
+              </template>
+              <template v-else>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  fill="red"
+                  class="bi bi-x-octagon-fill"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"
+                  />
+                </svg>
+              </template>
+            </span>
             <div class="team-match size-12 pd-v-15">
-              <span></span>
               <span class="teamName size-12">{{ selection.homeTeam }}</span>
               <div class="teamScore size-20">
                 <div class="teamScore__finished size-16">
@@ -74,10 +111,11 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useCouponStore } from "@/stores";
+import { useCouponStore, useUtilstStore } from "@/stores";
 
 // Get the selections from the coupon store
 const couponStore = useCouponStore();
+const { SportsbookGlobalVariable } = useUtilstStore();
 const props = defineProps(["simulationResults"]);
 
 /**
@@ -121,6 +159,7 @@ const simulationData = computed(() => {
         home: playout.homeCompetitorHalfTimeScore,
         away: playout.awayCompetitorHalfTimeScore,
       },
+      status: ev.status
     };
   });
 
@@ -130,18 +169,6 @@ const simulationData = computed(() => {
 // --- Result State ---
 const resultVisible = ref(false);
 const ticketResult = ref("");
-
-// --- Function to Display Result ---
-const showResult = () => {
-  // You can perform additional calculations here.
-  // For this example, we simply use the response from the API.
-  if (res.success) {
-    ticketResult.value = `Ticket ${res.betslipId} finished. Stake: ${res.stake}. Possible win: ${res.possibleWin}.`;
-  } else {
-    ticketResult.value = "Ticket lost!";
-  }
-  resultVisible.value = true;
-};
 
 // --------------------------
 // Timer State: from 0 to 9 seconds
@@ -166,7 +193,7 @@ onMounted(() => {
         showResult();
       }
     }, 250);
-  }, 2000); // 2000ms = 2 seconds delay
+  }, 1000); // 2000ms = 2 seconds delay
 });
 
 onUnmounted(() => {
@@ -196,6 +223,12 @@ const getHalfTimeScore = (matchId) => {
   const simulation = simulationData.value[matchId];
   if (!simulation) return { home: 0, away: 0 };
   return timerEnded.value ? simulation.halfTime : "--:--";
+};
+
+const getEventStatus = (matchId) => {
+  const simulation = simulationData.value[matchId];
+  if (!simulation) return 0;
+  return timerEnded.value ?? simulation;
 };
 
 const exitSimulation = () => {
@@ -403,19 +436,16 @@ const exitSimulation = () => {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-flex: 1.8;
-  -webkit-flex: 1.8;
-  -ms-flex: 1.8;
-  flex: 1.8;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  -webkit-box-pack: space-evenly;
-  -webkit-justify-content: space-evenly;
-  -ms-flex-pack: space-evenly;
-  justify-content: space-evenly;
+  -webkit-box-pack: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: space-between;
+  justify-content: space-between;
+  width: 6rem
 }
 .simulate-card .teamScore .teamScore__finished {
   font-weight: bold;
@@ -477,7 +507,7 @@ const exitSimulation = () => {
 .team-match.pc .pd-v-15 {
   padding: 15px 0;
 }
-.team-match > * {
+.team-match > .teamName {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -490,10 +520,7 @@ const exitSimulation = () => {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  -webkit-box-flex: 1.8;
-  -webkit-flex: 1.8;
-  -ms-flex: 1.8;
-  flex: 1.8;
+  
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;

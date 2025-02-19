@@ -328,7 +328,9 @@ const updateBetslipMode = () => {
 };
 
 function closeBetslip(e) {
+
   if (e && e.target.classList.contains("x-main-right")) {
+    if(betslipMode.value && isSimulating.value) return;
     emit("toggle-betslip");
   }
 }
