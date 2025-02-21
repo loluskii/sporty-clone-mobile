@@ -85,13 +85,11 @@ async function getCasinoURL() {
 }
 
 async function moveToNewGame(game){
-  if(route.params.game_id !== 'smat_virtual'){
-    showRecommendedGames.value = false
-    return router.push({
-        name: "game-play",
-        params: { game_name: slugify(game.title), game_id: game.id },
-      });
-  }
+  showRecommendedGames.value = false
+  return router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
 }
 
 async function getRecommendedGames() {
@@ -113,7 +111,7 @@ onBeforeMount(async () => {
 });
 
 onBeforeRouteLeave((to, from, next) => {
-  if (showRecommendedGames.value) {
+  if (route.params.game_id === 'smat_virtual' || showRecommendedGames.value) {
     next();
   } else {
     showRecommendedGames.value = true;
