@@ -3,7 +3,7 @@
     <div
       class=""
       style="
-        height: 100px;
+        min-height: 100px;
         text-align: center;
         background-color: #ececec;
         width: 100%;
