@@ -87,12 +87,11 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" @click.prevent="playJetX"
+        <a href="#" @click.prevent="playSmatVirtual"
           ><div class="sport-icon">
             <img
-              src="@/assets/images/sv.png"
+              src="@/assets/images/dice.png"
               loading="eager"
-              width="20"
               height="20"
             />
           </div>
@@ -268,6 +267,17 @@ async function playJetX() {
     return router.push({
       name: "game-play",
       params: { game_name: slugify("JetX"), game_id: 122 },
+    });
+  } else {
+    return router.push("/sign-in");
+  }
+}
+
+function playSmatVirtual(){
+  if (usersStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify("SmatVirtual"), game_id: 'smat_virtual' },
     });
   } else {
     return router.push("/sign-in");

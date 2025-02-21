@@ -23,7 +23,7 @@
 
 <script setup>
 import { watch, ref, onMounted, onBeforeMount, computed } from "vue";
-import { getCasinoStartUrl, getGames, slugify, getUserBonus } from "@/helpers";
+import { getCasinoStartUrl, getGames, slugify, getSmatVirtualStartUrl } from "@/helpers";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useUsersStore } from "@/stores";
@@ -42,21 +42,21 @@ const gamesList = ref([]);
 const confirmLeave = ref(null);
 const bonus = ref(null)
 
-watch(
-  () => [route.params.game_id],
-  async ([game_id]) => {
-    await getCasinoURL()
-  },
-  { immediate: true } 
-)
+// watch(
+//   () => [route.params.game_id],
+//   async ([game_id]) => {
+//     await getCasinoURL()
+//   },
+//   { immediate: true } 
+// )
 
 async function getCasinoURL() {
   try {
     isLoading.value = true;
-    const game_id = parseInt(route.params.game_id);
     let data = "real";
+    let res;
     let payload = {
-      gameId: game_id,
+      gameId: parseInt(route.params.game_id),
       clientId: import.meta.env.VITE_CLIENT_ID,
       username: currentUser?.username,
       userId: currentUser?.id,
@@ -72,8 +72,10 @@ async function getCasinoURL() {
       payload.bonusType = route.query.bonusType
       payload.bonusId = route.query.bonusId
       payload.balanceType = "bonus"
+      res = await getCasinoStartUrl(payload, data);
+    }else if(route.params.game_id === 'smat_virtual'){
+      res = await getSmatVirtualStartUrl({clientId: import.meta.env.VITE_CLIENT_ID, userId: currentUser?.id, token: currentUser?.authCode})
     }
-    const res = await getCasinoStartUrl(payload, data);
     isLoading.value = false;
     gameURL.value = res.url;
   } catch (error) {
@@ -83,11 +85,13 @@ async function getCasinoURL() {
 }
 
 async function moveToNewGame(game){
-  showRecommendedGames.value = false
-  return router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
+  if(route.params.game_id !== 'smat_virtual'){
+    showRecommendedGames.value = false
+    return router.push({
+        name: "game-play",
+        params: { game_name: slugify(game.title), game_id: game.id },
+      });
+  }
 }
 
 async function getRecommendedGames() {

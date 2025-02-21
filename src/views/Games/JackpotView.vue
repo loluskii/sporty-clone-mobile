@@ -57,8 +57,8 @@
             </div>
             <table class="table table-dark table-striped table-bordered">
               <thead>
-                <th>Tier</th>
-                <th>Amount</th>
+                <td>Tier</td>
+                <td>Amount</td>
               </thead>
               <tbody>
                 <tr v-for="(tier, t) in activeJackpot.tiers" :key="t">

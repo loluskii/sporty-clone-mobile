@@ -331,6 +331,10 @@ export const getCasinoStartUrl = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start`, payload))
 }
 
+export const getSmatVirtualStartUrl = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start-url`, payload))
+}
+
 export const getTopGameCategories = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/categories`))
 }
