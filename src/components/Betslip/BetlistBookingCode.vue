@@ -9,7 +9,7 @@
         Recommended Code
       </div>
       <Codes :codes="codes" v-if="!codeHubLoading" />
-      <LoadingSpinner v-else />
+      <!-- <LoadingSpinner v-else /> -->
     </div>
     <p class="m-default-info">
       <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
