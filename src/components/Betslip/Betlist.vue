@@ -1137,8 +1137,8 @@ onMounted(() => { });
   }
   
   .light{
-    animation:light 2s infinite;
-      -webkit-animation:light 2s infinite;
+    animation:light 3s infinite;
+      -webkit-animation:light 3s infinite;
     
   }
   
