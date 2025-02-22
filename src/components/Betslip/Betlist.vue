@@ -29,7 +29,7 @@
                     REAL
                     </span>
                     <span class="vue-toggles__text" test-id="text" 
-                    style="font-weight: normal; font-size: 14px; color: var(--sim-primary); left: 92px; margin-left: auto; font-family: fantasy !important; font-style: italic; ">SIMULATE</span>
+                    style="font-family: 'Anton', serif !important; font-size: 16px; color: var(--sim-primary); left: 92px; margin-left: auto; ">SIMULATE</span>
                   </span>
                       
                       <VueToggles :value="betslipMode" v-else @click="updateBetslipMode" uncheckedText="REAL"
@@ -332,6 +332,7 @@ onMounted(() => { });
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 .m-betslip-header {
   background: var(--background-type2-secondary);
   color: #ffffff;
