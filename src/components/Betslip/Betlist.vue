@@ -25,12 +25,12 @@
                       REAL
                     </span>
                     <span class="vue-toggles__text" test-id="text"
-                      style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 130px; margin-left: auto; ">SIMULATE</span>
+                      style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 92px; margin-left: auto; ">SIMULATE</span>
                   </span>
                   <span v-else @click="updateBetslipMode" class="vue-toggles" role="switch" tabindex="0"
                     aria-readonly="false" test-id="toggle" unchecked=""
                     style="width: 140px; height: 30px; border: 1px solid rgb(147, 147, 147); opacity: 1; cursor: pointer;">
-                    <span class="vue-toggles__text" test-id="text" style="left: 71px; ">REAL</span>
+                    <span class="vue-toggles__text" test-id="text" style="left: 30px; ">REAL</span>
 
                     <span aria-hidden="true" class="vue-toggles__dot" test-id="dot"
                       style="font-size: 14px; font-family: 'Anton', serif !important; background: var(--sim-primary); width: auto; border-radius: 9999px; height: 30px; min-width: 22px; min-height: 22px; padding: 1px 17px; margin-left: auto; color: black;">
