@@ -8,42 +8,21 @@
             <div class="wrapper separate-part">
               <div class="operate-button">
                 <div class="d-flex align-items-center">
-                  <span v-if="betslipSelections.length > 0"
-                    class="d-flex justify-content-center align-items-center mr-2 font-weight-bold" :style="betslipMode
-                      ? 'background-color: #ffd600; color: #000'
-                      : 'background-color: var(--brand-secondary); color: #fff'
-                      " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
+                  <span class="d-flex justify-content-center align-items-center mr-2 font-weight-bold" :style="betslipMode
+                    ? 'background-color: #ffd600; color: #000'
+                    : 'background-color: var(--brand-secondary); color: #fff'
+                    " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
                         betslipSelections.length }}
                   </span>
                   <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
-
-                  <span v-if="!betslipMode" @click="updateBetslipMode" class="vue-toggles light" role="switch"
-                    tabindex="0" aria-readonly="false" test-id="toggle" unchecked=""
-                    style="width: 140px; height: 30px; border: 1px solid rgb(147, 147, 147); opacity: 1; cursor: pointer;">
-                    <span aria-hidden="true" class="vue-toggles__dot" test-id="dot"
-                      style="background: var(--brand-secondary); width: auto; border-radius: 9999px; height: 30px; min-width: 22px; min-height: 22px; padding: 1px 17px; font-weight: bold;">
-                      REAL
-                    </span>
-                    <span class="vue-toggles__text" test-id="text"
-                      style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 92px; margin-left: auto; ">SIMULATE</span>
-                  </span>
-                  <span v-else @click="updateBetslipMode" class="vue-toggles" role="switch" tabindex="0"
-                    aria-readonly="false" test-id="toggle" unchecked=""
-                    style="width: 140px; height: 30px; border: 1px solid rgb(147, 147, 147); opacity: 1; cursor: pointer;">
-                    <span class="vue-toggles__text" test-id="text" style="left: 30px; ">REAL</span>
-
-                    <span aria-hidden="true" class="vue-toggles__dot" test-id="dot"
-                      style="font-size: 14px; font-family: 'Anton', serif !important; background: var(--sim-primary); width: auto; border-radius: 9999px; height: 30px; min-width: 22px; min-height: 22px; padding: 1px 17px; margin-left: auto; color: black;">
-                      SIMULATE
-                    </span>
-                  </span>
+                  <BetslipModeToggle />
                 </div>
               </div>
               <div class="operate-button">
                 <span class="currency">NGN</span> <span> {{ balance.toFixed(2) }}</span>
               </div>
             </div>
-            <template v-if="betslipSelections.length > 0">
+            <template>
               <div style="margin: 20px 0px 20px 0px"></div>
               <div class="wrapper separate-part">
                 <div @click="clearBetslip" class="remove-all operate-button" style="display: flex; align-items: center">
@@ -103,9 +82,9 @@
             <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <!-- Odd Change Notification -->
-          <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
+          <!-- <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
             <div class="change-wrong-message">Note: changes in odds or availability</div>
-          </div>
+          </div> -->
         </div>
         <div v-if="betslipSelections.length > 0 && !isSimulating" class="m-bet-detail-wrap"
           :class="betslipMode ? 'sim-theme' : 'real-theme'">
@@ -189,6 +168,7 @@ import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
 import VueToggles from "vue-toggles";
 import Simulation from "./Simulation.vue";
+import BetslipModeToggle from "./BetslipModeToggle.vue";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();
@@ -1121,45 +1101,5 @@ onMounted(() => { });
 
 .m-flexibet-confirm .m-0 {
   margin: 0;
-}
-
-
-.light {
-  background: -moz-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%, transparent), color-stop(45%, transparent), color-stop(50%, #ffffff), color-stop(55%, transparent), color-stop(100%, transparent));
-  background: -webkit-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  background: -o-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  background: -ms-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  background: linear-gradient(135deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='transparent', endColorstr='transparent', GradientType=1);
-  background-repeat: no-repeat;
-  background-position: 0px;
-  background-size: 300%;
-}
-
-.light {
-  animation: light 3s infinite;
-  -webkit-animation: light 3s infinite;
-
-}
-
-@keyframes light {
-  0% {
-    background-position: -600px;
-  }
-
-  100% {
-    background-position: 0px;
-  }
-}
-
-@-webkit-keyframes light {
-  0% {
-    background-position: -600px;
-  }
-
-  100% {
-    background-position: 0px;
-  }
 }
 </style>
