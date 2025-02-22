@@ -22,7 +22,7 @@
                 <span class="currency">NGN</span> <span> {{ balance.toFixed(2) }}</span>
               </div>
             </div>
-            <template>
+            <template v-if="betslipSelections.length > 0">
               <div style="margin: 20px 0px 20px 0px"></div>
               <div class="wrapper separate-part">
                 <div @click="clearBetslip" class="remove-all operate-button" style="display: flex; align-items: center">
