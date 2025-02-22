@@ -8,7 +8,7 @@
                 REAL
             </span>
             <span class="vue-toggles__text" test-id="text"
-                style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 13%; margin-left: auto; ">SIMULATE</span>
+                style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); right: 13%; margin-left: auto; ">SIMULATE</span>
         </span>
         <span v-else @click="couponStore.mode = 'real'" class="vue-toggles" role="switch" tabindex="0"
             aria-readonly="false" test-id="toggle" unchecked=""
