@@ -13,24 +13,24 @@
                       ? 'background-color: #ffd600; color: #000'
                       : 'background-color: var(--brand-secondary); color: #fff'
                       " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
-                    betslipSelections.length }}
+                        betslipSelections.length }}
                   </span>
                   <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
 
-                  <span v-if="!betslipMode" @click="updateBetslipMode" class="vue-toggles light" role="switch" tabindex="0"
-                    aria-readonly="false" test-id="toggle" unchecked=""
+                  <span v-if="!betslipMode" @click="updateBetslipMode" class="vue-toggles light" role="switch"
+                    tabindex="0" aria-readonly="false" test-id="toggle" unchecked=""
                     style="width: 140px; height: 30px; border: 1px solid rgb(147, 147, 147); opacity: 1; cursor: pointer;">
                     <span aria-hidden="true" class="vue-toggles__dot" test-id="dot"
                       style="background: var(--brand-secondary); width: auto; border-radius: 9999px; height: 30px; min-width: 22px; min-height: 22px; padding: 1px 17px; font-weight: bold;">
                       REAL
                     </span>
                     <span class="vue-toggles__text" test-id="text"
-                      style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 92px; margin-left: auto; ">SIMULATE</span>
+                      style="font-family: 'Anton', serif !important; font-size: 14px; color: var(--sim-primary); left: 130px; margin-left: auto; ">SIMULATE</span>
                   </span>
                   <span v-else @click="updateBetslipMode" class="vue-toggles" role="switch" tabindex="0"
                     aria-readonly="false" test-id="toggle" unchecked=""
                     style="width: 140px; height: 30px; border: 1px solid rgb(147, 147, 147); opacity: 1; cursor: pointer;">
-                    <span class="vue-toggles__text" test-id="text" style="left: 30px; ">REAL</span>
+                    <span class="vue-toggles__text" test-id="text" style="left: 71px; ">REAL</span>
 
                     <span aria-hidden="true" class="vue-toggles__dot" test-id="dot"
                       style="font-size: 14px; font-family: 'Anton', serif !important; background: var(--sim-primary); width: auto; border-radius: 9999px; height: 30px; min-width: 22px; min-height: 22px; padding: 1px 17px; margin-left: auto; color: black;">
@@ -335,6 +335,7 @@ onMounted(() => { });
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
 .m-betslip-header {
   background: var(--background-type2-secondary);
   color: #ffffff;
@@ -1123,40 +1124,42 @@ onMounted(() => { });
 }
 
 
-.light{
-  background: -moz-linear-gradient(-45deg,  transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,transparent), color-stop(45%,transparent), color-stop(50%,#ffffff), color-stop(55%,transparent), color-stop(100%,transparent));
-  background: -webkit-linear-gradient(-45deg,  transparent 0%,transparent 45%,#ffffff 50%,transparent 55%,transparent 100%);
-  background: -o-linear-gradient(-45deg,  transparent 0%,transparent 45%,#ffffff 50%,transparent 55%,transparent 100%);
-  background: -ms-linear-gradient(-45deg,  transparent 0%,transparent 45%,#ffffff 50%,transparent 55%,transparent 100%);
-  background: linear-gradient(135deg,  transparent 0%,transparent 45%,#ffffff 50%,transparent 55%,transparent 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='transparent', endColorstr='transparent',GradientType=1 );
-  background-repeat: no-repeat;  
-  background-position:0px;
-  background-size:300%;  
+.light {
+  background: -moz-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%, transparent), color-stop(45%, transparent), color-stop(50%, #ffffff), color-stop(55%, transparent), color-stop(100%, transparent));
+  background: -webkit-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
+  background: -o-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
+  background: -ms-linear-gradient(-45deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
+  background: linear-gradient(135deg, transparent 0%, transparent 45%, #ffffff 50%, transparent 55%, transparent 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='transparent', endColorstr='transparent', GradientType=1);
+  background-repeat: no-repeat;
+  background-position: 0px;
+  background-size: 300%;
+}
+
+.light {
+  animation: light 3s infinite;
+  -webkit-animation: light 3s infinite;
+
+}
+
+@keyframes light {
+  0% {
+    background-position: -600px;
   }
-  
-  .light{
-    animation:light 3s infinite;
-      -webkit-animation:light 3s infinite;
-    
+
+  100% {
+    background-position: 0px;
   }
-  
-  @keyframes light {
-    0% {
-          background-position:-600px; 
-    }
-    100% { 
-          background-position:0px; 
-    }
+}
+
+@-webkit-keyframes light {
+  0% {
+    background-position: -600px;
   }
-          
-  @-webkit-keyframes light {
-    0% {
-          background-position:-600px; 
-    }
-    100% { 
-          background-position:0px; 
-    }
+
+  100% {
+    background-position: 0px;
   }
+}
 </style>
