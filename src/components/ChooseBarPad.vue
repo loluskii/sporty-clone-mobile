@@ -495,7 +495,7 @@ onUnmounted(() => {})
 .m-choose-odds .m-title.used,
 .m-choose-time .m-title.used {
   color: #0d9737;
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
 .m-list {
   background-color: #fafafa;
@@ -521,7 +521,7 @@ onUnmounted(() => {})
 }
 .m-list li.checked {
   color: #0d9737;
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
 .m-list li:not(.tournament).checked::before {
   color: #0d9737;
@@ -758,7 +758,7 @@ onUnmounted(() => {})
   li.tournament.active
   .category-name {
   color: #0d9737;
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
 .m-choose-league
   .m-list
@@ -858,9 +858,9 @@ onUnmounted(() => {})
   line-height: 3rem;
   text-align: center;
   border-color: #0d9737;
-  border-color: var(--brand-primary);
+  border-color: var(--brand-secondary);
   color: #0d9737;
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-reset {
   background-color: #fafafa;
@@ -869,7 +869,7 @@ onUnmounted(() => {})
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-apply {
   background: #0d9737;
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   color: #ffffff;
 }
 </style>

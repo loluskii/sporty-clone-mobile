@@ -1,5 +1,7 @@
-export const BASE_API = 'https://bo.api.cubebet.ng'
+// let baseApi = import.meta.env.VITE_BASE_API;
+export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
+
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
 export const WTH_PERC = 0

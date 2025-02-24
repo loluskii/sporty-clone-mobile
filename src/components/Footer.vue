@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="@/assets/images/logo-white.png" />
+      <img src="/default.png" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -48,38 +48,10 @@
         Terms &amp; Conditions
       </h5>
       <h5 class="divider">|</h5>
-      <h5
-        class="underline"
-        @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })"
-      >
-        About Us
-      </h5>
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })">About Us</h5>
       <h5 class="divider">|</h5>
-      <h5
-        class="underline"
-        @click="
-          $router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })
-        "
-      >
+      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })">
         Responsible Gaming
-      </h5>
-    </div>
-    <div class="t_c-about_us">
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'privacy-policy' } })">
-        Privacy &amp; Policy
-      </h5>
-      <h5 class="divider">|</h5>
-
-      <h5
-        class="underline"
-        @click="$router.push({ name: 'cms-page', params: { page: 'account-deletion' } })"
-      >
-        Account Deletion
-      </h5>
-      <h5 class="divider">|</h5>
-
-      <h5 class="underline" @click="downloadApp">
-        <a :href="fileUrl" download="app-release.apk" style="text-decoration: none; color: white">Dowload App</a>
       </h5>
     </div>
     <div class="btn" @click="handleClick">
@@ -92,12 +64,11 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { useAuthStore, useUtilstStore } from "@/stores";
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
 const utilsStore = useUtilstStore();
-const fileUrl = ref("/app-release.apk");
 
 async function doLogout() {
   return authStore.logout();

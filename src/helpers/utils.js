@@ -1,18 +1,18 @@
 import moment from 'moment'
 // import _ from 'lodash'
 import { getSplitPropsData } from '@/helpers'
-import { brandDetails } from '/branding'
+// import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilstStore } from '../stores/utils.store'
 
 export const applyBranding = async () => {
   try {
     let defConfig
-    if (brandDetails) {
-      defConfig = brandDetails
-    } else {
+    // if (brandDetails) {
+    //   defConfig = brandDetails
+    // } else {
     defConfig = defBrandDetails
-    }
+    // }
     const config = defConfig
     const utilsStore = useUtilstStore()
     const loadFont = (url) => {
@@ -182,7 +182,10 @@ export const getDataFromPayload = (couponPayload) => {
     homeTeam: couponPayload.fixture.homeTeam || couponPayload.fixture.competitor1,
     awayTeam: couponPayload.fixture.awayTeam || couponPayload.fixture.competitor2,
     producerId: couponPayload.outcome.producerID || couponPayload.fixture.producerID,
-    stake: 0
+    stake: 0,
+    suspended: false,
+    unavailable: false,
+    changed: false
   }
 
   if (couponPayload?.type === 'live') {
@@ -619,4 +622,3 @@ export const getStartAndEndOfMonth = () => {
 
   return { startDate: formattedStartDate, endDate: formattedEndDate };
 };
-

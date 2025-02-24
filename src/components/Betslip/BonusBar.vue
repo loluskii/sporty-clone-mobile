@@ -71,7 +71,7 @@ const bonusPerc = computed(() => {
   background-color: #d6ebdc;
   background-color: var(--c-betslip-to-win-bg);
   /* color: v; */
-  /* color: var(--brand-secondary); */
+  color: var(--brand-primary);
 }
 #bonus-progress-bar.real-theme .progress {
   background-color: rgba(13, 151, 55, 0.5);

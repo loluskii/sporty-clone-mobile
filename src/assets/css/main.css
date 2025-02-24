@@ -807,7 +807,7 @@
   -webkit-box-pack: start;
   -webkit-justify-content: flex-start;
   -ms-flex-pack: start;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 20% 2.66666667rem 0;
 }
 
@@ -856,14 +856,14 @@
   margin-bottom: 2.25rem;
 }
 
-/* .m-sportBets .m-error-wrapper .m-error-msg:before {
+.m-sportBets .m-error-wrapper .m-error-msg:before {
   content: '\e624';
   font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-} */
+}
 
 .m-sportBets .m-error-wrapper .m-error-msg:before {
   color: #9CA0AB;
@@ -871,8 +871,6 @@
   font-size: 3rem;
   line-height: 1;
   margin-bottom: 1.25rem;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .m-sportBets .m-error-wrapper .m-btn {

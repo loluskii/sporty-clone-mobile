@@ -1,26 +1,10 @@
 <template lang="">
-
-  <div>
-    <HeaderHome></HeaderHome>
-    <div></div>
-    <div class="home">
-      <!-- Banner Carousel -->
-      <Carousel></Carousel>
-      <!-- Banner Carousel -->
-      <!-- SportsList Carousel -->
-      <SportsListCarousel></SportsListCarousel>
-      <!-- SportsList Carousel -->
-      <!-- Popular Sports -->
-      <KeepAlive>
-        <PopularSports></PopularSports>
-      </KeepAlive>
-      <!-- Popular Sports -->
-      <LiveContainer></LiveContainer>
-      <!-- Highlights -->
-      <Highlights></Highlights>
-      <!-- Highlights -->
-    </div>
-  </div>
+  <div> <HeaderHome></HeaderHome> <div></div> <div class="home"> <!-- Banner Carousel -->
+  <!-- <Carousel></Carousel> --> <!-- Banner Carousel --> <!-- SportsList Carousel -->
+  <SportsListCarousel></SportsListCarousel> <!-- SportsList Carousel --> <!-- Popular
+  Sports --> <KeepAlive> <PopularSports></PopularSports> </KeepAlive> <!-- Popular Sports
+  --> <LiveContainer></LiveContainer> <!-- Highlights --> <Highlights></Highlights> <!--
+  Highlights --> </div> </div>
 </template>
 <script setup>
 import HeaderHome from "@/components/HeaderHome.vue";

@@ -759,7 +759,7 @@ export default {}
 }
 
 .m-sportsBet--bets .m-btn-wrapper .m-btn--cashout {
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   border: none;
   border-radius: 2px;
   color: #ffffff;

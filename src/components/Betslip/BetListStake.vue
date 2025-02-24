@@ -84,7 +84,6 @@
         <div class="place-bet" :class="{ 'bet-disabled': couponStore.coupon.totalStake < 100, 'sim-theme': betslipMode }"
           @click="placeBet">
           <span>{{ !betslipMode ? 'Place Bet':'Place Simulate Bet' }}</span>
-
           <div class="m-pay-num" v-if="totalStake != 0">
             <span>About to pay {{ totalStake }}</span>
           </div>
@@ -311,24 +310,11 @@ const handleAcceptChange = () => {
   });
 };
 
-
-const closeKeyboard = () => {
-  // if (!event.target.closest('#m-keyboard')) {
-  //   keyboardVisible.value = false
-  // }
-}
-
 onMounted(() => {
   couponStore.updateWinnings({
-    stake: betlistStake.value
-  })
-})
-
-window.addEventListener('click', closeKeyboard)
-
-onBeforeUnmount(() => {
-  window.removeEventListener('click', closeKeyboard)
-})
+    stake: betlistStake.value,
+  });
+});
 </script>
 <style>
 .m-bet-detail-wrap {
@@ -451,11 +437,7 @@ onBeforeUnmount(() => {
   background-color: rgba(13, 151, 55, 0.2);
   background-color: var(--c-betslip-to-win-bg);
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme,
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.sim-theme {
-  background-color: rgba(250, 253, 0, 0.2);
-  background-color: var(--c-sim-win-bg);
-}
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flex {
   display: -webkit-box;
   display: -webkit-flex;
@@ -468,13 +450,9 @@ onBeforeUnmount(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme {
-  background-color: rgba(13, 151, 55, 0.2);
-  background-color: var(--c-betslip-to-win-bg);
+  background-color: #f2f2f2;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme {
-  background-color: rgba(250, 253, 0, 0.2);
-  background-color: var(--c-sim-win-bg);
-}
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-stake,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-odds,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .bonus {
@@ -670,7 +648,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   text-align: center;
   background: #0d9737;
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   color: #ffffff;
 }
 
@@ -683,22 +661,14 @@ onBeforeUnmount(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change {
   background: #0d9737;
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   color: #ffffff;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change:active {
   background: #33ea6a;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-theme {
-  background-color: #fafd00;
-  background-color: var(--sim-primary);
-  color: #000000;
-}
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-disabled {
-  color: #ffffff;
-  color: var(--brand-tertiary);
-}
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit {
   background: #0d9737;
   background: var(--brand-quaternary);
@@ -765,11 +735,7 @@ onBeforeUnmount(() => {
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet .m-pay-num {
   font-size: 1rem;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .sim-theme {
-  background-color: #fafd00;
-  background-color: var(--sim-primary);
-  color: #000000;
-}
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-label-bottom {
   color: #9ca0ab;
   font-size: 1.066rem;
@@ -922,37 +888,6 @@ onBeforeUnmount(() => {
   font-weight: bold;
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-num
-  .flexibet-flex-num {
-  color: #353a45;
-  color: var(--c-betslip-flexibet-num-text);
-  font-size: 1.066rem;
-  line-height: 1.33333333rem;
-  text-align: center;
-}
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-num
-  .flexibet-flex-num.midGray {
-  color: #dcdee5;
-}
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-num
-  .flexibet-total-num {
-  font-weight: normal;
-}
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .sporty-insure-container {
   display: block !important;
   position: relative;
@@ -981,23 +916,6 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-.m-bet-detail-wrap.sim-theme {
-  height: 100vh;
-}
-.m-bet-detail-wrap.sim-theme .m-scroll {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-}
-.m-bet-detail-wrap.sim-theme .m-betslips-stake-wrapper {
-  margin-top: auto;
-}
 .m-bet-detail-wrap .m-betslip-confirm .es-dialog-body {
   font-size: 1.66666667rem;
   font-weight: 700;
@@ -1045,19 +963,6 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-.m-bet-detail-wrap .sporty-insure-unavailable-notify {
-  bottom: 64px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  position: fixed;
-  width: 100%;
-}
 .m-bet-detail-wrap .bottom-toast .container {
   background: black;
   border-radius: 32px;

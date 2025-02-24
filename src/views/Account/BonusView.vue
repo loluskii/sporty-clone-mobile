@@ -25,19 +25,23 @@
         </div>
         <BonusBar :bonus="activeBonus"></BonusBar>
         <table>
-          <tr class="thead">
-            <th>Date</th>
-            <th>Stake</th>
-            <th>Remaining</th>
-          </tr>
+          <thead class="thead">
+            <tr>
+              <th>Date</th>
+              <th>Stake</th>
+              <th>Remaining</th>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="(t, index) in activeBonus.transactions" :key="index">
-              <td>{{ formatDate(t.createdAt, 'DD/MM/YYYY') }}</td>
+              <td>{{ formatDate(t.createdAt, "DD/MM/YYYY") }}</td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.amount) }}
+                {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+                }}{{ formatNumber(t.amount) }}
               </td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.balance) }}
+                {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+                }}{{ formatNumber(t.balance) }}
               </td>
             </tr>
           </tbody>
@@ -66,19 +70,23 @@
           <h5 style="font-size: medium; font-weight: 500">{{ bonus.name }}</h5>
         </div>
         <table>
-          <tr class="thead">
-            <th>Date</th>
-            <th>Stake</th>
-            <th>Remaining</th>
-          </tr>
+          <thead class="thead">
+            <tr>
+              <th>Date</th>
+              <th>Stake</th>
+              <th>Remaining</th>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="(t, index) in bonus.transactions" :key="index">
-              <td>{{ formatDate(t.createdAt, 'DD/MM/YYYY') }}</td>
+              <td>{{ formatDate(t.createdAt, "DD/MM/YYYY") }}</td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.amount) }}
+                {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+                }}{{ formatNumber(t.amount) }}
               </td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.balance) }}
+                {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+                }}{{ formatNumber(t.balance) }}
               </td>
             </tr>
           </tbody>
@@ -88,56 +96,55 @@
   </section>
 </template>
 <script setup>
-import HeaderOther from '@/components/HeaderOther.vue'
-import { onMounted, ref } from 'vue'
-import { getUserBonus, formatNumber } from '@/helpers'
-import { useUsersStore, useCouponStore } from '@/stores'
-import moment from 'moment'
+import HeaderOther from "@/components/HeaderOther.vue";
+import { onMounted, ref } from "vue";
+import { getUserBonus, formatNumber } from "@/helpers";
+import { useUsersStore, useCouponStore } from "@/stores";
+import moment from "moment";
 // import dayjs from 'dayjs'
 import BonusBar from "@/components/Betslip/BonusBar.vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 
-const userStore = useUsersStore()
-const isLoading = ref(true)
+const userStore = useUsersStore();
+const isLoading = ref(true);
 
-const pendingBalance = ref(0)
-const activeBonus = ref(null)
-const bonusHistory = ref([])
+const pendingBalance = ref(0);
+const activeBonus = ref(null);
+const bonusHistory = ref([]);
 
-const viewIsActive = ref(true)
-const viewIsHistory = ref(false)
-const couponStore = useCouponStore()
+const viewIsActive = ref(true);
+const viewIsHistory = ref(false);
+const couponStore = useCouponStore();
 
 async function getBonus() {
-  const res = await getUserBonus()
-  isLoading.value = false
+  const res = await getUserBonus();
+  isLoading.value = false;
   if (res && res.bonus) {
     // find active bonus
     const active = res.bonus.find((item) => item.status === 1);
     activeBonus.value = active;
     pendingBalance.value = active?.pendingAmount;
-
     // find non active
-    const bHistory = res.bonus
-    bonusHistory.value = bHistory
+    const bHistory = res.bonus;
+    bonusHistory.value = bHistory;
   }
 }
 
 function toggleHistory() {
-  viewIsActive.value = !viewIsActive.value
-  viewIsHistory.value = !viewIsHistory.value
+  viewIsActive.value = !viewIsActive.value;
+  viewIsHistory.value = !viewIsHistory.value;
 }
 
 function formatDate(date, format) {
   // return
-  let d = moment(date).format(format)
-  return d
+  let d = moment(date).format(format);
+  return d;
   // return moment(date).format(format)
 }
 
 onMounted(async () => {
-  await getBonus()
-})
+  await getBonus();
+});
 </script>
 
 <style scoped>
