@@ -3,21 +3,50 @@
     <div class="layout mask" style="z-index: 1000; position: fixed"></div>
     <div class="es-dialog m-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto; color: white">
-          <div v-if="hasBonus">You have an active casino bonus</div>
-          <div>Choose the balance to use for this game session.</div>
+        <div
+          v-if="route.name === 'casino-bonus'"
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white"
+        >
+          <div>
+            {{ gamePlayModalText }}
+          </div>
+        </div>
+        <div
+          v-else
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white; text-align: center"
+        >
+          <img
+            src="@/assets/images/party-popper.png"
+            alt="congratulation"
+            style="height: 30px"
+          />
+          <div>
+            {{ modalText }}
+          </div>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer" style="margin-top: 1rem; padding: 0">
-        <div class="button-row">
+        <div v-if="route.name !== 'home'" class="button-row">
           <div class="real-money-btn" @click="setBalanceType('real')">
             <div class="real-money-btn-text">Real Money</div>
           </div>
-          <div v-if="hasBonus" class="bonus-btn" @click="setBalanceType('bonus')">
+          <div class="bonus-btn" @click="setBalanceType('bonus')">
             <div class="bonus-btn-text">Bonus</div>
           </div>
-          <div v-else class="demo-btn" @click="setBalanceType('demo')">
-            <div class="demo-btn-text">Demo</div>
+        </div>
+        <div v-else class="button-row">
+          <div class="real-money-btn" @click="goToCasino">
+            <div class="real-money-btn-text">Go to Casino</div>
+          </div>
+          <div class="bonus-btn" @click="goToBonus">
+            <div class="bonus-btn-text">View Bonus</div>
+          </div>
+        </div>
+        <div class="button-row">
+          <div class="real-money-btn-cancel" @click="hideDialog">
+            <div class="real-money-btn-text">Cancel</div>
           </div>
         </div>
       </div>
@@ -26,33 +55,67 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUsersStore } from '@/stores'
-import emitter from '@/plugins/emitter'
+import { defineProps, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUsersStore } from "@/stores";
+import emitter from "@/plugins/emitter";
+import { slugify } from "@/helpers";
+import { useUtilstStore } from "../stores";
 
-const emits = defineEmits(['hide-dialogue'])
-const userStore = useUsersStore()
+const emits = defineEmits(["hide-dialogue"]);
 const props = defineProps({
-  errorMessage: String,
-  dialogueMessage: Object,
-  dialogueType: String,
-  nextRoute: String
-})
+  data: Object,
+});
 
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const { SportsbookGlobalVariable } = useUtilstStore();
+const utilsStore = useUtilstStore();
 
-const hasBonus = computed(() => {
-  return userStore.currentUser && userStore.currentUser.casinoBonusBalance > 0
-})
+const modalText = computed(() => {
+  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+    ? `Congratulations! You have been gifted ${props.data.bonus.freeSpins} free spins.`
+    : `Congratulations! You have a casino bonus of
+            ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value}`;
+});
+
+const gamePlayModalText = computed(() => {
+  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+    ? `You have ${props.data.bonus.freeSpins} free spins on this game. Choose the balance to use for
+            this session.`
+    : `You have an active casino bonus of ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value} for this game. Choose the balance to use for
+            this session.
+            `;
+});
 
 const setBalanceType = (type) => {
-  emits('hide-dialogue')
-  if (!userStore.currentUser && type !== 'demo') return router.push({ name: 'sign-in' })
-  emitter.emit('setBalanceType', type)
-}
+  emits("hide-dialogue");
+  return router.push({
+    name: "game-play",
+    params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
+    query: { bonusId: props.data.bonus.bonusId, balanceType: type, bonusType: props.data.bonus.bonusType },
+  });
+};
 
-onMounted(() => {})
+const goToCasino = () => {
+  emits("hide-dialogue");
+  return router.push({
+    name: "casino-bonus",
+    query: { gameIds: props.data.bonus.gameId.join(",") },
+  });
+};
+
+const goToBonus = () => {
+  emits("hide-dialogue");
+  return router.push("/Account/Bonus");
+};
+
+const hideDialog = () => {
+  emits("hide-dialogue");
+  utilsStore.casinoBonusShown = true;
+};
+
+onMounted(() => {});
 </script>
 
 <style scoped>
@@ -76,8 +139,8 @@ onMounted(() => {})
 }
 .button-row div {
   font-weight: 500;
-  height: 3rem;
-  line-height: 3rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
   text-align: center;
   width: 100%;
   color: white;
@@ -91,14 +154,19 @@ onMounted(() => {})
 .button-row div.real-money-btn {
   background-color: var(--brand-secondary);
 }
+
+.button-row div.real-money-btn-cancel,
+.button-row div.real-money-btn-cancel .real-money-btn-text {
+  border: 0.5px solid;
+  height: 2rem !important;
+  line-height: 2rem !important;
+}
 .es-dialog {
   background-color: #373b41;
   border-radius: 0.3rem;
-  box-shadow:
-    0 0 24px 0 rgba(0, 0, 0, 0.25),
-    0 0 24px 0 rgba(112, 76, 76, 0.25);
+  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25), 0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
-  font-family: 'Roboto', 'Microsoft Yahei', 'simsun';
+  font-family: "Roboto", "Microsoft Yahei", "simsun";
   font-size: 1rem;
   line-height: 2rem;
   overflow: hidden;
@@ -107,7 +175,7 @@ onMounted(() => {})
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60%;
+  width: 80%;
   z-index: 1001;
 }
 .es-dialog-close {
@@ -121,8 +189,8 @@ onMounted(() => {})
   font-size: 0;
 }
 .es-dialog-close em::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -183,7 +251,7 @@ onMounted(() => {})
 }
 .es-dialog .es-dialog-head .es-dialog-close {
   background: none;
-  font-family: 'Microsoft YaHei', arial, simsun, SimHei;
+  font-family: "Microsoft YaHei", arial, simsun, SimHei;
   position: absolute;
   right: 5px;
   top: 1px;
@@ -218,31 +286,10 @@ onMounted(() => {})
   width: 30%;
 }
 .es-dialog.es-ani-show {
-  -webkit-transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s;
-  transition:
-    width,
-    height,
-    transform 3s,
-    2s liner 3s,
-    2s,
-    -webkit-transform 3s;
+  -webkit-transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s;
+  transition: width, height, transform 3s, 2s liner 3s, 2s, -webkit-transform 3s;
 }
 .es-dialog.es-ani-hide {
   -webkit-transition: all 0.3s linear;

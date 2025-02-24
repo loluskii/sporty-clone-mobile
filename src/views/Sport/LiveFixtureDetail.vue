@@ -225,7 +225,9 @@ import { useRoute } from 'vue-router'
 import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
-import { useCouponStore } from '../../stores'
+import { useCouponStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { SIM_ALLOWED_MARKETS } from '@/helpers'
 
 const eventMarkets = ref()
 const eventDetail = ref()
@@ -353,6 +355,11 @@ function groupByMarketID(data) {
 
 function addToBetslip(market, outcome) {
   if (outcome.odds <= 1) return
+  let marketId = parseInt(market.marketID)
+  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
+    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+    return;
+  }
   const id = createID(
     eventDetail.value.gameID,
     eventDetail.value.matchID,

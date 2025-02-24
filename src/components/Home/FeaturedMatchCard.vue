@@ -88,6 +88,9 @@ import { defineProps, computed } from 'vue'
 import { formatDate, slugify, isSelected, createID } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
+import emitter from '@/plugins/emitter';
+
 
 const router = useRouter()
 
@@ -119,6 +122,11 @@ function goToMarket() {
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
+  let marketId = parseInt(odd.marketID)
+  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
+    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+    return;
+  }
   const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
   const data = {
     fixture: event,

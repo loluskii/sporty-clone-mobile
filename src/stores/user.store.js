@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 
 import { getUserDetailsByToken, formatNumber } from '@/helpers'
+import { getUserActiveBonus } from '../helpers'
+import emitter from '../plugins/emitter'
 
 export const useUsersStore = defineStore({
   id: 'users',
   state: () => ({
     currentUser: null,
     activeBonus: null,
+    casinoActiveBonus: null
   }),
   getters: {
     balance: (state) => (state.currentUser ? state.currentUser.availableBalance : 0),
@@ -20,12 +23,17 @@ export const useUsersStore = defineStore({
   actions: {
     async loadCurrentUser() {
       // this.currentUser contains all user properties. E.g. this.currentUser.first_name
-      const res = await getUserDetailsByToken()
-      this.currentUser = res.data
+      Promise.all([getUserDetailsByToken(), getUserActiveBonus()]).then((res) => {
+        this.currentUser = res[0].data
+        if (res[1].data) {
+          this.casinoActiveBonus = res[1].data
+          emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
+        }
+      })
     },
     setActiveBonus(bonus) {
       this.activeBonus = bonus;
-    }
+    }, 
   },
   persist: {
     storage: localStorage

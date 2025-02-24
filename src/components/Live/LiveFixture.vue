@@ -99,9 +99,10 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import LiveOdds from './LiveOdds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
-import { sortArr, createID, isSelected } from '@/helpers'
+import { sortArr, createID, isSelected, slugify } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
+import { SIM_ALLOWED_MARKETS } from '../../helpers'
 
 // import _ from 'lodash'
 const couponStore = useCouponStore()
@@ -127,7 +128,7 @@ const getOdds = () => {
       const odds = props.gameData.outcomes
       let filtered = odds.filter((item) => item.marketID == props.activeMarket.marketID)
       let uniqueFiltered = uniqueOutcomes(filtered)
-      console.log(uniqueFiltered)
+      // console.log(uniqueFiltered)
       if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
         let defaultSpecifier = uniqueFiltered[0]?.specifier
         if (defaultSpecifier) {
@@ -163,6 +164,11 @@ watch(
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
   const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  let marketId = parseInt(odd.marketID)
+  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
+    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+    return;
+  }
   const data = {
     fixture: event,
     market_name: props.activeMarket.marketName,

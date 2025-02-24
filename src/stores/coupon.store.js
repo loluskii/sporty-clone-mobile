@@ -14,10 +14,9 @@ import {
   calculateBonus,
   getSplitProps,
   placeBet2,
-  // bookBet2,
+  bookBet2,
   CLIENT_ID
 } from '@/helpers'
-import { bookBet2 } from '../helpers/queries'
 
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
@@ -32,6 +31,8 @@ export const useCouponStore = defineStore({
     SportsbookGlobalVariable: {},
     isBetslipLoading: false,
     isBetslipBooking: false,
+    mode: "real",
+    isSimulating: false,
     coupon: {
       acceptChanges: true,
       selections: [],
@@ -52,7 +53,9 @@ export const useCouponStore = defineStore({
       source: 'mobile'
     }
   }),
-  getters: {},
+  getters: {
+    betslipMode: (state) => (state.mode === 'sim'),
+  },
   actions: {
     async addToCoupon(selection) {
       const couponPayload = selection
@@ -446,7 +449,7 @@ export const useCouponStore = defineStore({
       }
       if (type === 'bet') {
         this.isBetslipLoading = true
-        coupondata.isBooking = 0
+        coupondata.isBooking = this.mode === "real" ? 0 : 2
         try {
           const res = await placeBet2(coupondata)
           this.isBetslipLoading = false

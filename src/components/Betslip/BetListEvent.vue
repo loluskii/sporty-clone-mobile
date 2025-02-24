@@ -10,8 +10,8 @@
             <div class="m-outcome-desc-wrapper">
               <div class="m-outcome-desc" style="text-transform: capitalize">
                 <img
-                  :src="getImageSrc(selection.sportId, selection.sport)"
-                  style="height: 20px; margin-right: 0.2rem"
+                  :src="getImageSrc(selection.sportId)"
+                  style="height: 18px; margin-right: 0.2rem"
                   alt=""
                   srcset=""
                 />
@@ -101,12 +101,7 @@ const selectionIsExpired = computed(() => {
 
 const getImageSrc = (sportId, sport) => {
   let imageUrl;
-  if (sport) {
-    let { sportID } = getSportbyName(sport);
-    imageUrl = new URL(`../assets/images/sports/${sportID}.png`, import.meta.url);
-  } else {
-    imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url);
-  }
+  imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url);
   return imageUrl;
 };
 

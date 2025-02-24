@@ -238,4 +238,9 @@ html[theme='light'] {
   color: #000;
   background-color: #fafafa;
 }
+
+.m-tabs-tab-active{
+  font-weight: bold;
+  
+}
 </style>

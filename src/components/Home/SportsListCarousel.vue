@@ -1,39 +1,168 @@
 <template lang="">
-  <div class="m-snap-nav-wrap m-sports-choose"> <ul class="m-snap-nav flex" style="width:
-  100%"> <li class="m-sports-choose-item m-snap-nav-item"> <a
-  @click.prevent="$router.push({ name: 'sports', query: { sport: 'Soccer' } })"> <div
-  class="sport-icon"> <img src="@/assets/images/sports/1.png" loading="eager" width="20"
-  height="20" /> </div> <span class="sport-text" data-cms-key="sports"
-  data-cms-page="wap_home">Sports </span> </a> </li> <li class="m-sports-choose-item
-  m-snap-nav-item"> <a @click.prevent="$router.push({ name: 'live' })"> <div
-  class="sport-icon"> <img src="@/assets/images/live.png" loading="eager" width="20"
-  height="20" /> </div> <span class="sport-text" data-cms-key="sports"
-  data-cms-page="wap_home">Live </span> </a> </li> <li class="m-sports-choose-item
-  m-snap-nav-item"> <a @click.prevent="$router.push({ name: 'casino-games' })" ><div
-  class="sport-icon"> <img src="@/assets/images/games.png" loading="eager" width="20"
-  height="20" /> </div> <span class="sport-text" data-cms-key="games"
-  data-cms-page="wap_home">Casino</span> </a> </li> <li class="m-sports-choose-item
-  m-snap-nav-item"> <a href="#" @click.prevent="openVirtual" ><div class="sport-icon">
-  <img src="@/assets/images/virtuals.png" loading="eager" width="20" height="20" /> </div>
-  <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Virtuals</span>
-  </a> </li> <li class="m-sports-choose-item m-snap-nav-item"> <a href="#"
-  @click.prevent="playJetX" ><div class="sport-icon"> <img src="@/assets/images/jet.png"
-  loading="eager" width="20" height="20" /> </div> <span class="sport-text"
-  data-cms-key="live" data-cms-page="wap_home">JetX</span> </a> </li> <li
-  class="m-sports-choose-item m-snap-nav-item"> <a href="#" @click.prevent="goToLiveScore"
-  ><div class="sport-icon"> <img src="@/assets/images/score.png" style="padding-bottom:
-  5px; height: 25px" loading="eager" /> </div> <span class="sport-text"
-  data-cms-key="live" data-cms-page="wap_home">Livescore</span> </a> </li> <li
-  class="m-sports-choose-item m-snap-nav-item"> <a href="#"
-  @click.prevent="goToStatistics" ><div class="sport-icon"> <img
-  src="@/assets/images/presentation.png" style="height: 25px" loading="eager" /> </div>
-  <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Statistics</span>
-  </a> </li> <li v-for="(sport, index) in sportsList?.slice(1)" :key="index"
-  class="m-sports-choose-item m-snap-nav-item" > <a href=""
-  @click.prevent="setActiveSport(sport.sportID)" ><div class="sport-icon"> <img
-  :src="getImageSrc(sport.sportID)" loading="lazy" width="22" height="22" /> </div> <span
-  class="sport-text"> {{ sport.sportName }} </span> </a> </li> </ul> <i class="controls
-  left-controls"></i> <i class="controls right-controls"></i> </div>
+  <div class="m-snap-nav-wrap m-sports-choose">
+    <ul class="m-snap-nav flex" style="width: 100%">
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a
+          @click.prevent="
+            $router.push({ name: 'sports', query: { sport: 'Soccer' } })
+          "
+        >
+          <div class="sport-icon">
+            <img
+              src="@/assets/images/sports/1.png"
+              loading="eager"
+              width="20"
+              height="20"
+            />
+          </div>
+          <span
+            class="sport-text"
+            data-cms-key="sports"
+            data-cms-page="wap_home"
+            >Sports
+          </span>
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a @click.prevent="$router.push({ name: 'live' })">
+          <div class="sport-icon">
+            <img
+              src="@/assets/images/live.png"
+              loading="eager"
+              width="20"
+              height="20"
+            />
+          </div>
+          <span
+            class="sport-text"
+            data-cms-key="sports"
+            data-cms-page="wap_home"
+            >Live
+          </span>
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a @click.prevent="$router.push({ name: 'casino-games' })"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/games.png"
+              loading="eager"
+              width="20"
+              height="20"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="games" data-cms-page="wap_home"
+            >Casino</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="openVirtual"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/virtuals.png"
+              loading="eager"
+              width="20"
+              height="20"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >Virtuals</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="playJetX"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/jet.png"
+              loading="eager"
+              width="20"
+              height="20"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >JetX</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="playSmatVirtual"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/dice.png"
+              loading="eager"
+              height="20"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >Dice</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="goToLiveScore"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/score.png"
+              style="padding-bottom: 5px; height: 25px"
+              loading="eager"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >Livescore</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="goToStatistics"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/presentation.png"
+              style="height: 25px"
+              loading="eager"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >Statistics</span
+          >
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="/Promotions"
+          ><div class="sport-icon">
+            <img
+              src="@/assets/images/promotions.png"
+              style="height: 25px"
+              loading="eager"
+            />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
+            >Promotions</span
+          >
+        </a>
+      </li>
+      <li
+        v-for="(sport, index) in sportsList?.slice(1)"
+        :key="index"
+        class="m-sports-choose-item m-snap-nav-item"
+      >
+        <a href="" @click.prevent="setActiveSport(sport.sportID)"
+          ><div class="sport-icon">
+            <img
+              :src="getImageSrc(sport.sportID)"
+              loading="lazy"
+              width="22"
+              height="22"
+            />
+          </div>
+          <span class="sport-text"> {{ sport.sportName }} </span>
+        </a>
+      </li>
+    </ul>
+    <i class="controls left-controls"></i>
+    <i class="controls right-controls"></i>
+  </div>
 </template>
 <script setup>
 import { useUtilstStore, useUsersStore } from "@/stores";
@@ -52,7 +181,10 @@ const usersStore = useUsersStore();
 // const mode = ref(0)
 
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url);
+  const imageUrl = new URL(
+    `../../assets/images/sports/${sportId}.png`,
+    import.meta.url
+  );
   return imageUrl;
 };
 
@@ -65,7 +197,9 @@ const mode = computed(() => {
 });
 
 const group = computed(() => {
-  return usersStore.currentUser ? usersStore.details.group : import.meta.env.VITE_APP_KEY;
+  return usersStore.currentUser
+    ? usersStore.details.group
+    : import.meta.env.VITE_APP_KEY;
 });
 
 const sportsList = computed(() => {
@@ -99,9 +233,9 @@ const hashStr = computed(() => {
 const generatedURL = computed(() => {
   return `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
     token.value
-  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${mode.value}&group=${
-    group.value
-  }&clientPlatform=mobile&h=${hashStr.value}`;
+  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
+    mode.value
+  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`;
 });
 
 const goToLiveScore = () => {
@@ -123,9 +257,9 @@ const goToStatistics = () => {
 function openVirtual() {
   window.location.href = `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
     token.value
-  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${mode.value}&group=${
-    group.value
-  }&clientPlatform=mobile&h=${hashStr.value}`;
+  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
+    mode.value
+  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`;
 }
 
 async function playJetX() {
@@ -133,6 +267,17 @@ async function playJetX() {
     return router.push({
       name: "game-play",
       params: { game_name: slugify("JetX"), game_id: 122 },
+    });
+  } else {
+    return router.push("/sign-in");
+  }
+}
+
+function playSmatVirtual(){
+  if (usersStore.currentUser) {
+    return router.push({
+      name: "game-play",
+      params: { game_name: slugify("SmatVirtual"), game_id: 'smat_virtual' },
     });
   } else {
     return router.push("/sign-in");

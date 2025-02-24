@@ -6,27 +6,26 @@
         <div class="m-input-wrapper">
           <span data-cms-key="total_stake">
             {{
-              betSlipType !== 'Multiple'
-                ? 'Stake per bet (' + selectionsLength + ' bets)'
-                : 'Total Stake'
+              betSlipType !== "Multiple" && selectionsLength > 1
+                ? "Stake per bet (" + selectionsLength + " bets)"
+                : "Total Stake"
             }}
           </span>
 
-          <span class="currency"><em>NGN</em></span>
-          <span
-            tabindex="0"
-            type="text"
-            disabled
-            class="m-keybord-input multiple-stake-input"
-            v-html="betlistStake"
-            @click="toggleKeyboard"
-          ></span>
+          <span class="currency"><em>{{ couponStore.SportsbookGlobalVariable.CurrencyCode }}</em></span>
+          <span tabindex="0" type="text" disabled class="m-keybord-input multiple-stake-input" v-html="betlistStake"
+            @click="toggleKeyboard"></span>
         </div>
-        <BetlistStakeKeyboard
-          :keyboard-visible="keyboardVisible"
-          @button-click="onKeyClick"
-        ></BetlistStakeKeyboard>
+        <BetlistStakeKeyboard :keyboard-visible="keyboardVisible" @button-click="onKeyClick"></BetlistStakeKeyboard>
       </div>
+
+      <template v-if="taxEnabled && !betslipMode">
+        <div class="bonus mg-b-10">
+          <span>Stake After Tax</span>
+          <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ parseFloat(stakeAfterTax).toFixed(2) }}</span>
+        </div>
+      </template>
 
       <div class="total-odds mg-b-10" v-if="betSlipType === 'Multiple'">
         <span>Total Odds</span>
@@ -35,22 +34,31 @@
 
       <div class="bonus mg-b-10">
         <span>Max Bonus</span>
-        <span>{{ parseFloat(maxBonus).toFixed(2) }}</span>
+        <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
+          {{ formatNumber(maxBonus) }}</span>
       </div>
 
-      <div
-        v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0"
-        class="bonus mg-b-10"
-      >
+      <template v-if="taxEnabled && !betslipMode">
+        <div class="bonus mg-b-10">
+          <span>Excise Tax</span>
+          <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ parseFloat(exciseTax).toFixed(2) }}</span>
+        </div>
+
+        <div v-if="wthTax > 0" class="bonus mg-b-10">
+          <span>Withholding Tax</span>
+          <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ formatNumber(wthTax) }}</span>
+        </div>
+      </template>
+
+      <div v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0" class="bonus mg-b-10">
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
-          <input
-            type="checkbox"
-            style="margin-right: 7px; accent-color: var(--brand-primary)"
-            v-model="couponStore.coupon.useBonus"
-            id=""
-          />
-          <span>NGN {{ userStore.currentUser.sportBonusBalance }}</span>
+          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
+            v-model="couponStore.coupon.useBonus" id="" />
+          <span>{{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ userStore.currentUser.sportBonusBalance }}</span>
         </div>
       </div>
 
@@ -58,216 +66,255 @@
         <span data-cms-key="potential_win" data-cms-page="component_betslip">Potential Win</span>
         <span>
           <span class="m-value">
-            {{
-              betSlipType == 'Multiple' || (betSlipType == 'Single' && selectionsLength === 1)
-                ? maxWin
-                : minWin + ' ~ ' + maxWin
-            }}
+            {{ couponStore.SportsbookGlobalVariable.Currency }}
+            {{ potentialWin }}
           </span>
         </span>
       </div>
 
       <div class="m-submit">
-        <div
-          class="place-bet bet-accept-change bet-disabled"
-          v-if="!acceptedChanges"
-          @click="handleAcceptChange"
-        >
+        <!-- <div class="place-bet bet-accept-change bet-disabled" v-if="!acceptedChanges" @click="handleAcceptChange">
           <span>Accept Changes</span>
+        </div> -->
+
+        <div v-if="!betslipMode" class="m-book-btn" :class="couponStore.coupon.totalStake < 100 ? 'bet-disabled' : ''"
+          @click="book">
+          <div>Book Bet</div>
         </div>
-        <template v-else>
-          <div
-            class="m-book-btn"
-            :class="couponStore.coupon.totalStake < 100 ? 'bet-disabled' : ''"
-            @click="book"
-          >
-            <div>Book Bet</div>
+        <div class="place-bet" :class="{ 'bet-disabled': couponStore.coupon.totalStake < 100, 'sim-theme': betslipMode }"
+          @click="placeBet">
+          <span>{{ !betslipMode ? 'Place Bet':'Place Simulate Bet' }}</span>
+          <div class="m-pay-num" v-if="totalStake != 0">
+            <span>About to pay {{ totalStake }}</span>
           </div>
-          <div
-            class="place-bet"
-            :class="couponStore.coupon.totalStake < 100 ? 'bet-disabled' : ''"
-            @click="placeBet"
-          >
-            <span>Place Bet</span>
-            <div class="m-pay-num" v-if="totalStake != 0">
-              <span>About to pay {{ totalStake }}</span>
-            </div>
-          </div>
-        </template>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore } from '../../stores'
-import { formatNumber } from '../../helpers'
-import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
-import emitter from '../../plugins/emitter'
+import { useCouponStore, useUsersStore } from "../../stores";
+import { formatNumber } from "../../helpers";
+import BetslipBonusBar from "./BetslipBonusBar.vue";
+import { computed, ref, onBeforeUnmount, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
+import emitter from "../../plugins/emitter";
 // import placeBet2
-defineProps({
+const props = defineProps({
   betSlipType: String,
-  betType: String
-})
-const couponStore = useCouponStore()
-const userStore = useUsersStore()
-const router = useRouter()
-const emit = defineEmits(['toggle-show', 'toggle-betslip', 'book-bet'])
-const keyboardVisible = ref(false)
+  betType: String,
+});
+const couponStore = useCouponStore();
+const userStore = useUsersStore();
+const router = useRouter();
+const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
+const keyboardVisible = ref(false);
 
 const updateStake = (stake) => {
-  couponStore.coupon.stake = stake
+  couponStore.coupon.stake = stake;
   return couponStore.updateWinnings({
     stake: stake,
-    id: 'all'
-  })
-}
+    id: "all",
+  });
+};
 
 const betlistStake = computed(() => {
-  return couponStore.coupon.totalStake
-})
+  return couponStore.coupon.totalStake;
+});
 
 const acceptedChanges = computed(() => {
-  return couponStore.coupon.acceptChanges
-})
+  return couponStore.coupon.acceptChanges;
+});
+
+const taxEnabled = computed(
+  () => couponStore.SportsbookGlobalVariable.taxEnabled === "1"
+);
+const exciseTax = computed(() =>
+  parseFloat(couponStore.SportsbookGlobalVariable.exciseTax || 0)
+);
+
+const stakeAfterTax = computed(() => {
+  const excise = betlistStake.value * (exciseTax.value / 100);
+  return betlistStake.value - excise;
+});
+
+const wthTax = computed(() => {
+  let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0) / 100
+  return (
+    (stakeAfterTax.value * couponStore.coupon.totalOdds - couponStore.coupon.totalStake) *
+    wth
+  );
+});
+
+// Computed property for potential winnings
+const potentialWin = computed(() => {
+  const stake = betlistStake.value;
+  const totalOdd = couponStore.coupon.totalOdds;
+  let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0);
+
+  if (taxEnabled.value) {
+    let finalPayout = stake * totalOdds;
+
+    if (exciseTax.value > 0) {
+      finalPayout = stakeAfterTax.value * totalOdd;
+    }
+
+    if (wth > 0) {
+      // wth tax
+      finalPayout = finalPayout - wthTax.value;
+    }
+    return (finalPayout + maxBonus.value).toFixed(2);
+  }
+
+  const isSingleBet = props.betSlipType === "Single" && selectionsLength.value === 1;
+  const isMultipleBet = props.betSlipType === "Multiple";
+
+  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
+});
 
 const toggleKeyboard = () => {
-  keyboardVisible.value = !keyboardVisible.value
-}
+  keyboardVisible.value = !keyboardVisible.value;
+};
 
 const totalOdds = computed(() => {
-  return formatNumber(couponStore.coupon.totalOdds)
-})
+  return formatNumber(couponStore.coupon.totalOdds);
+});
 
 const maxBonus = computed(() => {
-  return couponStore.coupon.maxBonus
-})
+  return couponStore.coupon.maxBonus;
+});
 
 const selectionsLength = computed(() => {
-  return couponStore.coupon.selections.length
-})
+  return couponStore.coupon.selections.length;
+});
 
 const minWin = computed(() => {
-  return formatNumber(couponStore.coupon.minWin)
-})
+  return couponStore.coupon.minWin;
+});
 
 const maxWin = computed(() => {
-  return formatNumber(couponStore.coupon.maxWin)
+  return couponStore.coupon.maxWin;
+});
+
+const betslipMode = computed(() => {
+  return couponStore.betslipMode
 })
 
 const totalStake = computed(() => {
-  return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
-})
+  return couponStore.coupon.totalStake === ""
+    ? 0.0
+    : formatNumber(couponStore.coupon.totalStake);
+});
 
 async function book(e) {
   try {
     if (totalStake.value < 1) {
-      return
+      return;
     }
 
-    e.target.classList.add('loading-icon')
-    couponStore.isBetslipBooking = true
+    e.target.classList.add("loading-icon");
+    couponStore.isBetslipBooking = true;
 
-    const res = await couponStore.placeBet(e, 'book')
-    couponStore.isBetslipBooking = false
-    e.target.classList.remove('loading-icon')
+    const res = await couponStore.placeBet(e, "book");
+    couponStore.isBetslipBooking = false;
+    e.target.classList.remove("loading-icon");
 
     if (res.success) {
-      emit('book-bet', res)
+      emit("book-bet", res);
     } else {
       // Handle error display or other actions as needed
-      emit('toggle-betslip')
-      emitter.emit('showErrorMessage', res.message)
+      emit("toggle-betslip");
+      emitter.emit("showErrorMessage", res.message);
     }
   } catch (error) {
-    emit('toggle-betslip')
+    emit("toggle-betslip");
     // Handle error display or other actions as needed
-    emitter.emit('showErrorMessage', error)
+    emitter.emit("showErrorMessage", error);
   }
 }
 
 function placeBet() {
   if (!userStore.currentUser) {
-    emit('toggle-betslip')
-    return router.push({ name: 'sign-in' })
+    emit("toggle-betslip");
+    return router.push({ name: "sign-in" });
   }
-  emit('toggle-show')
+  emit("toggle-show");
 }
 
 function onKeyClick(type, value) {
-  let stake = betlistStake.value.toString()
-  let finalStake
+  let stake = betlistStake.value.toString();
+  let finalStake;
   switch (type) {
-    case 'number':
+    case "number":
       // Append clicked number to the display
       if (stake.length < 7) {
-        if (typeof value === 'number') {
-          if (stake === '') {
-            finalStake = value
+        if (typeof value === "number") {
+          if (stake === "") {
+            finalStake = value;
           } else {
-            finalStake = parseFloat(stake) + value
+            finalStake = parseFloat(stake) + value;
           }
         } else {
-          finalStake = stake + value
+          finalStake = stake + value;
         }
-        updateStake(finalStake)
+        updateStake(finalStake);
       }
-      break
-    case 'dot':
+      break;
+    case "dot":
       // Append dot to the display
-      if (stake.length < 6 && !stake.includes('.')) {
-        stake += '.'
-        updateStake(stake)
+      if (stake.length < 6 && !stake.includes(".")) {
+        stake += ".";
+        updateStake(stake);
       }
-      break
-    case 'double-zero':
+      break;
+    case "double-zero":
       // Append double zero to the display
       if (stake.length < 6) {
-        stake += '00'
-        updateStake(stake)
+        stake += "00";
+        updateStake(stake);
       }
-      break
-    case 'clear':
+      break;
+    case "clear":
       // Clear the display
-      stake = ''
-      updateStake(stake)
-      break
-    case 'delete':
+      stake = "";
+      updateStake(stake);
+      break;
+    case "delete":
       // Remove the last character from the display
-      stake = stake.toString().slice(0, -1)
-      updateStake(stake)
-      break
-    case 'done':
+      stake = stake.toString().slice(0, -1);
+      updateStake(stake);
+      break;
+    case "done":
       // Handle the "Done" button click if needed
-      keyboardVisible.value = false
-      break
+      keyboardVisible.value = false;
+      break;
     // Add more cases for other button types if necessary
   }
 }
 
 const handleAcceptChange = () => {
-  couponStore.coupon.acceptChanges = true
+  couponStore.coupon.acceptChanges = true;
   couponStore.coupon.selections.forEach((selection) => {
     if (selection.suspended && selection.unavailable) {
-      let element_id = selection.element_id
-      couponStore.removeSelection(element_id)
+      let element_id = selection.element_id;
+      couponStore.removeSelection(element_id);
       return couponStore.updateWinnings({
         stake: couponStore.coupon.totalStake,
-        id: selection.selectionId
-      })
+        id: selection.selectionId,
+      });
     } else if (selection.changed) {
-      selection.changed = false
+      selection.changed = false;
     }
-  })
-}
+  });
+};
 
 onMounted(() => {
   couponStore.updateWinnings({
-    stake: betlistStake.value
-  })
-})
+    stake: betlistStake.value,
+  });
+});
 </script>
 <style>
 .m-bet-detail-wrap {
@@ -275,15 +322,18 @@ onMounted(() => {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  max-height: calc(94% - 25.5%);
+  /* max-height: calc(94% - 25.5%); */
   overflow: auto;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper {
   font-weight: 500;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .bold {
   font-weight: bold;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .change-wrong-message {
   background: #7b0911;
   background: var(--warning-secondary);
@@ -293,6 +343,7 @@ onMounted(() => {
   padding-left: 1.25rem;
   text-align: center;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake {
   background-color: #ffffff;
   border-top: 0.16666667rem solid #eaecef;
@@ -307,28 +358,29 @@ onMounted(() => {
   color: #353a45;
   color: var(--text-type1-primary);
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   padding: 0 1.33333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  > div.alternative-bet-active-content-panel {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div.alternative-bet-active-content-panel {
   display: initial;
   padding: 0;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div > span {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div>span {
   display: block;
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div > span:last-child {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div>span:last-child {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -338,12 +390,15 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-type-option {
   margin-left: -1.33333333rem;
 }
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > .confirm-wrap {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>.confirm-wrap {
   padding: 0;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-stake,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .bonus,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win,
@@ -352,11 +407,13 @@ onMounted(() => {
   height: 2.25rem;
   line-height: 2.25rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win {
   margin: 0 0.66666667rem;
   padding: 6px 0.66666667rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .m-value,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win .m-value {
   -webkit-box-sizing: border-box;
@@ -364,6 +421,7 @@ onMounted(() => {
   display: inline-block;
   padding: 0.08333333rem 0.25rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .is--boost,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win .is--boost {
   background: -webkit-gradient(linear, left top, right top, from(#40208c), to(#1e0e53));
@@ -373,6 +431,7 @@ onMounted(() => {
   color: #ffffff;
   line-height: 1.66666667rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.real-theme {
   background-color: rgba(13, 151, 55, 0.2);
@@ -385,9 +444,11 @@ onMounted(() => {
   display: -ms-flexbox;
   display: flex;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .one-cut-text-gap {
   gap: 0.25rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme {
   background-color: #f2f2f2;
 }
@@ -400,6 +461,7 @@ onMounted(() => {
   -ms-flex-pack: justify;
   justify-content: space-between;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .still-win .label-with-img {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -412,9 +474,11 @@ onMounted(() => {
   gap: 0.25rem;
   vertical-align: middle;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .mg-t-10 {
   margin-top: 10px;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .message-tip {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -429,14 +493,17 @@ onMounted(() => {
   line-height: 2rem;
   z-index: 0;
 }
+
 @media only screen and (max-width: 320px) {
   .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .message-tip {
     font-size: 0.75rem;
   }
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .message-tip svg {
   color: #ffffff;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-type-option {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -453,10 +520,12 @@ onMounted(() => {
   justify-content: space-between;
   margin-left: -1.33333333rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-input {
   display: block;
   padding: 0;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .full-screen-mask {
   background-color: rgba(0, 0, 0, 0.7);
   height: 100vh;
@@ -466,6 +535,7 @@ onMounted(() => {
   top: 0;
   width: 100vw;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit {
   bottom: 0;
   display: -webkit-box;
@@ -477,6 +547,7 @@ onMounted(() => {
   width: 100%;
   z-index: 1;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-book-icon,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-book-btn,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn {
@@ -492,9 +563,11 @@ onMounted(() => {
   text-align: center;
   color: #fff;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-book-btn {
   width: 33.33%;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-book-icon {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -503,14 +576,16 @@ onMounted(() => {
   display: grid;
   width: 4rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .loading-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .loading-icon:before {
   -webkit-animation: circles 1s infinite;
   animation: circles 1s infinite;
@@ -522,40 +597,30 @@ onMounted(() => {
   color: #ffffff;
   color: var(--brand-tertiary);
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn {
   padding: 0 1.83333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .m-share-btn
-  .m-share-text {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-share-text {
   font-size: 1.33333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .m-share-btn
-  .m-icon-share::before {
-  content: '\e63d';
-  font-family: 'iconfont' !important;
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-icon-share::before {
+  content: "\e63d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .m-share-btn
-  .m-icon-share:before {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-icon-share:before {
   color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.33333333rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -586,26 +651,21 @@ onMounted(() => {
   background: var(--brand-secondary);
   color: #ffffff;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-disabled {
   background: #dcdee5;
   background: var(--disable-brand-secondary);
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change {
   background: #0d9737;
   background: var(--brand-secondary);
   color: #ffffff;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change:active {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change:active {
   background: #33ea6a;
 }
 
@@ -615,23 +675,17 @@ onMounted(() => {
   color: #ffffff;
   color: var(--brand-tertiary);
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-submit::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit::before {
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-submit:before {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit:before {
   -webkit-animation: circles 1s infinite;
   animation: circles 1s infinite;
   -webkit-animation-timing-function: linear;
@@ -639,39 +693,26 @@ onMounted(() => {
   display: inline-block;
   vertical-align: top;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-submit
-  > span {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit>span {
   display: inline-block;
   padding-left: 0.83333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-submit:active {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit:active {
   background: #33ea6a;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-flexibet-loading::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading::before {
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-flexibet-loading:before {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading:before {
   -webkit-animation: circles 1s infinite;
   animation: circles 1s infinite;
   -webkit-animation-timing-function: linear;
@@ -680,23 +721,17 @@ onMounted(() => {
   font-size: 1.66666667rem;
   vertical-align: top;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-flexibet-loading
-  > span {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading>span {
   display: inline-block;
   padding-left: 0.83333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.required-change {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.required-change {
   background-color: #50545f;
   background-color: var(--disable-type1-primary);
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet .m-pay-num {
   font-size: 1rem;
 }
@@ -710,6 +745,7 @@ onMounted(() => {
   margin-left: 1.33333333rem;
   margin-right: 1.33333333rem;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -723,6 +759,7 @@ onMounted(() => {
   line-height: 1;
   position: relative;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-label-body {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -739,6 +776,7 @@ onMounted(() => {
   line-height: 1;
   overflow: hidden;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -757,12 +795,8 @@ onMounted(() => {
   -ms-flex-pack: end;
   justify-content: flex-end;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action {
   -webkit-align-content: center;
   -ms-flex-line-pack: center;
   align-content: center;
@@ -786,13 +820,8 @@ onMounted(() => {
   color: #0d9737;
   color: var(--c-betslip-flexibet-action);
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action
-  .arrow-up {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-up {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -806,27 +835,17 @@ onMounted(() => {
   -ms-flex-pack: center;
   justify-content: center;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action
-  .arrow-up::before {
-  content: '\e62d';
-  font-family: 'iconfont' !important;
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-up::before {
+  content: "\e62d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action
-  .arrow-down {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-down {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -840,34 +859,21 @@ onMounted(() => {
   -ms-flex-pack: center;
   justify-content: center;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action
-  .arrow-down::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-down::before {
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-action.disabled {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action.disabled {
   color: #9ca0ab;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-num {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-num {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   display: inline-block;
@@ -875,23 +881,22 @@ onMounted(() => {
   vertical-align: middle;
   width: 5.33333333rem;
 }
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .flexibet-wrap
-  .flexibet-num-wrap
-  .flexibet-num.flexibet-change {
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-num.flexibet-change {
   background-color: #d6ebdc;
   background-color: var(--c-betslip-flexibet-change-bg);
   font-weight: bold;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .sporty-insure-container {
   display: block !important;
   position: relative;
 }
+
 .m-bet-detail-wrap .m-betslips-stake-wrapper .mg-b-10 {
   margin-bottom: 10px;
 }
+
 .m-bet-detail-wrap .m-scroll {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
@@ -901,6 +906,7 @@ onMounted(() => {
   overflow-y: auto;
   width: 100%;
 }
+
 .m-bet-detail-wrap .m-scroll .no-items {
   color: #9ca0ab;
   font-size: 1.16666667rem;
@@ -909,28 +915,35 @@ onMounted(() => {
   top: 50%;
   width: 100%;
 }
+
 .m-bet-detail-wrap .m-betslip-confirm .es-dialog-body {
   font-size: 1.66666667rem;
   font-weight: 700;
 }
+
 .m-bet-detail-wrap .m-betslip-flexibet-confirm.es-dialog {
   padding: 0;
 }
+
 .m-bet-detail-wrap .m-betslip-flexibet-confirm.es-dialog .es-dialog-body .es-dialog-main {
   padding: 0;
 }
+
 .m-bet-detail-wrap .fade-enter,
 .m-bet-detail-wrap .fade-leave-to {
   background: rgba(0, 0, 0, 0);
 }
+
 .m-bet-detail-wrap .fade-enter-active,
 .m-bet-detail-wrap .fade-leave-active {
   -webkit-transition: 0.3s ease;
   transition: 0.3s ease;
 }
+
 .m-bet-detail-wrap .sportycoin-dialog.es-dialog .es-dialog-head h1 {
   white-space: nowrap;
 }
+
 .m-bet-detail-wrap .m-scroll {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
@@ -940,6 +953,7 @@ onMounted(() => {
   overflow-y: auto;
   width: 100%;
 }
+
 .m-bet-detail-wrap .m-scroll .no-items {
   color: #9ca0ab;
   font-size: 1.066rem;
@@ -948,6 +962,7 @@ onMounted(() => {
   top: 50%;
   width: 100%;
 }
+
 .m-bet-detail-wrap .bottom-toast .container {
   background: black;
   border-radius: 32px;
@@ -957,6 +972,7 @@ onMounted(() => {
   opacity: 0.7;
   padding: 16px;
 }
+
 .m-bet-detail-wrap .add-selections-btn {
   border-bottom: 0.16666667rem solid #eaecef;
   -webkit-justify-content: space-around;
@@ -970,11 +986,13 @@ onMounted(() => {
   color: #0d9737;
   color: var(--brand-secondary);
 }
+
 .m-bet-detail-wrap .icon-plus {
   font-size: 2rem;
   line-height: 1.5rem;
   margin-right: 5px;
 }
+
 .m-bet-detail-wrap .edit-info {
   color: #9ca0ab;
   color: var(--text-type1-secondary);

@@ -128,8 +128,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue' // Import ref from Vue 3
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue' // Import ref from Vue 3
+import { useRouter, useRoute } from 'vue-router'
 import {
   CLIENT_ID,
   formattedPhoneNumber,
@@ -151,12 +151,14 @@ const formData = ref({
 // const showPassword = ref(false)
 const isLoading = ref(false)
 const router = useRouter()
+const route = useRoute()
 const registerError = ref(false)
 const registerErrorMessage = ref('')
 const activeStep = ref(1)
 const OTP = ref('')
 const isDisabled = ref(false)
 const remainingTime = ref(60)
+const clickId = ref(null)
 let timer
 
 // Define methods using the Composition API
@@ -188,16 +190,18 @@ const registerUser = async () => {
     phoneNumber: internationalNumber
   }
 
-  const res = await sendOTP(payload)
-  isLoading.value = false
+  await doRegistration()
 
-  if (res.data.status) {
-    activeStep.value = 2
-    startTimer()
-  } else {
-    registerError.value = true
-    registerErrorMessage.value = res.data.message
-  }
+  // const res = await sendOTP(payload)
+  // isLoading.value = false
+
+  // if (res.data.status) {
+  //   activeStep.value = 2
+  //   startTimer()
+  // } else {
+  //   registerError.value = true
+  //   registerErrorMessage.value = res.data.message
+  // }
 }
 
 const resendOtp = async () => {
@@ -255,6 +259,10 @@ const doRegistration = async () => {
     promoCode: formData.value.promoCode
   }
 
+  if (clickId.value) {
+    payload.trackingToken = clickId.value
+  }
+
   try {
     const res = await register(payload)
     if (res.data.success) {
@@ -299,6 +307,12 @@ const toLogin = () => {
   // Access router through the `router` property of the `this.$route` object
   return router.push({ name: 'sign-in' })
 }
+
+onMounted(() => {
+  if (route.query.clickid || route.query.token) {
+    clickId.value = route.query.clickid || route.query.token
+  }
+})
 </script>
 
 <style>

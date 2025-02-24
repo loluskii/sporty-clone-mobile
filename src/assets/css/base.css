@@ -129,7 +129,7 @@
   --line-type1-secondary: #9ca0ab;
   --line-type1-tertiary: #353a45;
   --line-type2-primary: #9ca0ab;
-  --sim-primary: #fafd00;
+  --sim-primary: rgb(255, 214, 0);
   --background-hint-type1: #feffe4;
   --absolute-type1: #ffffff;
   --absolute-type2: #000000;
@@ -317,8 +317,8 @@ audio,
 canvas,
 video {
   display: inline-block;
-  *display: inline;
-  *zoom: 1;
+  /* *display: inline;
+  *zoom: 1; */
 }
 
 table {

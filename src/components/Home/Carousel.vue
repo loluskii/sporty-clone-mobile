@@ -1,6 +1,6 @@
 <template lang="">
   <!-- Home Carousel -->
-  <div id="carousel" data-html2canvas-ignore="" class="main-banner">
+  <div id="carousel" data-html2canvas-ignore="" class="main-banner" v-if="images.length">
     <div data-ride="carousel" class="carousel slide">
       <div role="listbox" class="carousel-inner">
         <div
@@ -20,6 +20,8 @@
 <script setup>
 import { ref, defineComponent, onMounted, onBeforeUnmount } from 'vue'
 import { fetchBanners } from '@/helpers'
+
+const props = defineProps(["type"])
 
 const currentIndex = ref(0)
 const intervalId = ref(null)
@@ -49,7 +51,7 @@ function goToSlide(image) {
 
 onMounted(async () => {
   const res = await fetchBanners()
-  images.value = res
+  images.value = res.filter((b) => b.banner_type === props.type)
   startAutoSlider()
 })
 
@@ -62,6 +64,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 5;
 }
+
 .carousel .carousel-inner {
   position: relative;
   overflow: hidden;
@@ -69,7 +72,8 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
 }
-.carousel .carousel-inner > .item {
+
+.carousel .carousel-inner>.item {
   display: none;
   position: relative;
   width: 100%;
@@ -77,59 +81,72 @@ onBeforeUnmount(() => {
   -webkit-transition: 0.6s ease-in-out left;
   transition: 0.6s ease-in-out left;
 }
-.carousel .carousel-inner > .item a,
-.carousel .carousel-inner > .item a:hover,
-.carousel .carousel-inner > .item a:active {
+
+.carousel .carousel-inner>.item a,
+.carousel .carousel-inner>.item a:hover,
+.carousel .carousel-inner>.item a:active {
   display: block;
   width: 100%;
   height: 100%;
 }
-.carousel .carousel-inner > .item > img,
-.carousel .carousel-inner > .item > a > img {
+
+.carousel .carousel-inner>.item>img,
+.carousel .carousel-inner>.item>a>img {
   display: block;
   width: 100%;
   height: 100%;
 }
-.carousel .carousel-inner > .item > img[src=''],
-.carousel .carousel-inner > .item > a > img[src=''] {
+
+.carousel .carousel-inner>.item>img[src=''],
+.carousel .carousel-inner>.item>a>img[src=''] {
   visibility: hidden;
 }
-.carousel .carousel-inner > .active,
-.carousel .carousel-inner > .next,
-.carousel .carousel-inner > .prev {
+
+.carousel .carousel-inner>.active,
+.carousel .carousel-inner>.next,
+.carousel .carousel-inner>.prev {
   display: block;
 }
-.carousel .carousel-inner > .active {
+
+.carousel .carousel-inner>.active {
   left: 0;
 }
-.carousel .carousel-inner > .next,
-.carousel .carousel-inner > .prev {
+
+.carousel .carousel-inner>.next,
+.carousel .carousel-inner>.prev {
   position: absolute;
   top: 0;
   width: 100%;
 }
-.carousel .carousel-inner > .next {
+
+.carousel .carousel-inner>.next {
   left: 100%;
 }
-.carousel .carousel-inner > .prev {
+
+.carousel .carousel-inner>.prev {
   left: -100%;
 }
-.carousel .carousel-inner > .next.left,
-.carousel .carousel-inner > .prev.right {
+
+.carousel .carousel-inner>.next.left,
+.carousel .carousel-inner>.prev.right {
   left: 0;
 }
-.carousel .carousel-inner > .active.left {
+
+.carousel .carousel-inner>.active.left {
   left: -100%;
 }
-.carousel .carousel-inner > .active.right {
+
+.carousel .carousel-inner>.active.right {
   left: 100%;
 }
+
 .carousel ol,
 .carousel li {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .carousel .carousel-indicators {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -142,6 +159,7 @@ onBeforeUnmount(() => {
   margin-left: -20%;
   text-align: center;
 }
+
 .carousel .carousel-indicators li {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -155,10 +173,12 @@ onBeforeUnmount(() => {
   background-color: #dcdee5;
   margin-right: 5px;
 }
+
 .carousel .carousel-indicators li.active {
   border-color: #e41827;
   background-color: #e41827;
 }
+
 .carousel .carousel-control {
   position: absolute;
   z-index: 10;
@@ -171,38 +191,48 @@ onBeforeUnmount(() => {
   text-align: center;
   color: #dcdee5;
 }
+
 .carousel .carousel-control .disabled {
   opacity: 0.3;
 }
+
 .carousel .carousel-control:focus,
 .carousel .carousel-control:hover {
   color: #ffffff;
 }
+
 .carousel .carousel-control.left {
   left: 0;
 }
+
 .carousel .carousel-control.right {
   right: 0;
 }
+
 .main-banner {
   height: 5.33333333rem;
   position: relative;
 }
+
 .main-banner .carousel {
   height: 5.33333333rem;
 }
+
 .main-banner .carousel .carousel-control {
   display: none;
 }
+
 .main-banner .carousel .carousel-indicators {
   display: none;
 }
+
 .main-banner .carousel .carousel-indicators li {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   border: 1px solid transparent;
   opacity: 0.7;
 }
+
 .main-banner .carousel .carousel-indicators li.active {
   opacity: 1;
 }

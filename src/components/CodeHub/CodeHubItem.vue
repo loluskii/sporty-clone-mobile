@@ -50,7 +50,17 @@
               <span>Share</span></span
             >
           </div>
-
+          <div
+            role="button"
+            tabindex="0"
+            class="button loading-button-container edit-button"
+            aria-label="edit booking code 1C92348 in multi maker"
+          >
+            <div class="loading-icon-container"></div>
+            <span class="loading-button-click-area"
+              ><div class="icon-font-base" style="font-size: 12px"></div></span
+            >
+          </div>
           <div
             data-op="add-to-betslip"
             role="button"
@@ -83,7 +93,6 @@
 import CodeSelectionItem from "./CodeSelectionItem.vue";
 import { useCouponStore } from "@/stores";
 import { ref } from "vue";
-import { loadBetslipByCode } from "@/helpers";
 import emitter from "../../plugins/emitter";
 const props = defineProps(["code"]);
 
@@ -91,41 +100,34 @@ const addToBetslipLoading = ref(false);
 const shareCodeLoading = ref(false);
 const couponStore = useCouponStore();
 
-async function addToBetslip(code) {
+function addToBetslip(code) {
   addToBetslipLoading.value = true;
-  try {
-    const res = await loadBetslipByCode(code.betslipId);
+  setTimeout(() => {
     addToBetslipLoading.value = false;
-    if (res.success) {
-      if (couponStore.coupon.selections.length > 0) {
-        emitter.emit("showBetslipConfirmation", res.data);
+    try {
+      if (couponStore.coupon.selections.length) {
+        emitter.emit("showBetslipConfirmation", code);
       } else {
-        if (res.data.selections.length) {
-          couponStore.coupon.selections = res.data.selections;
-          couponStore.coupon.totalOdds = res.data.totalOdd;
-          couponStore.coupon.totalStake = res.data.stake;
-          couponStore.coupon.stake = res.data.stake;
-          couponStore.coupon.maxWin = res.data.possibleWin;
-          couponStore.coupon.source = "mobile";
-          if (res.data.selections.length === 1) {
-            couponStore.coupon.bet_type = "Single";
-            couponStore.coupon.betslip_type = "Single";
-          } else {
-            couponStore.coupon.bet_type = "Multiple";
-            couponStore.coupon.betslip_type = "Multiple";
-          }
-          emitter.emit("openBetslip");
+        couponStore.coupon.selections = code.selections;
+        couponStore.coupon.totalOdds = parseFloat(code.totalOdd);
+        couponStore.coupon.totalStake = parseFloat(code.stake);
+        couponStore.coupon.stake = parseFloat(code.stake);
+        couponStore.coupon.maxWin = parseFloat(code.possibleWin);
+        couponStore.coupon.source = code.source;
+        if (code.selections.length === 1) {
+          couponStore.coupon.bet_type = "Single";
+          couponStore.coupon.betslip_type = "Single";
         } else {
-          emitter.emit("showDialogueToaster", "All selections have expired");
+          couponStore.coupon.bet_type = "Multiple";
+          couponStore.coupon.betslip_type = "Multiple";
         }
+        emitter.emit("openBetslip");
       }
-    } else {
-      throw new Error(res.message);
+    } catch (error) {
+      console.log(error);
+      emitter.emit("showDialogueToaster", "Error Loading Betslip");
     }
-  } catch (error) {
-    addToBetslipLoading.value = false;
-    emitter.emit("showDialogueToaster", error);
-  }
+  }, 1000);
 }
 
 function shareCode(data) {
@@ -155,7 +157,7 @@ function shareCode(data) {
   color: #353a45;
 }
 .booking-code-list-item .header {
-  background-color: #eff5f4;
+  background-color: #d6ebdc;
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -267,7 +269,6 @@ function shareCode(data) {
 .booking-code-action-bar .share-button {
   background-color: #f2f3f5;
   color: #0d9737;
-  color: var(--brand-secondary);
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -319,8 +320,5 @@ function shareCode(data) {
 }
 .booking-code-action-bar .mr-8 {
   margin-right: 0.66666667rem;
-}
-.code-hub-list-item-intersection-observer-wrap {
-  margin-top: 0.66666667rem;
 }
 </style>

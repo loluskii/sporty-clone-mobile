@@ -13,8 +13,6 @@ import ProfileView from '@/views/Account/ProfileView.vue'
 import FixtureDetail from '@/views/Sport/FixtureDetail.vue'
 import LiveFixtureDetail from '@/views/Sport/LiveFixtureDetail.vue'
 import TransactionView from '@/views/Account/TransactionView.vue'
-import GamesView from '@/views/Games/GamesView.vue'
-import PlayView from '@/views/Games/PlayView.vue'
 import SportsView from '@/views/SportsView.vue'
 import LiveView from '@/views/LiveView.vue'
 import LoadBetView from '@/views/LoadBetView.vue'
@@ -25,7 +23,16 @@ import BonusView from '@/views/Account/BonusView.vue'
 import CMSPage from '@/views/CMS.vue'
 // import SupportView from '@/views/Account/SupportView.vue'
 import SearchView from '@/views/SearchView.vue'
+import GroupView from '@/views/Games/GroupView.vue'
+import Search from '../views/Games/SearchView.vue'
+
+import GamesView from '@/views/Games/GamesView.vue'
+import PlayView from '@/views/Games/PlayView.vue'
 import CodeHubView from '@/views/CodeHubView.vue'
+import Promotions from '@/views/Promotions.vue'
+import JackpotView from '../views/Games/JackpotView.vue'
+
+
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   linkActiveClass: 'x-active',
@@ -217,6 +224,69 @@ export const router = createRouter({
       }
     },
     {
+      path: '/Games/Search',
+      name: 'casino-search',
+      component: Search,
+      meta: {
+        showMobileNavigation: true
+      }
+    },
+
+    {
+      path: '/Games/Providers',
+      name: 'casino-providers',
+      component: GroupView,
+      children: [
+        {
+          path: '/:provider',
+          name: 'games-by-provider',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      },
+    },
+    {
+      path: '/Games/BonusGames',
+      name: 'casino-bonus',
+      component: GroupView,
+      children: [
+        {
+          path: '/',
+          name: 'bonus-games',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      },
+    },
+    {
+      path: '/Games/Jackpots',
+      name: 'casino-jackpots',
+      component: JackpotView,
+      meta: {
+        showMobileNavigation: true
+      },
+    },
+    {
+      path: '/Games/Category',
+      name: 'casino-category',
+      component: GroupView,
+      children: [
+        {
+          path: '/:category',
+          name: 'games-by-category',
+          component: GroupView,
+        },
+      ],
+      meta: {
+        showMobileNavigation: true
+      }
+    },
+
+    {
       path: '/Games/:game_name/:game_id/Play',
       name: 'game-play',
       component: PlayView
@@ -231,12 +301,17 @@ export const router = createRouter({
     {
       path: '/CodeHub',
       name: 'code-hub',
-      component:  CodeHubView
+      component: CodeHubView
     },
     {
       path: '/CMS/:page',
       name: 'cms-page',
       component: CMSPage
+    },
+    {
+      path: '/Promotions',
+      name: 'promotions',
+      component: Promotions
     },
     // Catch-all route to redirect to home
     {

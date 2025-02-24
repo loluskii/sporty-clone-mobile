@@ -34,4 +34,4 @@ coverage
 package-lock.json
 package-lock.json
 *.webmanifest
-/public
+/publics

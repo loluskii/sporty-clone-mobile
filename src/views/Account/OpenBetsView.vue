@@ -2,41 +2,15 @@
   <div class="m-sportBets">
     <div style="width: 100%; height: 87px"></div>
     <BetHistoryHeader :active="'open_bets'"></BetHistoryHeader>
-    <div v-if="!isAuthenticated" class="m-openbet">
-      <!-- <span class="m-error-msg"
-        >Please Log In to see your Open Bets and Cashout Bets</span
-      >
-      <div class="m-btn" @click="$router.push('/sign-in')">Login</div> -->
-
-      <!--  -->
-      <div class="none-login-wrapper">
-        <div class="login-tip">
-          <div class="error-msg">
-            Please Log In to see your Open Bets and Cashout Bets
-          </div>
-          <div class="login-btn" @click="$router.push('/sign-in')">Login</div>
-        </div>
-        <div class="empty-recommended-code-container">
-          <div v-if="codes.length" class="recommended-code">
-            <span data-cms-key="recommended_code" data-cms-page="cashout"
-              >Recommended Football Codes</span
-            >
-          </div>
-          <div class="code-hub-list-item-container" style="position: relative">
-            <div class="m-loading-wrap m-loading-wrap__center">
-              <div class="m-loading light">
-                <div class="loading"></div>
-              </div>
-            </div>
-            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
-            <div class="mb-3"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div v-else style="margin-top: 20px">
+    <div style="margin-top: 20px">
       <div v-if="!openBets" class="m-error-wrapper">
-        <div v-if="!openBets & !isLoading">
+        <div v-if="!isAuthenticated">
+          <span class="m-error-msg"
+            >Please Log In to see your Open Bets and Cashout Bets</span
+          >
+          <div class="m-btn" @click="$router.push('/sign-in')">Login</div>
+        </div>
+        <div v-else-if="!openBets & !isLoading">
           <span class="m-error-msg"> You currently have no Open Bets. </span>
         </div>
         <div v-if="isLoading">
@@ -49,21 +23,21 @@
           <ul class="m-bet-list">
             <li v-for="(bet, index) in openBets" :key="index" class="m-bet-item">
               <div class="m-item-wrap">
-                <div @click="showChild($event, bet.betslipId)" class="m-title">
+                <div class="m-title">
                   <div>
                     <span class="m-t-14 m-t-bold m-t-black">
                       {{ bet.betCategory }}
                     </span>
-                    <!-- <span v-if="bet.eventType === 'live'"
-                      ><span class="m-i-live m-t-b5">Live</span></span
-                    > -->
+                    <span v-if="bet.hasLiveSelection"
+                      ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
+                    >
                   </div>
                   <div class="actions">
                     <span class="divider"></span>
                     <div style="color: #322c84" @click="shareTicket"></div>
                   </div>
                 </div>
-                <div>
+                <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">
                     <li
                       v-for="event in bet.selections.slice(0, 3)"
@@ -131,37 +105,76 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div
-                          @click="
-                            $router.push({
-                              name: 'fixtures-detail',
-                              params: {
-                                sport: slugify(event.sport),
-                                tournament_name: slugify(event.tournament),
-                                event_name: slugify(event.eventName),
-                                event_id: event.matchId,
-                              },
-                            })
-                          "
-                          class="m-aginst m-t-black m-t-14"
-                        >
+                        <div class="m-live-odds" v-if="event.type === 'live'">
+                          <template
+                            v-if="
+                              event.isLive &&
+                              event.currentOdds > 1 &&
+                              (event.matchStatus ? event.matchStatus.toLowerCase() !== 'not started' : '')
+                            "
+                          >
+                            <div>
+                              <span class="bg-green-200 p-1">Live Odds</span>
+                              <span class="p-l-5" style="font-weight: bold">{{
+                                event.currentOdds.toFixed(2)
+                              }}</span>
+                            </div>
+                          </template>
+
+                          <div
+                            v-else-if="event.isLive && event.currentOdds >= 1"
+                            class="m-odds-desc m-b-5"
+                          >
+                            Live Odds Suspended
+                          </div>
+                        </div>
+
+                        <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
                           </span>
                         </div>
-                        <div data-v-f5461f3c="" class="m-score">
-                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                        <div
+                          v-if="(event.matchStatus ? event.matchStatus.toLowerCase() === 'not started' : '')"
+                          class="m-score"
+                        >
+                          <span class="m-t-12 capitalize m-t-gray">
                             {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
                           </span>
-                          <span data-v-f5461f3c="" class="m-t-12"></span>
+                          <span class="m-t-12"></span>
+                        </div>
+                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                          <span class="m-t-12 capitalize">
+                            {{
+                              !event.isLive
+                                ? "FT"
+                                : `${event.eventTime} ${getMatchStatus(event)}`
+                            }}
+                          </span>
+                          <span class="m-t-12" style="font-weight: bold">
+                            {{ ` | ${event.score}` }}
+                          </span>
                         </div>
                       </div>
                     </li>
                   </ul>
+                  <div class="m-more f-flex m-t-12 m-t-l14">
+                    <div class="m-l-left">
+                      <!-- <span v-if="bet.selections?.length > 2" class="m-t-gray"
+                        >and {{ remainingMatchesCount(bet.selections) }} other match{{
+                          remainingMatchesCount(bet.selections) > 1 ? 'es' : ''
+                        }}</span
+                      > -->
+                    </div>
+                    <!-- <div>
+                      <span class="m-t-black"
+                        ><span> Match Details </span> <i class="m-icon-more"></i
+                      ></span>
+                    </div> -->
+                  </div>
                 </div>
 
                 <div
-                  @click="showChild($event, bet.betslipId)"
                   class="m-money f-flex m-t-black f-btwn m-t-12"
                 >
                   <div class="m-money__lr m-r-20">
@@ -190,7 +203,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout KES ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout NGN ${bet.cashOutAmount.toFixed(2)}`
                         : "Cashout Unavailable"
                     }}</span>
                     <img
@@ -250,7 +263,7 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          KES {{ cashoutData.cashOutAmount.toFixed(2) }}
+                          NGN {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
                       <img
@@ -278,7 +291,7 @@ import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
 import OpenBet from "@/components/BetHistory/OpenBet.vue";
-import { ref, defineComponent, onMounted } from "vue";
+import { ref, defineComponent, onMounted, onUnmounted } from "vue";
 import {
   getBets,
   formatNumber,
@@ -292,15 +305,26 @@ import $ from "jquery";
 import { useUsersStore } from "@/stores";
 import { CLIENT_ID, performCashout } from "@/helpers";
 import emitter from "@/plugins/emitter";
+import { useRouter } from "vue-router";
 
 const openBets = ref(null);
-const isLoading = ref(false);
+const isLoading = ref(true);
 const { isAuthenticated } = useAuthStore();
 const userStore = useUsersStore();
 const showCashoutModal = ref(false);
 const cashoutData = ref({});
 const cashingOut = ref(false);
 const codes = ref([]);
+const router = useRouter();
+const intervalId = ref()
+
+const getMatchStatus = (event) => {
+  return event.matchStatus == "1st half"
+    ? "H1"
+    : event.matchStatus == "2nd half"
+    ? "H2"
+    : event.matchStatus;
+};
 
 async function getBetsData() {
   isLoading.value = true;
@@ -313,20 +337,18 @@ async function getBetsData() {
     };
     const res = await getBets(payload);
     openBets.value = res.bets;
+    res.bets.forEach((bet) => {
+      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live');
+      if(hasLiveSelection.length > 0){
+        bet.hasLiveSelection = true
+      }else{
+        bet.hasLiveSelection = false
+      }
+    })
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
   }
-}
-
-async function getCodes() {
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
 }
 
 function closeCashoutModal() {
@@ -361,6 +383,30 @@ async function confirmCashout() {
   }
 }
 
+function goToEvent(event) {
+  if (!event.isLive) {
+    return router.push({
+      name: "fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
+  } else {
+    return router.push({
+      name: "live-fixtures-detail",
+      params: {
+        sport: slugify(event.sport),
+        tournament_name: slugify(event.tournament),
+        event_name: slugify(event.eventName),
+        event_id: event.matchId,
+      },
+    });
+  }
+}
+
 // const remainingMatchesCount = (matches) => {
 //   return Math.max(0, matches.length - 2)
 // }
@@ -384,13 +430,16 @@ onMounted(async () => {
   if (isAuthenticated) {
     getBetsData();
 
-    setInterval(() => {
+    intervalId.value = setInterval(() => {
       getBetsData();
     }, 10000);
-  } else {
-    await getCodes();
   }
 });
+
+onUnmounted(() => {
+  clearInterval(intervalId.value);
+});
+
 defineComponent({
   name: "open-bets",
   components: { BetHistoryHeader },
@@ -399,6 +448,7 @@ defineComponent({
 
 <style scoped>
 @import url("@/assets/css/bet-history.css");
+
 .m-btn--text {
   color: #0d9737;
 }

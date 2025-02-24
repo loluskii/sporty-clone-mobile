@@ -85,13 +85,14 @@ const getImageSrc = (slug) => {
 }
 
 const getImagePath = (game) => {
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${game.title}.png?alt=media`
-}
+  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
+  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
+};
 
 async function redirectToGamePlay(game) {
   return router.push({
     name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.id }
+    params: { game_name: slugify(game.title), game_id: game.gameId }
   })
 }
 </script>

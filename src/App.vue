@@ -42,11 +42,13 @@ const dateRange = ref(null);
 const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
+const casinoGameData = ref(null)
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
 //   return specificPages.includes(route.path)
 // })
+
 function toggleBetslip() {
   showBetslip.value = !showBetslip.value;
   if (showBetslip.value) {
@@ -67,7 +69,7 @@ function handleError(error) {
   dialogueType.value = "error";
 }
 
-function handleBetslipConfirmation(data) {
+function handleBetslipConfirmation(data){
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "betslip";
@@ -209,8 +211,11 @@ async function getBetsData() {
   }
 }
 
-function showCasinoDialog() {
-  casinoDailogShown.value = true;
+function showCasinoDialog(data = null) {
+  if(route.name === 'home' || (data.bonus && data.game)){
+    casinoDailogShown.value = true;
+    casinoGameData.value = data
+  }
 }
 
 function toggleDatePicker() {
@@ -227,6 +232,50 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
+function updateBetslip(eventMessage, event_type) {
+  const matchIdFromEvent = eventMessage.match_id;
+  // Find the selection with the matching match_id in the betslip
+  const selection = couponStore.coupon.selections.find(
+    (sel) => sel.matchId === matchIdFromEvent
+  );
+
+  // If a matching selection is found
+  if (selection) {
+    // Handle bet_stop event
+    if (event_type === "bet_stop") {
+      selection.suspended = true;
+    }
+
+    // Handle odds_change event
+    if (event_type === "odds_change") {
+      couponStore.coupon.acceptChanges = false;
+      selection.suspended = false;
+      selection.changed = true;
+
+      const market = eventMessage.markets.find(
+        (m) => m.id === selection.marketId && m.specifiers === selection.specifier
+      );
+
+      if (market && market.outcomes) {
+        let newOutcome = market.outcomes.find(
+          (m) => m.id === selection.outcomeId && m.specifier === selection.specifier
+        );
+
+        selection.odds = newOutcome.odds;
+        selection.suspended = !newOutcome.active;
+        couponStore.updateWinnings({
+          stake: couponStore.coupon.totalStake,
+          id: selection.selectionId,
+        });
+      } else {
+        selection.suspended = true;
+        selection.unavailable = true;
+        selection.odds = 0;
+      }
+    }
+  }
+}
+
 onMounted(async () => {
   // connect to mqtt
   initMqtt();
@@ -239,7 +288,7 @@ onMounted(async () => {
     // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
-        // console.log(res[2])
+        console.log(res[2]);
       })
       .catch(() => {
         isLoading.value = false;
@@ -253,6 +302,8 @@ onMounted(async () => {
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
+      utilsStore.sportsbookBonusList = res[0].data;
+      utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
       isLoading.value = false;
     })
@@ -303,6 +354,7 @@ defineComponent({
         <CasinoDialog
           v-if="casinoDailogShown"
           @hide-dialogue="casinoDailogShown = false"
+          :data="casinoGameData"
         />
       </div>
       <Betlist
@@ -312,7 +364,7 @@ defineComponent({
       ></Betlist>
     </div>
 
-    <transition name="move">
+    <!-- <transition name="move">
       <div class="loading-overlay" v-if="isLoading">
         <div class="loading-spinner">
           <img
@@ -324,7 +376,7 @@ defineComponent({
           <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
         </div>
       </div>
-    </transition>
+    </transition> -->
     <CalendarBox
       v-if="customDatePickerShown"
       @hide="toggleDatePicker"
