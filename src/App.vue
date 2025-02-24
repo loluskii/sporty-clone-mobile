@@ -48,7 +48,6 @@ const casinoGameData = ref(null)
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
 //   return specificPages.includes(route.path)
 // })
-
 function toggleBetslip() {
   showBetslip.value = !showBetslip.value;
   if (showBetslip.value) {
@@ -70,6 +69,7 @@ function handleError(error) {
 }
 
 function handleBetslipConfirmation(data){
+
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "betslip";
@@ -218,10 +218,6 @@ function showCasinoDialog(data = null) {
   }
 }
 
-function toggleDatePicker() {
-  customDatePickerShown.value = !customDatePickerShown.value;
-}
-
 function toggleBookBetModal(data) {
   bookBetResponse.value = data;
   bookBetModalShown.value = true;
@@ -276,6 +272,7 @@ function updateBetslip(eventMessage, event_type) {
   }
 }
 
+
 onMounted(async () => {
   // connect to mqtt
   initMqtt();
@@ -288,7 +285,8 @@ onMounted(async () => {
     // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
-        console.log(res[2]);
+
+        // console.log(res[2])
       })
       .catch(() => {
         isLoading.value = false;
@@ -304,6 +302,7 @@ onMounted(async () => {
       couponStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsbookBonusList = res[0].data;
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
+
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
       isLoading.value = false;
     })
@@ -368,7 +367,7 @@ defineComponent({
       <div class="loading-overlay" v-if="isLoading">
         <div class="loading-spinner">
           <img
-            src="/default.png"
+            src="@/assets/images/cube-blue.png"
             class="scaling-image"
             style="height: 60px; margin-bottom: 20px"
             alt="logo"

@@ -32,6 +32,7 @@ import CodeHubView from '@/views/CodeHubView.vue'
 import Promotions from '@/views/Promotions.vue'
 import JackpotView from '../views/Games/JackpotView.vue'
 
+import CodeHubView from '@/views/CodeHubView.vue'
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

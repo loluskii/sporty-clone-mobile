@@ -1,21 +1,42 @@
 <template>
   <div class="x-main-right" @click="closeBetslip($event)">
-    <div id="betslip-container" :class="betslipMode ? 'betslip-mode-sim' : 'betslip-mode-real'">
-      <div class="m-betslips m-betslips-show" v-show="!isPlaceBetSuccessful && !isBookBetSuccessful"
-        style="position: absolute" id="m-betslips-show">
+    <div
+      id="betslip-container"
+      :class="betslipMode ? 'betslip-mode-sim' : 'betslip-mode-real'"
+    >
+      <div
+        class="m-betslips m-betslips-show"
+        v-show="!isPlaceBetSuccessful && !isBookBetSuccessful"
+        style="position: absolute"
+        id="m-betslips-show"
+      >
         <div class="m-betslip-header" :class="betslipMode ? 'sim-theme' : 'real-theme'">
           <div class="head-container">
             <div class="wrapper separate-part">
               <div class="operate-button">
                 <div class="d-flex align-items-center">
-                  <span class="d-flex justify-content-center align-items-center mr-2 font-weight-bold" :style="betslipMode
-                    ? 'background-color: #ffd600; color: #000'
-                    : 'background-color: var(--brand-secondary); color: #fff'
-                    " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
-                        betslipSelections.length }}
-                  </span>
+                  <span
+                    v-if="betslipSelections.length > 0"
+                    class="d-flex justify-content-center align-items-center mr-2 font-weight-bold"
+                    :style="
+                      betslipMode
+                        ? 'background-color: #ffd600; color: #000'
+                        : 'background-color: var(--brand-secondary); color: #fff'
+                    "
+                    style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%"
+                    >{{ betslipSelections.length }}</span
+                  >
                   <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
-                  <BetslipModeToggle />
+                  <VueToggles
+                    :value="betslipMode"
+                    @click="updateBetslipMode"
+                    uncheckedText="REAL"
+                    checkedText="SIM"
+                    :height="30"
+                    :width="70"
+                    checkedBg="#ffd600"
+                    checkedTextColor="#000"
+                  />
                 </div>
               </div>
               <div class="operate-button">
@@ -25,21 +46,44 @@
             <template v-if="betslipSelections.length > 0">
               <div style="margin: 20px 0px 20px 0px"></div>
               <div class="wrapper separate-part">
-                <div @click="clearBetslip" class="remove-all operate-button" style="display: flex; align-items: center">
-                  <svg viewBox="0 0 16 16" fill="white" height="18" width="18" xmlns="http://www.w3.org/2000/svg"
-                    aria-label="" class="trash-icon kz-icon-xxs icon--color-slate mr-1">
-                    <path xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF"
-                      d="M7.3883 6.71564V10.997C7.3883 11.894 6.04273 11.894 6.04273 10.997V6.71564C6.04273 5.81859 7.3883 5.81859 7.3883 6.71564zM9.95711 10.997V6.71564C9.95711 5.81859 8.61154 5.81859 8.61154 6.71564V10.997C8.61154 11.894 9.95711 11.894 9.95711 10.997z">
-                    </path>
-                    <path xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF" fill-rule="evenodd"
+                <div
+                  @click="clearBetslip"
+                  class="remove-all operate-button"
+                  style="display: flex; align-items: center"
+                >
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="white"
+                    height="18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label=""
+                    class="trash-icon kz-icon-xxs icon--color-slate mr-1"
+                  >
+                    <path
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#FFFFFF"
+                      d="M7.3883 6.71564V10.997C7.3883 11.894 6.04273 11.894 6.04273 10.997V6.71564C6.04273 5.81859 7.3883 5.81859 7.3883 6.71564zM9.95711 10.997V6.71564C9.95711 5.81859 8.61154 5.81859 8.61154 6.71564V10.997C8.61154 11.894 9.95711 11.894 9.95711 10.997z"
+                    ></path>
+                    <path
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#FFFFFF"
+                      fill-rule="evenodd"
                       d="M10.8134 2.86243C10.8134 2.01795 10.1288 1.33337 9.28432 1.33337H6.71552C5.87104 1.33337 5.18646 2.01795 5.18646 2.86243V3.04591H2.00603C1.63447 3.04591 1.33325 3.34713 1.33325 3.7187C1.33325 4.09026 1.63447 4.39148 2.00603 4.39148H2.67141L3.41117 13.2643C3.47691 14.0569 4.13959 14.6668 4.93511 14.6667H11.0654C11.8608 14.6668 12.5234 14.0569 12.5892 13.2642L13.3285 4.39148H13.9938C14.3654 4.39148 14.6666 4.09026 14.6666 3.7187C14.6666 3.34713 14.3654 3.04591 13.9938 3.04591H10.8134V2.86243ZM9.46781 3.04591V2.86243C9.46781 2.76109 9.38566 2.67894 9.28432 2.67894H6.71552C6.61418 2.67894 6.53203 2.76109 6.53203 2.86243V3.04591H9.46781ZM11.9782 4.39148H4.02165L4.75211 13.1528C4.76 13.248 4.83952 13.3211 4.93505 13.3211H11.0654C11.1609 13.3211 11.2404 13.248 11.2483 13.1528L11.9782 4.39148Z"
-                      clip-rule="evenodd"></path>
-                    <path xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF"
-                      d="M7.3883 6.71564V10.997C7.3883 11.894 6.04273 11.894 6.04273 10.997V6.71564C6.04273 5.81859 7.3883 5.81859 7.3883 6.71564zM9.95711 10.997V6.71564C9.95711 5.81859 8.61154 5.81859 8.61154 6.71564V10.997C8.61154 11.894 9.95711 11.894 9.95711 10.997z">
-                    </path>
-                    <path xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF" fill-rule="evenodd"
+                      clip-rule="evenodd"
+                    ></path>
+                    <path
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#FFFFFF"
+                      d="M7.3883 6.71564V10.997C7.3883 11.894 6.04273 11.894 6.04273 10.997V6.71564C6.04273 5.81859 7.3883 5.81859 7.3883 6.71564zM9.95711 10.997V6.71564C9.95711 5.81859 8.61154 5.81859 8.61154 6.71564V10.997C8.61154 11.894 9.95711 11.894 9.95711 10.997z"
+                    ></path>
+                    <path
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#FFFFFF"
+                      fill-rule="evenodd"
                       d="M10.8134 2.86243C10.8134 2.01795 10.1288 1.33337 9.28432 1.33337H6.71552C5.87104 1.33337 5.18646 2.01795 5.18646 2.86243V3.04591H2.00603C1.63447 3.04591 1.33325 3.34713 1.33325 3.7187C1.33325 4.09026 1.63447 4.39148 2.00603 4.39148H2.67141L3.41117 13.2643C3.47691 14.0569 4.13959 14.6668 4.93511 14.6667H11.0654C11.8608 14.6668 12.5234 14.0569 12.5892 13.2642L13.3285 4.39148H13.9938C14.3654 4.39148 14.6666 4.09026 14.6666 3.7187C14.6666 3.34713 14.3654 3.04591 13.9938 3.04591H10.8134V2.86243ZM9.46781 3.04591V2.86243C9.46781 2.76109 9.38566 2.67894 9.28432 2.67894H6.71552C6.61418 2.67894 6.53203 2.76109 6.53203 2.86243V3.04591H9.46781ZM11.9782 4.39148H4.02165L4.75211 13.1528C4.76 13.248 4.83952 13.3211 4.93505 13.3211H11.0654C11.1609 13.3211 11.2404 13.248 11.2483 13.1528L11.9782 4.39148Z"
-                      clip-rule="evenodd"></path>
+                      clip-rule="evenodd"
+                    ></path>
                   </svg>
 
                   <span>Remove all</span>
@@ -58,53 +102,83 @@
         </div>
         <div v-if="betslipMode" class="betslip-notification">
           <div class="sim-operate-sync-to-real-tip">
-            <b>SIMULATE</b> allows you to play your selections in a virtual format
+            Place bets on real fixtures with virtually simulated results
           </div>
         </div>
         <div class="m-bet-head" v-if="showBetHead">
           <div class="m-snap-nav-wrap m-list-bet-type" style="overflow: hidden">
             <ul class="m-snap-nav flex">
-              <li :class="betSlipType !== 'Combo' && betType === 'Single' ? 'active' : ''"
-                @click="couponStore.setBetType('Single')" class="m-list-bet-type-item m-snap-nav-item"
-                data-op="betslip-multi-tag-single">
+              <li
+                :class="betSlipType !== 'Combo' && betType === 'Single' ? 'active' : ''"
+                @click="couponStore.setBetType('Single')"
+                class="m-list-bet-type-item m-snap-nav-item"
+                data-op="betslip-multi-tag-single"
+              >
                 <span data-cms-key="singles">Single</span>
               </li>
-              <li :class="betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''"
+              <li
+                :class="betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''"
                 @click="couponStore.setBetType('Multiple')"
-                class="flex flex-center m-list-bet-type-item m-snap-nav-item" data-op="betslip-multi-tag-multi">
+                class="flex flex-center m-list-bet-type-item m-snap-nav-item"
+                data-op="betslip-multi-tag-multi"
+              >
                 <span data-cms-key="multiple">Multiple</span>
               </li>
-              <li :class="betSlipType === 'Combo' ? 'active' : ''" @click="couponStore.setBetType('Combo')"
-                class="m-list-bet-type-item m-snap-nav-item" data-op="betslip-multi-tag-system">
+              <li
+                :class="betSlipType === 'Combo' ? 'active' : ''"
+                @click="couponStore.setBetType('Combo')"
+                class="m-list-bet-type-item m-snap-nav-item"
+                data-op="betslip-multi-tag-system"
+              >
                 <span data-cms-key="system">System</span>
               </li>
             </ul>
             <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <!-- Odd Change Notification -->
-          <!-- <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
+          <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
             <div class="change-wrong-message">Note: changes in odds or availability</div>
-          </div> -->
+          </div>
         </div>
-        <div v-if="betslipSelections.length > 0 && !isSimulating" class="m-bet-detail-wrap"
-          :class="betslipMode ? 'sim-theme' : 'real-theme'">
+        <div
+          v-if="betslipSelections.length > 0 && !isSimulating"
+          class="m-bet-detail-wrap"
+          :class="betslipMode ? 'sim-theme' : 'real-theme'"
+        >
           <div class="m-scroll">
             <div id="j_betList" class="m-betslips-outcomes">
               <div class="m-outcomes-list">
-                <BetListEvent v-for="(selection, index) in betslipSelections" :key="index" :selection="selection"
-                  :betSlipType="betSlipType" :betType="betType" :active-selection-id="activeSelectionInput"
-                  @on-selection-input="setActiveSelectionInput" @toggle-betslip="$emit('toggle-betslip')">
+                <BetListEvent
+                  v-for="(selection, index) in betslipSelections"
+                  :key="index"
+                  :selection="selection"
+                  :betSlipType="betSlipType"
+                  :betType="betType"
+                  :active-selection-id="activeSelectionInput"
+                  @on-selection-input="setActiveSelectionInput"
+                  @toggle-betslip="$emit('toggle-betslip')"
+                >
                 </BetListEvent>
               </div>
             </div>
 
-            <BetListStake @toggle-show="toggleShow" @toggle-betslip="$emit('toggle-betslip')" @book-bet="bookBet"
-              :betSlipType="betSlipType" :betType="betType" :isSimulate="betslipMode"></BetListStake>
+            <BetListStake
+              @toggle-show="toggleShow"
+              @toggle-betslip="$emit('toggle-betslip')"
+              @book-bet="bookBet"
+              :betSlipType="betSlipType"
+              :betType="betType"
+              :isSimulate="betslipMode"
+            ></BetListStake>
           </div>
           <Transition>
             <div v-if="(show && !betslipLoading) || (!show && betslipLoading)">
               <div class="confirm-overlap"></div>
-              <div v-if="show" class="confirm-wrap" :class="betslipMode ? 'sim-theme' : 'real-theme'">
+              <div
+                v-if="show"
+                class="confirm-wrap"
+                :class="betslipMode ? 'sim-theme' : 'real-theme'"
+              >
                 <div class="m-flexibet-confirm confirm">
                   <div class="about-to-pay">
                     <span>Confirm to Pay</span><span>&nbsp;</span>
@@ -115,18 +189,27 @@
                   <div class="blank-area"></div>
                 </div>
                 <div class="button-wrap">
-                  <button @click="toggleShow" class="af-button flexibet-cancel af-button--primary">
+                  <button
+                    @click="toggleShow"
+                    class="af-button flexibet-cancel af-button--primary"
+                  >
                     <span><span data-cms-key="cancel">Cancel </span></span>
                   </button>
-                  <button class="af-button flexibet-confirm af-button--primary" @click.prevent="placeBet">
+                  <button
+                    class="af-button flexibet-confirm af-button--primary"
+                    @click.prevent="placeBet"
+                  >
                     <span><span data-cms-key="confirm">Confirm</span></span>
                   </button>
                 </div>
               </div>
               <!-- Place Bet Submit Modal -->
               <Transition>
-                <div v-if="!show && betslipLoading" class="confirm-wrap"
-                  :class="betslipMode ? 'sim-theme' : 'real-theme'">
+                <div
+                  v-if="!show && betslipLoading"
+                  class="confirm-wrap"
+                  :class="betslipMode ? 'sim-theme' : 'real-theme'"
+                >
                   <div class="submit" :class="betslipMode ? 'sim-theme' : 'real-theme'">
                     <span style="color: #fff"> Submitting </span>
                   </div>
@@ -136,18 +219,35 @@
             </div>
           </Transition>
         </div>
-        <BetlistBookingCode v-if="betslipSelections.length === 0 && !betslipMode"></BetlistBookingCode>
-        <div v-if="betslipSelections.length === 0 && betslipMode" class="sim-selection-empty-panel">
+        <BetlistBookingCode
+          v-if="betslipSelections.length === 0 && !betslipMode"
+        ></BetlistBookingCode>
+        <div
+          v-if="betslipSelections.length === 0 && betslipMode"
+          class="sim-selection-empty-panel"
+        >
           <p>Please add at least one outcome.</p>
         </div>
-        <Simulation v-if="isSimulating && betslipMode" :simulation-results="simulationResults" />
+        <Simulation
+          v-if="isSimulating && betslipMode"
+          :simulation-results="simulationResults"
+        />
       </div>
       <!-- Place Bet Success Modal -->
-      <SuccessBet @hide-success="hideAll" :response="placeBetResponse" @activate-share="bookBet" @rebet="rebet"
-        v-if="placeBetStatus"></SuccessBet>
+      <SuccessBet
+        @hide-success="hideAll"
+        :response="placeBetResponse"
+        @activate-share="bookBet"
+        @rebet="rebet"
+        v-if="placeBetStatus"
+      ></SuccessBet>
       <!-- Place Bet Success Modal -->
       <!-- Book Bet Modal -->
-      <BookBetModal v-if="isBookBetSuccessful" @hide-modal="hideBookBetModal" :betDetails="bookBetResponse">
+      <BookBetModal
+        v-if="isBookBetSuccessful"
+        @hide-modal="hideBookBetModal"
+        :betDetails="bookBetResponse"
+      >
       </BookBetModal>
       <!-- Book Bet Modal -->
       <!-- <BetSettings @close="showBetSettings = false" v-if="showBetSettings" /> -->
@@ -168,7 +268,6 @@ import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
 import VueToggles from "vue-toggles";
 import Simulation from "./Simulation.vue";
-import BetslipModeToggle from "./BetslipModeToggle.vue";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();
@@ -231,7 +330,7 @@ const updateBetslipMode = () => {
 function closeBetslip(e) {
 
   if (e && e.target.classList.contains("x-main-right")) {
-    if (betslipMode.value && isSimulating.value) return;
+    if(betslipMode.value && isSimulating.value) return;
     emit("toggle-betslip");
   }
 }
@@ -310,12 +409,10 @@ defineComponent({
   name: "bet-list",
 });
 
-onMounted(() => { });
+onMounted(() => {});
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
-
 .m-betslip-header {
   background: var(--background-type2-secondary);
   color: #ffffff;
@@ -372,7 +469,8 @@ onMounted(() => { });
   color: #1b1e25;
   font-family: "Roboto-Bold";
   font-size: 1rem;
-  padding: 0.33333333rem 0.8rem;
+  padding: 0.33333333rem 1rem;
+  text-align: center;
 }
 
 .betslip-notification .sim-duplicated-match-error {
@@ -585,7 +683,7 @@ onMounted(() => { });
   padding: 0 1.33333333rem;
 }
 
-#betslip-container .m-betslips .m-bet-head .m-list-nav>div {
+#betslip-container .m-betslips .m-bet-head .m-list-nav > div {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   -webkit-box-flex: 1;
@@ -624,7 +722,11 @@ onMounted(() => { });
   color: var(--c-betslip-tab-text);
 }
 
-#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item:last-child {
+#betslip-container
+  .m-betslips
+  .m-bet-head
+  .m-list-bet-type
+  .m-list-bet-type-item:last-child {
   margin: 0;
 }
 
@@ -635,7 +737,11 @@ onMounted(() => { });
   color: var(--text-type1-primary);
 }
 
-#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item.m-snap-nav-item--disabled {
+#betslip-container
+  .m-betslips
+  .m-bet-head
+  .m-list-bet-type
+  .m-list-bet-type-item.m-snap-nav-item--disabled {
   opacity: 0.5;
   text-decoration: line-through;
 }
@@ -649,12 +755,13 @@ onMounted(() => { });
   width: 3.75rem;
 }
 
-#betslip-container .m-betslips .m-close>div {
+#betslip-container .m-betslips .m-close > div {
   text-align: right;
 }
 
 #betslip-container .m-betslips .m-icon-boost {
-  background: url(//s.sporty.net/global/main/modules/common-wap/components/betslip/image/boost2.5c73f22daf.png) no-repeat;
+  background: url(//s.sporty.net/global/main/modules/common-wap/components/betslip/image/boost2.5c73f22daf.png)
+    no-repeat;
   background-position: center;
   background-size: contain;
   display: inline-block;
@@ -734,7 +841,7 @@ onMounted(() => { });
   transition: 0.3s ease;
 }
 
-#betslip-container .m-betslips .m-input .m-input-wrapper>span {
+#betslip-container .m-betslips .m-input .m-input-wrapper > span {
   display: block;
   flex: 1;
   white-space: nowrap;
@@ -797,7 +904,7 @@ onMounted(() => { });
   vertical-align: top;
 }
 
-.submit>span {
+.submit > span {
   display: inline-block;
   padding-left: 0.83333333rem;
 }
@@ -981,13 +1088,21 @@ onMounted(() => { });
   background-color: var(--c-sim-win-bg);
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-theme {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.sim-theme {
   background-color: #fafd00;
   background-color: var(--sim-primary);
   color: #000000;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-disabled {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.sim-disabled {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
 }

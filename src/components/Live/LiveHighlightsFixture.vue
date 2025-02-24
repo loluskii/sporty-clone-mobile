@@ -184,7 +184,7 @@ const setActiveSpecifier = (spec) => {
     }
     // filtered = filtered.filter((item) => item.specifier === spec.specifier)
   } else {
-    console.log('sdfdf')
+    // console.log('sdfdf')
   }
 }
 

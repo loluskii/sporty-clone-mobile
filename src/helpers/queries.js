@@ -95,7 +95,7 @@ export const getTopBets = async () => {
 }
 
 export const getCodeHubItems = async (data) => {
-  return parseData(fetchWrapper.post(`https://sports.api.sportsbookengine.com/api/v2/bets/${CLIENT_ID}/codehub/tickets`, data))
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/${CLIENT_ID}/codehub/tickets`, data))
 }
 
 export const getSportsMenu = async () => {

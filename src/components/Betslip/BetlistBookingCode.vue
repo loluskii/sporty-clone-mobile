@@ -1,6 +1,7 @@
 <template>
   <div class="m-default">
-    <div class="featured-code-container">
+
+    <div class="featured-code-container" v-if="codes.length">
       <div
         class="recommended-code"
         data-cms-key="recommended_code"
@@ -9,7 +10,7 @@
         Recommended Code
       </div>
       <Codes :codes="codes" v-if="!codeHubLoading" />
-      <!-- <LoadingSpinner v-else /> -->
+      <LoadingSpinner v-else />
     </div>
     <p class="m-default-info">
       <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"

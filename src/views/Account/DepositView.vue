@@ -185,7 +185,7 @@ onMounted(async () => {
 <style>
 @import url('@/assets/css/deposit.css');
 .af-button--primary {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   border: 0;
   border-radius: 8px;
   color: #ffffff;

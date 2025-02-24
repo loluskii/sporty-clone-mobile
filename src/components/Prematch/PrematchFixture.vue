@@ -156,7 +156,7 @@ const getSpecifiers = computed(() => {
 })
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
     (market, index, self) =>
       index ===

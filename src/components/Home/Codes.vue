@@ -93,8 +93,9 @@
                 >
                   
                 </div>
-              </div>
-              <span v-else class="loading-button-click-area share-button-click-area mr-auto"
+              <span
+                v-else
+                class="loading-button-click-area share-button-click-area mr-auto"
                 ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
                 <span>Share</span></span
               >
@@ -110,6 +111,7 @@
                 ><div class="icon-font-base" style="font-size: 12px"></div></span
               >
             </div>
+
             <div
               data-op="add-to-betslip"
               role="button"
@@ -140,7 +142,7 @@
 </template>
 
 <script setup>
-import { formatDate } from "@/helpers";
+import { formatDate, loadBetslipByCode } from "@/helpers";
 import { ref } from "vue";
 import emitter from "../../plugins/emitter";
 import { useCouponStore } from "../../stores";
@@ -160,34 +162,41 @@ function getImageURL(name) {
   }
 }
 
-function addToBetslip(code) {
+async function addToBetslip(code) {
   addToBetslipLoading.value = true;
-  setTimeout(() => {
+  try {
+    const res = await loadBetslipByCode(code.betslipId);
     addToBetslipLoading.value = false;
-    try {
-      if (couponStore.coupon.selections.length) {
-        emitter.emit("showBetslipConfirmation", code);
+    if (res.success) {
+      if (couponStore.coupon.selections.length > 0) {
+        emitter.emit("showBetslipConfirmation", res.data);
       } else {
-        couponStore.coupon.selections = code.selections;
-        couponStore.coupon.totalOdds = parseFloat(code.totalOdd);
-        couponStore.coupon.totalStake = parseFloat(code.stake);
-        couponStore.coupon.stake = parseFloat(code.stake);
-        couponStore.coupon.maxWin = parseFloat(code.possibleWin);
-        couponStore.coupon.source = code.source;
-        if (code.selections.length === 1) {
-          couponStore.coupon.bet_type = "Single";
-          couponStore.coupon.betslip_type = "Single";
+        if (res.data.selections.length) {
+          couponStore.coupon.selections = res.data.selections;
+          couponStore.coupon.totalOdds = res.data.totalOdd;
+          couponStore.coupon.totalStake = res.data.stake;
+          couponStore.coupon.stake = res.data.stake;
+          couponStore.coupon.maxWin = res.data.possibleWin;
+          couponStore.coupon.source = "mobile";
+          if (res.data.selections.length === 1) {
+            couponStore.coupon.bet_type = "Single";
+            couponStore.coupon.betslip_type = "Single";
+          } else {
+            couponStore.coupon.bet_type = "Multiple";
+            couponStore.coupon.betslip_type = "Multiple";
+          }
+          emitter.emit("openBetslip");
         } else {
-          couponStore.coupon.bet_type = "Multiple";
-          couponStore.coupon.betslip_type = "Multiple";
+          emitter.emit("showDialogueToaster", "All selections have expired");
         }
-        emitter.emit("openBetslip");
       }
-    } catch (error) {
-      console.log(error);
-      emitter.emit("showDialogueToaster", "Error Loading Betslip");
+    } else {
+      throw new Error(res.message);
     }
-  }, 2000);
+  } catch (error) {
+    addToBetslipLoading.value = false;
+    emitter.emit("showDialogueToaster", error);
+  }
 }
 
 function shareCode(data) {
@@ -226,14 +235,15 @@ function shareCode(data) {
   padding: 0 1rem;
 }
 .featured-code-container #featuredCodeCardBox {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    height: 100%;
-    margin-top: 0.33333333rem;
-    padding-bottom: 0.33333333rem;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
-    scroll-behavior: smooth;
+
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
+  scroll-behavior: smooth;
 }
 .featured-code-container #featuredCodeCardBox > * {
   margin-right: 0.66666667rem;
@@ -254,7 +264,8 @@ function shareCode(data) {
   box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1), 2px 2px 4px 0px rgba(0, 0, 0, 0.1);
   width: 88%;
   scroll-snap-align: center; /* Snap the cards to the center */
-    flex-shrink: 0; /* Prevent shrinking */
+
+  flex-shrink: 0; /* Prevent shrinking */
 }
 .featured-code-card-container .featured-code-card-style {
   height: 100%;
@@ -283,8 +294,9 @@ function shareCode(data) {
   color: var(--text-type1-primary);
 }
 .booking-code-list-item .header {
-  background-color: #d6ebdc;
-  background-color: var(--brand-type1-secondary);
+
+  background-color: #eff5f4;
+  /* background-color: var(--brand-type1-secondary); */
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -588,6 +600,8 @@ function shareCode(data) {
 .booking-code-action-bar .share-button {
   background-color: #f2f3f5;
   color: #0d9737;
+
+  color: var(--brand-secondary);
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
