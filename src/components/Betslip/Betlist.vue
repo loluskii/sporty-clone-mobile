@@ -249,6 +249,7 @@ function bookBet(data) {
 }
 
 async function placeBet(e) {
+  if(couponStore.isBetslipLoading || couponStore.isSimulating) return;
   show.value = false;
   couponStore.isBetslipLoading = true;
   try {
