@@ -93,6 +93,7 @@
                 >
                   
                 </div>
+              </div>
               <span
                 v-else
                 class="loading-button-click-area share-button-click-area mr-auto"
