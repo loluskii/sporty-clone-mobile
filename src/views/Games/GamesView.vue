@@ -27,7 +27,7 @@
               class="category"
               :class="activeTopCategory?.id == top.id ? 'active' : ''"
               @click="getGameByTopCategory(top)"
-              v-if="top.slug !== 'all-games'"
+              v-if="top.slug !== 'all'"
               :id="'category_' + top.id"
             >
               <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
@@ -58,7 +58,7 @@
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
           <!-- Jackpots -->
-          <template v-if="jackpots.length">
+          <template v-if="jackpots">
             <div class="header d-flex justify-content-between align-items-center">
               <h1 class="h5 text-white fw-normal">Jackpots</h1>
               <span
@@ -181,6 +181,14 @@
         </div>
       </div>
     </div>
+
+    <div v-if="errorState.categoriesError" class="error-message">
+      Failed to load categories. Please try again later.
+    </div>
+
+    <div v-if="errorState.gamesError" class="error-message">
+      Failed to load games. Please try again later.
+    </div>
   </div>
 </template>
 
@@ -198,15 +206,7 @@ import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 
-const topGameCategories = ref([
-  {
-    name: "All Games",
-    priority: 0,
-    id: null,
-    slug: "all-games",
-    status: "active",
-  },
-]);
+const topGameCategories = ref([]);
 const gamesList = ref([]);
 const activeTopCategory = ref(null);
 const scrollComponent = ref(null);
@@ -218,18 +218,21 @@ const myElement = ref(null);
 const currentView = ref("grouped_category");
 const bonus = ref(null);
 const jackpots = ref([]);
+const errorState = ref({
+  categoriesError: false,
+  gamesError: false,
+  jackpotsError: false
+});
 
 const getImageSrc = (prov) => {
-  let name = prov.split("-");
-  let imageName = name[0];
-  if (name[1] !== "games") {
-    imageName = prov;
+  try {
+    let name = prov.split("-");
+    let imageName = name[1] !== "games" ? prov : name[0];
+    return new URL(`../../assets/images/casino/${imageName}.png`, import.meta.url);
+  } catch (error) {
+    console.error('Error loading category image:', error);
+    return new URL(`../../assets/images/casino/virtuals.png`, import.meta.url);
   }
-  const imageUrl = new URL(
-    `../../assets/images/casino/${imageName}.png`,
-    import.meta.url
-  );
-  return imageUrl;
 };
 
 const activeBonus = computed(() => {
@@ -237,38 +240,42 @@ const activeBonus = computed(() => {
 });
 
 async function getCategories() {
+  isLoading.value = true;
+  errorState.value.categoriesError = false;
+
   try {
     const response = await getTopGameCategories();
     const categories = response.data;
-    for (const category of categories) {
-      topGameCategories.value.push({
-        ...category,
-        games: [],
-        isLoading: true,
-        hasError: false, // Track errors for individual categories
-      });
-    }
+    
+    topGameCategories.value = await Promise.all(
+      categories.map(async (category) => {
+        if (!category.slug) {
+          return { ...category, games: [], isLoading: false };
+        }
 
-    // Fetch games for each category
-    await Promise.all(
-      topGameCategories.value.map(async (category) => {
-        if (category.slug) {
-          try {
-            const gamesResponse = await gamesByTopCategory(category.id); // Replace `id` with the appropriate field
-            category.games = gamesResponse.games ? gamesResponse.games.slice(0, 12) : [];
-          } catch (error) {
-            console.error(`Error fetching games for category ${category.name}:`, error);
-            category.hasError = true; // Set error state for this category
-          } finally {
-            category.isLoading = false; // Ensure loading state is updated
-          }
-        } else {
-          category.isLoading = false; // Skip fetching for the "all" category
+        try {
+          const gamesResponse = await gamesByTopCategory(category.id);
+          return {
+            ...category,
+            games: gamesResponse.games?.slice(0, 12) || [],
+            isLoading: false,
+            hasError: false
+          };
+        } catch (error) {
+          console.error(`Error fetching games for ${category.name}:`, error);
+          toast.error(`Failed to load games for ${category.name}`);
+          return {
+            ...category,
+            games: [],
+            isLoading: false,
+            hasError: true
+          };
         }
       })
     );
   } catch (error) {
-    console.error("Error fetching categories or games:", error);
+    console.error("Error fetching categories:", error);
+    errorState.value.categoriesError = true;
   } finally {
     isLoading.value = false;
   }
@@ -276,43 +283,59 @@ async function getCategories() {
 
 async function getGameByTopCategory(category) {
   singleCategoryLoading.value = true;
+  errorState.value.gamesError = false;
+
   try {
     if (category) {
-      document.getElementById("category_" + category.id).scrollIntoView({
+      const element = document.getElementById("category_" + category.id);
+      element?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
-        inline: "center",
+        inline: "center"
       });
+
       currentView.value = "single_category";
       activeTopCategory.value = category;
+      
       const res = await gamesByTopCategory(category.id);
-      isLoading.value = false;
-      gamesList.value = res.games ? res.games : [];
+      gamesList.value = res.games || [];
     } else {
-      document.getElementById("discover").scrollIntoView({
+      document.getElementById("discover")?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
-        inline: "center",
+        inline: "center"
       });
+      
       currentView.value = "grouped_category";
       activeTopCategory.value = null;
       await getCategories();
     }
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching games by category:", error);
+    errorState.value.gamesError = true;
+  } finally {
+    singleCategoryLoading.value = false;
   }
 }
 
 const getJK = async () => {
-  const res = await getJackpots();
-  jackpots.value = res.data.jackpots;
+  try {
+    const res = await getJackpots();
+    jackpots.value = res.data.jackpots ?? null;
+  } catch (error) {
+    console.error("Error fetching jackpots:", error);
+    errorState.value.jackpotsError = true;
+    toast.error("Failed to load jackpots");
+  }
 };
 
 const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title
-    .replace(/\s/g, "")
-    .toLowerCase()}.png?alt=media`;
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${encodeURIComponent(game.title)}.png?alt=media`;
+  } catch (error) {
+    console.error('Error generating image path:', error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
+  }
 };
 
 const handleImageError = (event, game) => {
@@ -323,18 +346,24 @@ const handleImageError = (event, game) => {
 };
 
 async function redirectToGamePlay(game) {
-  if (userStore.currentUser) {
-    if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
-      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: game });
-    } else {
-      return router.push({
-        name: "game-play",
-        params: { game_name: slugify(game.title), game_id: game.id },
-      });
+  try {
+    if (!userStore.currentUser) {
+      authStore.returnUrl = "/Games";
+      return router.push({ name: "sign-in" });
     }
-  } else {
-    authStore.returnUrl = "/Games";
-    return router.push({ name: "sign-in" });
+
+    if (activeBonus.value?.gameId.includes(game.gameId)) {
+      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
+      return;
+    }
+
+    await router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id }
+    });
+  } catch (error) {
+    console.error("Error redirecting to game:", error);
+    toast.error("Failed to load game");
   }
 }
 
@@ -534,5 +563,14 @@ onBeforeMount(async () => {
   border-radius: 10px;
   padding: 5px 15px;
   border: 1px solid var(--brand-highlight-text);
+}
+
+.error-message {
+  color: #ff4444;
+  text-align: center;
+  padding: 1rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  margin: 1rem 15px;
 }
 </style>

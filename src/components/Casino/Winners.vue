@@ -2,7 +2,7 @@
   <div>
     <Vue3Marquee>
       <div
-        v-if="winners.length"
+        v-if="winners"
         style="
           padding: 3px 10px;
           background-color: var(--brand-secondary);
@@ -27,14 +27,14 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getJackpotWinners } from "@/helpers";
-const winners = ref([]);
+const winners = ref(null);
 
 onMounted(async () => {
   try {
     const res = await getJackpotWinners();
-    winners.value = res.data.winners;
+    winners.value = res.data.winners ?? null;
   } catch (error) {
-    winners.value = [];
+    winners.value = null;
   }
 });
 </script>
