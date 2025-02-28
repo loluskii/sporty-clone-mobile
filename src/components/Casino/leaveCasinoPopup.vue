@@ -32,7 +32,7 @@
                     alt="..."
                     @error="handleImageError($event, game)"
                   />
-                  <div class="card-body d-flex flex-column p-2">
+                  <div class="card-body d-flex flex-column p-2 text-left">
                     <div
                       class="text-truncate fw-bold"
                       style="max-width: 150px; color: var(--brand-highlight-text)"
@@ -86,6 +86,13 @@ const getImagePath = (game) => {
     .toLowerCase()}.png?alt=media`;
 };
 
+const handleImageError = (event) => {
+  // Replace the failed image with a placeholder
+  let name = encodeURIComponent(props.game.title);
+  event.target.src = !props.game.bannerPath.includes('pexels') ? props.game.bannerPath : `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
+  event.target.alt = `${props.game.title}`;
+};
+
 function exitGame() {
   emit("exit");
 }
@@ -110,6 +117,7 @@ body {
 .modal-content {
   border-radius: 0px;
   bottom: 0;
+  border: none;
 }
 .carousel-item img {
   height: 150px;
