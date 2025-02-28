@@ -23,7 +23,7 @@
 
 <script setup>
 import { watch, ref, onMounted, onBeforeMount, computed } from "vue";
-import { getCasinoStartUrl, getGames, slugify, getSmatVirtualStartUrl } from "@/helpers";
+import { getCasinoStartUrl, gamesByTopCategory, slugify, getSmatVirtualStartUrl } from "@/helpers";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useUsersStore } from "@/stores";
@@ -49,40 +49,47 @@ const bonus = ref(null)
 //   },
 //   { immediate: true } 
 // )
-
 async function getCasinoURL() {
+  isLoading.value = true;
+
   try {
-    isLoading.value = true;
-    let data = "real";
-    let res;
+    const { game_id } = route.params;
+    const { bonusId, balanceType, bonusType } = route.query;
+    const { username, id, authCode } = currentUser || {};
+
     let payload = {
-      gameId: parseInt(route.params.game_id),
+      gameId: parseInt(game_id),
       clientId: import.meta.env.VITE_CLIENT_ID,
-      username: currentUser?.username,
-      userId: currentUser?.id,
+      username,
+      userId: id,
       demo: false,
       isMobile: true,
       homeUrl: import.meta.env.VITE_SITE_URL,
-      authCode: currentUser?.authCode,
+      authCode,
       balanceType: "real",
     };
 
-    if(route.query.bonusId && route.query.balanceType === "bonus"){
-      payload.isBonus = true
-      payload.bonusType = route.query.bonusType
-      payload.bonusId = route.query.bonusId
-      payload.balanceType = "bonus"
-      res = await getCasinoStartUrl(payload, data);
-    }else if(route.params.game_id === 'smat_virtual'){
-      res = await getSmatVirtualStartUrl({clientId: import.meta.env.VITE_CLIENT_ID, userId: currentUser?.id, token: currentUser?.authCode})
+    if (bonusId && balanceType === "bonus") {
+      Object.assign(payload, {
+        isBonus: true,
+        bonusType,
+        bonusId,
+        balanceType: "bonus",
+      });
     }
-    isLoading.value = false;
+
+    const res = game_id === "smat_virtual"
+      ? await getSmatVirtualStartUrl({ clientId: payload.clientId, userId: id, token: authCode })
+      : await getCasinoStartUrl(payload, "real");
+
     gameURL.value = res.url;
   } catch (error) {
-    alert(error);
+    console.error(error);
+  } finally {
     isLoading.value = false;
   }
 }
+
 
 async function moveToNewGame(game){
   showRecommendedGames.value = false
@@ -93,8 +100,8 @@ async function moveToNewGame(game){
 }
 
 async function getRecommendedGames() {
-  const res = await getGames();
-  let recommended = res.games.filter((g) => g.id.toString() !== route.params.game_id)
+  const res = await gamesByTopCategory();
+  let recommended = res.games && res.games.filter((g) => g.id.toString() !== route.params.gameId)
   gamesList.value = recommended.slice(0, 10);
 }
 
