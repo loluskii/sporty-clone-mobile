@@ -42,13 +42,14 @@ const gamesList = ref([]);
 const confirmLeave = ref(null);
 const bonus = ref(null)
 
-// watch(
-//   () => [route.params.game_id],
-//   async ([game_id]) => {
-//     await getCasinoURL()
-//   },
-//   { immediate: true } 
-// )
+watch(
+  () => [route.params.game_id],
+  async ([game_id]) => {
+    await getCasinoURL()
+  },
+  { immediate: true } 
+)
+
 async function getCasinoURL() {
   isLoading.value = true;
 
