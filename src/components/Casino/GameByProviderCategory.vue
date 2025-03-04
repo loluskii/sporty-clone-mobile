@@ -1,6 +1,6 @@
 <template>
   <div class="title-bg d-flex align-items-center">
-    <span @click="$router.go(-1)" class="m-icon m-icon--back mr-3"></span>
+    <span @click="goBack" class="m-icon m-icon--back mr-3"></span>
 
     <h3 class="h4 text-white fw-bold mb-0 text-capitalize">
       {{ titleText }}
@@ -33,11 +33,11 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import router from "@/router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import CategoryProvider from "./CategoryProvider.vue";
 import { useUsersStore } from "../../stores";
 import Game from "@/components/Casino/Game.vue"
+import { useRouter } from "vue-router";
 
 const props = defineProps(["games", "titleText", "type"]);
 
@@ -45,6 +45,7 @@ const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
 const usersStore = useUsersStore()
+const router = useRouter()
 
 const itemsPerLoad = 15;
 const displayLimit = ref(itemsPerLoad);
@@ -53,6 +54,12 @@ const displayLimit = ref(itemsPerLoad);
 const displayedGames = computed(() => {
   return props.games.slice(0, displayLimit.value);
 });
+
+const goBack = () => {
+  if(props.type === "provider"){
+    router.push({name: "casino-providers"})
+  }
+}
 
 // Check if more games are available
 const hasMoreGames = computed(() => {

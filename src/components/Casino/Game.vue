@@ -27,12 +27,15 @@ import { useAuthStore, useUsersStore } from "@/stores";
 import { computed } from "vue";
 import { slugify } from "@/helpers";
 import emitter from "../../plugins/emitter";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import { useUtilstStore } from "../../stores";
 
 const props = defineProps(["game"]);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
 const router = useRouter()
+const route = useRoute();
+const utilsStore = useUtilstStore()
 
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
@@ -52,6 +55,7 @@ const handleImageError = (event) => {
 };
 
 async function redirectToGamePlay() {
+  utilsStore.previousRoute = route.fullPath;
   if (userStore.currentUser) {
     if (activeBonus.value && activeBonus.value.gameId.includes(props.game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
