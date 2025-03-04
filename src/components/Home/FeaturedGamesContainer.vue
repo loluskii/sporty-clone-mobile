@@ -63,11 +63,14 @@
 <script setup>
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 const emit = defineEmits(['set-active-category'])
 import { slugify } from '@/helpers'
+import { useUtilstStore } from '../../stores'
 
 const router = useRouter()
+const route = useRoute()
+const utilsStore = useUtilstStore()
 const props = defineProps({
   featuredCasinogames: Array,
   featuredCasino: Array,
@@ -90,6 +93,7 @@ const getImagePath = (game) => {
 };
 
 async function redirectToGamePlay(game) {
+  utilsStore.previousRoute = route.fullPath;
   return router.push({
     name: 'game-play',
     params: { game_name: slugify(game.title), game_id: game.gameId }

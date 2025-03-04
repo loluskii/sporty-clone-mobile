@@ -129,6 +129,7 @@ import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 import HeaderOther from "../../components/HeaderOther.vue";
 import { useRoute } from "vue-router";
+import { useUtilstStore } from "../../stores";
 
 const route = useRoute()
 const gamesList = ref([]);
@@ -138,6 +139,7 @@ const activeJackpot = ref({});
 const currentView = ref("list");
 const isLoading = ref(false);
 const authStore = useAuthStore();
+const utilsStore = useUtilstStore()
 // const jId = ref(rout e.query?.jId)
 
 const getJK = async () => {
@@ -171,6 +173,7 @@ const showJackpot = (j) => {
 };
 
 async function redirectToGamePlay(game) {
+  utilsStore.previousRoute = route.fullPath
   if (userStore.currentUser) {
     if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: game });

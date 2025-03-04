@@ -200,7 +200,7 @@ import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
 import { getTopGameCategories, gamesByTopCategory, getJackpotWinners } from "@/helpers";
 import router from "@/router";
-import { useAuthStore, useUsersStore } from "@/stores";
+import { useAuthStore, useUsersStore, useUtilstStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
@@ -218,6 +218,8 @@ const myElement = ref(null);
 const currentView = ref("grouped_category");
 const bonus = ref(null);
 const jackpots = ref([]);
+const route = useRoute()
+const utilsStore = useUtilstStore()
 const errorState = ref({
   categoriesError: false,
   gamesError: false,
@@ -346,6 +348,7 @@ const handleImageError = (event, game) => {
 };
 
 async function redirectToGamePlay(game) {
+  utilsStore.previousRoute = route.fullPath
   try {
     if (!userStore.currentUser) {
       authStore.returnUrl = "/Games";
