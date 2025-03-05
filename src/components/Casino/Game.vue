@@ -47,7 +47,7 @@ const getImagePath = () => {
 const handleImageError = (event) => {
   // Replace the failed image with a placeholder
   let name = encodeURIComponent(props.game.title);
-  event.target.src = !props.game.bannerPath.includes('pexels') ? props.game.bannerPath : `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
+  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
   event.target.alt = `${props.game.title}`;
 };
 
