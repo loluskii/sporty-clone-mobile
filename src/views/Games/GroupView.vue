@@ -16,10 +16,10 @@
         :titleText="categoryName"
         :type="viewType"
       />
-      <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     </div>
+    <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     <div
-      v-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'"
+      v-else-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'"
       class="no-data"
     >
       <div style="white-space: pre-line">
@@ -88,6 +88,7 @@ watch(
     gameIds,
   ]) => {
     // Check the route name
+    isLoading.value = true
     switch (routeName) {
       case "casino-providers":
         handleProvidersView();
@@ -143,6 +144,7 @@ async function handleGamesByCategoryView(name, id) {
 }
 
 async function handleGamesByProviderView(name, id) {
+  gamesList.value = []
   viewMode.value = "games-list-view";
   viewHeaderTitle.value = name.replace(/_/g, " ");
   categoryName.value = name.replace(/_/g, " ");

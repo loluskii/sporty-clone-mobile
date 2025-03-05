@@ -331,7 +331,7 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${encodeURIComponent(game.title)}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title)}.png?alt=media`;
   } catch (error) {
     console.error('Error generating image path:', error);
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
