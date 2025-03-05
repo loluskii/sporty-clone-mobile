@@ -30,17 +30,19 @@ import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import HeaderCasinoPlay from "../../components/HeaderCasinoPlay.vue";
 import leaveCasinoPopup from "../../components/Casino/leaveCasinoPopup.vue";
+import { useUtilstStore } from "../../stores";
 
 const route = useRoute();
 const router = useRouter();
 const gameURL = ref("");
 const isLoading = ref(false);
 const { currentUser } = useUsersStore();
-const usersStore = useUsersStore();
+const utilsStore = useUtilstStore()
 const showRecommendedGames = ref(false);
 const gamesList = ref([]);
 const confirmLeave = ref(null);
 const bonus = ref(null)
+const previousRoute = ref(null)
 
 watch(
   () => [route.params.game_id],
@@ -107,11 +109,15 @@ async function getRecommendedGames() {
 }
 
 const exitGame = () => {
-  return router.push({ name: "casino-games" });
+  return router.push(utilsStore.previousRoute)
 };
 
 onMounted(async () => {
   await getCasinoURL();
+  router.beforeEach((to, from, next) => {
+    previousRoute.value = from.fullPath // Store the previous route
+    next()
+  })
 });
 
 onBeforeMount(async () => {

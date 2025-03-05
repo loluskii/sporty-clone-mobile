@@ -200,7 +200,7 @@ import Carousel from "@/components/Home/Carousel.vue";
 import { ref, onBeforeMount, computed } from "vue";
 import { getTopGameCategories, gamesByTopCategory, getJackpotWinners } from "@/helpers";
 import router from "@/router";
-import { useAuthStore, useUsersStore } from "@/stores";
+import { useAuthStore, useUsersStore, useUtilstStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
@@ -218,6 +218,8 @@ const myElement = ref(null);
 const currentView = ref("grouped_category");
 const bonus = ref(null);
 const jackpots = ref([]);
+const route = useRoute()
+const utilsStore = useUtilstStore()
 const errorState = ref({
   categoriesError: false,
   gamesError: false,
@@ -331,7 +333,7 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/casino%2F${encodeURIComponent(game.title)}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title)}.png?alt=media`;
   } catch (error) {
     console.error('Error generating image path:', error);
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
@@ -346,6 +348,7 @@ const handleImageError = (event, game) => {
 };
 
 async function redirectToGamePlay(game) {
+  utilsStore.previousRoute = route.fullPath
   try {
     if (!userStore.currentUser) {
       authStore.returnUrl = "/Games";
