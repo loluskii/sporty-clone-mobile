@@ -86,11 +86,11 @@ const getImagePath = (game) => {
     .toLowerCase()}.png?alt=media`;
 };
 
-const handleImageError = (event) => {
+const handleImageError = (event, game) => {
   // Replace the failed image with a placeholder
-  let name = encodeURIComponent(props.game.title);
+  let name = encodeURIComponent(game.title);
   event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
-  event.target.alt = `${props.game.title}`;
+  event.target.alt = `${game.title}`;
 };
 
 function exitGame() {

@@ -172,34 +172,6 @@ const showJackpot = (j) => {
     : [];
 };
 
-async function redirectToGamePlay(game) {
-  utilsStore.previousRoute = route.fullPath
-  if (userStore.currentUser) {
-    if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
-      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: game });
-    } else {
-      return router.push({
-        name: "game-play",
-        params: { game_name: slugify(game.title), game_id: game.id },
-      });
-    }
-  } else {
-    authStore.returnUrl = "/Games";
-    return router.push({ name: "sign-in" });
-  }
-}
-
-const updateCSSVar = () => {
-  if (myElement.value) {
-    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY;
-    // Assign the distance to a CSS variable
-    document.documentElement.style.setProperty(
-      "--distance-from-top",
-      `${distanceFromTop}px`
-    );
-  }
-};
-
 onBeforeMount(async () => {
   Promise.all([getJK(), getAllGames()]);
 });
