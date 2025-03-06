@@ -205,6 +205,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
+import {useRoute} from "vue-router"
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
