@@ -81,10 +81,19 @@ const usersStore = useUsersStore();
 const router = useRouter();
 
 const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title
-    .replace(/\s/g, "")
-    .toLowerCase()}.png?alt=media`;
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`;
+  } catch (error) {
+    console.error('Error generating image path:', error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
+  }
+};
+
+const handleImageError = (event, game) => {
+  // Replace the failed image with a placeholder
+  let name = encodeURIComponent(game.title);
+  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
+  event.target.alt = `${game.title}`;
 };
 
 const handleImageError = (event, game) => {

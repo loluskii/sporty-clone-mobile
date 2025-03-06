@@ -51,17 +51,6 @@
             >
           </div>
           <div
-            role="button"
-            tabindex="0"
-            class="button loading-button-container edit-button"
-            aria-label="edit booking code 1C92348 in multi maker"
-          >
-            <div class="loading-icon-container"></div>
-            <span class="loading-button-click-area"
-              ><div class="icon-font-base" style="font-size: 12px"></div></span
-            >
-          </div>
-          <div
             data-op="add-to-betslip"
             role="button"
             tabindex="0"

@@ -10,20 +10,19 @@
         <Providers v-if="viewType === 'provider'" :providers="providers" />
         <Categories v-else :categories="categories" />
       </template>
-      <GameByProviderCategory
-        v-if="viewMode === 'games-list-view'"
-        :games="gamesList"
-        :titleText="categoryName"
-        :type="viewType"
-      />
+      <GameByProviderCategory v-if="viewMode === 'games-list-view'" :games="gamesList" :titleText="categoryName"
+        :type="viewType" />
     </div>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-    <div
-      v-else-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'"
-      class="no-data"
-    >
+    <div v-else-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'" class="no-data">
       <div style="white-space: pre-line">
         Sorry, there are no games currently<br />available in this category. Please try
+        later.<br />Thank you.
+      </div>
+    </div>
+    <div v-else-if="!isLoading && !providers.length && viewMode === 'games-group-view'" class="no-data">
+      <div style="white-space: pre-line">
+        Sorry, there are no {{ viewHeaderTitle }} currently<br />available. Please try
         later.<br />Thank you.
       </div>
     </div>
@@ -34,7 +33,7 @@
 import GameByProviderCategory from "@/components/Casino/GameByProviderCategory.vue";
 import Providers from "../../components/Casino/Providers.vue";
 import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, watch, computed, onMounted } from "vue";
+import { ref, onBeforeMount, watch, computed, onMounted, provide } from "vue";
 import Winners from "../../components/Casino/Winners.vue";
 import {
   getGamesByProviders,
@@ -116,70 +115,70 @@ watch(
 );
 
 async function handleProvidersView() {
-  viewType.value = "provider";
-  viewMode.value = "games-group-view";
-  viewHeaderTitle.value = "Providers";
-  const res = await getProviders();
-  providers.value = res.data;
-  isLoading.value = false;
+  try {
+    viewType.value = "provider";
+    viewMode.value = "games-group-view";
+    viewHeaderTitle.value = "Providers";
+    const res = await getProviders();
+    providers.value = res.data;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    providers.value = []
+
+  }
 }
 
 async function handleCategoriesView() {
-  viewMode.value = "games-group-view";
-  viewHeaderTitle.value = "Categories";
-  const res = await getTopGameCategories();
-  categories.value = res.data;
+  try {
+    viewMode.value = "games-group-view";
+    viewHeaderTitle.value = "Categories";
+    const res = await getTopGameCategories();
+    categories.value = res.data;
+    isLoading.value = false;
+    viewType.value = "category";
+  } catch (error) {
+    categories.value = [];
+    isLoading.value = false;
+  }
+}
+
+async function handleGamesView(name, id, fetchFunction, type) {
+  viewMode.value = "games-list-view";
+  viewHeaderTitle.value = name.replace(/_/g, " ");
+  categoryName.value = name.replace(/_/g, " ");
+  const res = await fetchFunction(id);
+  gamesList.value = res.games || [];
+  viewType.value = type;
   isLoading.value = false;
-  viewType.value = "category";
 }
 
 async function handleGamesByCategoryView(name, id) {
-  viewMode.value = "games-list-view";
-  viewHeaderTitle.value = name.replace(/_/g, " ");
-  categoryName.value = name.replace(/_/g, " ");
-  const res = await gamesByTopCategory(id);
-  gamesList.value = res.games ? res.games : [];
-  viewType.value = "category";
-  isLoading.value = false;
+  await handleGamesView(name, id, gamesByTopCategory, "category");
 }
 
 async function handleGamesByProviderView(name, id) {
-  gamesList.value = []
+  gamesList.value = []; // Ensure gamesList is cleared before fetching
+  await handleGamesView(name, id, getGamesByProviders, "provider");
+}
+
+async function handleFilteredGamesView(title, gameIds) {
   viewMode.value = "games-list-view";
-  viewHeaderTitle.value = name.replace(/_/g, " ");
-  categoryName.value = name.replace(/_/g, " ");
-  const res = await getGamesByProviders(id);
-  gamesList.value = res.games ? res.games : [];
-  viewType.value = "provider";
+  viewHeaderTitle.value = title;
+  categoryName.value = title;
+  const res = await getGames();
+  const gameIdSet = new Set(gameIds.split(","));
+  gamesList.value = res.games ? res.games.filter(game => gameIdSet.has(game.gameId)) : [];
+  viewType.value = "category";
   isLoading.value = false;
 }
 
 async function handleBonusGames(gameIds) {
-  viewMode.value = "games-list-view";
-  viewHeaderTitle.value = "Bonus Games";
-  categoryName.value = "Bonus Games";
-  const res = await getGames();
-  const bonusGamesIds = gameIds.split(",");
-  const bonusGamesSet = new Set(bonusGamesIds);
-  gamesList.value = res.games
-    ? res.games.filter((obj) => bonusGamesSet.has(obj.gameId))
-    : [];
-  viewType.value = "category";
-  isLoading.value = false;
+  await handleFilteredGamesView("Bonus Games", gameIds);
 }
 
 async function handleCasinoJackpots(gameIds) {
-  viewMode.value = "games-list-view";
-  viewHeaderTitle.value = "Jackpot Games";
-  categoryName.value = "Jackpot Games";
-  const res = await getGames();
-  const bonusGamesIds = gameIds.split(",");
-  const bonusGamesSet = new Set(bonusGamesIds);
-  gamesList.value = res.games
-    ? res.games.filter((obj) => bonusGamesSet.has(obj.gameId))
-    : [];
-  viewType.value = "category";
-  isLoading.value = false;
+  await handleFilteredGamesView("Jackpot Games", gameIds);
 }
 
 onMounted(() => {
@@ -232,6 +231,7 @@ onMounted(() => {
   text-align: center;
   background-color: transparent;
 }
+
 .casino {
   background-color: #000;
   min-height: 100vh;
@@ -276,11 +276,12 @@ onMounted(() => {
   /* background-color: #373737; */
   /* white-space: nowrap; */
 }
+
 .game-provider {
   padding: 0 15px;
 }
 
-.game-provider > span {
+.game-provider>span {
   font-size: 18px;
   font-weight: bold;
   border-radius: 10px;
@@ -330,9 +331,12 @@ onMounted(() => {
 
 .games-container .categories-list {
   display: flex;
-  flex-wrap: nowrap; /* Prevent wrapping */
-  overflow: auto; /* Enable horizontal scrolling if items overflow */
-  gap: 10px; /* Space between items */
+  flex-wrap: nowrap;
+  /* Prevent wrapping */
+  overflow: auto;
+  /* Enable horizontal scrolling if items overflow */
+  gap: 10px;
+  /* Space between items */
 }
 
 .games-container .categories-list::-webkit-scrollbar {

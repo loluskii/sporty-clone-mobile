@@ -205,6 +205,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
+import {useRoute} from "vue-router"
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -331,7 +332,7 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title)}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`;
   } catch (error) {
     console.error('Error generating image path:', error);
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
@@ -353,10 +354,12 @@ async function redirectToGamePlay(game) {
       return router.push({ name: "sign-in" });
     }
 
-    if (activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)) {
-      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
-      return;
-    }
+    
+      if (activeBonus.value && activeBonus.value.gameId.includes(game.gameId)) {
+        emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
+        return;
+      }
+  
 
     await router.push({
       name: "game-play",
