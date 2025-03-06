@@ -1,8 +1,8 @@
 <template>
   <div class="x-load-bet">
-    <HeaderOther :headerTitle="'Promotion'"></HeaderOther>
+    <HeaderOther :headerTitle="'Promotions'"></HeaderOther>
     <div v-if="pageMode === 'general-mode'" class="m-main-info p-3">
-      <div class="row">
+      <div v-if="promotions" class="row">
         <div v-for="promo in promotions" :key="promo.id" class="col-12">
           <div class="card mb-3">
             <img class="card-img-top" :src="promo.imageUrl" alt="Card image cap" />
@@ -29,6 +29,10 @@
             </div>
           </div>
         </div>
+      </div>
+      <div v-else class="d-flex flex-column align-items-center justify-content-center py-5">
+        <p class="h4">No Promotions Availble.</p>
+        <p class="text-muted">Kindly check back soon</p>
       </div>
     </div>
     <div v-if="pageMode === 'single-mode'" class="m-main-info p-3">
@@ -71,7 +75,7 @@ function goToLink(link) {
 
 onMounted(async () => {
   const res = await getPromotions();
-  promotions.value = res.data;
+  promotions.value = res.data ?? null;
 });
 </script>
 
