@@ -23,7 +23,7 @@
                   v-for="game in gamesList"
                   :key="game.id"
                   class="card bg-dark rounded-3 mb-3"
-                  style="width: 150px"
+                  style="width: 150px;"
                   @click="redirectToGamePlay(game)"
                 >
                   <img
@@ -31,8 +31,9 @@
                     class="card-img-top"
                     alt="..."
                     @error="handleImageError($event, game)"
+                    style="height: 130px; min-width: 148px; object-fit: fill;"
                   />
-                  <div class="card-body d-flex flex-column p-2 text-left">
+                  <div class="card-footer d-flex flex-column p-2 text-left">
                     <div
                       class="text-truncate fw-bold"
                       style="max-width: 150px; color: var(--brand-highlight-text)"
