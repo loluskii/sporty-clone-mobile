@@ -353,7 +353,7 @@ async function redirectToGamePlay(game) {
       return router.push({ name: "sign-in" });
     }
 
-    if(activeBonus.value.gameId){
+    if(activeBonus.value){
       if (activeBonus.value.gameId.includes(game.gameId)) {
         emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
         return;
