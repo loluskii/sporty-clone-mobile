@@ -265,7 +265,6 @@ async function getCategories() {
           };
         } catch (error) {
           console.error(`Error fetching games for ${category.name}:`, error);
-          toast.error(`Failed to load games for ${category.name}`);
           return {
             ...category,
             games: [],
@@ -327,7 +326,6 @@ const getJK = async () => {
   } catch (error) {
     console.error("Error fetching jackpots:", error);
     errorState.value.jackpotsError = true;
-    toast.error("Failed to load jackpots");
   }
 };
 
@@ -355,7 +353,7 @@ async function redirectToGamePlay(game) {
       return router.push({ name: "sign-in" });
     }
 
-    if (activeBonus.value?.gameId.includes(game.gameId)) {
+    if (activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
       return;
     }
@@ -366,7 +364,6 @@ async function redirectToGamePlay(game) {
     });
   } catch (error) {
     console.error("Error redirecting to game:", error);
-    toast.error("Failed to load game");
   }
 }
 

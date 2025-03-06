@@ -37,7 +37,7 @@
           </div>
         </div>
         <div v-else class="button-row">
-          <div class="real-money-btn" @click="goToCasino">
+          <div v-if="props.data.bonus.type === 'casino'" class="real-money-btn" @click="goToCasino">
             <div class="real-money-btn-text">Go to Casino</div>
           </div>
           <div class="bonus-btn" @click="goToBonus">
@@ -75,7 +75,7 @@ const utilsStore = useUtilstStore();
 const modalText = computed(() => {
   return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
     ? `Congratulations! You have been gifted ${props.data.bonus.freeSpins} free spins.`
-    : `Congratulations! You have a casino bonus of
+    : `Congratulations! You have a ${props.data.bonus.type === "sport" ? "Sports" : "Casino"} bonus of
             ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value}`;
 });
 
