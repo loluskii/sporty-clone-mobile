@@ -324,7 +324,7 @@ export const getGamesByProviders = async (providerId) => {
 }
 
 export const getProviders = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/provider`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/provider`))
 }
 
 export const getCasinoStartUrl = async (payload) => {
