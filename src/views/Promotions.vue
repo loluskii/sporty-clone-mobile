@@ -13,14 +13,13 @@
             <div
               class="card-footer d-flex justify-content-between align-items-center p-2"
             >
-              <a
+              <button
                 class="btn btn-sm text-white"
                 style="background-color: var(--brand-secondary)"
-                :href="promo.targetUrl"
-                target="_self"
+                @click.prevent="goToLink(promo.targetUrl)"
               >
                 Play Now
-              </a>
+              </button>
               <a
                 href=""
                 class="text-decoration-none btn-sm"
@@ -40,7 +39,7 @@
         <img :src="selectedPromotion.imageUrl" class="img-fluid" alt="" />
         <br />
         <div class="mt-3" v-html="selectedPromotion.content"></div>
-        <a :href="selectedPromotion.targetUrl" target="_self" class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)">Play Now</a>
+        <button class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)" @click.prevent="goToLink(selectedPromotion.targetUrl)">Play Now</button>
         <button class="btn btn-block border mt-3" @click="pageMode = 'general-mode'">Go Back</button>
     </div>
   </div>
@@ -71,7 +70,10 @@ function goToPromotion(promo) {
 }
 
 function goToLink(link) {
-  window.location.href = link;
+  if (!link.startsWith("http") || !link.startsWith("https")) {
+    link = `https://${link}`; // Ensure it has the correct format
+  }
+  return window.location.href = link;
 }
 
 onMounted(async () => {
