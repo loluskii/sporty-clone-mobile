@@ -16,9 +16,8 @@
               <a
                 class="btn btn-sm text-white"
                 style="background-color: var(--brand-secondary)"
-                @click.prevent="goToLink(promo.targetUrl)"
                 :href="promo.targetUrl"
-                target="_blank"
+                target="_self"
               >
                 Play Now
               </a>
@@ -41,7 +40,7 @@
         <img :src="selectedPromotion.imageUrl" class="img-fluid" alt="" />
         <br />
         <div class="mt-3" v-html="selectedPromotion.content"></div>
-        <button class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)" @click.prevent="goToLink(selectedPromotion.targetUrl)">Play Now</button>
+        <a :href="selectedPromotion.targetUrl" target="_self" class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)">Play Now</a>
         <button class="btn btn-block border mt-3" @click="pageMode = 'general-mode'">Go Back</button>
     </div>
   </div>
