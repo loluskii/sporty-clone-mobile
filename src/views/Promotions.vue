@@ -13,13 +13,15 @@
             <div
               class="card-footer d-flex justify-content-between align-items-center p-2"
             >
-              <button
+              <a
                 class="btn btn-sm text-white"
                 style="background-color: var(--brand-secondary)"
                 @click.prevent="goToLink(promo.targetUrl)"
+                :href="promo.targetUrl"
+                target="_blank"
               >
                 Play Now
-              </button>
+              </a>
               <a
                 href=""
                 class="text-decoration-none btn-sm"
