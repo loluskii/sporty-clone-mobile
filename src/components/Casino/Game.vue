@@ -58,7 +58,7 @@ async function redirectToGamePlay() {
   utilsStore.previousRoute = route.fullPath;
   if (userStore.currentUser) {
     
-    if (activeBonus.value.gameId && activeBonus.value.gameId.includes(props.game.gameId)) {
+    if (activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(props.game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
     } else {
       return router.push({
