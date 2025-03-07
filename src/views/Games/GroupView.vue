@@ -163,12 +163,13 @@ async function handleGamesByProviderView(name, id) {
 }
 
 async function handleFilteredGamesView(title, gameIds) {
+  console.log(gameIds)
   viewMode.value = "games-list-view";
   viewHeaderTitle.value = title;
   categoryName.value = title;
   const res = await getGames();
   const gameIdSet = new Set(gameIds.split(","));
-  gamesList.value = res.games ? res.games.filter(game => gameIdSet.has(game.gameId)) : [];
+  gamesList.value = res.data ? res.data.filter(game => gameIdSet.has(game.gameId)) : [];
   viewType.value = "category";
   isLoading.value = false;
 }
