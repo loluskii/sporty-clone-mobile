@@ -20,7 +20,7 @@
         later.<br />Thank you.
       </div>
     </div>
-    <div v-else-if="!isLoading && viewMode === 'games-group-view'" class="no-data">
+    <div v-else-if="!isLoading && !providers && viewMode === 'games-group-view'" class="no-data">
       <div style="white-space: pre-line">
         Sorry, there are no {{ viewHeaderTitle }} currently<br />available. Please try
         later.<br />Thank you.
