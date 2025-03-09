@@ -438,8 +438,9 @@ export const useCouponStore = defineStore({
       const coupondata = { ...this.coupon }
       const usersStore = useUsersStore()
       if (usersStore.currentUser) {
-        coupondata.userId = usersStore.currentUser.id
+        coupondata.userId   = usersStore.currentUser.id
         coupondata.username = usersStore.currentUser.username
+        coupondata.userRole = usersStore.currentUser.role
       }
       coupondata.clientId = CLIENT_ID
 
