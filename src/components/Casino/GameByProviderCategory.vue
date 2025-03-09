@@ -35,7 +35,7 @@
 import { ref, onMounted, computed } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import CategoryProvider from "./CategoryProvider.vue";
-import { useUsersStore } from "../../stores";
+import { useUsersStore, useUtilstStore } from "../../stores";
 import Game from "@/components/Casino/Game.vue"
 import { useRouter } from "vue-router";
 
@@ -46,6 +46,7 @@ const myElement = ref(null);
 const currentView = ref("providers");
 const usersStore = useUsersStore()
 const router = useRouter()
+const {previousRoute} = useUtilstStore()
 
 const itemsPerLoad = 15;
 const displayLimit = ref(itemsPerLoad);
@@ -58,6 +59,8 @@ const displayedGames = computed(() => {
 const goBack = () => {
   if(props.type === "provider"){
     router.push({name: "casino-providers"})
+  }else{
+    router.push(previousRoute)
   }
 }
 
