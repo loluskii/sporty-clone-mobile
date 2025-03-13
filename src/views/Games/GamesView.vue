@@ -15,7 +15,7 @@
           </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div class="category" :class="activeTopCategory?.id == top.id ? 'active' : ''"
-              @click="getGameByTopCategory(top)" v-if="top.slug !== 'all' && top.priority >= 0"
+              @click="getGameByTopCategory(top)" v-if="top.priority >= 0"
               :id="'category_' + top.id">
               <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
               <span>{{ top.name }}</span>
@@ -47,7 +47,7 @@
           <!-- Jackpots -->
 
           <template v-for="(top, index) in topGameCategories" :key="index">
-            <div class="group" v-if="top.slug !== 'all' && top.priority >= 0">
+            <div class="group" v-if="top.priority >= 0">
               <div class="header d-flex justify-content-between align-items-center">
                 <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
                 <span class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded" @click="
@@ -57,7 +57,7 @@
               </div>
               <template v-if="top.games.length && !top.isLoading">
                 <div class="grid-container mb-3 pb-3" ref="scrollComponent">
-                  <div class="card bg-dark rounded-3" style="width: 150px" @click="redirectToGamePlay(game)"
+                  <div class="card bg-dark rounded-3 shadow" style="width: 150px" @click="redirectToGamePlay(game)"
                     v-for="(game, index) in top.games" :key="index">
                     <img :src="getImagePath(game)" class="card-img-top" alt="..."
                       @error="handleImageError($event, game)" />
@@ -292,7 +292,7 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title)}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.toLowerCase())}.png?alt=media`;
   } catch (error) {
     console.error('Error generating image path:', error);
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;

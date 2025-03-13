@@ -4,7 +4,7 @@
       <h3 class="h3 text-white fw-bold mb-0">{{ titleText }}</h3>
     </div>
     <div class="row mt-3 mb-5 pb-2">
-      <div class="col-12 mb-3" v-for="category in props.categories" :key="category.name">
+      <div class="col-12 mb-3" v-for="category in props.categories"  :key="category.name">
         <div
           class="provider-card"
           @click="
