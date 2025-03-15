@@ -103,7 +103,7 @@ async function moveToNewGame(game){
 }
 
 async function getRecommendedGames() {
-  const res = await gamesByTopCategory(12);
+  const res = await gamesByTopCategory(11);
   let recommended = res.data && res.data.filter((g) => g.id.toString() !== route.params.gameId)
   gamesList.value = recommended.slice(0, 10);
 }
