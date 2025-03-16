@@ -217,7 +217,11 @@ export const useCouponStore = defineStore({
         // console.log(this.coupon, "coups");
         // this.coupon.bet_type = multibetCombination(this.coupon.selections);
 
-        this.coupon.bet_type = checkBetType(this.coupon.fixtures)
+        if (this.coupon.selections.length === 1) {
+          this.coupon.bet_type = 'Single';
+        } else {
+          this.coupon.bet_type = checkBetType(this.coupon.fixtures);
+        }
 
         if (this.coupon.bet_type === 'Split') {
           const splitProps = await getSplitProps(this.coupon)
