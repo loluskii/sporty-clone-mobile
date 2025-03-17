@@ -8,28 +8,15 @@
     <div v-if="!isLoading" class="games-container pb-5">
       <div class="head-top d-flex align-items-center">
         <div class="categories-list">
-          <div
-            class="category"
-            :class="!activeTopCategory ? 'active' : ''"
-            @click="getGameByTopCategory()"
-            id="discover"
-          >
-            <img
-              src="@/assets/images/casino/all.png"
-              class="img-fluid"
-              alt=""
-              srcset=""
-            />
+          <div class="category" :class="!activeTopCategory ? 'active' : ''" @click="getGameByTopCategory()"
+            id="discover">
+            <img src="@/assets/images/casino/all.png" class="img-fluid" alt="" srcset="" />
             <span>Discover</span>
           </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
-            <div
-              class="category"
-              :class="activeTopCategory?.id == top.id ? 'active' : ''"
-              @click="getGameByTopCategory(top)"
-              v-if="top.slug !== 'all'"
-              :id="'category_' + top.id"
-            >
+            <div class="category" :class="activeTopCategory?.id == top.id ? 'active' : ''"
+              @click="getGameByTopCategory(top)" v-if="top.priority >= 0"
+              :id="'category_' + top.id">
               <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
               <span>{{ top.name }}</span>
             </div>
@@ -37,18 +24,8 @@
         </div>
       </div>
       <div class="game-provider" @click="$router.push({ name: 'casino-providers' })">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="25"
-          height="25"
-          viewBox="0 0 25 25"
-          fill="none"
-          stroke="#f2f2f2"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-gem icon providers"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none" stroke="#f2f2f2"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gem icon providers">
           <path d="M6 3h12l4 6-10 13L2 9Z" />
           <path d="M11 3 8 9l4 13 4-13-3-6" />
           <path d="M2 9h20" />
@@ -61,10 +38,8 @@
           <template v-if="jackpots">
             <div class="header d-flex justify-content-between align-items-center">
               <h1 class="h5 text-white fw-normal">Jackpots</h1>
-              <span
-                @click="$router.push({ name: 'casino-jackpots' })"
-                class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
-                >Show More
+              <span @click="$router.push({ name: 'casino-jackpots' })"
+                class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded">Show More
               </span>
             </div>
             <Jackpots :jackpots="jackpots" :games="gamesList"></Jackpots>
@@ -72,41 +47,22 @@
           <!-- Jackpots -->
 
           <template v-for="(top, index) in topGameCategories" :key="index">
-            <div class="group" v-if="top.slug !== 'all'">
+            <div class="group" v-if="top.priority >= 0">
               <div class="header d-flex justify-content-between align-items-center">
                 <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
-                <span
-                  class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
-                  @click="
-                    $router.push({
-                      name: 'games-by-category',
-                      params: { category: slugify(top.name) },
-                      query: { category_id: top.id },
-                    })
-                  "
-                  >Show More
+                <span class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded" @click="
+                  showMore(top)
+                ">Show More
                 </span>
               </div>
               <template v-if="top.games.length && !top.isLoading">
                 <div class="grid-container mb-3 pb-3" ref="scrollComponent">
-                  <div
-                    class="card bg-dark rounded-3"
-                    style="width: 150px"
-                    @click="redirectToGamePlay(game)"
-                    v-for="(game, index) in top.games"
-                    :key="index"
-                  >
-                    <img
-                      :src="getImagePath(game)"
-                      class="card-img-top"
-                      alt="..."
-                      @error="handleImageError($event, game)"
-                    />
+                  <div class="card bg-dark rounded-3 shadow" style="width: 150px" @click="redirectToGamePlay(game)"
+                    v-for="(game, index) in top.games" :key="index">
+                    <img :src="getImagePath(game)" class="card-img-top" alt="..."
+                      @error="handleImageError($event, game)" />
                     <div class="card-body d-flex flex-column p-2">
-                      <div
-                        class="text-truncate fw-bold"
-                        style="max-width: 150px; color: var(--brand-highlight-text)"
-                      >
+                      <div class="text-truncate fw-bold" style="max-width: 150px; color: var(--brand-highlight-text)">
                         {{ game.title }}
                       </div>
                       <div class="text-muted">{{ game.type }}</div>
@@ -163,19 +119,12 @@
           <div v-for="x in 4" :key="x" class="group">
             <div class="header d-flex justify-content-between align-items-center">
               <h1 class="fw-normal placeholder h4 p-2 rounded" style="width: 50px"></h1>
-              <span
-                style="width: 50px"
-                class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
-              >
+              <span style="width: 50px"
+                class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded">
               </span>
             </div>
             <div class="grid-container mb-3 pb-3" ref="scrollComponent">
-              <div
-                class="card bg-dark rounded-3 placeholder"
-                v-for="i in 3"
-                :key="i"
-                style="width: 150px"
-              ></div>
+              <div class="card bg-dark rounded-3 placeholder" v-for="i in 3" :key="i" style="width: 150px"></div>
             </div>
           </div>
         </div>
@@ -205,6 +154,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
+import { useRoute } from "vue-router"
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -237,6 +187,15 @@ const getImageSrc = (prov) => {
   }
 };
 
+const showMore = (top) => {
+  utilsStore.previousRoute = route.fullPath
+  return router.push({
+    name: 'games-by-category',
+    params: { category: slugify(top.name) },
+    query: { category_id: top.id },
+  })
+}
+
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
 });
@@ -248,8 +207,8 @@ async function getCategories() {
   try {
     const response = await getTopGameCategories();
     const categories = response.data;
-    
-    topGameCategories.value = await Promise.all(
+
+    const data = await Promise.all(
       categories.map(async (category) => {
         if (!category.slug) {
           return { ...category, games: [], isLoading: false };
@@ -259,7 +218,7 @@ async function getCategories() {
           const gamesResponse = await gamesByTopCategory(category.id);
           return {
             ...category,
-            games: gamesResponse.games?.slice(0, 12) || [],
+            games: gamesResponse.data?.slice(0, 12) || [],
             isLoading: false,
             hasError: false
           };
@@ -274,6 +233,8 @@ async function getCategories() {
         }
       })
     );
+
+    topGameCategories.value = data.sort((a, b) => b.priority - a.priority);
   } catch (error) {
     console.error("Error fetching categories:", error);
     errorState.value.categoriesError = true;
@@ -297,7 +258,6 @@ async function getGameByTopCategory(category) {
 
       currentView.value = "single_category";
       activeTopCategory.value = category;
-      
       const res = await gamesByTopCategory(category.id);
       gamesList.value = res.games || [];
     } else {
@@ -306,7 +266,6 @@ async function getGameByTopCategory(category) {
         block: "nearest",
         inline: "center"
       });
-      
       currentView.value = "grouped_category";
       activeTopCategory.value = null;
       await getCategories();
@@ -331,7 +290,7 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title)}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.toLowerCase())}.png?alt=media`;
   } catch (error) {
     console.error('Error generating image path:', error);
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
@@ -353,7 +312,6 @@ async function redirectToGamePlay(game) {
       return router.push({ name: "sign-in" });
     }
 
-    
     if (activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)) {
       emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game });
       return;
@@ -408,6 +366,7 @@ onBeforeMount(async () => {
   color: #ffffff;
   /* font-size: 1.5rem; */
 }
+
 .no-data {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
@@ -416,6 +375,7 @@ onBeforeMount(async () => {
   text-align: center;
   background-color: transparent;
 }
+
 .casino {
   background-color: #121212;
   min-height: 100vh;
@@ -460,6 +420,7 @@ onBeforeMount(async () => {
   /* background-color: #373737; */
   /* white-space: nowrap; */
 }
+
 .game-provider {
   background-color: #333;
   color: #fff;
@@ -469,7 +430,7 @@ onBeforeMount(async () => {
   margin: 0 15px;
 }
 
-.game-provider > span {
+.game-provider>span {
   font-size: 15px;
   font-weight: bold;
   border-radius: 10px;
@@ -485,6 +446,7 @@ onBeforeMount(async () => {
   align-items: center;
   white-space: nowrap;
 }
+
 .head-top .divider {
   margin: 0 10px;
   font-size: 18px;
@@ -518,7 +480,8 @@ onBeforeMount(async () => {
   /* display: flex; */
   overflow-x: scroll;
   white-space: nowrap;
-  grid-template-columns: repeat(12, 1fr); /* Set total items in a single row */
+  grid-template-columns: repeat(12, 1fr);
+  /* Set total items in a single row */
   grid-auto-rows: minmax(100px, auto);
   gap: 10px;
   padding: 20px 0px 0px;
@@ -526,9 +489,12 @@ onBeforeMount(async () => {
 
 .games-container .categories-list {
   display: flex;
-  flex-wrap: nowrap; /* Prevent wrapping */
-  overflow: auto; /* Enable horizontal scrolling if items overflow */
-  gap: 10px; /* Space between items */
+  flex-wrap: nowrap;
+  /* Prevent wrapping */
+  overflow: auto;
+  /* Enable horizontal scrolling if items overflow */
+  gap: 10px;
+  /* Space between items */
 }
 
 .games-container .grid-container::-webkit-scrollbar,

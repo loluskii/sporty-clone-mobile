@@ -44,13 +44,14 @@ const confirmLeave = ref(null);
 const bonus = ref(null)
 const previousRoute = ref(null)
 
-// watch(
-//   () => [route.params.game_id],
-//   async ([game_id]) => {
-//     await getCasinoURL()
-//   },
-//   { immediate: true } 
-// )
+watch(
+  () => [route.params.game_id],
+  async ([game_id]) => {
+    await getCasinoURL()
+  },
+  { immediate: true } 
+)
+
 async function getCasinoURL() {
   isLoading.value = true;
 
@@ -102,12 +103,15 @@ async function moveToNewGame(game){
 }
 
 async function getRecommendedGames() {
-  const res = await gamesByTopCategory();
-  let recommended = res.games && res.games.filter((g) => g.id.toString() !== route.params.gameId)
+  const res = await gamesByTopCategory(11);
+  let recommended = res.data && res.data.filter((g) => g.id.toString() !== route.params.gameId)
   gamesList.value = recommended.slice(0, 10);
 }
 
 const exitGame = () => {
+  if(utilsStore.previousRoute.includes('Play')){
+    return router.push('/Games')
+  }
   return router.push(utilsStore.previousRoute)
 };
 

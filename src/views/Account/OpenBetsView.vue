@@ -268,12 +268,12 @@
                       </span>
                       <img
                         v-else
-                        src="/loader.gif"
-                        height="24"
-                        width="24"
-                        alt=""
-                        srcset=""
-                      />
+                          src="/loader.gif"
+                          height="24"
+                          width="24"
+                          alt=""
+                          srcset=""
+                        />
                     </button>
                   </div>
                 </div>

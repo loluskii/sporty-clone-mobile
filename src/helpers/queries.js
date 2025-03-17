@@ -307,7 +307,7 @@ export const loadBetslipByCode = async (betslipId) => {
 }
 
 export const getPromotions = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/promotions`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/promotions?clientId=${import.meta.env.VITE_CLIENT_ID}`))
 }
 
 export const getGames = async () => {
@@ -324,7 +324,7 @@ export const getGamesByProviders = async (providerId) => {
 }
 
 export const getProviders = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/provider`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/provider`))
 }
 
 export const getCasinoStartUrl = async (payload) => {
@@ -340,11 +340,11 @@ export const getTopGameCategories = async () => {
 }
 
 export const gamesByTopCategory = async (id) => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/${CLIENT_ID}/list?categoryId=${id}`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/get-games?categoryId=${id}`))
 }
 
 export const getJackpots = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/active-jackpot`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/active-jackpot?clientId=${import.meta.env.VITE_CLIENT_ID}`))
 }
 
 export const getJackpotWinners = async () => {

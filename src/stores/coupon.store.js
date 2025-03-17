@@ -217,7 +217,11 @@ export const useCouponStore = defineStore({
         // console.log(this.coupon, "coups");
         // this.coupon.bet_type = multibetCombination(this.coupon.selections);
 
-        this.coupon.bet_type = checkBetType(this.coupon.fixtures)
+        if (this.coupon.selections.length === 1) {
+          this.coupon.bet_type = 'Single';
+        } else {
+          this.coupon.bet_type = checkBetType(this.coupon.fixtures);
+        }
 
         if (this.coupon.bet_type === 'Split') {
           const splitProps = await getSplitProps(this.coupon)
@@ -438,8 +442,9 @@ export const useCouponStore = defineStore({
       const coupondata = { ...this.coupon }
       const usersStore = useUsersStore()
       if (usersStore.currentUser) {
-        coupondata.userId = usersStore.currentUser.id
+        coupondata.userId   = usersStore.currentUser.id
         coupondata.username = usersStore.currentUser.username
+        coupondata.userRole = usersStore.currentUser.role
       }
       coupondata.clientId = CLIENT_ID
 
