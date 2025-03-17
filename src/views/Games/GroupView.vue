@@ -20,7 +20,7 @@
         later.<br />Thank you.
       </div>
     </div>
-    <div v-else-if="!isLoading && !providers.length && viewMode === 'games-group-view'" class="no-data">
+    <div v-else-if="!isLoading && !providers && viewMode === 'games-group-view'" class="no-data">
       <div style="white-space: pre-line">
         Sorry, there are no {{ viewHeaderTitle }} currently<br />available. Please try
         later.<br />Thank you.
@@ -148,7 +148,7 @@ async function handleGamesView(name, id, fetchFunction, type) {
   viewHeaderTitle.value = name.replace(/_/g, " ");
   categoryName.value = name.replace(/_/g, " ");
   const res = await fetchFunction(id);
-  gamesList.value = res.games || [];
+  gamesList.value = res.data || [];
   viewType.value = type;
   isLoading.value = false;
 }
@@ -168,7 +168,7 @@ async function handleFilteredGamesView(title, gameIds) {
   categoryName.value = title;
   const res = await getGames();
   const gameIdSet = new Set(gameIds.split(","));
-  gamesList.value = res.games ? res.games.filter(game => gameIdSet.has(game.gameId)) : [];
+  gamesList.value = res.data ? res.data.filter(game => gameIdSet.has(game.gameId)) : [];
   viewType.value = "category";
   isLoading.value = false;
 }

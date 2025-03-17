@@ -52,6 +52,7 @@ export const router = createRouter({
       name: 'search',
       component: SearchView
     },
+
     // Auth Routes
     {
       path: '/sign-in',
@@ -64,135 +65,108 @@ export const router = createRouter({
       component: SignUpView
     },
 
+    // Sports Routes
     {
       path: '/Sports/AZ_Menu',
       name: 'az_menu',
       component: AZView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Live',
       name: 'live',
       component: LiveView,
-      meta: {
-        showFooter: true,
-        showBetslipCount: true
-      }
+      meta: { showFooter: true, showBetslipCount: true }
     },
+
+    // Fixtures - Ordered from most specific to general
     {
       path: '/Sports/Prematch/:sport/:categories/:tournaments',
       name: 'fixtures-by-tournaments',
       component: FixtureView,
-      meta: {
-        showBetslipCount: true
-      }
-    },
-    {
-      path: '/Sports/Prematch/:sport',
-      name: 'fixtures-by-sports',
-      component: FixtureView,
-      meta: {
-        showBetslipCount: true
-      }
-    },
-    {
-      path: '/Sports/Prematch/:sport/Today',
-      name: 'today-fixtures',
-      component: FixtureView,
-      meta: {
-        showBetslipCount: true
-      }
+      meta: { showBetslipCount: true }
     },
     {
       path: '/Sports/Prematch/:sport/:category/:category_id',
       name: 'fixtures-by-category',
       component: FixtureView,
-      meta: {
-        showBetslipCount: true
-      }
+      meta: { showBetslipCount: true }
     },
     {
       path: '/Sports/Prematch/:sport/:category',
       name: 'fixtures-by-categories',
       component: FixtureView,
-      meta: {
-        showBetslipCount: true
-      }
+      meta: { showBetslipCount: true }
     },
+    {
+      path: '/Sports/Prematch/:sport/Today',
+      name: 'today-fixtures',
+      component: FixtureView,
+      meta: { showBetslipCount: true }
+    },
+    {
+      path: '/Sports/Prematch/:sport',
+      name: 'fixtures-by-sports',
+      component: FixtureView,
+      meta: { showBetslipCount: true }
+    },
+
     {
       path: '/Sports/:sport/Prematch/:tournament_name/:event_name/:event_id',
       name: 'fixtures-detail',
       component: FixtureDetail,
-      meta: {
-        showBetslipCount: true
-      }
+      meta: { showBetslipCount: true }
     },
     {
       path: '/Sports/:sport/Live/:tournament_name/:event_name/:event_id',
       name: 'live-fixtures-detail',
       component: LiveFixtureDetail,
-      meta: {
-        showFooter: true,
-        showBetslipCount: true
-      }
+      meta: { showFooter: true, showBetslipCount: true }
     },
     {
       path: '/Sports',
       name: 'sports',
       component: SportsView
     },
+
     // Bet History
     {
       path: '/Bets/OpenBets',
       name: 'open-bets',
       component: OpenBetsView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Bets/BetHistory',
       name: 'bet-history',
       component: BetHistoryView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Bets/BetHistory/:bet_id/Detail',
       name: 'bet-detail',
       component: BetDetailView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
+
     // User Account
     {
       path: '/Account/Me',
       name: 'account-me',
       component: MeView,
-      meta: {
-        showMobileNavigation: true,
-        showFooter: true
-      }
+      meta: { showMobileNavigation: true, showFooter: true }
     },
     {
       path: '/Account/Me/Profile',
       name: 'account-profile',
       component: ProfileView,
-      meta: {
-        showFooter: true
-      }
+      meta: { showFooter: true }
     },
     {
       path: '/Account/Transactions',
       name: 'account-transactions',
       component: TransactionView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Account/Deposit',
@@ -214,38 +188,32 @@ export const router = createRouter({
       name: 'account-bonus',
       component: BonusView
     },
+
     // Casino
     {
       path: '/Games',
       name: 'casino-games',
       component: GamesView,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Games/Search',
       name: 'casino-search',
       component: Search,
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
-
     {
       path: '/Games/Providers',
       name: 'casino-providers',
       component: GroupView,
       children: [
         {
-          path: '/:provider',
+          path: ':provider',
           name: 'games-by-provider',
-          component: GroupView,
-        },
+          component: GroupView
+        }
       ],
-      meta: {
-        showMobileNavigation: true
-      },
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Games/BonusGames',
@@ -253,22 +221,18 @@ export const router = createRouter({
       component: GroupView,
       children: [
         {
-          path: '/',
+          path: '',
           name: 'bonus-games',
-          component: GroupView,
-        },
+          component: GroupView
+        }
       ],
-      meta: {
-        showMobileNavigation: true
-      },
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Games/Jackpots',
       name: 'casino-jackpots',
       component: JackpotView,
-      meta: {
-        showMobileNavigation: true
-      },
+      meta: { showMobileNavigation: true }
     },
     {
       path: '/Games/Category',
@@ -276,50 +240,55 @@ export const router = createRouter({
       component: GroupView,
       children: [
         {
-          path: '/:category',
+          path: ':category',
           name: 'games-by-category',
-          component: GroupView,
-        },
+          component: GroupView
+        }
       ],
-      meta: {
-        showMobileNavigation: true
-      }
+      meta: { showMobileNavigation: true }
     },
-
     {
       path: '/Games/:game_name/:game_id/Play',
       name: 'game-play',
       component: PlayView
     },
+
     // Load Bet
     {
       path: '/LoadBet',
       name: 'load-bet',
       component: LoadBetView
     },
-    // Load Bet
+
+    // Code Hub
     {
       path: '/CodeHub',
       name: 'code-hub',
       component: CodeHubView
     },
+
+    // CMS Pages
     {
       path: '/CMS/:page',
       name: 'cms-page',
       component: CMSPage
     },
+
+    // Promotions
     {
       path: '/Promotions',
       name: 'promotions',
       component: Promotions
     },
+
     // Catch-all route to redirect to home
     {
-      path: '/:pathMatch(.*)*', // Catch-all pattern
+      path: '/:pathMatch(.*)*',
       redirect: '/'
     }
   ]
-})
+});
+
 
 // Navigation guard to handle footer visibility
 router.beforeEach((to, from, next) => {

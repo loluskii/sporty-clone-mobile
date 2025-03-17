@@ -72,7 +72,10 @@ function goToPromotion(promo) {
 }
 
 function goToLink(link) {
-  window.location.href = link;
+  if (!link.startsWith("http") || !link.startsWith("https")) {
+    link = `https://${link}`; // Ensure it has the correct format
+  }
+  return window.location.href = link;
 }
 
 onMounted(async () => {

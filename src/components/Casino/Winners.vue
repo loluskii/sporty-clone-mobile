@@ -32,7 +32,7 @@ const winners = ref(null);
 onMounted(async () => {
   try {
     const res = await getJackpotWinners();
-    winners.value = res.data  ? res.data.winners : null;
+    winners.value =(res.data && res.data.winners.length) ?? null;
   } catch (error) {
     winners.value = null;
   }

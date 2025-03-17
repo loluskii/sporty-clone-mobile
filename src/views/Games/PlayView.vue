@@ -103,12 +103,15 @@ async function moveToNewGame(game){
 }
 
 async function getRecommendedGames() {
-  const res = await gamesByTopCategory();
-  let recommended = res.games && res.games.filter((g) => g.id.toString() !== route.params.gameId)
+  const res = await gamesByTopCategory(11);
+  let recommended = res.data && res.data.filter((g) => g.id.toString() !== route.params.gameId)
   gamesList.value = recommended.slice(0, 10);
 }
 
 const exitGame = () => {
+  if(utilsStore.previousRoute.includes('Play')){
+    return router.push('/Games')
+  }
   return router.push(utilsStore.previousRoute)
 };
 
