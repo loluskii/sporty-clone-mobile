@@ -140,11 +140,11 @@ function initMqtt() {
         switch (topicArr[2]) {
           case "odds_change":
             emitter.emit(`odds-change-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'odds_change')
+            updateBetslip(payload, 'odds_change')
             break;
           case "bet_stop":
             emitter.emit(`bet-stop-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'bet_stop')
+            updateBetslip(payload, 'bet_stop')
             break;
           default:
             break;
@@ -233,40 +233,89 @@ function handleCustomDatePicker(data) {
 }
 
 function updateBetslip(eventMessage, event_type) {
+  // Check if eventMessage exists
+  if (!eventMessage) {
+    console.error('Event message is undefined or null');
+    return;
+  }
+
   const matchIdFromEvent = eventMessage.match_id;
   // Find the selection with the matching match_id in the betslip
   const selection = couponStore.coupon.selections.find(
     (sel) => sel.matchId === matchIdFromEvent
   );
-
+  
   // If a matching selection is found
   if (selection) {
     // Handle bet_stop event
+    console.log(eventMessage)
     if (event_type === "bet_stop") {
       selection.suspended = true;
+      
+      // Check if the match time has passed (3 hours threshold)
+      const parsedDate = new Date(selection.eventDate);
+      const currentDate = new Date();
+      const difference = currentDate - parsedDate;
+      const hoursDifference = difference / (1000 * 60 * 60);
+      
+      // If match time has passed, mark as unavailable and set odds to 0
+      if (hoursDifference >= 3) {
+        selection.unavailable = true;
+        selection.odds = 0;
+      }
+      
+      // Update winnings calculation after changing the selection status
+      couponStore.updateWinnings({
+        stake: couponStore.coupon.totalStake,
+        id: "all",
+      });
     }
 
     // Handle odds_change event
-    if (event_type === "odds_change") {
+    if (event_type === "odds_change" && eventMessage.markets) {
       couponStore.coupon.acceptChanges = false;
+      
+      // Reset suspended status - we'll set it based on the new data
       selection.suspended = false;
+      selection.unavailable = false;
       selection.changed = true;
+      
+      // Set a timeout to clear the changed flag after 5 seconds
+      setTimeout(() => {
+        selection.changed = false;
+      }, 5000);
 
       const market = eventMessage.markets.find(
         (m) => m.id === selection.marketId && m.specifiers === selection.specifier
       );
 
+      console.log('market', market)
+      console.log('selection', selection)
+
       if (market && market.outcomes) {
         let newOutcome = market.outcomes.find(
-          (m) => m.id === selection.outcomeId && m.specifier === selection.specifier
+          (m) => m.id === selection.outcomeId && market.specifiers === selection.specifier
         );
 
-        selection.odds = newOutcome.odds;
-        selection.suspended = !newOutcome.active;
-        couponStore.updateWinnings({
-          stake: couponStore.coupon.totalStake,
-          id: selection.selectionId,
-        });
+        console.log('newOutcome', newOutcome)
+
+        if (newOutcome && newOutcome.odds !== undefined) {
+          // If we previously marked this as unavailable but it's now available again
+          if (selection.unavailable && newOutcome.active) {
+            selection.unavailable = false;
+          }
+          
+          selection.odds = newOutcome.odds;
+          selection.suspended = !newOutcome.active;
+          couponStore.updateWinnings({
+            stake: couponStore.coupon.totalStake,
+            id: selection.selectionId,
+          });
+        } else {
+          selection.suspended = true;
+          selection.unavailable = true;
+          selection.odds = 0;
+        }
       } else {
         selection.suspended = true;
         selection.unavailable = true;

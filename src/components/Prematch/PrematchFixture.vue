@@ -272,27 +272,29 @@ onMounted(() => {
     // Clone outcomes value
     const newOutcomes = [...outcomes.value]
     // Odds change markets
-    const markets = data.markets
+    const markets = data.markets || [] // Add fallback to empty array if markets is null/undefined
     
     // Update existing outcomes with new odds data
     for (let index = 0; index < newOutcomes.length; index++) {
       const outcome = { ...newOutcomes[index] }
-      // Find market
-      const market = markets.find(
-        (item) => item.id === outcome.marketID && item.specifiers === outcome.specifier
-      )
-      if (market) {
-        if (market.outcomes) {
-          const newOutcome = market.outcomes.find(
-            (odd) => odd.id === outcome.outcomeID && outcome.specifier === market.specifiers
-          )
-          if (newOutcome) {
-            outcome.odds = newOutcome.odds
-            outcome.active = newOutcome.active ? 1 : 0
+      // Find market - only proceed if markets exists
+      if (markets.length > 0) {
+        const market = markets.find(
+          (item) => item.id === outcome.marketID && item.specifiers === outcome.specifier
+        )
+        if (market) {
+          if (market.outcomes) {
+            const newOutcome = market.outcomes.find(
+              (odd) => odd.id === outcome.outcomeID && outcome.specifier === market.specifiers
+            )
+            if (newOutcome) {
+              outcome.odds = newOutcome.odds
+              outcome.active = newOutcome.active ? 1 : 0
+            }
+          } else {
+            outcome.odds = 0
+            outcome.active = 0
           }
-        } else {
-          outcome.odds = 0
-          outcome.active = 0
         }
       }
       newOutcomes[index] = outcome
@@ -310,10 +312,26 @@ onMounted(() => {
       ...outcome,
       odds: 0,
       active: 0
-    }))
+    }));
     
     // Update outcomes state
-    outcomes.value = newOutcomes
+    outcomes.value = newOutcomes;
+    
+    // Check if match time has passed
+    const matchTime = new Date(props.eventData.startTime);
+    const currentTime = new Date();
+    
+    if (matchTime < currentTime) {
+      // console.log(`Match ${props.eventData.matchID} time has passed, removing from list`);
+      
+      // Emit an event to parent component to remove this fixture
+      emitter.emit('remove-fixture', props.eventData.matchID);
+      
+      // If we're on the fixture detail page for this match, redirect to the sports page
+      // if (router.currentRoute.value.params.event_id === props.eventData.matchID.toString()) {
+      //   router.push('/sports');
+      // }
+    }
   })
 })
 

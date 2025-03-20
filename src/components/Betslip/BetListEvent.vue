@@ -17,11 +17,14 @@
                 />
                 {{ selection.outcomeName }}
               </div>
-              <div class="m-outcome-odds">
-                <span v-if="!selectionIsExpired"
+              <div class="m-outcome-odds" :class="{
+                'm-outcome-up': oddUp && !selectionIsUnavailable,
+                'm-outcome-down': oddDown && !selectionIsUnavailable
+              }">
+                <span v-if="!selectionIsUnavailable"
                   >{{ getSelectionOdds(selection.odds) }}
                 </span>
-                <div class="m-outcome-suspended" v-else>Unavailable</div>
+                <div class="m-outcome-suspended" v-else>{{ getUnavailabilityReason }}</div>
               </div>
             </div>
             <div class="m-vs-wrapper">
@@ -47,15 +50,15 @@
     <div>
       <BetlistStakeKeyboard
         :keyboard-visible="isKeyboardVisible"
-        :id="selection.matchId"
         @button-click="onKeyClick"
+        @hide-keyboard="hideKeyboard"
       ></BetlistStakeKeyboard>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, onMounted } from "vue";
+import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useCouponStore, useUtilstStore } from "../../stores";
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
@@ -63,16 +66,67 @@ import emitter from "@/plugins/emitter";
 
 const couponStore = useCouponStore();
 const utilsStore = useUtilstStore();
-const emit = defineEmits(["toggle-betslip", "on-selection-input"]);
+const emit = defineEmits(["toggle-betslip", "on-selection-input", "update-selection"]);
 const router = useRouter();
 
 const keyboardVisible = ref(false);
+const oddUp = ref(false);
+const oddDown = ref(false);
+const previousOdds = ref(null);
 
 const props = defineProps({
   selection: Object,
   betSlipType: String,
   betType: String,
   activeSelectionId: Number,
+});
+
+// Add a timer reference to clear on component unmount
+let arrowTimer = null;
+
+// Watch for changes to selection.odds
+watch(() => props.selection.odds, (newValue, oldValue) => {
+  if (previousOdds.value === null) {
+    previousOdds.value = newValue;
+    return;
+  }
+  
+  // Only show arrows if there's an actual change in value
+  if (newValue !== previousOdds.value) {
+    if (parseFloat(newValue) > parseFloat(previousOdds.value)) {
+      oddUp.value = true;
+      oddDown.value = false;
+    } else if (parseFloat(newValue) < parseFloat(previousOdds.value)) {
+      oddUp.value = false;
+      oddDown.value = true;
+    }
+    
+    // Reset arrows after 5 seconds
+    if (arrowTimer) {
+      clearTimeout(arrowTimer);
+    }
+    
+    arrowTimer = setTimeout(() => {
+      oddUp.value = false;
+      oddDown.value = false;
+    }, 5000);
+    
+    // Update previous odds
+    previousOdds.value = newValue;
+  }
+});
+
+// Listen for acceptChanges event from BetListStake
+onMounted(() => {
+  // Initialize previousOdds
+  previousOdds.value = props.selection.odds;
+});
+
+// Clean up timers when component is unmounted
+onBeforeUnmount(() => {
+  if (arrowTimer) {
+    clearTimeout(arrowTimer);
+  }
 });
 
 const scores = ref();
@@ -89,14 +143,49 @@ const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length;
 });
 
-const selectionIsExpired = computed(() => {
+const selectionIsUnavailable = computed(() => {
+  // If explicitly marked as unavailable
+  if (props.selection.unavailable) {
+    return true;
+  }
+  
+  // If suspended
+  if (props.selection.suspended) {
+    return true;
+  }
+  
+  // Check if expired based on time
   const parsedDate = new Date(props.selection.eventDate);
-  // Get the current date and time
   const currentDate = new Date();
-  // Calculate the difference in milliseconds
   const difference = currentDate - parsedDate;
   const hoursDifference = difference / (1000 * 60 * 60);
+  
   return hoursDifference >= 3;
+});
+
+// Add a computed property to get the specific unavailability reason
+const getUnavailabilityReason = computed(() => {
+  // If explicitly marked as unavailable
+  if (props.selection.unavailable) {
+    return "unavailable";
+  }
+  
+  // If suspended
+  if (props.selection.suspended) {
+    return "suspended";
+  }
+  
+  // Check if expired based on time
+  const parsedDate = new Date(props.selection.eventDate);
+  const currentDate = new Date();
+  const difference = currentDate - parsedDate;
+  const hoursDifference = difference / (1000 * 60 * 60);
+  
+  if (hoursDifference >= 3) {
+    return "unavailable";
+  }
+  
+  return "unavailable";
 });
 
 const getImageSrc = (sportId, sport) => {
@@ -137,7 +226,6 @@ function onKeyClick(type, value) {
   let finalStake;
   switch (type) {
     case "number":
-      // Append clicked number to the display
       if (stake.length < 7) {
         if (typeof value === "number") {
           if (stake === "") {
@@ -158,27 +246,22 @@ function onKeyClick(type, value) {
       }
       break;
     case "double-zero":
-      // Append double zero to the display
       if (stake.length < 6) {
         stake += "00";
         handleStakeChange(stake);
       }
       break;
     case "clear":
-      // Clear the display
       stake = "";
       handleStakeChange(stake);
       break;
     case "delete":
-      // Remove the last character from the display
       stake = stake.toString().slice(0, -1);
       handleStakeChange(stake);
       break;
     case "done":
-      // Handle the "Done" button click if needed
       hideKeyboard();
       break;
-    // Add more cases for other button types if necessary
   }
 }
 

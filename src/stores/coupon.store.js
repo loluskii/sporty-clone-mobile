@@ -309,10 +309,13 @@ export const useCouponStore = defineStore({
     updateWinnings(payload) {
       const { stake, id } = payload
       const globalVars = { ...this.SportsbookGlobalVariable }
-
       const coupondata = JSON.parse(JSON.stringify(this.coupon))
       const bonusList = this.sportsbookBonusList
-      const selections = [...this.coupon.selections]
+      
+      // Filter out suspended or unavailable selections
+      const activeSelections = this.coupon.selections.filter(selection => {
+        return !selection.suspended && !selection.unavailable && parseFloat(selection.odds) > 1;
+      });
 
       if (stake === '') {
         this.coupon.stake = ''
@@ -320,29 +323,48 @@ export const useCouponStore = defineStore({
 
         if (this.coupon.betslip_type == 'Single') {
           if (id === 'all') {
-            const newSelections = selections.map((item) => {
+            // Update only active selections
+            const newSelections = this.coupon.selections.map((item) => {
               const newItem = Object.assign({}, item)
-              newItem.stake = ''
+              // Only clear stake for active selections
+              if (!newItem.suspended && !newItem.unavailable && parseFloat(newItem.odds) > 1) {
+                newItem.stake = ''
+              }
               return newItem
             })
             this.coupon.selections = newSelections
             return
           }
+          
           let totalStake = 0
           let minWin = []
           let maxWin = 0
-          const newSelections = selections.map((item) => {
+          
+          // Update selections but only calculate for active ones
+          const newSelections = this.coupon.selections.map((item) => {
             const newItem = Object.assign({}, item)
-            if (item.selectionId === id) newItem.stake = 0
-            totalStake += newItem.stake
-            newItem.stake !== 0 && minWin.push(newItem.odds * newItem.stake)
-            maxWin += newItem.odds * parseFloat(newItem.stake)
+            
+            // Only update the specific selection if it's active
+            if (item.selectionId === id && !item.suspended && !item.unavailable && parseFloat(item.odds) > 1) {
+              newItem.stake = 0
+            }
+            
+            // Only include active selections in calculations
+            if (!newItem.suspended && !newItem.unavailable && parseFloat(newItem.odds) > 1) {
+              totalStake += parseFloat(newItem.stake || 0)
+              if (newItem.stake !== 0) {
+                minWin.push(newItem.odds * newItem.stake)
+                maxWin += newItem.odds * parseFloat(newItem.stake)
+              }
+            }
+            
             return newItem
           })
+          
           this.coupon.selections = newSelections
           this.coupon.totalStake = totalStake
-          this.coupon.minWin = Math.min(minWin)
-          // console.log(minWin.min());
+          this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
+          this.coupon.maxWin = maxWin
         }
       }
 
@@ -350,50 +372,81 @@ export const useCouponStore = defineStore({
         if (this.coupon.betslip_type === 'Single' || this.coupon.bet_type === 'Single') {
           let maxWin = 0
           let minWin = []
-          const maxOdds = Math.max(...this.coupon.selections.map((s) => s.odds))
-          const minOdds = Math.min(...this.coupon.selections.map((s) => s.odds))
+          let totalStake = 0
+          
+          // Only use active selections for odds calculations
+          const activeOdds = activeSelections.map(s => parseFloat(s.odds))
+          const maxOdds = activeOdds.length > 0 ? Math.max(...activeOdds) : 0
+          const minOdds = activeOdds.length > 0 ? Math.min(...activeOdds) : 0
 
           if (id === 'all') {
             const stakePerBet = parseFloat(stake)
             this.coupon.stake = stake // set new total stake
             this.coupon.totalStake = stake * this.coupon.selections.length
-
-            for (let index = 0; index < selections.length; index++) {
-              const selection = selections[index]
-              selection.stake = stakePerBet
-              selections[index] = selection
-
-              maxWin += selection.odds * stakePerBet
-              minWin.push(selection.odds * stakePerBet)
-            }
-            this.coupon.maxWin = maxWin
-            this.coupon.minWin = Math.min(...minWin)
-          } else if (id === 'single') {
-            this.coupon.stake = stake
-            this.coupon.totalStake = stake
-            this.coupon.maxWin = selections[0].odds * stake
-            // this.coupon.minWin = 0;
-          } else {
-            const index = this.coupon.selections.findIndex((i) => i.selectionId === id)
-            if (index !== -1) {
-              this.coupon.stake = ''
-              maxWin = 0
-              minWin = []
-              let totalStake = 0
-              selections[index].stake = parseFloat(stake)
-
-              for (let index = 0; index < selections.length; index++) {
-                const selection = selections[index]
-                if (selection.stake > 0) {
-                  maxWin += selection.odds * parseFloat(selection.stake)
-                  totalStake += parseFloat(selection.stake)
-                  selections[index] = selection
-                  minWin.push(selection.odds * selection.stake)
-                }
+            
+            // Update all selections but only calculate for active ones
+            const updatedSelections = this.coupon.selections.map(selection => {
+              const updatedSelection = {...selection}
+              
+              // Only set stake for active selections
+              if (!updatedSelection.suspended && !updatedSelection.unavailable && parseFloat(updatedSelection.odds) > 1) {
+                updatedSelection.stake = stakePerBet
+                maxWin += updatedSelection.odds * stakePerBet
+                minWin.push(updatedSelection.odds * stakePerBet)
+                totalStake += stakePerBet
+              } else {
+                updatedSelection.stake = 0
               }
+              
+              return updatedSelection
+            })
+            
+            this.coupon.selections = updatedSelections
+            this.coupon.stake = stake
+            this.coupon.maxWin = maxWin
+            this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
+            this.coupon.totalStake = totalStake
+          } else if (id === 'single') {
+            // For single selection bet
+            const selection = this.coupon.selections[0]
+            
+            // Only calculate if selection is active
+            if (!selection.suspended && !selection.unavailable && parseFloat(selection.odds) > 1) {
+              this.coupon.stake = stake
+              this.coupon.totalStake = parseFloat(stake)
+              this.coupon.maxWin = selection.odds * parseFloat(stake)
+            } else {
+              this.coupon.stake = stake
+              this.coupon.totalStake = parseFloat(stake)
+              this.coupon.maxWin = 0
+            }
+          } else {
+            // For updating a specific selection
+            const index = this.coupon.selections.findIndex((i) => i.selectionId === id)
+            
+            if (index !== -1) {
+              const updatedSelections = [...this.coupon.selections]
+              
+              // Only update stake if selection is active
+              if (!updatedSelections[index].suspended && !updatedSelections[index].unavailable && 
+                  parseFloat(updatedSelections[index].odds) > 1) {
+                updatedSelections[index].stake = parseFloat(stake)
+              }
+              
+              // Calculate totals using only active selections
+              updatedSelections.forEach(selection => {
+                if (!selection.suspended && !selection.unavailable && 
+                    parseFloat(selection.odds) > 1 && parseFloat(selection.stake) > 0) {
+                  maxWin += selection.odds * parseFloat(selection.stake)
+                  minWin.push(selection.odds * selection.stake)
+                  totalStake += parseFloat(selection.stake)
+                }
+              })
+              
+              this.coupon.selections = updatedSelections
+              this.coupon.stake = ''
               this.coupon.maxWin = maxWin
-              this.coupon.minWin = Math.min(...minWin)
-              this.coupon.selections = selections
+              this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
               this.coupon.totalStake = totalStake
             }
           }
@@ -401,20 +454,37 @@ export const useCouponStore = defineStore({
           this.coupon.totalOdds = parseFloat(maxOdds).toFixed(2)
           this.coupon.minOdds = parseFloat(minOdds).toFixed(2)
         } else {
-          this.coupon.totalOdds = calculateTotalOdds(this.coupon.selections).toFixed(2)
-          this.coupon.totalStake = parseFloat(stake)
-          this.coupon.exciseDuty = (coupondata.totalStake * 0) / 100
-          // console.log((coupondata.totalStake * 0) / 100, "calc")
-          this.coupon.stake = this.coupon.totalStake - coupondata.exciseDuty
-          // console.log(original(this.coupon), "the coup")
+          // For multiple bets, only use active selections
+          if (activeSelections.length === 0) {
+            // No valid selections for multiple bet
+            this.coupon.totalOdds = "0.00"
+            this.coupon.totalStake = parseFloat(stake) // Keep the stake as entered
+            this.coupon.exciseDuty = 0
+            this.coupon.stake = this.coupon.totalStake
+            this.coupon.maxWin = 0
+            this.coupon.maxBonus = 0
+            this.coupon.wthTax = 0
+            this.coupon.grossWin = 0
+          } else {
+            // Calculate total odds using only active selections
+            this.coupon.totalOdds = calculateTotalOdds(activeSelections).toFixed(2)
+            this.coupon.totalStake = parseFloat(stake)
+            this.coupon.exciseDuty = (this.coupon.totalStake * 0) / 100
+            this.coupon.stake = this.coupon.totalStake - this.coupon.exciseDuty
 
-          //calculate Winnings
-          const winnings = calculateWinnings(this.coupon, globalVars, bonusList)
-          // console.log(winnings, "win");
-          this.coupon.maxWin = winnings.maxWin
-          this.coupon.maxBonus = winnings.maxBonus
-          this.coupon.wthTax = winnings.wthTax
-          this.coupon.grossWin = winnings.grossWin
+            // Create a modified coupon with only active selections for winnings calculation
+            const activeCoupon = {
+              ...this.coupon,
+              selections: activeSelections
+            };
+
+            // Calculate Winnings using only active selections
+            const winnings = calculateWinnings(activeCoupon, globalVars, bonusList)
+            this.coupon.maxWin = winnings.maxWin
+            this.coupon.maxBonus = winnings.maxBonus
+            this.coupon.wthTax = winnings.wthTax
+            this.coupon.grossWin = winnings.grossWin
+          }
         }
       }
     },
