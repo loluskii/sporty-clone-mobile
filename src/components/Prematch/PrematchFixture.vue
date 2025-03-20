@@ -109,7 +109,7 @@
   <!---->
 </template>
 <script setup>
-import { defineComponent, computed, watch, ref } from 'vue'
+import { defineComponent, computed, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { createID, isSelected, sortArr, slugify } from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
@@ -259,6 +259,68 @@ function addToBetslip(event, odd) {
   const existsInBetslip = isSelected(id, couponStore.coupon)
   return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
 }
+
+onMounted(() => {
+  // No need to call getOdds() here since the watch will handle it
+  // No need to set outcomes.value since the watch will handle it
+
+  emitter.on(`odds-change-${props.eventData.matchID}`, (data) => {
+    console.log(props.eventData.name, data)
+    // Only update the current outcomes without changing the structure
+    if (!outcomes.value.length) return;
+    
+    // Clone outcomes value
+    const newOutcomes = [...outcomes.value]
+    // Odds change markets
+    const markets = data.markets
+    
+    // Update existing outcomes with new odds data
+    for (let index = 0; index < newOutcomes.length; index++) {
+      const outcome = { ...newOutcomes[index] }
+      // Find market
+      const market = markets.find(
+        (item) => item.id === outcome.marketID && item.specifiers === outcome.specifier
+      )
+      if (market) {
+        if (market.outcomes) {
+          const newOutcome = market.outcomes.find(
+            (odd) => odd.id === outcome.outcomeID && outcome.specifier === market.specifiers
+          )
+          if (newOutcome) {
+            outcome.odds = newOutcome.odds
+            outcome.active = newOutcome.active ? 1 : 0
+          }
+        } else {
+          outcome.odds = 0
+          outcome.active = 0
+        }
+      }
+      newOutcomes[index] = outcome
+    }
+    
+    // Update outcomes state
+    outcomes.value = newOutcomes
+  })
+
+  emitter.on(`bet-stop-${props.eventData.matchID}`, () => {
+    if (!outcomes.value.length) return;
+    
+    // Clone outcomes value
+    const newOutcomes = outcomes.value.map(outcome => ({
+      ...outcome,
+      odds: 0,
+      active: 0
+    }))
+    
+    // Update outcomes state
+    outcomes.value = newOutcomes
+  })
+})
+
+onBeforeUnmount(() => {
+  emitter.off(`odds-change-${props.eventData.matchID}`)
+  emitter.off(`bet-stop-${props.eventData.matchID}`)
+})
 
 defineComponent({
   name: 'PrematchFixture',

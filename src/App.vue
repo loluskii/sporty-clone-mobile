@@ -109,7 +109,7 @@ function initMqtt() {
       password: import.meta.env.VITE_MQTT_PASSWORD,
     };
 
-    const subscriptions = [`feeds/live/odds_change/+`, `feeds/live/bet_stop/+`];
+    const subscriptions = [`feeds/live/odds_change/+`, `feeds/live/bet_stop/+`,`feeds/prematch/odds_change/+`];
 
     mqttClient.value = mqtt.connect(import.meta.env.VITE_MQTT_URI, options);
 
@@ -135,7 +135,7 @@ function initMqtt() {
         // split the topic to get the type of message
         const topicArr = topic.split("/");
 
-        // console.log(`Received message from topic ${topicArr[2]}`);
+        // console.log(`Received message from topic ${topicArr[1]}`);
 
         switch (topicArr[2]) {
           case "odds_change":
