@@ -519,12 +519,17 @@ export const useCouponStore = defineStore({
       coupondata.clientId = CLIENT_ID
 
       if (type === 'bet' && coupondata.stake === 0) {
-        alert('error. stake muxt be greater than 0')
+        alert('error. stake must be greater than 0')
         return
       }
       if (type === 'bet') {
         this.isBetslipLoading = true
         coupondata.isBooking = this.mode === "real" ? 0 : 2
+
+        delete coupondata.combos
+        delete coupondata.fixtures
+        delete coupondata.tournaments
+
         try {
           const res = await placeBet2(coupondata)
           this.isBetslipLoading = false
