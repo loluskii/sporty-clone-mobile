@@ -103,7 +103,7 @@ async function getGameByTopCategory(category) {
   activeTopCategory.value = category;
   const res = await gamesByTopCategory(category.id);
   isLoading.value = false;
-  gamesList.value = res.games ? res.games : [];
+  gamesList.value = res.data ? res.data : [];
 }
 
 const searchEmptyState = computed(() => {

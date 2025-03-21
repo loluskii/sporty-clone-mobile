@@ -147,8 +147,8 @@
                   fill="currentColor"
                   stroke="currentColor"
                   stroke-width=".4"
-                ></path></svg
-            ></a>
+                ></path></svg>
+            </a>
           </div>
         </div>
         <div
@@ -285,7 +285,7 @@ const setActiveCategory = async (category) => {
   activeCasinoCategory.value = category.id;
   const games = await gamesByTopCategory(activeCasinoCategory.value);
   casinoIsLoading.value = false;
-  featuredCasinogames.value = games.games ? games.games.splice(0, 5) : [];
+  featuredCasinogames.value = games.data ? games.data.splice(0, 5) : [];
 };
 
 async function getCasinoGames() {
@@ -295,7 +295,7 @@ async function getCasinoGames() {
   activeCasinoCategory.value = res.data[0].id;
   const games = await gamesByTopCategory(activeCasinoCategory.value);
   casinoIsLoading.value = false;
-  featuredCasinogames.value = games.games ? games.games.splice(0, 5) : [];
+  featuredCasinogames.value = games.data ? games.data.splice(0, 5) : [];
 }
 
 async function getCodes() {
