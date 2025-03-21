@@ -156,7 +156,7 @@ const getJK = async () => {
 const getAllGames = async () => {
   try {
     const gamesResponse = await gamesByTopCategory();
-    gamesList.value = gamesResponse.games;
+    gamesList.value = gamesResponse.data.sort((a, b) => b.priority - a.priority);
   } catch (error) {
     gamesList.value = [];
   }

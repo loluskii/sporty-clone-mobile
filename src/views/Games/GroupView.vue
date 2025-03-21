@@ -148,7 +148,7 @@ async function handleGamesView(name, id, fetchFunction, type) {
   viewHeaderTitle.value = name.replace(/_/g, " ");
   categoryName.value = name.replace(/_/g, " ");
   const res = await fetchFunction(id);
-  gamesList.value = res.data || [];
+  gamesList.value = res.data.sort((a, b) => b.priority - a.priority) || [];
   viewType.value = type;
   isLoading.value = false;
 }

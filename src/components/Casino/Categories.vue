@@ -34,15 +34,9 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount, watch, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
-import { useAuthStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { ref} from "vue";
 import { slugify } from "../../helpers";
-import emitter from "@/plugins/emitter";
-import $ from "jquery";
-import { useRouter, useRoute } from "vue-router";
-import { categories } from "@vueuse/core/metadata.cjs";
+
 
 const props = defineProps(["categories"]);
 
