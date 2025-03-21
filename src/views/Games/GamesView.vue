@@ -218,7 +218,7 @@ async function getCategories() {
           const gamesResponse = await gamesByTopCategory(category.id);
           return {
             ...category,
-            games: gamesResponse.data?.slice(0, 12) || [],
+            games: gamesResponse.data?.slice(0, 12).sort((a, b) => b.priority - a.priority) || [],
             isLoading: false,
             hasError: false
           };
@@ -259,7 +259,7 @@ async function getGameByTopCategory(category) {
       currentView.value = "single_category";
       activeTopCategory.value = category;
       const res = await gamesByTopCategory(category.id);
-      gamesList.value = res.games || [];
+      gamesList.value = res.data || [];
     } else {
       document.getElementById("discover")?.scrollIntoView({
         behavior: "smooth",
