@@ -52,7 +52,7 @@
         </div>
       </template>
 
-      <div v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0" class="bonus mg-b-10">
+      <div v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0 && !couponStore.betslipMode" class="bonus mg-b-10">
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
           <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
