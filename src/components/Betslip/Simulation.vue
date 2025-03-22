@@ -125,7 +125,7 @@ const props = defineProps(["simulationResults"]);
  *    (Using the formula: (goalTime / maxTime) * 9)
  */
 const simulationData = computed(() => {
-  const events = JSON.parse(props.simulationResults.events);
+  const events = JSON.parse(props.simulationResults?.events);
   const data = {};
 
   events.forEach((ev) => {
