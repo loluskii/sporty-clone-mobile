@@ -78,20 +78,18 @@
         </div>
 
         <template v-else>
-          <div v-if="!betslipMode" class="m-book-btn" 
-            :class="[
-              couponStore.coupon.totalStake < 100 || hasSuspendedSelections ? 'bet-disabled' : ''
-            ]"
-            @click="book">
+          <div v-if="!betslipMode" class="m-book-btn" :class="[
+            couponStore.coupon.totalStake < 100 || hasSuspendedSelections ? 'bet-disabled' : ''
+          ]" @click="book">
             <div>Book Bet</div>
           </div>
-          <div class="place-bet" 
-            :class="[
-              { 'bet-disabled': couponStore.coupon.totalStake < 100 || hasSuspendedSelections, 
-                'sim-theme': betslipMode }
-            ]"
-            @click="placeBet">
-            <span>{{ !betslipMode ? 'Place Bet':'Place Simulate Bet' }}</span>
+          <div class="place-bet" :class="[
+            {
+              'bet-disabled': couponStore.coupon.totalStake < 100 || hasSuspendedSelections,
+              'sim-theme': betslipMode
+            }
+          ]" @click="placeBet">
+            <span>{{ !betslipMode ? 'Place Bet' : 'Place Simulate Bet' }}</span>
             <div class="m-pay-num" v-if="totalStake != 0">
               <span>About to pay {{ totalStake }}</span>
             </div>
@@ -219,8 +217,8 @@ const totalStake = computed(() => {
 
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
-  return couponStore.coupon.selections.some(selection => 
-    selection.suspended || 
+  return couponStore.coupon.selections.some(selection =>
+    selection.suspended || selection.unavailable ||
     (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
   );
 });
@@ -253,7 +251,7 @@ async function book(e) {
 }
 
 function placeBet() {
-  if(hasSuspendedSelections) {
+  if (hasSuspendedSelections) {
     emitter.emit("showErrorMessage", "Some selections are suspended");
     return;
   }
@@ -318,18 +316,18 @@ function onKeyClick(type, value) {
 function handleAcceptChange() {
   // Set acceptChanges to true in the coupon store
   couponStore.coupon.acceptChanges = true;
-  
+
   // Clear the changed flag for all selections
   couponStore.coupon.selections.forEach(selection => {
     selection.changed = false;
   });
-  
+
   // Remove any suspended selections that are unavailable
   const updatedSelections = couponStore.coupon.selections.filter(selection => {
     const isExpired = (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3;
     return !(selection.suspended && isExpired);
   });
-  
+
   if (updatedSelections.length !== couponStore.coupon.selections.length) {
     couponStore.coupon.selections = updatedSelections;
     // Recalculate winnings after removing suspended selections
