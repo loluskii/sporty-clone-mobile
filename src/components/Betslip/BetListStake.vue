@@ -251,7 +251,7 @@ async function book(e) {
 }
 
 function placeBet() {
-  if (hasSuspendedSelections) {
+  if (hasSuspendedSelections.value) {
     emitter.emit("showErrorMessage", "Some selections are suspended");
     return;
   }
