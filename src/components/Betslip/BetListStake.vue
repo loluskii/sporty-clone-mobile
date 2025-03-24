@@ -253,7 +253,7 @@ async function book(e) {
 }
 
 function placeBet() {
-  if(couponStore.coupon.selections.some(selection => selection.suspended)) {
+  if(hasSuspendedSelections) {
     emitter.emit("showErrorMessage", "Some selections are suspended");
     return;
   }
