@@ -654,18 +654,6 @@ onMounted(() => { });
   text-align: right;
 }
 
-#betslip-container .m-betslips .m-icon-boost {
-  background: url(//s.sporty.net/global/main/modules/common-wap/components/betslip/image/boost2.5c73f22daf.png) no-repeat;
-  background-position: center;
-  background-size: contain;
-  display: inline-block;
-  height: 1.25rem;
-  margin-left: 0.33333333rem;
-  margin-top: -0.16666667rem;
-  vertical-align: middle;
-  width: 1.66666667rem;
-}
-
 #betslip-container .m-betslips .stretch-height-to-max {
   height: 100vh;
 }

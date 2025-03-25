@@ -736,22 +736,7 @@ function goToGame() {
   line-height: 1.33333333rem;
   padding: 0 0.83333333rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-market-desc-wrapper
-  .i-boost {
-  background: url(//s.sporty.net/global/main/modules/common-wap/components/betslip/image/boost.e388215e4d.png)
-    no-repeat;
-  background-position: center;
-  background-size: contain;
-  display: inline-block;
-  height: 1rem;
-  margin-left: 0.33333333rem;
-  vertical-align: middle;
-  width: 1.33333333rem;
-}
+
 .m-bet-container .m-outcomes-row .m-team-row .m-outcome-dan-wrapper {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;

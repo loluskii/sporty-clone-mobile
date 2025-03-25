@@ -380,13 +380,6 @@ onMounted(() => {
   height: 1.66666667rem;
   width: 1.66666667rem;
 }
-.home .m-sports-choose .m-sports-choose-item .sport-icon.m-world-cup {
-  background: url(//s.sporty.net/global/main/modules/main/mobile/index/img/worldCup.9895badabe.png)
-    no-repeat center;
-  background-size: 1.58333333rem 1.58333333rem;
-  height: 1.58333333rem;
-  margin: 0.41666667rem auto 0.25rem;
-}
 .home .m-sports-choose .m-sports-choose-item .sport-text {
   display: block;
   font-size: 0.83333333rem;

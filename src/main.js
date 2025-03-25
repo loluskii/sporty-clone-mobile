@@ -26,24 +26,24 @@ const startApp = async () => {
     app.use(router)
     app.use(VueQueryPlugin)
     app.use(Vue3Marquee)
-    // app.use(
-    //   createPahoMqttPlugin({
-    //     PluginOptions: {
-    //       autoConnect: true,
-    //       showNotifications: false,
-    //     },
+    app.use(
+      createPahoMqttPlugin({
+        PluginOptions: {
+          autoConnect: true,
+          showNotifications: false,
+        },
 
-    //     MqttOptions: {
-    //       host: import.meta.env.VITE_MQTT_HOST,
-    //       port: 8083,
-    //       clientId: import.meta.env.VITE_MQTT_CLIENTID,
-    //       username: import.meta.env.VITE_MQTT_USERNAME,
-    //       password: import.meta.env.VITE_MQTT_PASSWORD,
-    //       mainTopic: 'feeds',
-    //       // useSSL: true
-    //     },
-    //   })
-    // )
+        MqttOptions: {
+          host: import.meta.env.VITE_MQTT_URI,
+          port: 8083,
+          clientId: import.meta.env.VITE_MQTT_CLIENTID,
+          username: import.meta.env.VITE_MQTT_USERNAME,
+          password: import.meta.env.VITE_MQTT_PASSWORD,
+          mainTopic: 'feeds',
+          // useSSL: true
+        },
+      })
+    )
     app.component('v-otp-input', VOtpInput)
     app.component('VueDatePicker', VueDatePicker)
 

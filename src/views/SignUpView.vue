@@ -845,10 +845,7 @@ onMounted(() => {
 .m-pin-code-wrapper .m-pin-code-input.mask.text-security {
   font-family: text-security-disc;
 }
-@font-face {
-  font-family: text-security-disc;
-  src: url(//s.sporty.net/global/main/common/iconfont/text-security-disc.4fa38d775a.woff);
-}
+
 .m-pin-code-wrapper .m-pin-code-input:not(:last-child) {
   margin-right: 10px;
 }
