@@ -2,22 +2,59 @@
   <div class="m-sportBets">
     <div style="width: 100%; height: 87px"></div>
     <BetHistoryHeader :active="'open_bets'"></BetHistoryHeader>
-    <div style="margin-top: 20px">
-      <div v-if="!openBets" class="m-error-wrapper">
-        <div v-if="!isAuthenticated">
+
+      <div v-if="!isAuthenticated" class="m-error-wrapper" style="margin-top: 20px">
+        <div>
           <span class="m-error-msg"
             >Please Log In to see your Open Bets and Cashout Bets</span
           >
           <div class="m-btn" @click="$router.push('/sign-in')">Login</div>
         </div>
-        <div v-else-if="!openBets & !isLoading">
-          <span class="m-error-msg"> You currently have no Open Bets. </span>
-        </div>
-        <div v-if="isLoading">
-          <i class="m-icon-loading"></i>
-          <span class="m-text-msg" data-cms-key="loading_with_dot">Loading...</span>
+        <div v-if="codes.length" class="empty-recommended-code-container">
+          <div class="recommended-code">
+            <span data-cms-key="recommended_code" data-cms-page="cashout"
+              >Recommended Codes</span
+            >
+          </div>
+          <div class="code-hub-list-item-container" style="position: relative">
+            <div class="m-loading-wrap m-loading-wrap__center">
+              <div class="m-loading light">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+            <div class="mb-3"></div>
+          </div>
         </div>
       </div>
+    
+    <div v-else style="margin-top: 20px">
+      <template v-if="!openBets">
+        <div v-if="!openBets & !isLoading">
+          <div class="m-error-wrapper">
+            <span class="m-error-msg"> You currently have no Open Bets. </span>
+          </div>
+          <div v-if="codes.length" class="empty-recommended-code-container">
+            <div class="recommended-code">
+              <span data-cms-key="recommended_code" data-cms-page="cashout"
+                >Recommended Football Codes</span
+              >
+            </div>
+            <div class="code-hub-list-item-container" style="position: relative">
+              <div class="m-loading-wrap m-loading-wrap__center">
+                <div class="m-loading light">
+                  <div class="loading"></div>
+                </div>
+              </div>
+              <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+              <div class="mb-3"></div>
+            </div>
+          </div>
+        </div>
+        <div v-if="isLoading">
+          <LoadingSpinner />
+        </div>
+      </template>
       <div v-else class="m-openbet">
         <div class="m-sportsBet--bets cashout-loading">
           <ul class="m-bet-list">
@@ -155,23 +192,27 @@
                             {{ ` | ${event.score}` }}
                           </span>
                         </div>
+                        <div v-else data-v-f5461f3c="" class="m-score">
+                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
+                            {{
+                              parseInt(event.matchStatus) === 3
+                                ? "FT"
+                                : event.eventTime
+                                ? `${event.eventTime}'`
+                                : ""
+                            }}
+                          </span>
+                          <span
+                            data-v-f5461f3c=""
+                            class="m-t-12 m-l-12"
+                            style="margin-left: 10px; font-weight: bold"
+                          >
+                            {{ event.score }}
+                          </span>
+                        </div>
                       </div>
                     </li>
                   </ul>
-                  <div class="m-more f-flex m-t-12 m-t-l14">
-                    <div class="m-l-left">
-                      <!-- <span v-if="bet.selections?.length > 2" class="m-t-gray"
-                        >and {{ remainingMatchesCount(bet.selections) }} other match{{
-                          remainingMatchesCount(bet.selections) > 1 ? 'es' : ''
-                        }}</span
-                      > -->
-                    </div>
-                    <!-- <div>
-                      <span class="m-t-black"
-                        ><span> Match Details </span> <i class="m-icon-more"></i
-                      ></span>
-                    </div> -->
-                  </div>
                 </div>
 
                 <div
@@ -203,7 +244,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout NGN ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout SSP ${bet.cashOutAmount.toFixed(2)}`
                         : "Cashout Unavailable"
                     }}</span>
                     <img
@@ -263,17 +304,17 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          NGN {{ cashoutData.cashOutAmount.toFixed(2) }}
+                          SSP {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
                       <img
                         v-else
-                          src="/loader.gif"
-                          height="24"
-                          width="24"
-                          alt=""
-                          srcset=""
-                        />
+                        src="/loader.gif"
+                        height="24"
+                        width="24"
+                        alt=""
+                        srcset=""
+                      />
                     </button>
                   </div>
                 </div>
@@ -306,6 +347,7 @@ import { useUsersStore } from "@/stores";
 import { CLIENT_ID, performCashout } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue"
 
 const openBets = ref(null);
 const isLoading = ref(true);
@@ -327,7 +369,6 @@ const getMatchStatus = (event) => {
 };
 
 async function getBetsData() {
-  isLoading.value = true;
   try {
     let payload = {
       clientId: CLIENT_ID,
@@ -351,6 +392,16 @@ async function getBetsData() {
   }
 }
 
+async function getCodes() {
+  let payload = {
+    from: getNext7Days()[0],
+    to: getNext7Days()[7],
+    betType: 0,
+  };
+  const res = await getCodeHubItems(payload);
+  codes.value = res.data.data;
+}
+
 function closeCashoutModal() {
   if (!cashingOut.value) {
     showCashoutModal.value = false;
@@ -360,7 +411,7 @@ function closeCashoutModal() {
 }
 
 function handleCashout(bet) {
-  console.log(bet);
+  // console.log(bet);
   showCashoutModal.value = true;
   cashoutData.value = bet;
 }
@@ -427,6 +478,7 @@ function showChild(e, index) {
 }
 
 onMounted(async () => {
+  getCodes()
   if (isAuthenticated) {
     getBetsData();
 
@@ -448,7 +500,6 @@ defineComponent({
 
 <style scoped>
 @import url("@/assets/css/bet-history.css");
-
 .m-btn--text {
   color: #0d9737;
 }
