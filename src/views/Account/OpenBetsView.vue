@@ -31,7 +31,7 @@
     <div v-else style="margin-top: 20px">
       <template v-if="!openBets">
         <div v-if="!openBets & !isLoading">
-          <div class="m-error-wrapper">
+          <div class="m-error-wrapper" style="text-align: center">
             <span class="m-error-msg"> You currently have no Open Bets. </span>
           </div>
           <div v-if="codes.length" class="empty-recommended-code-container">
