@@ -312,8 +312,9 @@ router.beforeEach((to, from, next) => {
   const authRequired = publicPages.includes(to.name)
   const authStore = useAuthStore()
 
-  if (authRequired && !authStore.isAuthenticated) {
+  if (authStore.isAuthenticated && (to.name === 'sign-in' || to.name === 'sign-up')) {
     // authStore.returnUrl = to.fullPath;
+    router.push('/')
   }
   next()
 })

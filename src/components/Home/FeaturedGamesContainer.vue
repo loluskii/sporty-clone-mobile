@@ -66,11 +66,12 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 const emit = defineEmits(['set-active-category'])
 import { slugify } from '@/helpers'
-import { useUtilstStore } from '../../stores'
+import { useUtilstStore, useAuthStore } from '../../stores'
 
 const router = useRouter()
 const route = useRoute()
 const utilsStore = useUtilstStore()
+const authStore = useAuthStore()
 const props = defineProps({
   featuredCasinogames: Array,
   featuredCasino: Array,
@@ -97,10 +98,11 @@ const getImagePath = (game) => {
 };
 
 async function redirectToGamePlay(game) {
+	if(!authStore.isAuthenticated) { return router.push('/sign-in') }
   utilsStore.previousRoute = route.fullPath;
   return router.push({
     name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.gameId }
+    params: { game_name: slugify(game.title), game_id: game.id }
   })
 }
 </script>

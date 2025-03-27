@@ -58,8 +58,8 @@
                           "
                         >
                           <span class="type"
-                            ><span>{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}</span>
-                          </span>
+                          ><span>{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}&nbsp; {{ bet.isSim ? '(SIM)' : ''  }}</span>
+                        </span>
                           <span class="status"
                             ><span>{{ bet.statusDescription }}</span> <i class="arrow"></i
                           ></span>
