@@ -191,7 +191,7 @@ async function getHighlightGames() {
   if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
     const response = await getHighlights2(activeSportID.value, 1)
     if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0 )
       highlightsData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
       marketsGroup.value = response.markets
       setMarkets()
@@ -208,7 +208,7 @@ async function getTodayGames() {
   if (!Object.keys(todaysData.value).length || prevSportID.value !== activeSportID.value) {
     const response = await getToday2(activeSportID.value, 1)
     if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0 )
       todaysData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
       marketsGroup.value = response.markets
       setMarkets()

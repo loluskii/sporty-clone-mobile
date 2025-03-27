@@ -166,7 +166,7 @@ async function getTournamentFixtures(sid) {
     )
     const fixtures = results.reduce((acc, res) => {
       if (res.status === 'fulfilled' && res.value.fixtures) {
-        let filteredData = res.value.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+        let filteredData = res.value.fixtures.filter((f) => f.activeMarkets > 0 )
         acc = { ...acc, ..._.groupBy(filteredData, 'tournament') }
       }
       return acc
@@ -189,7 +189,7 @@ async function getCategoryFixtures(sid, cid) {
   try {
     const res = await getFixturesByCategories(sid, cid)
     isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 )
     fixturesList.value = _.groupBy(filteredData, 'tournament')
     marketsGroup.value = res.markets
     activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
@@ -208,7 +208,7 @@ async function fetchActiveSportByPeriod(id, period) {
     const res = await getSportUpcoming(id, selectedPeriod)
     if (res.fixtures) {
       isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 )
       fixturesList.value = _.groupBy(filteredData, 'tournament')
       isLastPage.value = res.lastPage === page.value
       marketsGroup.value = res.markets
@@ -231,7 +231,7 @@ async function fetchActiveSportByCustomRange(sid, start, end) {
     const res = await getSportUpcoming(sid, selectedPeriod)
     if (res.fixtures) {
       isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 )
       fixturesList.value = _.groupBy(filteredData, 'tournament')
       isLastPage.value = res.lastPage === page.value
       marketsGroup.value = res.markets
@@ -253,7 +253,7 @@ async function fixturesByActiveSport(id) {
     const res = await getSportUpcoming(id, selectedPeriod)
     if (res.fixtures) {
       isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0 )
       isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
       isLastPage.value = res.lastPage === page.value
       marketsGroup.value = res.markets ? res.markets : []
@@ -273,7 +273,7 @@ async function fetchTodayActiveSport(id) {
   try {
     const res = await getToday2(id, page.value)
     isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 || f.outcomes.length > 0)
+    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0 )
     // Update fixturesList.value
     fixturesList.value =
       fixturesList.value && fixturesList.value.length
