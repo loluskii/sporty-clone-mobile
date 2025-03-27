@@ -3,7 +3,7 @@ import './assets/css/main.css'
 import './assets/css/loading.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-// import { createPahoMqttPlugin } from 'vue-paho-mqtt';
+import { createPahoMqttPlugin } from 'vue-paho-mqtt';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import VOtpInput from 'vue3-otp-input'
 import VueDatePicker from '@vuepic/vue-datepicker'
