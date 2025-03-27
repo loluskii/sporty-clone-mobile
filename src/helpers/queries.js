@@ -356,7 +356,7 @@ export const getJackpots = async () => {
 }
 
 export const getJackpotWinners = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/jackpot-winners`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/jackpot-winners?clientId=${import.meta.env.VITE_CLIENT_ID}`))
 }
 
 export const getPaymentMethods = async () => {
