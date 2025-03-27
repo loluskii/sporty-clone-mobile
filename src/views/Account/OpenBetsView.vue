@@ -3,7 +3,7 @@
     <div style="width: 100%; height: 87px"></div>
     <BetHistoryHeader :active="'open_bets'"></BetHistoryHeader>
 
-      <div v-if="!isAuthenticated" class="m-error-wrapper" style="margin-top: 20px">
+      <div v-if="!isAuthenticated" class="m-error-wrapper" style="margin-top: 20px; text-align: center">
         <div>
           <span class="m-error-msg"
             >Please Log In to see your Open Bets and Cashout Bets</span

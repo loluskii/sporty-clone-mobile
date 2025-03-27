@@ -1,5 +1,11 @@
-import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API } from './constants'
+import {
+  fetchWrapper
+} from './fetch-wrapper'
+import {
+  BASE_API,
+  CLIENT_ID,
+  NEW_BASE_API
+} from './constants'
 import moment from 'moment'
 
 function today() {
@@ -55,7 +61,9 @@ export const getSplitPropsData = async (payload) => {
 }
 
 export const getCombosData = async (payload) => {
-  return fetchWrapper.post(`${BASE_API}/api/sports/get-combos`, { selections: payload.selections })
+  return fetchWrapper.post(`${BASE_API}/api/sports/get-combos`, {
+    selections: payload.selections
+  })
 }
 
 export const login = async (payload) => {
@@ -108,13 +116,13 @@ export const getCategoriesBySport = async (sportID, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+  const periodParam = isTodayPeriod ?
+    'period=today' :
+    isTomorrowPeriod ?
+    'period=24hour' :
+    period ?
+    `start=${period?.startDate}&end=${period?.endDate}` :
+    'period=all'
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
@@ -129,13 +137,13 @@ export const getTournamentsByCategories = async (categoryId, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+  const periodParam = isTodayPeriod ?
+    'period=today' :
+    isTomorrowPeriod ?
+    'period=24hour' :
+    period ?
+    `start=${period?.startDate}&end=${period?.endDate}` :
+    'period=all'
   return parseData(
     fetchWrapper.get(
       `${NEW_BASE_API}/sports/tournaments/${categoryId}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`
@@ -215,13 +223,13 @@ export const getSportUpcoming = async (sid, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
 
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=tomorrow'
-      : period?.startDate !== undefined && period?.endDate !== undefined
-        ? `startDate=${period?.startDate}&endDate=${period?.endDate}`
-        : `period=${period}`
+  const periodParam = isTodayPeriod ?
+    'period=today' :
+    isTomorrowPeriod ?
+    'period=tomorrow' :
+    period?.startDate !== undefined && period?.endDate !== undefined ?
+    `startDate=${period?.startDate}&endDate=${period?.endDate}` :
+    `period=${period}`
 
   return parseData(
     fetchWrapper.get(
@@ -344,7 +352,7 @@ export const gamesByTopCategory = async (id) => {
 }
 
 export const getJackpots = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/active-jackpot?clientId=${import.meta.env.VITE_CLIENT_ID}`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/active-jackpot?clientId=${import.meta.env.VITE_CLIENT_ID} `))
 }
 
 export const getJackpotWinners = async () => {
