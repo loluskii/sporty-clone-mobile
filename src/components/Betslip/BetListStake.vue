@@ -81,7 +81,7 @@
           @click="book">
           <div>Book Bet</div>
         </div>
-        <div class="place-bet" :class="{ 'bet-disabled': couponStore.coupon.totalStake < 100, 'sim-theme': betslipMode }"
+        <div class="place-bet" :class="{ 'bet-disabled': placeBetDisabled, 'sim-theme': betslipMode }"
           @click="placeBet">
           <span>{{ !betslipMode ? 'Place Bet':'Place Simulate Bet' }}</span>
           <div class="m-pay-num" v-if="totalStake != 0">
@@ -94,7 +94,7 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore } from "../../stores";
+import { useCouponStore, useUsersStore, useUtilstStore } from "../../stores";
 import { formatNumber } from "../../helpers";
 import BetslipBonusBar from "./BetslipBonusBar.vue";
 import { computed, ref, onBeforeUnmount, onMounted } from "vue";
@@ -107,6 +107,7 @@ const props = defineProps({
   betType: String,
 });
 const couponStore = useCouponStore();
+const {SportsbookGlobalVariable} = useUtilstStore()
 const userStore = useUsersStore();
 const router = useRouter();
 const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
@@ -123,6 +124,10 @@ const updateStake = (stake) => {
 const betlistStake = computed(() => {
   return couponStore.coupon.totalStake;
 });
+
+const placeBetDisabled = computed(() => {
+  return couponStore.coupon.totalStake < parseFloat(SportsbookGlobalVariable.MinBetStake)
+})
 
 const acceptedChanges = computed(() => {
   return couponStore.coupon.acceptChanges;
@@ -239,6 +244,8 @@ function placeBet() {
   if (!userStore.currentUser) {
     emit("toggle-betslip");
     return router.push({ name: "sign-in" });
+  }else if (placeBetDisabled.value){
+    return
   }
   emit("toggle-show");
 }
