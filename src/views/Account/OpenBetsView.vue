@@ -17,11 +17,7 @@
             >
           </div>
           <div class="code-hub-list-item-container" style="position: relative">
-            <div class="m-loading-wrap m-loading-wrap__center">
-              <div class="m-loading light">
-                <div class="loading"></div>
-              </div>
-            </div>
+            
             <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
             <div class="mb-3"></div>
           </div>
@@ -557,13 +553,15 @@ defineComponent({
   font-size: 1.33333333rem;
   font-weight: 700;
   padding-left: 0.66666667rem;
+  padding-top: 2.66666667rem;
 }
 .empty-recommended-code-container .recommended-code span {
   display: inline-block;
-  margin-left: 1rem;
+  /* margin-left: 1rem; */
 }
 .empty-recommended-code-container .code-hub-list-item-container {
-  padding: 0.66666667rem;
+  padding-top: 0.66666667rem;
+  padding-bottom: 0.66666667rem;
   position: relative;
 }
 .code-hub-list-item-container .code-hub-list-item-wrap + .code-hub-list-item-wrap {
