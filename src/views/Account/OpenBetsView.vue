@@ -399,7 +399,7 @@ async function getCodes() {
     betType: 0,
   };
   const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
+  codes.value = res.data.data.slice(0,10);
 }
 
 function closeCashoutModal() {
