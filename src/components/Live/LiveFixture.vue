@@ -273,221 +273,66 @@ function checkBetslipOnRefresh() {
   }
 }
 
-// Function to handle bet stop
-function handleBetStop(data) {
-  console.log('⚙️ Component: Processing bet stop for', data)
-  
-  // Clone outcomes value
-  const newOutcomes = [...outcomes.value]
-  
-  // Loop through current outcomes and update odds to 0
-  for (let index = 0; index < newOutcomes.length; index++) {
-    const outcome = { ...newOutcomes[index] }
-    outcome.odds = 0
-    outcome.active = 0
-    
-    // Update our tracking object
-    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
-    updatedOutcomes.value[key] = {
-      odds: 0,
-      active: 0
-    }
-    
-    newOutcomes[index] = outcome
-  }
-  
-  // Update outcomes state
-  outcomes.value = newOutcomes
-  
-  // Update betslip selections for this match
-  const matchIdFromEvent = data.match_id
-  
-  // Find if any selection in the betslip matches this event
-  const selections = couponStore.coupon.selections.filter(
-    (sel) => String(sel.matchId) === String(matchIdFromEvent)
-  )
-  
-  if (selections.length > 0) {
-    console.log(`⚙️ Component: Suspending ${selections.length} selections in betslip for match ID ${matchIdFromEvent}`)
-    
-    // Process each matching selection
-    selections.forEach(selection => {
-      // Suspend the selection and set odds to 0
-      selection.suspended = true
-      selection.unavailable = true
-      selection.odds = 0
-      
-      // Force a reactivity update
-      couponStore.updateWinnings({
-        stake: couponStore.coupon.totalStake,
-        id: "all",
-      })
-    })
-  }
-}
-
 // Function to handle odds changes
 function handleOddsChange(data) {
-  if (!data || !data.markets) return
-  console.log(`⚙️ Component: Processing odds change for ${props.gameData.name} (Match ID: ${props.gameData.matchID})`)
+  if (!data || !data.markets) return;
   
-  // Update score if available in the data
-  if (data.sport_event_status) {
-    const scoreData = data.sport_event_status;
-    if (scoreData.home_score !== undefined && scoreData.away_score !== undefined) {
-      scores.value = {
-        homeScore: scoreData.home_score,
-        awayScore: scoreData.away_score
-      }
-      console.log(`⚙️ Component: Updated score to ${scoreData.home_score}:${scoreData.away_score}`)
-    }
+  // First, verify this update is for the correct match
+  const matchId = props.gameData.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+  
+  // If the data doesn't match our event, ignore it
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring odds change for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    return;
   }
   
-  // Update our tracking object with the new odds for ALL markets
-  const markets = data.markets || []
+  console.log(`📊 MQTT: Processing odds change for match ID ${matchId}`);
   
-  if (markets.length > 0) {
-    // Step 1: Update our tracking object for ALL markets
-    markets.forEach(market => {
-      if (market.outcomes) {
-        market.outcomes.forEach(outcome => {
-          const key = `${market.id}-${outcome.id}-${market.specifiers}`
-          updatedOutcomes.value[key] = {
-            odds: outcome.odds,
-            active: outcome.active ? 1 : 0
-          }
-        })
-      }
-    })
-    
-    // Step 2: Update our current outcomes if they match the active market
-    if (props.activeMarket) {
-      const activeMarketId = props.activeMarket.marketID
-      const activeMarketSpecifier = props.activeMarket.specifier || ''
-      
-      // Find the market in the data
-      const market = markets.find(
-        (m) => m.id === parseInt(activeMarketId) && m.specifiers === activeMarketSpecifier
-      )
-      
-      if (market && market.outcomes) {
-        // Update our outcomes
-        const newOutcomes = [...outcomes.value]
-        
-        for (let i = 0; i < newOutcomes.length; i++) {
-          const outcome = newOutcomes[i]
-          const newOutcome = market.outcomes.find(
-            (o) => String(o.id) === String(outcome.outcomeID)
-          )
-          
-          if (newOutcome) {
-            newOutcomes[i] = {
-              ...outcome,
-              odds: newOutcome.odds,
-              active: newOutcome.active ? 1 : 0
-            }
-          }
-        }
-        
-        outcomes.value = newOutcomes
-      }
-    }
-    
-    // Step 3: Update any selections in the betslip
-    updateBetslipIfNeeded(data)
-  }
+  // Update betslip with new odds
+  updateBetslipWithNewOdds(matchId, data.markets || []);
 }
 
-// Function to update betslip if this selection is in the betslip
-function updateBetslipIfNeeded(data) {
-  const matchIdFromEvent = data.match_id
+// Function to handle bet stop
+function handleBetStop(data) {
+  // First, verify this update is for the correct match
+  const matchId = props.gameData.matchID;
+  const dataMatchId = data.event_id || data.match_id;
   
-  // Find if any selection in the betslip matches this event
+  // If the data doesn't match our event, ignore it
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    return;
+  }
+  
+  console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
+  
+  // Update betslip selections for this match
   const selections = couponStore.coupon.selections.filter(
-    (sel) => String(sel.matchId) === String(matchIdFromEvent)
-  )
+    (sel) => String(sel.matchId) === String(matchId)
+  );
   
   if (selections.length > 0) {
-    console.log(`⚙️ Component: Found ${selections.length} selections in betslip for match ID ${matchIdFromEvent}`)
+    console.log(`📊 MQTT: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
     
     // Process each matching selection
     selections.forEach(selection => {
-      // Find the market in the data
-      const marketId = parseInt(selection.marketId)
-      const outcomeId = selection.outcomeId || selection.oddId
-      const specifier = selection.specifier || ''
-      
-      console.log(`⚙️ Component: Looking for market ${marketId} with specifier "${specifier}" and outcome ${outcomeId}`)
-      
-      const market = data.markets.find(
-        (m) => m.id === marketId && m.specifiers === specifier
-      )
-      
-      if (market && market.outcomes) {
-        console.log(`⚙️ Component: Found market with ${market.outcomes.length} outcomes`)
-        
-        // Find the outcome in the market
-        const newOutcome = market.outcomes.find(
-          (odd) => String(odd.id) === String(outcomeId)
-        )
-        
-        if (newOutcome) {
-          console.log(`⚙️ Component: Found outcome with odds ${newOutcome.odds} and active=${newOutcome.active}`)
-          
-          // Check if odds are valid (>= 1.01) and outcome is active
-          if (newOutcome.odds >= 1.01 && newOutcome.active) {
-            console.log(`⚙️ Component: Valid outcome - unsuspending selection`)
-            
-            // Update the selection with the new odds
-            selection.odds = newOutcome.odds
-            selection.changed = true
-            
-            // Unsuspend the selection since we have valid odds now
-            selection.suspended = false
-            selection.unavailable = false
-            
-            // Force a reactivity update by updating winnings
-            couponStore.updateWinnings({
-              stake: couponStore.coupon.totalStake,
-              id: "all",
-            })
-            
-            // Reset the changed flag after 5 seconds
-            setTimeout(() => {
-              selection.changed = false
-              
-              // Force a reactivity update by updating winnings
-              couponStore.updateWinnings({
-                stake: couponStore.coupon.totalStake,
-                id: "all",
-              })
-            }, 5000)
-          } else {
-            console.log(`⚙️ Component: Invalid outcome - keeping selection suspended`)
-            
-            // If the outcome is not active or has odds < 1.01, keep it suspended and set odds to 0
-            selection.suspended = true
-            selection.unavailable = true
-            selection.odds = 0
-            
-            // Force a reactivity update
-            couponStore.updateWinnings({
-              stake: couponStore.coupon.totalStake,
-              id: "all",
-            })
-          }
-        } else {
-          console.log(`⚙️ Component: Outcome ${outcomeId} not found in market`)
-        }
-      } else {
-        console.log(`⚙️ Component: Market ${marketId} with specifier "${specifier}" not found`)
-      }
-    })
+      // Suspend the selection
+      selection.suspended = true;
+      selection.unavailable = true;
+      selection.odds = 0;
+    });
+    
+    // Force a reactivity update
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all",
+    });
   }
 }
 
 onMounted(() => {
-  console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.gameData.matchID)
+  console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
   
   // Initialize scores from props
   scores.value = {
@@ -502,23 +347,32 @@ onMounted(() => {
   checkBetslipOnRefresh()
   
   // Subscribe to live odds changes for this specific match
-  const matchId = props.gameData.matchID
+  const matchId = props.gameData.matchID;
   
   if (matchId) {
-    // Use the correct topic paths with the proper prefix
-    const unsubscribeOddsChange = subscribe(`feeds/live/odds_change/${matchId}`, (data) => {
-      handleOddsChange(data)
-    })
+    // Create a unique component ID to help with debugging
+    const componentId = `live-fixture-${matchId}-${Date.now()}`;
     
-    const unsubscribeBetStop = subscribe(`feeds/live/bet_stop/${matchId}`, (data) => {
-      handleBetStop(data)
-    })
+    // Use the correct topic paths with the proper prefix
+    const oddsChangeTopic = `feeds/live/odds_change/${matchId}`;
+    const betStopTopic = `feeds/live/bet_stop/${matchId}`;
+    
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`);
+      handleOddsChange(data);
+    });
+    
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      console.log(`📊 MQTT: Received message on topic ${betStopTopic} for component ${componentId}`);
+      handleBetStop(data);
+    });
     
     // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      unsubscribeOddsChange()
-      unsubscribeBetStop()
-    })
+      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
+      unsubscribeOddsChange();
+      unsubscribeBetStop();
+    });
   }
 })
 

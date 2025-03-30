@@ -259,8 +259,17 @@ function addToBetslip(event, odd) {
 function handleOddsChange(data) {
   if (!data || !data.markets) return;
   
+  // First, verify this update is for the correct match
   const matchId = props.gameData.matchID;
-  console.log(`📊 MQTT: Received odds change for match ID ${matchId} =>`, data);
+  const dataMatchId = data.event_id || data.match_id;
+  
+  // If the data doesn't match our event, ignore it
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring odds change for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    return;
+  }
+  
+  console.log(`📊 MQTT: Processing odds change for match ID ${matchId}`);
   
   // Update our tracking object with the new odds for ALL markets
   const markets = data.markets || [];
@@ -406,8 +415,17 @@ function updateBetslipWithNewOdds(matchId, markets) {
 
 // Function to handle bet stop
 function handleBetStop(data) {
+  // First, verify this update is for the correct match
   const matchId = props.gameData.matchID;
-  console.log(`📊 MQTT: Received bet stop for match ID ${matchId}`);
+  const dataMatchId = data.event_id || data.match_id;
+  
+  // If the data doesn't match our event, ignore it
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    return;
+  }
+  
+  console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
   
   // Clone outcomes value
   const newOutcomes = [...outcomes.value];
@@ -638,38 +656,47 @@ watch(
 )
 
 onMounted(() => {
-  console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.gameData.matchID)
+  console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
   
   // Initialize scores from props
   scores.value = {
     homeScore: props.gameData.homeScore,
     awayScore: props.gameData.awayScore
-  }
+  };
 
-  outcomes.value = props.gameData.outcomes || []
-  getOdds()
+  outcomes.value = props.gameData.outcomes || [];
+  getOdds();
   
   // Check betslip on initial load
   checkBetslipOnRefresh()
   
   // Subscribe to live odds changes for this specific match
-  const matchId = props.gameData.matchID
+  const matchId = props.gameData.matchID;
   
   if (matchId) {
-    // Use the correct topic paths with the proper prefix
-    const unsubscribeOddsChange = subscribe(`feeds/live/odds_change/${matchId}`, (data) => {
-      handleOddsChange(data)
-    })
+    // Create a unique component ID to help with debugging
+    const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`;
     
-    const unsubscribeBetStop = subscribe(`feeds/live/bet_stop/${matchId}`, (data) => {
-      handleBetStop(data)
-    })
+    // Use the correct topic paths with the proper prefix
+    const oddsChangeTopic = `feeds/live/odds_change/${matchId}`;
+    const betStopTopic = `feeds/live/bet_stop/${matchId}`;
+    
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`);
+      handleOddsChange(data);
+    });
+    
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      console.log(`📊 MQTT: Received message on topic ${betStopTopic} for component ${componentId}`);
+      handleBetStop(data);
+    });
     
     // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      unsubscribeOddsChange()
-      unsubscribeBetStop()
-    })
+      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
+      unsubscribeOddsChange();
+      unsubscribeBetStop();
+    });
   }
 })
 </script>
