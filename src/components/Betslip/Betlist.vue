@@ -140,7 +140,7 @@
         <div v-if="betslipSelections.length === 0 && betslipMode" class="sim-selection-empty-panel">
           <p>Please add at least one outcome.</p>
         </div>
-        <Simulation v-if="isSimulating && betslipMode" :simulation-results="simulationResults" />
+        <Simulation v-if="isSimulating && betslipMode && simulationResults" :simulation-results="simulationResults" />
       </div>
       <!-- Place Bet Success Modal -->
       <SuccessBet @hide-success="hideAll" :response="placeBetResponse" @activate-share="bookBet" @rebet="rebet"

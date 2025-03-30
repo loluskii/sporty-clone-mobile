@@ -88,6 +88,7 @@
 <script setup>
 import LiveHighlightsFixture from '@/components/Live/LiveHighlightsFixture.vue'
 import { useUtilstStore } from '../../stores/utils.store'
+import { useCouponStore } from '@/stores'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
@@ -99,7 +100,48 @@ const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const loadingError = ref(false)
 const utilsStore = useUtilstStore()
+const couponStore = useCouponStore()
 const totalFixtures = ref(1)
+
+// Function to check if betslip selections exist in current event list
+function checkBetslipSelectionsExist() {
+  if (!completeLiveData.value?.fixtures || isEmptyResponse.value) {
+    return;
+  }
+  
+  // Get all match IDs from current fixtures
+  const availableMatchIds = new Set(
+    completeLiveData.value.fixtures.map(fixture => String(fixture.matchID))
+  );
+  
+  let updatedAnySelection = false;
+  
+  // Check each selection in the betslip
+  couponStore.coupon.selections.forEach(selection => {
+    // Check if this is a live selection
+    if (selection.type === "live") {
+      const matchId = String(selection.matchId);
+      
+      // If the match is not in the current event list
+      if (!availableMatchIds.has(matchId)) {
+        // Suspend the selection
+        selection.suspended = true;
+        selection.unavailable = true;
+        selection.odds = 0;
+        updatedAnySelection = true;
+      }
+    }
+  });
+  
+  // Only update winnings if we actually changed any selections
+  if (updatedAnySelection) {
+    // Force a reactivity update
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all",
+    });
+  }
+}
 
 const {
   data: completeLiveData,
@@ -110,8 +152,11 @@ const {
   // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
   onError: (err) => {
     console.error(err)
+    loadingError.value = true
   },
   onSuccess: (response) => {
+    loadingError.value = false
+    
     if (response.fixtures) {
       totalFixtures.value = response.fixtures.length
       // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
@@ -130,16 +175,33 @@ const {
       })
       const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
       activeSportID.value = sortedUniqueList[0].sportID
-      // let markets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
-      // activeSportMarkets.value = _.sortBy(markets, 'marketID')
-      // activeMarket.value = activeSportMarkets.value[0]
     } else {
-      // sportsListData.value = []
-      // marketsGroup.value = []
       isEmptyResponse.value = true
     }
   }
 })
+
+// Watch for changes to completeLiveData and run checkBetslipSelectionsExist when it has a value
+watch(
+  () => completeLiveData.value,
+  (newData) => {
+    if (newData && newData.fixtures) {
+      checkBetslipSelectionsExist();
+    }
+  },
+  { immediate: true }
+)
+
+// Also watch for changes to the betslip selections
+watch(
+  () => couponStore.coupon.selections,
+  () => {
+    if (completeLiveData.value && completeLiveData.value.fixtures) {
+      checkBetslipSelectionsExist();
+    }
+  },
+  { deep: true }
+)
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value) {

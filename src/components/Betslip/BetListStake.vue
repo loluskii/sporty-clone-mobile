@@ -252,6 +252,7 @@ async function book(e) {
 
 function placeBet() {
   if (hasSuspendedSelections.value) {
+    emit("toggle-betslip");
     emitter.emit("showErrorMessage", "Some selections are suspended");
     return;
   }

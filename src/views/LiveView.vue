@@ -115,7 +115,7 @@
 
 <script setup>
 import LiveFixture from '@/components/Live/LiveFixture.vue'
-import { useUtilstStore } from '@/stores'
+import { useUtilstStore, useCouponStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getLiveHighlights } from '@/helpers'
@@ -126,6 +126,60 @@ import _ from 'lodash'
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilstStore()
+const couponStore = useCouponStore()
+
+// Function to check if betslip selections exist in current event list
+function checkBetslipSelectionsExist() {
+  console.log('⚙️ LiveView: Checking if betslip selections exist in current event list')
+  
+  if (!completeLiveData.value?.fixtures || isEmptyResponse.value) {
+    console.log('⚙️ LiveView: No fixtures data available, skipping check')
+    return
+  }
+  
+  // Get all match IDs from current fixtures
+  const availableMatchIds = new Set(
+    completeLiveData.value.fixtures.map(fixture => String(fixture.matchID))
+  )
+  
+  console.log(`⚙️ LiveView: Found ${availableMatchIds.size} matches in current event list:`, 
+    Array.from(availableMatchIds))
+  
+  let updatedAnySelection = false
+  
+  // Check each selection in the betslip
+  couponStore.coupon.selections.forEach(selection => {
+    // Check if this is a live selection by examining the type property
+    if (selection.type === "live") {
+      const matchId = String(selection.matchId)
+      console.log(`⚙️ LiveView: Checking live selection for match ID ${matchId}`)
+      
+      // If the match is not in the current event list
+      if (!availableMatchIds.has(matchId)) {
+        console.log(`⚙️ LiveView: Match ID ${matchId} not found in current event list, suspending selection`)
+        
+        // Suspend the selection
+        selection.suspended = true
+        selection.unavailable = true
+        selection.odds = 0
+        updatedAnySelection = true
+      } else {
+        console.log(`⚙️ LiveView: Match ID ${matchId} found in current event list`)
+      }
+    }
+  })
+  
+  // Only update winnings if we actually changed any selections
+  if (updatedAnySelection) {
+    console.log('⚙️ LiveView: Updated selections, forcing reactivity update')
+    
+    // Force a reactivity update
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all",
+    })
+  }
+}
 
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url)
@@ -144,6 +198,9 @@ const {
   onSuccess: (response) => {
     if (response.fixtures) {
       // activeSportID.value = response.fixtures[0].sportID
+      
+      // Check if betslip selections exist in current event list
+      checkBetslipSelectionsExist()
     }
   }
 })

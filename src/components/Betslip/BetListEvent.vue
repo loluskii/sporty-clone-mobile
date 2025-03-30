@@ -267,8 +267,12 @@ function onKeyClick(type, value) {
 
 function goToGame() {
   emit("toggle-betslip");
+  let route_name = "fixtures-detail"
+  if(props.selection.type == 'live') {
+    route_name = "live-fixtures-detail"
+  }
   return router.push({
-    name: "fixtures-detail",
+    name: route_name,
     params: {
       sport: props.selection.sport,
       tournament_name: props.selection.tournament,

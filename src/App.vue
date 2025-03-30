@@ -20,8 +20,8 @@ import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
-// import { $mqtt } from 'vue-paho-mqtt';
-import mqtt from "mqtt";
+import { $mqtt } from 'vue-paho-mqtt';
+// import mqtt from "mqtt";
 
 const utilsStore = useUtilstStore();
 const couponStore = useCouponStore();
@@ -86,86 +86,6 @@ function showToaster(data) {
   dialogueMessage.value = data;
   dialogueType.value = "toaster";
 }
-
-function initMqtt() {
-  try {
-    if (mqttClient.value !== false) {
-      mqttClient.value.end();
-    }
-
-    var n = 10;
-
-    // connection option
-    const options = {
-      clean: true, // retain session
-      connectTimeout: 4000, // Timeout period
-      // Authentication information
-      clientId:
-        import.meta.env.VITE_MQTT_CLIENTID +
-        "-" +
-        Math.floor(Math.random() * (9 * Math.pow(10, n))) +
-        Math.pow(10, n),
-      username: import.meta.env.VITE_MQTT_USERNAME,
-      password: import.meta.env.VITE_MQTT_PASSWORD,
-    };
-
-    const subscriptions = [`feeds/live/odds_change/+`, `feeds/live/bet_stop/+`,`feeds/prematch/odds_change/+`];
-
-    mqttClient.value = mqtt.connect(import.meta.env.VITE_MQTT_URI, options);
-
-    if (mqttClient.value.on) {
-      mqttClient.value.on("connect", () => {
-        // this.connecting = false;
-        // console.log("MQTT Connection succeeded!");
-      });
-      // this.mqttClient.on("reconnect", this.handleOnReConnect);
-      mqttClient.value.on("error", (error) => {
-        // console.log("MQTT Connection failed", error);
-      });
-      mqttClient.value.subscribe(subscriptions, (error, res) => {
-        if (error) {
-          // console.log('Subscribe to odd change error', error)
-          return;
-        }
-        // console.log('Subscribe to topics res', res)
-      });
-      mqttClient.value.on("message", (topic, message) => {
-        // message is string
-        const payload = JSON.parse(message);
-        // split the topic to get the type of message
-        const topicArr = topic.split("/");
-
-        // console.log(`Received message from topic ${topicArr[1]}`);
-
-        switch (topicArr[2]) {
-          case "odds_change":
-            emitter.emit(`odds-change-${payload.match_id}`, payload);
-            updateBetslip(payload, 'odds_change')
-            break;
-          case "bet_stop":
-            emitter.emit(`bet-stop-${payload.match_id}`, payload);
-            updateBetslip(payload, 'bet_stop')
-            break;
-          default:
-            break;
-        }
-      });
-    }
-  } catch (e) {
-    mqttClient.value = false;
-    console.log("mqtt.connect error", e);
-  }
-}
-watch(
-  () => route.query.shareCode,
-  async (code) => {
-    // get booking code
-    if (code) {
-      await loadBet(code);
-    }
-  },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-);
 
 async function loadBet(code) {
   try {
@@ -232,109 +152,28 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
-function updateBetslip(eventMessage, event_type) {
-  // Check if eventMessage exists
-  if (!eventMessage) {
-    console.error('Event message is undefined or null');
-    return;
-  }
-
-  const matchIdFromEvent = eventMessage.match_id;
-  // Find the selection with the matching match_id in the betslip
-  const selection = couponStore.coupon.selections.find(
-    (sel) => sel.matchId === matchIdFromEvent
-  );
-  
-  // If a matching selection is found
-  if (selection) {
-    // Handle bet_stop event
-    console.log(eventMessage)
-    if (event_type === "bet_stop") {
-      selection.suspended = true;
-      
-      // Check if the match time has passed (3 hours threshold)
-      const parsedDate = new Date(selection.eventDate);
-      const currentDate = new Date();
-      const difference = currentDate - parsedDate;
-      const hoursDifference = difference / (1000 * 60 * 60);
-      
-      // If match time has passed, mark as unavailable and set odds to 0
-      if (hoursDifference >= 3) {
-        selection.unavailable = true;
-        selection.odds = 0;
-      }
-      
-      // Update winnings calculation after changing the selection status
-      couponStore.updateWinnings({
-        stake: couponStore.coupon.totalStake,
-        id: "all",
-      });
+watch(
+  () => route.query.shareCode,
+  async (code) => {
+    // get booking code
+    if (code) {
+      await loadBet(code);
     }
-
-    // Handle odds_change event
-    if (event_type === "odds_change" && eventMessage.markets) {
-      couponStore.coupon.acceptChanges = false;
-      
-      // Reset suspended status - we'll set it based on the new data
-      selection.suspended = false;
-      selection.unavailable = false;
-      selection.changed = true;
-      
-      // Set a timeout to clear the changed flag after 5 seconds
-      setTimeout(() => {
-        selection.changed = false;
-      }, 5000);
-
-      const market = eventMessage.markets.find(
-        (m) => m.id === selection.marketId && m.specifiers === selection.specifier
-      );
-
-      console.log('market', market)
-      console.log('selection', selection)
-
-      if (market && market.outcomes) {
-        let newOutcome = market.outcomes.find(
-          (m) => m.id === selection.outcomeId && market.specifiers === selection.specifier
-        );
-
-        console.log('newOutcome', newOutcome)
-
-        if (newOutcome && newOutcome.odds !== undefined) {
-          // If we previously marked this as unavailable but it's now available again
-          if (selection.unavailable && newOutcome.active) {
-            selection.unavailable = false;
-          }
-          
-          selection.odds = newOutcome.odds;
-          selection.suspended = !newOutcome.active;
-          couponStore.updateWinnings({
-            stake: couponStore.coupon.totalStake,
-            id: selection.selectionId,
-          });
-        } else {
-          selection.suspended = true;
-          selection.unavailable = true;
-          selection.odds = 0;
-        }
-      } else {
-        selection.suspended = true;
-        selection.unavailable = true;
-        selection.odds = 0;
-      }
-    }
-  }
-}
+  },
+  { immediate: true } // Trigger the watch callback immediately on component mount
+);
 
 onMounted(async () => {
-  // connect to mqtt
-  initMqtt();
+  // Remove MQTT initialization
+  // initMqtt();
+
+  
 
   if (route.path !== "/") {
     isLoading.value = false;
   }
 
   if (usersStore.currentUser) {
-    // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
         console.log(res[2]);
@@ -372,7 +211,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  if (mqttClient.value !== false) mqttClient.value.end();
+  // Remove MQTT cleanup
+  // if (mqttClient.value !== false) mqttClient.value.end();
+  $mqtt.disconnect()
 });
 
 defineComponent({
