@@ -22,7 +22,7 @@ export function useMqttService() {
     const clientId = import.meta.env.VITE_MQTT_CLIENTID + '-' + Math.random().toString(16).substr(2, 8)
     const host = '206.189.229.191'
     const port = '8083'
-    const connectUrl = `ws://${host}:${port}/mqtt`
+    const connectUrl = `wss://${host}:${port}/mqtt`
     
     // console.log(`🔌 MQTT: Creating new connection to ${connectUrl} with clientId ${clientId}`)
     
