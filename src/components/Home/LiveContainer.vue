@@ -75,7 +75,7 @@
           </div>
         </div>
       </template>
-      <div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
+      <div v-else-if="!isLoading || isEmptyResponse" class="no-data">
         <div style="white-space: pre-line">
           <p>Sorry, there are no games currently available</p>
           <p>in this category. Please try later.</p>
@@ -97,11 +97,13 @@ import { defineComponent, onMounted, ref, computed, watch, onUnmounted } from 'v
 import _ from 'lodash'
 
 const activeSportID = ref(1)
-const isEmptyResponse = ref(false)
+const isEmptyResponse = ref(true)
 const loadingError = ref(false)
 const utilsStore = useUtilstStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
+const completeLiveData = ref([])
+const isLoading = ref(false)
 
 // Function to check if betslip selections exist in current event list
 function checkBetslipSelectionsExist() {
@@ -143,43 +145,43 @@ function checkBetslipSelectionsExist() {
   }
 }
 
-const {
-  data: completeLiveData,
-  // error,
-  isLoading,
-  refetch
-} = useQuery('liveData', getLiveHighlights, {
-  // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
-  onError: (err) => {
-    console.error(err)
-    loadingError.value = true
-  },
-  onSuccess: (response) => {
-    loadingError.value = false
+// const {
+//   data: completeLiveData,
+//   // error,
+//   isLoading,
+//   refetch
+// } = useQuery('liveData', getLiveHighlights, {
+//   // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
+//   onError: (err) => {
+//     console.error(err)
+//     loadingError.value = true
+//   },
+//   onSuccess: (response) => {
+//     loadingError.value = false
     
-    // if (response.fixtures) {
-    //   totalFixtures.value = response.fixtures.length
-    //   // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
-    //   const uniqueList = []
-    //   const uniqueSet = new Set()
+//     // if (response.fixtures) {
+//     //   totalFixtures.value = response.fixtures.length
+//     //   // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
+//     //   const uniqueList = []
+//     //   const uniqueSet = new Set()
 
-    //   response.fixtures.forEach((fixture) => {
-    //     const key = `${fixture.sportName}`
-    //     if (!uniqueSet.has(key)) {
-    //       uniqueSet.add(key)
-    //       uniqueList.push({
-    //         sportID: fixture.sportID,
-    //         sportName: fixture.sportName
-    //       })
-    //     }
-    //   })
-    //   const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
-    //   activeSportID.value = sortedUniqueList[0].sportID
-    // } else {
-    //   isEmptyResponse.value = true
-    // }
-  }
-})
+//     //   response.fixtures.forEach((fixture) => {
+//     //     const key = `${fixture.sportName}`
+//     //     if (!uniqueSet.has(key)) {
+//     //       uniqueSet.add(key)
+//     //       uniqueList.push({
+//     //         sportID: fixture.sportID,
+//     //         sportName: fixture.sportName
+//     //       })
+//     //     }
+//     //   })
+//     //   const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
+//     //   activeSportID.value = sortedUniqueList[0].sportID
+//     // } else {
+//     //   isEmptyResponse.value = true
+//     // }
+//   }
+// })
 
 // Watch for changes to completeLiveData and run checkBetslipSelectionsExist when it has a value
 watch(
