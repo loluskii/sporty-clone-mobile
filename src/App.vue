@@ -20,8 +20,6 @@ import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
-import { $mqtt } from 'vue-paho-mqtt';
-// import mqtt from "mqtt";
 
 const utilsStore = useUtilstStore();
 const couponStore = useCouponStore();
@@ -164,10 +162,6 @@ watch(
 );
 
 onMounted(async () => {
-  // Remove MQTT initialization
-  // initMqtt();
-
-  
 
   if (route.path !== "/") {
     isLoading.value = false;
@@ -208,12 +202,6 @@ onMounted(async () => {
   emitter.on("showCasinoDialog", showCasinoDialog);
   emitter.on("showCustomDatePicker", toggleDatePicker);
   emitter.on("showBookBetModal", toggleBookBetModal);
-});
-
-onBeforeUnmount(() => {
-  // Remove MQTT cleanup
-  // if (mqttClient.value !== false) mqttClient.value.end();
-  $mqtt.disconnect()
 });
 
 defineComponent({
