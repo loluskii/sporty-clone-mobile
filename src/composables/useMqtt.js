@@ -1,6 +1,7 @@
 import mqtt from 'mqtt'
 import { ref } from 'vue'
 
+let mqttClient = null
 const isConnected = ref(false)
 const connectionError = ref(null)
 
