@@ -157,27 +157,27 @@ const {
   onSuccess: (response) => {
     loadingError.value = false
     
-    if (response.fixtures) {
-      totalFixtures.value = response.fixtures.length
-      // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
-      const uniqueList = []
-      const uniqueSet = new Set()
+    // if (response.fixtures) {
+    //   totalFixtures.value = response.fixtures.length
+    //   // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
+    //   const uniqueList = []
+    //   const uniqueSet = new Set()
 
-      response.fixtures.forEach((fixture) => {
-        const key = `${fixture.sportName}`
-        if (!uniqueSet.has(key)) {
-          uniqueSet.add(key)
-          uniqueList.push({
-            sportID: fixture.sportID,
-            sportName: fixture.sportName
-          })
-        }
-      })
-      const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
-      activeSportID.value = sortedUniqueList[0].sportID
-    } else {
-      isEmptyResponse.value = true
-    }
+    //   response.fixtures.forEach((fixture) => {
+    //     const key = `${fixture.sportName}`
+    //     if (!uniqueSet.has(key)) {
+    //       uniqueSet.add(key)
+    //       uniqueList.push({
+    //         sportID: fixture.sportID,
+    //         sportName: fixture.sportName
+    //       })
+    //     }
+    //   })
+    //   const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
+    //   activeSportID.value = sortedUniqueList[0].sportID
+    // } else {
+    //   isEmptyResponse.value = true
+    // }
   }
 })
 

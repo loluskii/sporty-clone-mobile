@@ -264,7 +264,7 @@ const handleScroll = () => {
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
-  await getHomeData()
+  // await getHomeData()
 })
 
 onUnmounted(() => {
