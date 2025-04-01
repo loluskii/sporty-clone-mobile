@@ -154,13 +154,13 @@ const selectionIsUnavailable = computed(() => {
     return true;
   }
   
-  // Check if expired based on time
-  const parsedDate = new Date(props.selection.eventDate);
-  const currentDate = new Date();
-  const difference = currentDate - parsedDate;
-  const hoursDifference = difference / (1000 * 60 * 60);
+  // // Check if expired based on time
+  // const parsedDate = new Date(props.selection.eventDate);
+  // const currentDate = new Date();
+  // const difference = currentDate - parsedDate;
+  // const hoursDifference = difference / (1000 * 60 * 60);
   
-  return hoursDifference >= 3;
+  // return hoursDifference >= 5;
 });
 
 // Add a computed property to get the specific unavailability reason
@@ -176,16 +176,16 @@ const getUnavailabilityReason = computed(() => {
   }
   
   // Check if expired based on time
-  const parsedDate = new Date(props.selection.eventDate);
-  const currentDate = new Date();
-  const difference = currentDate - parsedDate;
-  const hoursDifference = difference / (1000 * 60 * 60);
+  // const parsedDate = new Date(props.selection.eventDate);
+  // const currentDate = new Date();
+  // const difference = currentDate - parsedDate;
+  // const hoursDifference = difference / (1000 * 60 * 60);
   
-  if (hoursDifference >= 3) {
-    return "unavailable";
-  }
+  // if (hoursDifference >= 3) {
+  //   return "unavailable";
+  // }
   
-  return "unavailable";
+  // return "unavailable";
 });
 
 const getImageSrc = (sportId, sport) => {

@@ -106,6 +106,7 @@ import { SIM_ALLOWED_MARKETS } from '../../helpers'
 import { useMqttService } from '@/composables/useMqtt'
 
 const couponStore = useCouponStore()
+const updatePending = ref(false)
 
 // Extract the subscribe function at the top level
 const { subscribe } = useMqttService()
@@ -140,7 +141,7 @@ const getOdds = () => {
       let uniqueFiltered = uniqueOutcomes(filtered)
       
       // Apply any updates we've received from MQTT
-      uniqueFiltered = uniqueFiltered.map(outcome => {
+      const updatedOutcomesList = uniqueFiltered.map(outcome => {
         const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
         if (updatedOutcomes.value[key]) {
           return {
@@ -153,16 +154,27 @@ const getOdds = () => {
       })
       
       if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = uniqueFiltered[0]?.specifier
+        let defaultSpecifier = updatedOutcomesList[0]?.specifier
         if (defaultSpecifier) {
-          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
-          activeSpecifier.value = defaultSpecifier.split('=')[1]
+          const filteredBySpecifier = updatedOutcomesList.filter((item) => item.specifier === defaultSpecifier)
+          
+          // Only update activeSpecifier if it's different to avoid recursive updates
+          if (activeSpecifier.value !== defaultSpecifier.split('=')[1]) {
+            activeSpecifier.value = defaultSpecifier.split('=')[1]
+          }
+          
+          // Compare before updating to avoid unnecessary reactivity
+          if (JSON.stringify(filteredBySpecifier) !== JSON.stringify(outcomes.value)) {
+            outcomes.value = sortArr([...filteredBySpecifier], 'outcomeID')
+          }
         }
-      }
-      if (uniqueFiltered.length) {
-        // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
-        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
-      } else {
+      } else if (updatedOutcomesList.length) {
+        // Compare before updating to avoid unnecessary reactivity
+        const sortedOutcomes = sortArr([...updatedOutcomesList], 'outcomeID')
+        if (JSON.stringify(sortedOutcomes) !== JSON.stringify(outcomes.value)) {
+          outcomes.value = sortedOutcomes
+        }
+      } else if (outcomes.value.length > 0) {
         outcomes.value = []
       }
     }
@@ -265,72 +277,53 @@ function handleOddsChange(data) {
   
   // If the data doesn't match our event, ignore it
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(`📊 MQTT: Ignoring odds change for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    console.log('📊 MQTT: Ignoring odds change for match ID', dataMatchId, 'our match ID is', matchId);
     return;
   }
   
-  console.log(`📊 MQTT: Processing odds change for match ID ${matchId}`);
+  console.log('📊 MQTT: Received odds change for match ID', matchId, 'with data:', data);
   
-  // Update our tracking object with the new odds for ALL markets
-  const markets = data.markets || [];
-  
-  if (markets.length > 0) {
-    // Step 1: Update our tracking object for ALL markets
-    markets.forEach(market => {
-      if (market.outcomes) {
-        market.outcomes.forEach(outcome => {
-          const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`;
-          updatedOutcomes.value[key] = {
-            odds: outcome.odds,
-            active: outcome.active ? 1 : 0,
-            timestamp: Date.now()
-          };
-        });
-      }
-    });
+  // Batch UI updates using requestAnimationFrame for better performance
+  if (!updatePending.value) {
+    updatePending.value = true;
     
-    // Step 2: Update currently displayed outcomes if they match the updated markets
-    if (outcomes.value.length > 0) {
-      // Clone outcomes value
-      const newOutcomes = [...outcomes.value];
-      let hasChanges = false;
-      
-      // Update existing outcomes with new odds data
-      for (let i = 0; i < newOutcomes.length; i++) {
-        const outcome = { ...newOutcomes[i] };
+    // Use setTimeout to break the potential update cycle
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        // Create a local copy of markets to avoid reactivity issues
+        const markets = (data.markets || []).map(m => ({...m}));
         
-        // Find market in the MQTT data
-        const market = markets.find(
-          (item) => item.id === outcome.marketID && (item.specifiers || '') === (outcome.specifier || '')
-        );
-        
-        if (market && market.outcomes) {
-          // Find the outcome in the market
-          const newOutcome = market.outcomes.find(
-            (odd) => String(odd.id) === String(outcome.outcomeID)
-          );
+        if (markets.length > 0) {
+          // Create a new object for updatedOutcomes to avoid mutation during render
+          const updatedOutcomesCopy = {...updatedOutcomes.value};
           
-          if (newOutcome) {
-            // Update odds and active status
-            if (outcome.odds !== newOutcome.odds || outcome.active !== (newOutcome.active ? 1 : 0)) {
-              outcome.odds = newOutcome.odds;
-              outcome.active = newOutcome.active ? 1 : 0;
-              hasChanges = true;
+          // Update tracking object
+          markets.forEach(market => {
+            if (market.outcomes) {
+              market.outcomes.forEach(outcome => {
+                const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`;
+                updatedOutcomesCopy[key] = {
+                  odds: outcome.odds,
+                  active: outcome.active ? 1 : 0,
+                  timestamp: Date.now()
+                };
+              });
             }
-          }
+          });
+          
+          // Update the ref after all changes are prepared
+          updatedOutcomes.value = updatedOutcomesCopy;
+          
+          // Instead of directly modifying outcomes.value, call getOdds()
+          getOdds();
+          
+          // Update betslip
+          updateBetslipWithNewOdds(matchId, markets);
         }
         
-        newOutcomes[i] = outcome;
-      }
-      
-      // Only update if there are actual changes
-      if (hasChanges) {
-        outcomes.value = newOutcomes;
-      }
-    }
-    
-    // Step 3: Update betslip if needed
-    updateBetslipWithNewOdds(matchId, markets);
+        updatePending.value = false;
+      });
+    }, 0);
   }
 }
 
@@ -349,8 +342,8 @@ function updateBetslipWithNewOdds(matchId, markets) {
     selections.forEach(selection => {
       // Find the updated odds for this selection
       const marketId = parseInt(selection.marketId);
-      const outcomeId = selection.outcomeId || selection.oddId;
-      const specifier = selection.specifier || '';
+      const outcomeId = selection.outcomeId;
+      const specifier = selection.specifier;
       
       // Find the market in the MQTT data
       const market = markets.find(
@@ -364,6 +357,7 @@ function updateBetslipWithNewOdds(matchId, markets) {
         );
         
         if (outcome) {
+          console.log('📊 MQTT: Outcome found in market', outcome);
           if (!outcome.active) {
             // If outcome is not active, suspend the selection
             console.log(`📊 MQTT: Outcome not active, suspending selection for match ID ${matchId}`);
@@ -372,6 +366,7 @@ function updateBetslipWithNewOdds(matchId, markets) {
             updatedAnySelection = true;
           } else {
             // If outcome is active, make sure it's not suspended
+            console.log('📊 MQTT: Outcome is active', outcome);
             if (selection.suspended || selection.unavailable) {
               console.log(`📊 MQTT: Reactivating previously suspended selection for match ID ${matchId}`);
               selection.suspended = false;
@@ -384,6 +379,8 @@ function updateBetslipWithNewOdds(matchId, markets) {
               console.log(`📊 MQTT: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
               selection.odds = outcome.odds;
               selection.changed = true;
+              selection.suspended = false;
+              selection.unavailable = false;
               updatedAnySelection = true;
               
               // Reset the changed flag after 5 seconds
@@ -427,51 +424,59 @@ function handleBetStop(data) {
   
   console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
   
-  // Clone outcomes value
-  const newOutcomes = [...outcomes.value];
-  
-  // Loop through current outcomes and update odds to 0
-  for (let index = 0; index < newOutcomes.length; index++) {
-    const outcome = { ...newOutcomes[index] };
-    outcome.odds = 0;
-    outcome.active = 0;
+  // Use setTimeout to break potential update cycles
+  setTimeout(() => {
+    // Clone outcomes value
+    const newOutcomes = outcomes.value.map(outcome => ({
+      ...outcome,
+      odds: 0,
+      active: 0
+    }));
+    
+    // Create a new updatedOutcomes object
+    const updatedOutcomesCopy = {...updatedOutcomes.value};
     
     // Update our tracking object
-    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`;
-    updatedOutcomes.value[key] = {
-      odds: 0,
-      active: 0,
-      timestamp: Date.now()
-    };
-    
-    newOutcomes[index] = outcome;
-  }
-  
-  // Update outcomes state
-  outcomes.value = newOutcomes;
-  
-  // Update betslip selections for this match
-  const selections = couponStore.coupon.selections.filter(
-    (sel) => String(sel.matchId) === String(matchId)
-  );
-  
-  if (selections.length > 0) {
-    console.log(`📊 MQTT: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
-    
-    // Process each matching selection
-    selections.forEach(selection => {
-      // Suspend the selection
-      selection.suspended = true;
-      selection.unavailable = true;
-      selection.odds = 0;
+    newOutcomes.forEach(outcome => {
+      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`;
+      updatedOutcomesCopy[key] = {
+        odds: 0,
+        active: 0,
+        timestamp: Date.now()
+      };
     });
     
-    // Force a reactivity update
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: "all",
-    });
-  }
+    // Update refs after preparing all changes
+    updatedOutcomes.value = updatedOutcomesCopy;
+    
+    // Only update if there's an actual change
+    if (JSON.stringify(newOutcomes) !== JSON.stringify(outcomes.value)) {
+      outcomes.value = newOutcomes;
+    }
+    
+    // Update betslip selections for this match
+    const selections = couponStore.coupon.selections.filter(
+      (sel) => String(sel.matchId) === String(matchId)
+    );
+    
+    if (selections.length > 0) {
+      console.log(`📊 MQTT: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
+      
+      // Process each matching selection
+      selections.forEach(selection => {
+        // Suspend the selection
+        selection.suspended = true;
+        selection.unavailable = true;
+        selection.odds = 0;
+      });
+      
+      // Force a reactivity update
+      couponStore.updateWinnings({
+        stake: couponStore.coupon.totalStake,
+        id: "all",
+      });
+    }
+  }, 0);
 }
 
 // Watch for changes to props.gameData.outcomes
@@ -479,8 +484,8 @@ watch(
   () => props.gameData.outcomes,
   (newOutcomes) => {
     if (newOutcomes && newOutcomes.length > 0) {
-      // Update our local outcomes
-      outcomes.value = newOutcomes;
+      // Don't call getOdds() here as it might create a cycle
+      // Just update the betslip if needed
       
       // Check if any betslip selections need to be updated
       const matchId = props.gameData.matchID;
@@ -496,8 +501,8 @@ watch(
         selections.forEach(selection => {
           // Find the updated odds for this selection
           const marketId = parseInt(selection.marketId);
-          const outcomeId = selection.outcomeId || selection.oddId;
-          const specifier = selection.specifier || '';
+          const outcomeId = selection.outcomeId;
+          const specifier = selection.specifier;
           
           // Find the outcome in the gameData
           const outcome = newOutcomes.find(
@@ -650,7 +655,10 @@ function checkBetslipOnRefresh() {
 watch(
   [() => props.activeMarket, () => props.gameData.outcomes],
   () => {
-    getOdds()
+    // Use setTimeout to break potential update cycles
+    setTimeout(() => {
+      getOdds();
+    }, 0);
   },
   { immediate: true }
 )

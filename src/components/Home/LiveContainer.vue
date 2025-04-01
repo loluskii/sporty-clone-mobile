@@ -65,7 +65,7 @@
               <LiveHighlightsFixture
                 v-for="(fixture, index) in filteredLiveData"
                 :gameData="fixture"
-                :key="index"
+                :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`"
                 :activeMarket="activeMarket"
               ></LiveHighlightsFixture>
             </div>
@@ -75,7 +75,7 @@
           </div>
         </div>
       </template>
-      <div v-else-if="!isLoading || isEmptyResponse" class="no-data">
+      <div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
         <div style="white-space: pre-line">
           <p>Sorry, there are no games currently available</p>
           <p>in this category. Please try later.</p>
@@ -97,13 +97,12 @@ import { defineComponent, onMounted, ref, computed, watch, onUnmounted } from 'v
 import _ from 'lodash'
 
 const activeSportID = ref(1)
-const isEmptyResponse = ref(true)
+const isEmptyResponse = ref(false)
 const loadingError = ref(false)
 const utilsStore = useUtilstStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
-const completeLiveData = ref([])
-const isLoading = ref(false)
+
 
 // Function to check if betslip selections exist in current event list
 function checkBetslipSelectionsExist() {
@@ -111,127 +110,171 @@ function checkBetslipSelectionsExist() {
     return;
   }
   
-  // Get all match IDs from current fixtures
+  // Create a Set for faster lookups
   const availableMatchIds = new Set(
     completeLiveData.value.fixtures.map(fixture => String(fixture.matchID))
   );
   
+  // Create a copy of selections to avoid modifying during iteration
+  const selections = [...couponStore.coupon.selections];
   let updatedAnySelection = false;
   
   // Check each selection in the betslip
-  couponStore.coupon.selections.forEach(selection => {
-    // Check if this is a live selection
-    if (selection.type === "live") {
-      const matchId = String(selection.matchId);
+  // selections.forEach(selection => {
+  //   // Check if this is a live selection
+  //   if (selection.type === "live") {
+  //     const matchId = String(selection.matchId);
       
-      // If the match is not in the current event list
-      if (!availableMatchIds.has(matchId)) {
-        // Suspend the selection
-        selection.suspended = true;
-        selection.unavailable = true;
-        selection.odds = 0;
-        updatedAnySelection = true;
-      }
-    }
-  });
+  //     // If the match is not in the current event list
+  //     if (!availableMatchIds.has(matchId)) {
+  //       // Suspend the selection
+  //       selection.suspended = true;
+  //       selection.unavailable = true;
+  //       selection.odds = 0;
+  //       updatedAnySelection = true;
+  //     }
+  //   }
+  // });
   
   // Only update winnings if we actually changed any selections
   if (updatedAnySelection) {
-    // Force a reactivity update
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: "all",
-    });
+    // Use setTimeout to break potential update cycles
+    setTimeout(() => {
+      // Force a reactivity update
+      couponStore.updateWinnings({
+        stake: couponStore.coupon.totalStake,
+        id: "all",
+      });
+    }, 0);
   }
 }
 
-// const {
-//   data: completeLiveData,
-//   // error,
-//   isLoading,
-//   refetch
-// } = useQuery('liveData', getLiveHighlights, {
-//   // refetchInterval: 60000 * 3, // 3 minutes in milliseconds
-//   onError: (err) => {
-//     console.error(err)
-//     loadingError.value = true
-//   },
-//   onSuccess: (response) => {
-//     loadingError.value = false
+const {
+  data: completeLiveData,
+  isLoading,
+  refetch
+} = useQuery('liveData', getLiveHighlights, {
+  // Prevent automatic refetching which can cause recursive updates
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  // Use a longer stale time to prevent unnecessary refetches
+  staleTime: 60000, // 1 minute
+  // Add cacheTime to control how long data stays in cache
+  cacheTime: 300000, // 5 minutes
+  // Use a more conservative refetch interval
+  refetchInterval: 60000 * 3, // 3 minutes
+  // Add retry logic with exponential backoff
+  retry: (failureCount, error) => {
+    // Don't retry on 4xx errors
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false;
+    }
+    return failureCount < 3; // retry up to 3 times
+  },
+  retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  onError: (err) => {
+    console.error('Error fetching live data:', err);
+    loadingError.value = true;
+  },
+  onSuccess: (response) => {
+    loadingError.value = false;
     
-//     // if (response.fixtures) {
-//     //   totalFixtures.value = response.fixtures.length
-//     //   // marketsGroup.value = response.markets.filter((market) => market.specifier === '')
-//     //   const uniqueList = []
-//     //   const uniqueSet = new Set()
-
-//     //   response.fixtures.forEach((fixture) => {
-//     //     const key = `${fixture.sportName}`
-//     //     if (!uniqueSet.has(key)) {
-//     //       uniqueSet.add(key)
-//     //       uniqueList.push({
-//     //         sportID: fixture.sportID,
-//     //         sportName: fixture.sportName
-//     //       })
-//     //     }
-//     //   })
-//     //   const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
-//     //   activeSportID.value = sortedUniqueList[0].sportID
-//     // } else {
-//     //   isEmptyResponse.value = true
-//     // }
-//   }
-// })
+    // Use setTimeout to break potential update cycles
+    setTimeout(() => {
+      if (response.fixtures) {
+        totalFixtures.value = response.fixtures.length;
+        
+        // Process sports list in a more efficient way
+        const uniqueMap = new Map();
+        
+        response.fixtures.forEach((fixture) => {
+          if (!uniqueMap.has(fixture.sportID)) {
+            uniqueMap.set(fixture.sportID, {
+              sportID: fixture.sportID,
+              sportName: fixture.sportName
+            });
+          }
+        });
+        
+        // Convert map to array and sort
+        const sortedUniqueList = Array.from(uniqueMap.values())
+          .sort((a, b) => a.sportID - b.sportID);
+        
+        // Only update activeSportID if it's not already set or not in the list
+        if (!activeSportID.value || !sortedUniqueList.some(sport => sport.sportID === activeSportID.value)) {
+          activeSportID.value = sortedUniqueList[0]?.sportID || 1;
+        }
+        
+        // Check betslip selections after data is loaded
+        checkBetslipSelectionsExist();
+      } else {
+        isEmptyResponse.value = true;
+      }
+    }, 0);
+  }
+});
 
 // Watch for changes to completeLiveData and run checkBetslipSelectionsExist when it has a value
 watch(
   () => completeLiveData.value,
   (newData) => {
     if (newData && newData.fixtures) {
-      checkBetslipSelectionsExist();
+      // Use setTimeout to break potential update cycles
+      setTimeout(() => {
+        checkBetslipSelectionsExist();
+      }, 0);
     }
   },
   { immediate: true }
-)
+);
 
 // Also watch for changes to the betslip selections
 watch(
   () => couponStore.coupon.selections,
   () => {
     if (completeLiveData.value && completeLiveData.value.fixtures) {
-      checkBetslipSelectionsExist();
+      // Use setTimeout to break potential update cycles
+      setTimeout(() => {
+        // checkBetslipSelectionsExist();
+      }, 0);
     }
   },
   { deep: true }
-)
+);
 
 const sportsListData = computed(() => {
-  if (isEmptyResponse.value) {
-    return []
-  } else {
-    const uniqueList = []
-    const uniqueSet = new Set()
-
-    completeLiveData.value?.fixtures?.forEach((fixture) => {
-      const key = `${fixture.sportName}`
-      if (!uniqueSet.has(key)) {
-        uniqueSet.add(key)
-        uniqueList.push({
-          sportID: fixture.sportID,
-          sportName: fixture.sportName
-        })
-      }
-    })
-    const sortedUniqueList = uniqueList.sort((a, b) => a.sportID - b.sportID)
-    return sortedUniqueList
+  if (isEmptyResponse.value || !completeLiveData.value?.fixtures) {
+    return [];
   }
-})
+  
+  // Use a Map for deduplication (more efficient than Set + Array)
+  const uniqueMap = new Map();
+  
+  completeLiveData.value.fixtures.forEach((fixture) => {
+    if (!uniqueMap.has(fixture.sportID)) {
+      uniqueMap.set(fixture.sportID, {
+        sportID: fixture.sportID,
+        sportName: fixture.sportName
+      });
+    }
+  });
+  
+  // Convert map to array and sort
+  return Array.from(uniqueMap.values())
+    .sort((a, b) => a.sportID - b.sportID);
+});
 
 const filteredLiveData = computed(() => {
-  return completeLiveData.value?.fixtures && !isEmptyResponse.value
-    ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value).slice(0, 5)
-    : []
-})
+  if (!completeLiveData.value?.fixtures || isEmptyResponse.value) {
+    return [];
+  }
+  
+  // Use more efficient filtering
+  return completeLiveData.value.fixtures
+    .filter(fixture => fixture.sportID === activeSportID.value)
+    .slice(0, 5);
+});
 
 const marketsGroup = computed(() => {
   let markets =
