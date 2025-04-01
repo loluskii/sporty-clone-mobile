@@ -398,93 +398,92 @@ function handleBetStop(data) {
 
 // Function to synchronize betslip with component state
 function synchronizeBetslipWithComponent() {
-  console.log(`🔄 Synchronizing betslip with component for match ${props.gameData.matchID}`);
-  
-  // Find selections in betslip for this match
   const matchId = props.gameData.matchID;
   const selections = couponStore.coupon.selections.filter(
     (sel) => String(sel.matchId) === String(matchId)
-  );
-  
+  );  
   // Track if we made any changes
   let updatedAnySelection = false;
   
-  // For each selection in the betslip
-  selections.forEach(selection => {
-    // Find the corresponding outcome in our component
-    const marketId = parseInt(selection.marketId);
-    const outcomeId = selection.outcomeId || selection.oddId;
-    const specifier = selection.specifier || '';
-    
-    // First check our current outcomes array
-    let matchingOutcome = outcomes.value.find(
-      o => o.marketID === marketId && 
-           String(o.outcomeID) === String(outcomeId) && 
-           (o.specifier || '') === specifier
-    );
-    
-    // If not found in current outcomes, check all outcomes in gameData
-    if (!matchingOutcome && props.gameData.outcomes) {
-      matchingOutcome = props.gameData.outcomes.find(
+  if(selections.length > 0){
+    console.log(`🔄 Synchronizing betslip with component for match ${props.gameData.matchID}`);
+    // For each selection in the betslip
+    selections.forEach(selection => {
+      // Find the corresponding outcome in our component
+      const marketId = parseInt(selection.marketId);
+      const outcomeId = selection.outcomeId || selection.oddId;
+      const specifier = selection.specifier || '';
+      
+      // First check our current outcomes array
+      let matchingOutcome = outcomes.value.find(
         o => o.marketID === marketId && 
-             String(o.outcomeID) === String(outcomeId) && 
-             (o.specifier || '') === specifier
+            String(o.outcomeID) === String(outcomeId) && 
+            (o.specifier || '') === specifier
       );
-    }
-    
-    // If we found a matching outcome, update the betslip
-    if (matchingOutcome) {
-      // Check if outcome is active
-      if (matchingOutcome.active === 0) {
+      
+      // If not found in current outcomes, check all outcomes in gameData
+      if (!matchingOutcome && props.gameData.outcomes) {
+        matchingOutcome = props.gameData.outcomes.find(
+          o => o.marketID === marketId && 
+              String(o.outcomeID) === String(outcomeId) && 
+              (o.specifier || '') === specifier
+        );
+      }
+      
+      // If we found a matching outcome, update the betslip
+      if (matchingOutcome) {
+        // Check if outcome is active
+        if (matchingOutcome.active === 0) {
+          if (!selection.suspended || !selection.unavailable) {
+            console.log(`🔄 Suspending selection in betslip for match ${matchId}`);
+            selection.suspended = true;
+            selection.unavailable = true;
+            updatedAnySelection = true;
+          }
+        } else {
+          // If outcome is active but selection is suspended, reactivate it
+          if (selection.suspended || selection.unavailable) {
+            console.log(`🔄 Reactivating selection in betslip for match ${matchId}`);
+            selection.suspended = false;
+            selection.unavailable = false;
+            updatedAnySelection = true;
+          }
+          
+          // Update odds if they've changed
+          if (matchingOutcome.odds !== selection.odds) {
+            console.log(`🔄 Updating odds in betslip from ${selection.odds} to ${matchingOutcome.odds}`);
+            selection.odds = matchingOutcome.odds;
+            selection.changed = true;
+            updatedAnySelection = true;
+            
+            // Reset the changed flag after 5 seconds
+            setTimeout(() => {
+              selection.changed = false;
+              couponStore.updateWinnings({
+                stake: couponStore.coupon.totalStake,
+                id: "all",
+              });
+            }, 5000);
+          }
+        }
+      } else {
+        // If we can't find the outcome, suspend the selection
         if (!selection.suspended || !selection.unavailable) {
-          console.log(`🔄 Suspending selection in betslip for match ${matchId}`);
+          console.log(`🔄 Outcome not found, suspending selection in betslip for match ${matchId}`);
           selection.suspended = true;
           selection.unavailable = true;
           updatedAnySelection = true;
         }
-      } else {
-        // If outcome is active but selection is suspended, reactivate it
-        if (selection.suspended || selection.unavailable) {
-          console.log(`🔄 Reactivating selection in betslip for match ${matchId}`);
-          selection.suspended = false;
-          selection.unavailable = false;
-          updatedAnySelection = true;
-        }
-        
-        // Update odds if they've changed
-        if (matchingOutcome.odds !== selection.odds) {
-          console.log(`🔄 Updating odds in betslip from ${selection.odds} to ${matchingOutcome.odds}`);
-          selection.odds = matchingOutcome.odds;
-          selection.changed = true;
-          updatedAnySelection = true;
-          
-          // Reset the changed flag after 5 seconds
-          setTimeout(() => {
-            selection.changed = false;
-            couponStore.updateWinnings({
-              stake: couponStore.coupon.totalStake,
-              id: "all",
-            });
-          }, 5000);
-        }
       }
-    } else {
-      // If we can't find the outcome, suspend the selection
-      if (!selection.suspended || !selection.unavailable) {
-        console.log(`🔄 Outcome not found, suspending selection in betslip for match ${matchId}`);
-        selection.suspended = true;
-        selection.unavailable = true;
-        updatedAnySelection = true;
-      }
-    }
-  });
-  
-  // Update betslip if needed
-  if (updatedAnySelection) {
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: "all",
     });
+    
+    // Update betslip if needed
+    if (updatedAnySelection) {
+      couponStore.updateWinnings({
+        stake: couponStore.coupon.totalStake,
+        id: "all",
+      });
+    }
   }
 }
 
