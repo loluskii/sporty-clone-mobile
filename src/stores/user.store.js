@@ -23,7 +23,10 @@ export const useUsersStore = defineStore({
   actions: {
     async loadCurrentUser() {
       // this.currentUser contains all user properties. E.g. this.currentUser.first_name
-      Promise.all([getUserDetailsByToken(), getUserActiveBonus()]).then((res) => {
+      Promise.all([
+        getUserDetailsByToken(), 
+        // getUserActiveBonus()
+      ]).then((res) => {
         this.currentUser = res[0].data
         if (res[1].data) {
           this.casinoActiveBonus = res[1].data
