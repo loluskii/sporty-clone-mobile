@@ -17,9 +17,11 @@ import {
   bookBet2,
   CLIENT_ID
 } from '@/helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
+const { subscribe, unsubscribe } = useMqttService()
 
 export const useCouponStore = defineStore({
   id: 'coupon',
@@ -51,12 +53,174 @@ export const useCouponStore = defineStore({
       exciseDuty: 0,
       useBonus: false,
       source: 'mobile'
-    }
+    },
+    activeSubscriptions: [], // Change to array instead of Set
   }),
   getters: {
     betslipMode: (state) => (state.mode === 'sim'),
   },
   actions: {
+    // Helper method to manage MQTT subscriptions
+    manageSubscription(selection, isAdding = true) {
+      const matchId = selection.matchId || selection.fixture?.matchID
+      const type = selection.type // 'live' or 'prematch'
+      
+      if (!matchId) return
+      
+      const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
+      const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
+      
+      if (isAdding) {
+        // Only subscribe if we haven't already
+        if (!this.activeSubscriptions.includes(oddsChangeTopic)) {
+          console.log(`📊 Betslip: Subscribing to ${oddsChangeTopic}`)
+          
+          subscribe(oddsChangeTopic, (data) => {
+            this.handleOddsChange(data, selection)
+          })
+          
+          subscribe(betStopTopic, (data) => {
+            this.handleBetStop(data, selection)
+          })
+          
+          this.activeSubscriptions.push(oddsChangeTopic)
+        }
+      } else {
+        // Only unsubscribe if no other selections from same match
+        const hasOtherSelectionsFromMatch = this.coupon.selections.some(
+          s => (s.matchId === matchId || s.fixture?.matchID === matchId) && 
+              s.selectionId !== selection.selectionId
+        )
+        
+        if (!hasOtherSelectionsFromMatch && this.activeSubscriptions.includes(oddsChangeTopic)) {
+          console.log(`📊 Betslip: Unsubscribing from ${oddsChangeTopic}`)
+          unsubscribe(oddsChangeTopic)
+          unsubscribe(betStopTopic)
+          this.activeSubscriptions = this.activeSubscriptions.filter(topic => topic !== oddsChangeTopic)
+        }
+      }
+    },
+
+    // Handle incoming odds changes
+    handleOddsChange(data, selection) {
+      if (!data || !data.markets) return;
+      
+      const matchId = selection.matchId || selection.fixture?.matchID;
+      const dataMatchId = data.event_id || data.match_id;
+      
+      // If the data doesn't match our event, ignore it
+      if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+        console.log('📊 Betslip: Ignoring odds change for match ID', dataMatchId, 'our match ID is', matchId);
+        return;
+      }
+      
+      console.log('📊 Betslip: Processing odds change for match ID', matchId);
+      
+      const markets = data.markets || [];
+      let updatedAnySelection = false;
+      
+      if (markets.length > 0) {
+        // Find all selections from this match
+        const matchSelections = this.coupon.selections.filter(
+          sel => String(sel.matchId) === String(matchId) || String(sel.fixture?.matchID) === String(matchId)
+        );
+        
+        matchSelections.forEach(selection => {
+          const marketId = selection.marketId || selection.market_id;
+          const outcomeId = selection.outcomeId || selection.odd_id;
+          
+          // Find the market
+          const market = markets.find(m => String(m.id) === String(marketId));
+          if (market && market.outcomes) {
+            // Find the outcome
+            const outcome = market.outcomes.find(
+              o => String(o.id) === String(outcomeId)
+            );
+            
+            if (outcome) {
+              console.log('📊 Betslip: Found outcome', outcome);
+              if (!outcome.active) {
+                // If outcome is not active, suspend the selection
+                console.log(`📊 Betslip: Outcome not active, suspending selection for match ID ${matchId}`);
+                selection.suspended = true;
+                selection.unavailable = true;
+                updatedAnySelection = true;
+              } else {
+                // If outcome is active, make sure it's not suspended
+                if (selection.suspended || selection.unavailable) {
+                  console.log(`📊 Betslip: Reactivating previously suspended selection for match ID ${matchId}`);
+                  selection.suspended = false;
+                  selection.unavailable = false;
+                  updatedAnySelection = true;
+                }
+                
+                // Update odds if they've changed
+                if (outcome.odds !== selection.odds) {
+                  console.log(`📊 Betslip: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
+                  selection.odds = outcome.odds;
+                  selection.changed = true;
+                  updatedAnySelection = true;
+                  
+                  // Reset the changed flag after 5 seconds
+                  setTimeout(() => {
+                    selection.changed = false;
+                    
+                    // Force a reactivity update
+                    this.updateWinnings({
+                      stake: this.coupon.totalStake,
+                      id: "all",
+                    });
+                  }, 5000);
+                }
+              }
+            }
+          }
+        });
+        
+        // Only update winnings if we actually changed any selections
+        if (updatedAnySelection) {
+          this.updateWinnings({
+            stake: this.coupon.totalStake,
+            id: "all",
+          });
+        }
+      }
+    },
+
+    // Handle bet stop messages
+    handleBetStop(data, selection) {
+      const matchId = selection.matchId || selection.fixture?.matchID;
+      const dataMatchId = data.event_id || data.match_id;
+      
+      if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+        console.log(`📊 Betslip: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+        return;
+      }
+      
+      console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
+      
+      // Find all selections from this match
+      const matchSelections = this.coupon.selections.filter(
+        sel => String(sel.matchId) === String(matchId) || String(sel.fixture?.matchID) === String(matchId)
+      );
+      
+      if (matchSelections.length > 0) {
+        console.log(`⚠️ BET STOP: Suspending ${matchSelections.length} selections in betslip for match ID ${matchId}`);
+        
+        matchSelections.forEach(selection => {
+          selection.suspended = true;
+          selection.unavailable = true;
+          selection.odds = 0;
+        });
+        
+        // Force a reactivity update
+        this.updateWinnings({
+          stake: this.coupon.totalStake,
+          id: "all",
+        });
+      }
+    },
+
     async addToCoupon(selection) {
       const couponPayload = selection
 
@@ -190,6 +354,9 @@ export const useCouponStore = defineStore({
           }
         }
       }
+
+      // After successfully adding selection, subscribe to its updates
+      this.manageSubscription(selection, true)
     },
     async removeSelection(id) {
       // const { id, globalVars } = action.payload;
@@ -304,6 +471,14 @@ export const useCouponStore = defineStore({
           source: 'mobile'
         }
         this.coupon = coupon
+      }
+
+      // Find the selection before removing it
+      const selection = this.coupon.selections.find(s => s.selectionId === id || s.id === id)
+      
+      if (selection) {
+        // Unsubscribe from updates
+        this.manageSubscription(selection, false)
       }
     },
     updateWinnings(payload) {
