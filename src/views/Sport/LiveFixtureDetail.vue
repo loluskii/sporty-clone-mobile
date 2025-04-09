@@ -13,8 +13,7 @@
             <div>
               <div class="m-event-league">
                 <div class="m-event-title-time">
-                  <p class="category-league">
-                    {{ eventDetail.categoryName }} - {{ eventDetail.tournament }}
+                  <p class="category-league"> {{ eventDetail.tournament }}
                   </p>
                 </div>
                 <div class="event-time">
@@ -50,7 +49,7 @@
         </div>
 
         <div class="live-match event-detail">
-          <div v-if="!matchHasEnded && !isLoading" class="m-sport-market">
+          <div v-if="!matchHasEnded && !isLoading || !noMarkets" class="m-sport-market">
             <div
               v-for="(marketGroup, index) in groupedMarkets"
               :key="index"
@@ -228,6 +227,7 @@ import _ from 'lodash'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
 const eventMarkets = ref()
 const eventDetail = ref()
@@ -239,6 +239,10 @@ const couponStore = useCouponStore()
 const homeTeam = ref()
 const awayTeam = ref()
 const isLiveTrackerShowing = ref(false)
+const { subscribe } = useMqttService()
+const updatedOutcomes = ref({})
+const updatePending = ref(false)
+const unsubscribeFunctions = ref([])
 
 watch(
   () => route.params.event_id,
@@ -250,6 +254,10 @@ watch(
 
 const matchHasEnded = computed(() => {
   return eventDetail.value.statusCode === 3
+})
+
+const noMarkets = computed(() => {
+  return eventMarkets.value.length === 0 
 })
 
 function isTotalOrHandicap(market) {
@@ -284,6 +292,7 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
+    console.log(`🔍 Fetching event details for ID: ${id}`) // Add fetch start log
     const res = await getFixtureMarkets(id)
     isLoading.value = false
     if (Object.keys(res).length && res.markets) {
@@ -292,11 +301,20 @@ async function getEventDetail(id) {
       groupedMarkets.value = groupByMarketID(res.markets)
       homeTeam.value = res.competitor1
       awayTeam.value = res.competitor2
+
+      // Set up MQTT subscriptions after we have the event details
+      if (res.matchID) {
+        console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
+        setupMqttSubscriptions(res.matchID)
+      } else {
+        console.warn(`⚠️ No matchID found in event details response`) // Add warning if no matchID
+      }
+    } else {
+      console.warn(`⚠️ Invalid event details response:`, res) // Add warning for invalid response
     }
   } catch (error) {
+    console.error(`❌ Error fetching event details:`, error) // Add error log
     eventDetail.value = null
-    // errorMessage.value = res.message
-    console.log('match is live')
     isLoading.value = false
   }
 }
@@ -321,7 +339,7 @@ const getChunks = (outcomes) => {
 }
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
     (market, index, self) => index === self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
   )
@@ -444,8 +462,145 @@ onMounted(() => {
 
   document.body.appendChild(script)
 })
+
+function setupMqttSubscriptions(matchId) {
+  console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`) // Add initial setup log
+
+  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`
+
+  // Subscribe to odds changes
+  const oddsChangeTopic = `feeds/live/odds_change/${matchId}`
+  console.log(`📊 Subscribing to odds changes on topic: ${oddsChangeTopic}`) // Add subscription log
+  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+    console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`, data)
+    handleOddsChange(data)
+  })
+
+  // Subscribe to bet stop
+  const betStopTopic = `feeds/live/bet_stop/${matchId}`
+  console.log(`⚠️ Subscribing to bet stops on topic: ${betStopTopic}`) // Add subscription log
+  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+    console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`, data)
+    handleBetStop(data)
+  })
+
+  // Store unsubscribe functions in ref
+  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop]
+  console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`) // Add completion log
+}
+
+function handleOddsChange(data) {
+  if (!data || !data.markets) return
+
+  const matchId = eventDetail.value.matchID
+  const dataMatchId = data.event_id || data.match_id
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return
+  }
+
+  if (!updatePending.value) {
+    updatePending.value = true
+
+    requestAnimationFrame(() => {
+      const markets = data.markets || []
+
+      if (markets.length > 0) {
+        const updatedOutcomesCopy = { ...updatedOutcomes.value }
+
+        markets.forEach(market => {
+          if (market.outcomes) {
+            market.outcomes.forEach(outcome => {
+              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
+              updatedOutcomesCopy[key] = {
+                odds: outcome.odds,
+                active: outcome.active ? 1 : 0,
+                timestamp: Date.now()
+              }
+            })
+          }
+        })
+
+        updatedOutcomes.value = updatedOutcomesCopy
+
+        if (eventMarkets.value.length > 0) {
+          eventMarkets.value = eventMarkets.value.map(market => {
+            const updatedMarket = markets.find(
+              m => m.id === market.marketID && (m.specifiers || '') === (market.specifier || '')
+            )
+
+            if (updatedMarket && updatedMarket.outcomes) {
+              market.outcomes = market.outcomes.map(outcome => {
+                const newOutcome = updatedMarket.outcomes.find(
+                  o => String(o.id) === String(outcome.outcomeID)
+                )
+
+                if (newOutcome) {
+                  return {
+                    ...outcome,
+                    odds: newOutcome.odds,
+                    active: newOutcome.active ? 1 : 0
+                  }
+                }
+                return outcome
+              })
+            }
+            return market
+          })
+
+          // Update grouped markets
+          groupedMarkets.value = groupByMarketID(eventMarkets.value)
+        }
+      }
+
+      updatePending.value = false
+    })
+  }
+}
+
+function handleBetStop(data) {
+  const matchId = eventDetail.value.matchID
+  const dataMatchId = data.event_id || data.match_id
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    return
+  }
+
+  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+
+  // Suspend all markets
+  if (eventMarkets.value.length > 0) {
+    eventMarkets.value = eventMarkets.value.map(market => ({
+      ...market,
+      outcomes: market.outcomes.map(outcome => ({
+        ...outcome,
+        odds: 0,
+        active: 0
+      }))
+    }))
+
+    // Update grouped markets
+    groupedMarkets.value = groupByMarketID(eventMarkets.value)
+  }
+
+  // Check if match has ended
+  if (eventDetail.value.statusCode === 3) {
+    console.log('Match has ended, showing unavailable message')
+    matchHasEnded.value = true
+  }
+}
+
 onUnmounted(() => {
-  document.getElementById('sr-tracker').remove()
+  // Clean up MQTT subscriptions
+  if (unsubscribeFunctions.value.length > 0) {
+    console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
+    unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
+    unsubscribeFunctions.value = []
+  }
+  
+  // Clean up SR tracker script
+  document.getElementById('sr-tracker')?.remove()
 })
 </script>
 

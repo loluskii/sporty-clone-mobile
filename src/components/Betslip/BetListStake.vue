@@ -157,28 +157,31 @@ const wthTax = computed(() => {
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
-  const stake = betlistStake.value;
-  const totalOdd = couponStore.coupon.totalOdds;
+  const stake = parseFloat(betlistStake.value) || 0;
+  const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0;
   let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0);
 
   if (taxEnabled.value) {
-    let finalPayout = stake * totalOdds;
+    let finalPayout = stake * totalOdd;
 
     if (exciseTax.value > 0) {
-      finalPayout = stakeAfterTax.value * totalOdd;
+      finalPayout = parseFloat(stakeAfterTax.value || 0) * totalOdd;
     }
 
     if (wth > 0) {
       // wth tax
-      finalPayout = finalPayout - wthTax.value;
+      finalPayout = finalPayout - parseFloat(wthTax.value || 0);
     }
-    return (finalPayout + maxBonus.value).toFixed(2);
+    return formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2));
   }
 
   const isSingleBet = props.betSlipType === "Single" && selectionsLength.value === 1;
   const isMultipleBet = props.betSlipType === "Multiple";
 
-  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
+  if (isMultipleBet || isSingleBet) {
+    return formatNumber(parseFloat(maxWin.value || 0));
+  }
+  return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(parseFloat(maxWin.value || 0))}`;
 });
 
 const toggleKeyboard = () => {

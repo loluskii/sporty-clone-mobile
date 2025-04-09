@@ -168,7 +168,7 @@ const getSpecifiers = computed(() => {
 })
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
     (market, index, self) =>
       index ===
@@ -274,7 +274,7 @@ watch(
 )
 
 onMounted(() => {
-  console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.eventData.matchID)
+  // console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.eventData.matchID)
   
   // Initialize outcomes from props
   localOutcomes.value = props.eventData.outcomes || []
@@ -291,20 +291,20 @@ onMounted(() => {
     // Subscribe to bet stop first (higher priority)
     const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
+      // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
       handleBetStop(data)
     })
     
     // Then subscribe to odds changes
     const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
+      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
       handleOddsChange(data)
     })
     
     // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
+      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
       unsubscribeBetStop()
       unsubscribeOddsChange()
     })
@@ -391,11 +391,11 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
   
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
     return
   }
   
-  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
   
   outcomes.value = outcomes.value.map(outcome => ({
     ...outcome,
@@ -416,7 +416,7 @@ function handleBetStop(data) {
   const currentTime = new Date()
   
   if (matchTime < currentTime) {
-    console.log('Match time has passed, removing fixture:', props.eventData.matchID)
+    // console.log('Match time has passed, removing fixture:', props.eventData.matchID)
     emitter.emit('remove-fixture', props.eventData.matchID)
   }
 }

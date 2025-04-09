@@ -14,6 +14,7 @@ import {
   getBets,
   applyBranding,
   CLIENT_ID,
+  validateBetslipSelections
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
@@ -150,6 +151,50 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
+async function validateSelections(){
+  if(!couponStore.coupon.selections.length) return;
+
+  const selections = couponStore.coupon.selections.map((event) => ({
+    matchId: parseInt(event.matchId),
+    marketId: event.marketId.toString(),
+    outcomeId: event.outcomeId,
+    specifier: event.specifier
+  }))
+  const res = await validateBetslipSelections({events: selections})
+  
+  if(res.success){
+    // Convert response object to array of validated selections
+    const validatedSelections = Object.values(res.data);
+    
+    // Update each selection with the new odds and active status
+    validatedSelections.forEach(validatedSelection => {
+      const selection = couponStore.coupon.selections.find(sel => 
+        String(sel.matchId) === String(validatedSelection.matchId) && 
+        String(sel.marketId) === validatedSelection.marketId && 
+        String(sel.outcomeId) === validatedSelection.outcomeId
+      );
+      
+      if(selection) {
+        selection.odds = validatedSelection.odds;
+        selection.suspended = !validatedSelection.active;
+        selection.unavailable = !validatedSelection.active;
+        selection.changed = true;
+        
+        // Reset the changed flag after 5 seconds
+        setTimeout(() => {
+          selection.changed = false;
+        }, 5000);
+      }
+    });
+
+    // Recalculate winnings after updating all selections
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all"
+    });
+  }
+}
+
 watch(
   () => route.query.shareCode,
   async (code) => {
@@ -180,7 +225,7 @@ onMounted(async () => {
       });
   }
 
-  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu()])
+  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;

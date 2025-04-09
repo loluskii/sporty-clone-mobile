@@ -349,88 +349,88 @@ function handleBetStop(data) {
 }
 
 // Watch for changes to props.gameData.outcomes
-watch(
-  () => props.gameData.outcomes,
-  (newOutcomes) => {
-    if (newOutcomes && newOutcomes.length > 0) {
-      // Don't call getOdds() here as it might create a cycle
-      // Just update the betslip if needed
+// watch(
+//   () => props.gameData.outcomes,
+//   (newOutcomes) => {
+//     if (newOutcomes && newOutcomes.length > 0) {
+//       // Don't call getOdds() here as it might create a cycle
+//       // Just update the betslip if needed
       
-      // Check if any betslip selections need to be updated
-      const matchId = props.gameData.matchID;
-      const selections = couponStore.coupon.selections.filter(
-        (sel) => String(sel.matchId) === String(matchId)
-      );
+//       // Check if any betslip selections need to be updated
+//       const matchId = props.gameData.matchID;
+//       const selections = couponStore.coupon.selections.filter(
+//         (sel) => String(sel.matchId) === String(matchId)
+//       );
       
-      if (selections.length > 0) {
-        console.log(`🔄 Props: Found ${selections.length} selections in betslip for match ID ${matchId}`);
-        let updatedAnySelection = false;
+//       if (selections.length > 0) {
+//         console.log(`🔄 Props: Found ${selections.length} selections in betslip for match ID ${matchId}`);
+//         let updatedAnySelection = false;
         
-        // Process each matching selection
-        selections.forEach(selection => {
-          // Find the updated odds for this selection
-          const marketId = parseInt(selection.marketId);
-          const outcomeId = selection.outcomeId;
-          const specifier = selection.specifier;
+//         // Process each matching selection
+//         selections.forEach(selection => {
+//           // Find the updated odds for this selection
+//           const marketId = parseInt(selection.marketId);
+//           const outcomeId = selection.outcomeId;
+//           const specifier = selection.specifier;
           
-          // Find the outcome in the gameData
-          const outcome = newOutcomes.find(
-            (o) => o.marketID === marketId && 
-                  String(o.outcomeID) === String(outcomeId) && 
-                  (o.specifier || '') === specifier
-          );
+//           // Find the outcome in the gameData
+//           const outcome = newOutcomes.find(
+//             (o) => o.marketID === marketId && 
+//                   String(o.outcomeID) === String(outcomeId) && 
+//                   (o.specifier || '') === specifier
+//           );
           
-          if (outcome) {
-            if (outcome.active === 0) {
-              // If outcome is not active, suspend the selection
-              console.log(`🔄 Props: Outcome not active, suspending selection for match ID ${matchId}`);
-              selection.suspended = true;
-              selection.unavailable = true;
-              updatedAnySelection = true;
-            } else {
-              // If outcome is active, make sure it's not suspended
-              if (selection.suspended || selection.unavailable) {
-                console.log(`🔄 Props: Reactivating previously suspended selection for match ID ${matchId}`);
-                selection.suspended = false;
-                selection.unavailable = false;
-                updatedAnySelection = true;
-              }
+//           if (outcome) {
+//             if (outcome.active === 0) {
+//               // If outcome is not active, suspend the selection
+//               console.log(`🔄 Props: Outcome not active, suspending selection for match ID ${matchId}`);
+//               selection.suspended = true;
+//               selection.unavailable = true;
+//               updatedAnySelection = true;
+//             } else {
+//               // If outcome is active, make sure it's not suspended
+//               if (selection.suspended || selection.unavailable) {
+//                 console.log(`🔄 Props: Reactivating previously suspended selection for match ID ${matchId}`);
+//                 selection.suspended = false;
+//                 selection.unavailable = false;
+//                 updatedAnySelection = true;
+//               }
               
-              // Update odds if they've changed
-              if (outcome.odds !== selection.odds) {
-                console.log(`🔄 Props: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
-                selection.odds = outcome.odds;
-                selection.changed = true;
-                updatedAnySelection = true;
+//               // Update odds if they've changed
+//               if (outcome.odds !== selection.odds) {
+//                 console.log(`🔄 Props: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
+//                 selection.odds = outcome.odds;
+//                 selection.changed = true;
+//                 updatedAnySelection = true;
                 
-                // Reset the changed flag after 5 seconds
-                setTimeout(() => {
-                  selection.changed = false;
+//                 // Reset the changed flag after 5 seconds
+//                 setTimeout(() => {
+//                   selection.changed = false;
                   
-                  // Force a reactivity update
-                  couponStore.updateWinnings({
-                    stake: couponStore.coupon.totalStake,
-                    id: "all",
-                  });
-                }, 5000);
-              }
-            }
-          }
-        });
+//                   // Force a reactivity update
+//                   couponStore.updateWinnings({
+//                     stake: couponStore.coupon.totalStake,
+//                     id: "all",
+//                   });
+//                 }, 5000);
+//               }
+//             }
+//           }
+//         });
         
-        // Only update winnings if we actually changed any selections
-        if (updatedAnySelection) {
-          // Force a reactivity update
-          couponStore.updateWinnings({
-            stake: couponStore.coupon.totalStake,
-            id: "all",
-          });
-        }
-      }
-    }
-  },
-  { deep: true }
-)
+//         // Only update winnings if we actually changed any selections
+//         if (updatedAnySelection) {
+//           // Force a reactivity update
+//           couponStore.updateWinnings({
+//             stake: couponStore.coupon.totalStake,
+//             id: "all",
+//           });
+//         }
+//       }
+//     }
+//   },
+//   { deep: true }
+// )
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(

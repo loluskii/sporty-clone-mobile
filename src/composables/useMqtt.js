@@ -73,12 +73,12 @@ export function useMqttService() {
           messageCache[matchId].updated = true;
         }
       } catch (error) {
-        console.error(`Error parsing MQTT message for topic ${topic}:`, error);
+        // console.error(`Error parsing MQTT message for topic ${topic}:`, error);
       }
     });
 
     mqttClient.on('error', (error) => {
-      console.error('MQTT connection error:', error);
+      // console.error('MQTT connection error:', error);
       connectionError.value = error;
     });
 
@@ -113,7 +113,7 @@ export function useMqttService() {
           try {
             callback(matchData.betStop);
           } catch (error) {
-            console.error(`Error in bet_stop callback for match ${matchId}:`, error);
+            // console.error(`Error in bet_stop callback for match ${matchId}:`, error);
           }
         });
         
@@ -130,7 +130,7 @@ export function useMqttService() {
           try {
             callback(matchData.odds);
           } catch (error) {
-            console.error(`Error in odds_change callback for match ${matchId}:`, error);
+            // console.error(`Error in odds_change callback for match ${matchId}:`, error);
           }
         });
         
@@ -150,12 +150,13 @@ export function useMqttService() {
       subscriptions.set(topic, []);
       mqttClient.subscribe(topic, (err) => {
         if (err) {
-          console.error(`Error subscribing to topic ${topic}:`, err);
+          // console.error(`Error subscribing to topic ${topic}:`, err);
         }
       });
     }
 
     subscriptions.get(topic).push(callback);
+    // console.log(`Added callback for topic ${topic}, total callbacks:`, subscriptions.get(topic).length);
     
     // Start processing interval if not already running
     if (isConnected.value && !processingInterval) {
@@ -165,16 +166,24 @@ export function useMqttService() {
     // Return unsubscribe function
     return () => {
       const callbacks = subscriptions.get(topic) || [];
+      // console.log(`Attempting to unsubscribe from ${topic}, current callbacks:`, callbacks.length);
       const index = callbacks.indexOf(callback);
       
       if (index !== -1) {
         callbacks.splice(index, 1);
+        // console.log(`Removed callback from ${topic}, remaining callbacks:`, callbacks.length);
         
         // If no more callbacks, unsubscribe from topic
         if (callbacks.length === 0) {
+          // console.log(`Unsubscribing from topic ${topic}, removing from subscriptions Map`);
           mqttClient.unsubscribe(topic);
           subscriptions.delete(topic);
+          // console.log('Current subscriptions:', Array.from(subscriptions.keys()));
+        } else {
+          // console.log(`Topic ${topic} still has ${callbacks.length} callbacks:`, callbacks);
         }
+      } else {
+        // console.log(`Callback not found for topic ${topic}, current callbacks:`, callbacks);
       }
     };
   };
@@ -182,6 +191,7 @@ export function useMqttService() {
   return {
     isConnected,
     connectionError,
-    subscribe
+    subscribe,
+    getActiveSubscriptions: () => Array.from(subscriptions.keys())
   };
 }

@@ -22,6 +22,7 @@ import { useMqttService } from '@/composables/useMqtt'
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
 const { subscribe, unsubscribe } = useMqttService()
+const mqttService = useMqttService()
 
 export const useCouponStore = defineStore({
   id: 'coupon',
@@ -52,52 +53,72 @@ export const useCouponStore = defineStore({
       wthTax: 0,
       exciseDuty: 0,
       useBonus: false,
-      source: 'mobile'
+      source: 'mobile',
     },
-    activeSubscriptions: [], // Change to array instead of Set
+    activeSubscriptions: [], // Will store objects with topic and unsubscribe function
   }),
   getters: {
     betslipMode: (state) => (state.mode === 'sim'),
   },
   actions: {
-    // Helper method to manage MQTT subscriptions
     manageSubscription(selection, isAdding = true) {
-      const matchId = selection.matchId || selection.fixture?.matchID
-      const type = selection.type // 'live' or 'prematch'
-      
-      if (!matchId) return
-      
-      const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
-      const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
-      
-      if (isAdding) {
-        // Only subscribe if we haven't already
-        if (!this.activeSubscriptions.includes(oddsChangeTopic)) {
-          console.log(`📊 Betslip: Subscribing to ${oddsChangeTopic}`)
-          
-          subscribe(oddsChangeTopic, (data) => {
-            this.handleOddsChange(data, selection)
-          })
-          
-          subscribe(betStopTopic, (data) => {
-            this.handleBetStop(data, selection)
-          })
-          
-          this.activeSubscriptions.push(oddsChangeTopic)
+      try {
+        if (!selection) {
+          console.warn('📊 Betslip: Cannot manage subscription - selection is null/undefined')
+          return
         }
-      } else {
-        // Only unsubscribe if no other selections from same match
-        const hasOtherSelectionsFromMatch = this.coupon.selections.some(
-          s => (s.matchId === matchId || s.fixture?.matchID === matchId) && 
-              s.selectionId !== selection.selectionId
-        )
+
+        const matchId = String(selection.matchId || selection.fixture?.matchID)
+        if (!matchId) {
+          console.warn('📊 Betslip: Cannot manage subscription - matchId is missing')
+          return
+        }
+
+        const type = selection.type
+        if (!type) {
+          console.warn('📊 Betslip: Cannot manage subscription - type is missing')
+          return
+        }
+
+        const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
+        const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
         
-        if (!hasOtherSelectionsFromMatch && this.activeSubscriptions.includes(oddsChangeTopic)) {
-          console.log(`📊 Betslip: Unsubscribing from ${oddsChangeTopic}`)
-          unsubscribe(oddsChangeTopic)
-          unsubscribe(betStopTopic)
-          this.activeSubscriptions = this.activeSubscriptions.filter(topic => topic !== oddsChangeTopic)
+        if (isAdding) {
+          if (!this.activeSubscriptions.some(sub => String(sub.matchId) === matchId)) {
+            const unsubscribeOdds = subscribe(oddsChangeTopic, (data) => {
+              this.handleOddsChange(data, selection)
+            })
+            const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+              this.handleBetStop(data, selection)
+            })
+            this.activeSubscriptions.push({
+              matchId,
+              oddsChangeTopic,
+              betStopTopic,
+              unsubscribeOdds,
+              unsubscribeBetStop
+            })
+          }
+        } else {
+          const hasOtherSelectionsFromMatch = this.coupon.selections.some(
+            s => String(s.matchId || s.fixture?.matchID) === matchId && 
+                s.selectionId !== selection.selectionId
+          )
+          if (!hasOtherSelectionsFromMatch) {
+            const subscription = this.activeSubscriptions.find(sub => String(sub.matchId) === matchId)
+            if (subscription) {
+              try {
+                subscription.unsubscribeOdds()
+                subscription.unsubscribeBetStop()
+              } catch (error) {
+                console.error('📊 Betslip: Error unsubscribing from topics:', error)
+              }
+              this.activeSubscriptions = this.activeSubscriptions.filter(sub => String(sub.matchId) !== matchId)
+            }
+          }
         }
+      } catch (error) {
+        console.error('📊 Betslip: Error in manageSubscription:', error)
       }
     },
 
@@ -246,6 +267,7 @@ export const useCouponStore = defineStore({
 
         //calculate and get pot winnings with bonus
         const winnings = calculateWinnings(this.coupon, globalVars, bonusList)
+        console.log(winnings)
         this.coupon.maxWin = winnings.maxWin
         this.coupon.maxBonus = winnings.maxBonus
         this.coupon.wthTax = winnings.wthTax
@@ -359,30 +381,26 @@ export const useCouponStore = defineStore({
       this.manageSubscription(selection, true)
     },
     async removeSelection(id) {
-      // const { id, globalVars } = action.payload;
-      // find deleted item
       const globalVars = this.SportsbookGlobalVariable
-
       const res = this.coupon.selections ? [...this.coupon.selections] : []
       const data = res.find((item) => item.selectionId === id || item.id === id);
+      // Call manageSubscription after updating selections array
+      if (data) {
+        this.manageSubscription(data, false)
+      }
 
       const bonusList = this.sportsbookBonusList
-      //
-      // get the new selections
       const newSelection = this.coupon.selections.filter(
         (item) => item.selectionId !== id && item.id !== id
       );
 
       this.coupon.selections = newSelection
 
+
       if (this.coupon.selections.length > 0) {
         const prevBetType = this.coupon.bet_type
-        //group selections by match
         this.coupon.tournaments = groupTournament(this.coupon.selections)
         this.coupon.fixtures = groupSelections(this.coupon.selections)
-        //check bet type
-        // console.log(this.coupon, "coups");
-        // this.coupon.bet_type = multibetCombination(this.coupon.selections);
 
         if (this.coupon.selections.length === 1) {
           this.coupon.bet_type = 'Single';
@@ -405,18 +423,23 @@ export const useCouponStore = defineStore({
           this.coupon.wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
         } else {
-          // recalculate totalOdds if prev bet type was Split
           if (prevBetType === 'Split') {
-            this.coupon.totalOdds = calculateTotalOdds(this.coupon.selections)
-            this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
+            this.coupon.totalOdds = calculateTotalOdds(
+              this.coupon.selections.filter(s => !s.suspended && !s.unavailable && parseFloat(s.odds) > 1)
+            )
           } else {
-            // else remove selection from total odds
-            this.coupon.totalOdds = (
-              parseFloat(this.coupon.totalOdds) / parseFloat(data.odds)
-            ).toFixed(2)
-            this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
+            if (!data.suspended && !data.unavailable && parseFloat(data.odds) > 1) {
+              this.coupon.totalOdds = (
+                parseFloat(this.coupon.totalOdds) / parseFloat(data.odds)
+              ).toFixed(2)
+            }
+            if (isNaN(this.coupon.totalOdds) || this.coupon.totalOdds <= 0) {
+              this.coupon.totalOdds = calculateTotalOdds(
+                this.coupon.selections.filter(s => !s.suspended && !s.unavailable && parseFloat(s.odds) > 1)
+              )
+            }
           }
-          // check if has live
+          this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
           this.coupon.hasLive = checkIfHasLive(this.coupon.selections)
 
           const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
@@ -471,14 +494,6 @@ export const useCouponStore = defineStore({
           source: 'mobile'
         }
         this.coupon = coupon
-      }
-
-      // Find the selection before removing it
-      const selection = this.coupon.selections.find(s => s.selectionId === id || s.id === id)
-      
-      if (selection) {
-        // Unsubscribe from updates
-        this.manageSubscription(selection, false)
       }
     },
     updateWinnings(payload) {
@@ -728,31 +743,90 @@ export const useCouponStore = defineStore({
       }
     },
     clearBetslip() {
-      // emit event for mqtt to stop listening
-      const coupon = {
-        acceptChanges: false,
-        selections: [],
-        combos: [],
-        totalOdds: 1,
-        maxBonus: 0,
-        minBonus: 0,
-        grossWin: 0,
-        maxWin: 0,
-        minWin: 0,
-        stake: 100,
-        totalStake: 100,
-        minOdds: 1,
-        maxOdds: 1,
-        wthTax: 0,
-        exciseDuty: 0,
-        useBonus: false,
-        source: 'mobile'
-      }
+      try {
+        // Clean up all MQTT subscriptions using manageSubscription
+        if (Array.isArray(this.coupon.selections)) {
+          this.coupon.selections.forEach(selection => {
+            if (selection) {
+              this.manageSubscription(selection, false)
+            }
+          })
+        }
+        this.activeSubscriptions = []
 
-      this.coupon = coupon
+        // Reset coupon state
+        const coupon = {
+          acceptChanges: false,
+          selections: [],
+          combos: [],
+          totalOdds: 1,
+          maxBonus: 0,
+          minBonus: 0,
+          grossWin: 0,
+          maxWin: 0,
+          minWin: 0,
+          stake: 100,
+          totalStake: 100,
+          minOdds: 1,
+          maxOdds: 1,
+          wthTax: 0,
+          exciseDuty: 0,
+          useBonus: false,
+          source: 'mobile'
+        }
+
+        this.coupon = coupon
+      } catch (error) {
+        console.error('📊 Betslip: Error in clearBetslip:', error)
+        // Still try to reset the coupon state even if cleanup fails
+        this.coupon = {
+          acceptChanges: false,
+          selections: [],
+          combos: [],
+          totalOdds: 1,
+          maxBonus: 0,
+          minBonus: 0,
+          grossWin: 0,
+          maxWin: 0,
+          minWin: 0,
+          stake: 100,
+          totalStake: 100,
+          minOdds: 1,
+          maxOdds: 1,
+          wthTax: 0,
+          exciseDuty: 0,
+          useBonus: false,
+          source: 'mobile'
+        }
+        this.activeSubscriptions = []
+      }
+    },
+    resubscribeToAllSelections() {
+      try {
+        // Clear any existing subscriptions that might be invalid
+        this.activeSubscriptions = []
+        
+        // Resubscribe to all selections in the betslip
+        this.coupon.selections.forEach(selection => {
+          if (selection) {
+            this.manageSubscription(selection, true)
+          }
+        })
+        
+        console.log('📊 Betslip: Successfully resubscribed to all selections')
+      } catch (error) {
+        console.error('📊 Betslip: Error resubscribing to selections:', error)
+      }
     }
   },
   persist: {
-    storage: localStorage
+    storage: localStorage,
+    afterRestore: (ctx) => {
+      // Resubscribe to MQTT topics for all selections in the betslip
+      if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
+        console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
+        ctx.store.resubscribeToAllSelections()
+      }
+    }
   }
 })

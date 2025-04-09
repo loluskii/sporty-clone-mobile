@@ -285,6 +285,10 @@ export const placeBet2 = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/place-bet/${CLIENT_ID}`, payload))
 }
 
+export const validateBetslipSelections = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/validate-selections`, payload))
+}
+
 export const performCashout = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/cashout/`, payload))
 }

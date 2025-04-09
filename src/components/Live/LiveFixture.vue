@@ -294,28 +294,28 @@ function handleBetStop(data) {
     active: 0
   }));
   
-  // Update betslip selections for this match
-  const selections = couponStore.coupon.selections.filter(
-    (sel) => String(sel.matchId) === String(matchId)
-  );
+  // // Update betslip selections for this match
+  // const selections = couponStore.coupon.selections.filter(
+  //   (sel) => String(sel.matchId) === String(matchId)
+  // );
   
-  if (selections.length > 0) {
-    console.log(`⚠️ BET STOP: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
+  // if (selections.length > 0) {
+  //   console.log(`⚠️ BET STOP: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
     
-    // Process each matching selection
-    selections.forEach(selection => {
-      // Suspend the selection
-      selection.suspended = true;
-      selection.unavailable = true;
-      selection.odds = 0;
-    });
+  //   // Process each matching selection
+  //   selections.forEach(selection => {
+  //     // Suspend the selection
+  //     selection.suspended = true;
+  //     selection.unavailable = true;
+  //     selection.odds = 0;
+  //   });
     
-    // Force a reactivity update
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: "all",
-    });
-  }
+  //   // Force a reactivity update
+  //   couponStore.updateWinnings({
+  //     stake: couponStore.coupon.totalStake,
+  //     id: "all",
+  //   });
+  // }
 }
 
 onMounted(() => {
