@@ -152,6 +152,7 @@ function activateBonus() {
 }
 
 async function beginDeposit() {
+  isLoading.value = true
   let payload = {
     amount: amount.value,
     paymentMethod: activeTab.value,
