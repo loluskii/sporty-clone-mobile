@@ -101,7 +101,7 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore } from "../../stores";
+import { useCouponStore, useUsersStore, useUtilstStore } from "../../stores";
 import { formatNumber } from "../../helpers";
 import BetslipBonusBar from "./BetslipBonusBar.vue";
 import { computed, ref, onBeforeUnmount, onMounted } from "vue";
@@ -114,6 +114,7 @@ const props = defineProps({
   betType: String,
 });
 const couponStore = useCouponStore();
+const {SportsbookGlobalVariable} = useUtilstStore()
 const userStore = useUsersStore();
 const router = useRouter();
 const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
@@ -130,6 +131,18 @@ const updateStake = (stake) => {
 const betlistStake = computed(() => {
   return couponStore.coupon.totalStake;
 });
+
+
+const hasSuspendedSelections = computed(() => {
+  return couponStore.coupon.selections.some(selection =>
+    selection.suspended || selection.unavailable ||
+    (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+  );
+});
+
+const placeBetDisabled = computed(() => {
+  return couponStore.coupon.totalStake < parseFloat(SportsbookGlobalVariable.MinBetStake)
+})
 
 const acceptedChanges = computed(() => {
   return couponStore.coupon.acceptChanges;
@@ -154,6 +167,7 @@ const wthTax = computed(() => {
     wth
   );
 });
+
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
@@ -262,6 +276,12 @@ function placeBet() {
   if (!userStore.currentUser) {
     emit("toggle-betslip");
     return router.push({ name: "sign-in" });
+  }else if (placeBetDisabled.value){
+    return
+  }else if (hasSuspendedSelections.value) {
+    emit("toggle-betslip");
+    emitter.emit("showErrorMessage", "Some selections are suspended");
+    return;
   }
   emit("toggle-show");
 }
