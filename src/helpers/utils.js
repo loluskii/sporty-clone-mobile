@@ -1,18 +1,18 @@
 import moment from 'moment'
 // import _ from 'lodash'
 import { getSplitPropsData } from '@/helpers'
-// import { brandDetails } from '/branding'
+import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilstStore } from '../stores/utils.store'
 
 export const applyBranding = async () => {
   try {
     let defConfig
-    // if (brandDetails) {
-    //   defConfig = brandDetails
-    // } else {
+    if (brandDetails) {
+      defConfig = brandDetails
+    } else {
     defConfig = defBrandDetails
-    // }
+    }
     const config = defConfig
     const utilsStore = useUtilstStore()
     const loadFont = (url) => {
@@ -53,10 +53,6 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty(
       '--brand-text-primary',
       config.colors.primaryTextColor
-    )
-    document.documentElement.style.setProperty(
-      '--brand-secondary',
-      config.colors.secondaryTextColor
     )
 
     document.documentElement.style.setProperty(
