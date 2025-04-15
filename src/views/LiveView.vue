@@ -235,8 +235,15 @@ const sportsListData = computed(() => {
 const filteredLiveData = computed(() => {
   let fixtures =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value)
-      : []
+      ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value).sort((a, b) => {
+      // First sort by tournamentID
+      if (a.tournamentID !== b.tournamentID) {
+        return a.tournamentID - b.tournamentID;
+      }
+      // If same tournament, maintain original order
+      return 0;
+    })
+      : [];
 
   return _.groupBy(fixtures, 'categoryName')
 })

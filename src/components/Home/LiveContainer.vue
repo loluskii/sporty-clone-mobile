@@ -103,52 +103,6 @@ const utilsStore = useUtilstStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
 
-
-// Function to check if betslip selections exist in current event list
-function checkBetslipSelectionsExist() {
-  if (!completeLiveData.value?.fixtures || isEmptyResponse.value) {
-    return;
-  }
-  
-  // Create a Set for faster lookups
-  const availableMatchIds = new Set(
-    completeLiveData.value.fixtures.map(fixture => String(fixture.matchID))
-  );
-  
-  // Create a copy of selections to avoid modifying during iteration
-  const selections = [...couponStore.coupon.selections];
-  let updatedAnySelection = false;
-  
-  // Check each selection in the betslip
-  // selections.forEach(selection => {
-  //   // Check if this is a live selection
-  //   if (selection.type === "live") {
-  //     const matchId = String(selection.matchId);
-      
-  //     // If the match is not in the current event list
-  //     if (!availableMatchIds.has(matchId)) {
-  //       // Suspend the selection
-  //       selection.suspended = true;
-  //       selection.unavailable = true;
-  //       selection.odds = 0;
-  //       updatedAnySelection = true;
-  //     }
-  //   }
-  // });
-  
-  // Only update winnings if we actually changed any selections
-  if (updatedAnySelection) {
-    // Use setTimeout to break potential update cycles
-    setTimeout(() => {
-      // Force a reactivity update
-      couponStore.updateWinnings({
-        stake: couponStore.coupon.totalStake,
-        id: "all",
-      });
-    }, 0);
-  }
-}
-
 const {
   data: completeLiveData,
   isLoading,
@@ -206,8 +160,6 @@ const {
           activeSportID.value = sortedUniqueList[0]?.sportID || 1;
         }
         
-        // Check betslip selections after data is loaded
-        checkBetslipSelectionsExist();
       } else {
         isEmptyResponse.value = true;
       }
@@ -215,31 +167,14 @@ const {
   }
 });
 
-// Watch for changes to completeLiveData and run checkBetslipSelectionsExist when it has a value
 watch(
   () => completeLiveData.value,
-  (newData) => {
-    if (newData && newData.fixtures) {
-      // Use setTimeout to break potential update cycles
-      setTimeout(() => {
-        checkBetslipSelectionsExist();
-      }, 0);
-    }
-  },
   { immediate: true }
 );
 
 // Also watch for changes to the betslip selections
 watch(
   () => couponStore.coupon.selections,
-  () => {
-    if (completeLiveData.value && completeLiveData.value.fixtures) {
-      // Use setTimeout to break potential update cycles
-      setTimeout(() => {
-        // checkBetslipSelectionsExist();
-      }, 0);
-    }
-  },
   { deep: true }
 );
 
@@ -270,9 +205,17 @@ const filteredLiveData = computed(() => {
     return [];
   }
   
-  // Use more efficient filtering
+  // Filter by sportID and sort by tournamentID
   return completeLiveData.value.fixtures
     .filter(fixture => fixture.sportID === activeSportID.value)
+    .sort((a, b) => {
+      // First sort by tournamentID
+      if (a.tournamentID !== b.tournamentID) {
+        return a.tournamentID - b.tournamentID;
+      }
+      // If same tournament, maintain original order
+      return 0;
+    })
     .slice(0, 5);
 });
 
