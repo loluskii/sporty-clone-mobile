@@ -8,14 +8,16 @@
             <div class="wrapper separate-part">
               <div class="operate-button">
                 <div class="d-flex align-items-center">
-                  <span class="d-flex justify-content-center align-items-center mr-2 font-weight-bold" :style="betslipMode
-                    ? 'background-color: #ffd600; color: #000'
-                    : 'background-color: var(--brand-secondary); color: #fff'
-                    " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
-                        betslipSelections.length }}
-                  </span>
-                  <!-- <span style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span> -->
-                  <BetslipModeToggle />
+                  <template v-if="SIM_ENABLED">
+                    <span class="d-flex justify-content-center align-items-center mr-2 font-weight-bold" :style="betslipMode
+                      ? 'background-color: #ffd600; color: #000'
+                      : 'background-color: var(--brand-secondary); color: #fff'
+                      " style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%">{{
+                          betslipSelections.length }}
+                    </span>
+                    <BetslipModeToggle  />
+                  </template>
+                  <span v-else style="font-weight: bold; font-size: 1.2rem; margin-right: 20px">Betslip</span>
                 </div>
               </div>
               <div class="operate-button">
