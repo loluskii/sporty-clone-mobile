@@ -102,6 +102,18 @@ const selectMarket = (market) => {
   emits('select-market', market)
 }
 
+// In the parent component that renders the list of fixtures
+// onMounted(() => {
+//   emitter.on('remove-fixture', (matchID) => {
+//     // Filter out the fixture with the given matchID
+//     fixtures.value = fixtures.value.filter(fixture => fixture.matchID !== matchID);
+//   });
+// });
+
+// onBeforeUnmount(() => {
+//   emitter.off('remove-fixture');
+// });
+
 // const activeMarketId = ref(props.marketsGroup.markets[0].id)
 </script>
 

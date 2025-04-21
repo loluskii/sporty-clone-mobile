@@ -84,23 +84,44 @@
 </template>
 
 <script setup>
-import { defineProps, computed } from 'vue'
+import { defineProps, computed, watch } from 'vue'
 import { formatDate, slugify, isSelected, createID } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { SIM_ALLOWED_MARKETS } from "@/helpers";
 import emitter from '@/plugins/emitter';
 
-
 const router = useRouter()
+const couponStore = useCouponStore()
 
 const props = defineProps({
   matchDetails: Object,
   markets: Object
 })
 
-const couponStore = useCouponStore()
 const getMatchOdds = computed(() => {
+  // Get the latest odds from the coupon store if available
+  const matchSelections = couponStore.coupon.selections.filter(
+    sel => String(sel.matchId) === String(props.matchDetails.matchID)
+  )
+  
+  if (matchSelections.length > 0) {
+    // If we have selections in the betslip, use their updated odds
+    return props.matchDetails?.outcomes
+      .filter((x) => x.marketID == props.markets[0].marketID)
+      .map(outcome => {
+        const selection = matchSelections.find(
+          sel => String(sel.outcomeId) === String(outcome.outcomeID)
+        )
+        return selection ? {
+          ...outcome,
+          odds: selection.odds,
+          active: !selection.suspended && !selection.unavailable
+        } : outcome
+      })
+  }
+  
+  // Otherwise use the original odds
   return props.matchDetails?.outcomes.filter((x) => x.marketID == props.markets[0].marketID)
 })
 

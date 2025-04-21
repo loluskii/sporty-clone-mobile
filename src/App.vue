@@ -14,14 +14,13 @@ import {
   getBets,
   applyBranding,
   CLIENT_ID,
+  validateBetslipSelections
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
-// import { $mqtt } from 'vue-paho-mqtt';
-import mqtt from "mqtt";
 
 const utilsStore = useUtilstStore();
 const couponStore = useCouponStore();
@@ -86,86 +85,6 @@ function showToaster(data) {
   dialogueMessage.value = data;
   dialogueType.value = "toaster";
 }
-
-function initMqtt() {
-  try {
-    if (mqttClient.value !== false) {
-      mqttClient.value.end();
-    }
-
-    var n = 10;
-
-    // connection option
-    const options = {
-      clean: true, // retain session
-      connectTimeout: 4000, // Timeout period
-      // Authentication information
-      clientId:
-        import.meta.env.VITE_MQTT_CLIENTID +
-        "-" +
-        Math.floor(Math.random() * (9 * Math.pow(10, n))) +
-        Math.pow(10, n),
-      username: import.meta.env.VITE_MQTT_USERNAME,
-      password: import.meta.env.VITE_MQTT_PASSWORD,
-    };
-
-    const subscriptions = [`feeds/live/odds_change/+`, `feeds/live/bet_stop/+`];
-
-    mqttClient.value = mqtt.connect(import.meta.env.VITE_MQTT_URI, options);
-
-    if (mqttClient.value.on) {
-      mqttClient.value.on("connect", () => {
-        // this.connecting = false;
-        // console.log("MQTT Connection succeeded!");
-      });
-      // this.mqttClient.on("reconnect", this.handleOnReConnect);
-      mqttClient.value.on("error", (error) => {
-        // console.log("MQTT Connection failed", error);
-      });
-      mqttClient.value.subscribe(subscriptions, (error, res) => {
-        if (error) {
-          // console.log('Subscribe to odd change error', error)
-          return;
-        }
-        // console.log('Subscribe to topics res', res)
-      });
-      mqttClient.value.on("message", (topic, message) => {
-        // message is string
-        const payload = JSON.parse(message);
-        // split the topic to get the type of message
-        const topicArr = topic.split("/");
-
-        // console.log(`Received message from topic ${topicArr[2]}`);
-
-        switch (topicArr[2]) {
-          case "odds_change":
-            emitter.emit(`odds-change-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'odds_change')
-            break;
-          case "bet_stop":
-            emitter.emit(`bet-stop-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'bet_stop')
-            break;
-          default:
-            break;
-        }
-      });
-    }
-  } catch (e) {
-    mqttClient.value = false;
-    console.log("mqtt.connect error", e);
-  }
-}
-watch(
-  () => route.query.shareCode,
-  async (code) => {
-    // get booking code
-    if (code) {
-      await loadBet(code);
-    }
-  },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-);
 
 async function loadBet(code) {
   try {
@@ -232,60 +151,68 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
-function updateBetslip(eventMessage, event_type) {
-  const matchIdFromEvent = eventMessage.match_id;
-  // Find the selection with the matching match_id in the betslip
-  const selection = couponStore.coupon.selections.find(
-    (sel) => sel.matchId === matchIdFromEvent
-  );
+async function validateSelections(){
+  if(!couponStore.coupon.selections.length) return;
 
-  // If a matching selection is found
-  if (selection) {
-    // Handle bet_stop event
-    if (event_type === "bet_stop") {
-      selection.suspended = true;
-    }
-
-    // Handle odds_change event
-    if (event_type === "odds_change") {
-      couponStore.coupon.acceptChanges = false;
-      selection.suspended = false;
-      selection.changed = true;
-
-      const market = eventMessage.markets.find(
-        (m) => m.id === selection.marketId && m.specifiers === selection.specifier
+  const selections = couponStore.coupon.selections.map((event) => ({
+    matchId: parseInt(event.matchId),
+    marketId: event.marketId.toString(),
+    outcomeId: event.outcomeId,
+    specifier: event.specifier
+  }))
+  const res = await validateBetslipSelections({events: selections})
+  
+  if(res.success){
+    // Convert response object to array of validated selections
+    const validatedSelections = Object.values(res.data);
+    
+    // Update each selection with the new odds and active status
+    validatedSelections.forEach(validatedSelection => {
+      const selection = couponStore.coupon.selections.find(sel => 
+        String(sel.matchId) === String(validatedSelection.matchId) && 
+        String(sel.marketId) === validatedSelection.marketId && 
+        String(sel.outcomeId) === validatedSelection.outcomeId
       );
-
-      if (market && market.outcomes) {
-        let newOutcome = market.outcomes.find(
-          (m) => m.id === selection.outcomeId && m.specifier === selection.specifier
-        );
-
-        selection.odds = newOutcome.odds;
-        selection.suspended = !newOutcome.active;
-        couponStore.updateWinnings({
-          stake: couponStore.coupon.totalStake,
-          id: selection.selectionId,
-        });
-      } else {
-        selection.suspended = true;
-        selection.unavailable = true;
-        selection.odds = 0;
+      
+      if(selection) {
+        selection.odds = validatedSelection.odds;
+        selection.suspended = !validatedSelection.active;
+        selection.unavailable = !validatedSelection.active;
+        selection.changed = true;
+        
+        // Reset the changed flag after 5 seconds
+        setTimeout(() => {
+          selection.changed = false;
+        }, 5000);
       }
-    }
+    });
+
+    // Recalculate winnings after updating all selections
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all"
+    });
   }
 }
 
+watch(
+  () => route.query.shareCode,
+  async (code) => {
+    // get booking code
+    if (code) {
+      await loadBet(code);
+    }
+  },
+  { immediate: true } // Trigger the watch callback immediately on component mount
+);
+
 onMounted(async () => {
-  // connect to mqtt
-  initMqtt();
 
   if (route.path !== "/") {
     isLoading.value = false;
   }
 
   if (usersStore.currentUser) {
-    // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
         console.log(res[2]);
@@ -298,7 +225,7 @@ onMounted(async () => {
       });
   }
 
-  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu()])
+  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
@@ -320,10 +247,6 @@ onMounted(async () => {
   emitter.on("showCasinoDialog", showCasinoDialog);
   emitter.on("showCustomDatePicker", toggleDatePicker);
   emitter.on("showBookBetModal", toggleBookBetModal);
-});
-
-onBeforeUnmount(() => {
-  if (mqttClient.value !== false) mqttClient.value.end();
 });
 
 defineComponent({

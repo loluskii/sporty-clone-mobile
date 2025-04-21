@@ -115,17 +115,21 @@
 
 <script setup>
 import LiveFixture from '@/components/Live/LiveFixture.vue'
-import { useUtilstStore } from '@/stores'
+import { useUtilstStore, useCouponStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getLiveHighlights } from '@/helpers'
-import { defineComponent, onMounted, ref, computed, watch } from 'vue'
+import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
+import { useMqttService } from '@/composables/useMqtt'
 
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilstStore()
+const couponStore = useCouponStore()
+const mqttService = useMqttService()
+const unsubscribeFunctions = ref([])
 
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url)
@@ -137,13 +141,45 @@ const {
   isLoading,
   refetch
 } = useQuery('liveData', getLiveHighlights, {
-  // refetchInterval: 60000 * 3, // 5 minutes in milliseconds
+  // Prevent automatic refetching which can cause recursive updates
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  // Use a longer stale time to prevent unnecessary refetches
+  staleTime: 60000, // 1 minute
+  // Add cacheTime to control how long data stays in cache
+  cacheTime: 300000, // 5 minutes
+  // Update refetch interval to 10 minutes
+  refetchInterval: 60000 * 10, // 10 minutes
+  // Add retry logic with exponential backoff
+  retry: (failureCount, error) => {
+    // Don't retry on 4xx errors
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false;
+    }
+    return failureCount < 3; // retry up to 3 times
+  },
+  retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   onError: (err) => {
-    console.error(err)
+    console.error('Error fetching live data:', err);
   },
   onSuccess: (response) => {
     if (response.fixtures) {
-      // activeSportID.value = response.fixtures[0].sportID
+      // Check if betslip selections exist in current event list
+      // checkBetslipSelectionsExist();
+    } else {
+      // Instead of setting isEmptyResponse, update existing fixtures to inactive state
+      if (completeLiveData.value?.fixtures) {
+        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map(fixture => ({
+          ...fixture,
+          outcomes: fixture.outcomes.map(outcome => ({
+            ...outcome,
+            odds: 0,
+            active: false
+          }))
+        }));
+      }
+      isEmptyResponse.value = true;
     }
   }
 })
@@ -178,8 +214,15 @@ const sportsListData = computed(() => {
 const filteredLiveData = computed(() => {
   let fixtures =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value)
-      : []
+      ? completeLiveData.value?.fixtures?.filter((s) => s.sportID == activeSportID.value).sort((a, b) => {
+      // First sort by tournamentID
+      if (a.tournamentID !== b.tournamentID) {
+        return a.tournamentID - b.tournamentID;
+      }
+      // If same tournament, maintain original order
+      return 0;
+    })
+      : [];
 
   return _.groupBy(fixtures, 'categoryName')
 })
@@ -228,10 +271,108 @@ function selectMarket(market) {
   utilsStore.activeLiveMarkets = market
 }
 
-onMounted(async () => {
-  if (completeLiveData.value.fixtures.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID
+// Function to handle odds changes
+const handleOddsChange = (data) => {
+  console.log('⚙️ LiveView: Received odds change:', data)
+  
+  if (!completeLiveData.value?.fixtures) {
+    console.log('⚙️ LiveView: No fixtures data available, skipping odds update')
+    return
   }
+
+  // Find and update the fixture with matching matchID
+  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
+    fixture => String(fixture.matchID) === String(data.matchID)
+  )
+
+  if (fixtureIndex !== -1) {
+    console.log(`⚙️ LiveView: Updating odds for match ID ${data.matchID}`)
+    
+    // Update the fixture's outcomes
+    completeLiveData.value.fixtures[fixtureIndex] = {
+      ...completeLiveData.value.fixtures[fixtureIndex],
+      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map(outcome => {
+        if (String(outcome.outcomeID) === String(data.outcomeID)) {
+          return {
+            ...outcome,
+            odds: data.odds,
+            active: data.active
+          }
+        }
+        return outcome
+      })
+    }
+  }
+}
+
+// Function to handle bet stops
+const handleBetStop = (data) => {
+  console.log('⚙️ LiveView: Received bet stop:', data)
+  
+  if (!completeLiveData.value?.fixtures) {
+    console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
+    return
+  }
+
+  // Find and update the fixture with matching matchID
+  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
+    fixture => String(fixture.matchID) === String(data.matchID)
+  )
+
+  if (fixtureIndex !== -1) {
+    console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
+    
+    // Update all outcomes to be inactive with odds 0
+    completeLiveData.value.fixtures[fixtureIndex] = {
+      ...completeLiveData.value.fixtures[fixtureIndex],
+      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map(outcome => ({
+        ...outcome,
+        odds: 0,
+        active: false
+      }))
+    }
+  }
+}
+
+// Function to set up MQTT subscriptions
+const setupMqttSubscriptions = () => {
+  console.log('⚙️ LiveView: Setting up MQTT subscriptions')
+  
+  if (!completeLiveData.value?.fixtures) {
+    console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
+    return
+  }
+
+  // Get unique match IDs from fixtures
+  const matchIds = [...new Set(completeLiveData.value.fixtures.map(fixture => String(fixture.matchID)))]
+  
+  // Subscribe to odds changes and bet stops for each match
+  matchIds.forEach(matchId => {
+    const oddsChangeUnsubscribe = mqttService.subscribe(
+      `odds_change/${matchId}`,
+      handleOddsChange
+    )
+    
+    const betStopUnsubscribe = mqttService.subscribe(
+      `bet_stop/${matchId}`,
+      handleBetStop
+    )
+    
+    unsubscribeFunctions.value.push(oddsChangeUnsubscribe, betStopUnsubscribe)
+  })
+}
+
+onMounted(async () => {
+  if (completeLiveData.value && completeLiveData.value.fixtures.length) {
+    activeSportID.value = completeLiveData.value.fixtures[0].sportID
+    setupMqttSubscriptions()
+  }
+})
+
+onBeforeUnmount(() => {
+  // Clean up MQTT subscriptions
+  unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
+  unsubscribeFunctions.value = []
 })
 
 defineComponent({

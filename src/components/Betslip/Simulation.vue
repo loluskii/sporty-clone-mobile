@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from "vue";
 import { useCouponStore, useUtilstStore } from "@/stores";
 import SimulationHeader from './SimulationHeader.vue';
 import SimulationEvent from './SimulationEvent.vue';
