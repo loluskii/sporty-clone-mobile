@@ -116,8 +116,8 @@ const {
   staleTime: 60000, // 1 minute
   // Add cacheTime to control how long data stays in cache
   cacheTime: 300000, // 5 minutes
-  // Use a more conservative refetch interval
-  refetchInterval: 60000 * 3, // 3 minutes
+  // Update refetch interval to 10 minutes
+  refetchInterval: 60000 * 10, // 10 minutes
   // Add retry logic with exponential backoff
   retry: (failureCount, error) => {
     // Don't retry on 4xx errors
@@ -161,6 +161,17 @@ const {
         }
         
       } else {
+        // Instead of setting isEmptyResponse, update existing fixtures to inactive state
+        if (completeLiveData.value?.fixtures) {
+          completeLiveData.value.fixtures = completeLiveData.value.fixtures.map(fixture => ({
+            ...fixture,
+            outcomes: fixture.outcomes.map(outcome => ({
+              ...outcome,
+              odds: 0,
+              active: false
+            }))
+          }));
+        }
         isEmptyResponse.value = true;
       }
     }, 0);

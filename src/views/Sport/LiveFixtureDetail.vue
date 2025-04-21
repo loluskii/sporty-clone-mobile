@@ -318,8 +318,8 @@ async function getEventDetail(id) {
     isLoading.value = false
     if (Object.keys(res).length && res.markets) {
       eventDetail.value = res
-      eventMarkets.value = res.markets
-      groupedMarkets.value = groupByMarketID(res.markets)
+      eventMarkets.value = res.statusCode === 3 ? [] : res.markets
+      groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(res.markets)
       homeTeam.value = res.competitor1
       awayTeam.value = res.competitor2
       scores.home = res.homeScore
@@ -647,8 +647,8 @@ function setupPeriodicRefetch(matchId) {
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res).length && res.markets) {
-          eventMarkets.value = res.markets
-          groupedMarkets.value = groupByMarketID(res.markets)
+          eventMarkets.value = res.statusCode === 3 ? [] : res.markets
+          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(res.markets)
           scores.home = res.homeScore
           scores.away = res.awayScore
           eventTime.value = res.eventTime

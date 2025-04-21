@@ -152,8 +152,8 @@ defineComponent({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
-  padding-left: 0.83333333rem;
+  font-weight: bold;
+  /* padding-left: 0.83333333rem; */
 }
 .m-league .m-league-title .boost {
   -webkit-flex-shrink: 0;
