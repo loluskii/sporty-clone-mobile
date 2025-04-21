@@ -167,17 +167,6 @@ const {
   }
 });
 
-watch(
-  () => completeLiveData.value,
-  { immediate: true }
-);
-
-// Also watch for changes to the betslip selections
-watch(
-  () => couponStore.coupon.selections,
-  { deep: true }
-);
-
 const sportsListData = computed(() => {
   if (isEmptyResponse.value || !completeLiveData.value?.fixtures) {
     return [];

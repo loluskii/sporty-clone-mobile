@@ -17,20 +17,20 @@
                   </p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? "Finished" : eventDetail.eventTime }}</span>
+                  <span>{{ matchHasEnded ? "Finished" : eventTime }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
                 <div class="home-team-name">
                   <span class="team">{{ eventDetail.competitor1 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ eventDetail.homeScore }}</em>
+                    ><em class="setScore">{{ scores.home }}</em>
                   </span>
                 </div>
                 <div class="away-team-name">
                   <span class="team">{{ eventDetail.competitor2 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ eventDetail.awayScore }}</em>
+                    ><em class="setScore">{{ scores.away }}</em>
                   </span>
                 </div>
               </div>
@@ -233,7 +233,7 @@
 
 <script setup>
 import HeaderOther from '@/components/HeaderOther.vue'
-import { defineComponent, watch, ref, computed, onMounted, onUnmounted } from 'vue'
+import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -245,9 +245,16 @@ import { useMqttService } from '@/composables/useMqtt'
 
 const eventMarkets = ref()
 const eventDetail = ref()
+const scores = reactive({
+  home: 0,
+  away: 0
+})
+const eventTime = ref('0:00')
 const groupedMarkets = ref([])
 const isLoading = ref(false)
 const route = useRoute()
+const refetchInterval = ref(null)
+const REFETCH_INTERVAL_MS = 60000 // 60 seconds
 
 // const errorMessage = ref()
 const couponStore = useCouponStore()
@@ -315,11 +322,15 @@ async function getEventDetail(id) {
       groupedMarkets.value = groupByMarketID(res.markets)
       homeTeam.value = res.competitor1
       awayTeam.value = res.competitor2
+      scores.home = res.homeScore
+      scores.away = res.awayScore
+      eventTime.value = res.eventTime
 
       // Set up MQTT subscriptions after we have the event details
       if (res.matchID) {
         console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
         setupMqttSubscriptions(res.matchID)
+        setupPeriodicRefetch(res.matchID)
       } else {
         console.warn(`⚠️ No matchID found in event details response`) // Add warning if no matchID
       }
@@ -523,13 +534,9 @@ function handleOddsChange(data) {
 
   if (data.score !== undefined || data.status !== undefined || data.match_status !== undefined) {
     console.log(`📊 Match Update:`, data)
-    
-    // Update match details
-    eventDetail.value = {
-      ...eventDetail.value,
-      homeScore: data.sport_event_status.home_score ?? eventDetail.value.homeScore,
-      awayScore: data.sport_event_status.away_score ?? eventDetail.value.awayScore,
-    }
+
+    scores.home = data.sport_event_status.home_score
+    scores.away = data.sport_event_status.away_score
   }
 
   // Handle odds updates
@@ -627,12 +634,51 @@ function handleBetStop(data) {
   }
 }
 
+function setupPeriodicRefetch(matchId) {
+  // Clear any existing interval
+  if (refetchInterval.value) {
+    clearInterval(refetchInterval.value)
+  }
+
+  // Set up new interval
+  refetchInterval.value = setInterval(async () => {
+    if (!matchHasEnded.value) {
+      console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
+      try {
+        const res = await getFixtureMarkets(matchId)
+        if (Object.keys(res).length && res.markets) {
+          eventMarkets.value = res.markets
+          groupedMarkets.value = groupByMarketID(res.markets)
+          scores.home = res.homeScore
+          scores.away = res.awayScore
+          eventTime.value = res.eventTime
+          console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
+        }
+      } catch (error) {
+        console.error(`❌ Error during periodic refetch:`, error)
+      }
+    } else {
+      console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`)
+      clearInterval(refetchInterval.value)
+    }
+  }, REFETCH_INTERVAL_MS)
+
+  console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
+}
+
 onUnmounted(() => {
   // Clean up MQTT subscriptions
   if (unsubscribeFunctions.value.length > 0) {
     console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
     unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
     unsubscribeFunctions.value = []
+  }
+  
+  // Clean up refetch interval
+  if (refetchInterval.value) {
+    console.log(`🧹 Component: Cleaning up periodic refetch interval`)
+    clearInterval(refetchInterval.value)
+    refetchInterval.value = null
   }
   
   // Clean up SR tracker script

@@ -27,7 +27,7 @@
         </div>
       </template>
 
-      <div class="total-odds mg-b-10" v-if="betSlipType === 'Multiple'">
+      <div class="total-odds mg-b-10" v-if="betType === 'Multiple'">
         <span>Total Odds</span>
         <span>{{ totalOdds }}</span>
       </div>
@@ -130,14 +130,6 @@ const updateStake = (stake) => {
 
 const betlistStake = computed(() => {
   return couponStore.coupon.totalStake;
-});
-
-
-const hasSuspendedSelections = computed(() => {
-  return couponStore.coupon.selections.some(selection =>
-    selection.suspended || selection.unavailable ||
-    (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
-  );
 });
 
 const placeBetDisabled = computed(() => {
