@@ -475,7 +475,7 @@ export const useCouponStore = defineStore({
         }
       } else {
         const coupon = {
-          acceptChanges: false,
+          acceptChanges: true,
           selections: [],
           combos: [],
           totalOdds: 1,
