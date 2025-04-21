@@ -266,37 +266,37 @@ function setupPeriodicRefetch(matchId) {
   // Set up new interval
   refetchInterval.value = setInterval(async () => {
     if (eventDetail.value?.statusCode === 0) { // Only refetch if match is still available
-      console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
+      // console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res).length && res.markets) {
           eventMarkets.value = res.markets
           groupedMarkets.value = groupByMarketID(res.markets)
-          console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
+          // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
         }
       } catch (error) {
         console.error(`❌ Error during periodic refetch:`, error)
       }
     } else {
-      console.log(`⏹️ Match no longer available, stopping periodic refetch for match ID: ${matchId}`)
+      // console.log(`⏹️ Match no longer available, stopping periodic refetch for match ID: ${matchId}`)
       clearInterval(refetchInterval.value)
     }
   }, REFETCH_INTERVAL_MS)
 
-  console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
+  // console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
 }
 
 onBeforeUnmount(() => {
   // Clean up any active subscriptions
   if (unsubscribeFunctions.value.length > 0) {
-    console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
+    // console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
     unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
     unsubscribeFunctions.value = []
   }
 
   // Clean up refetch interval
   if (refetchInterval.value) {
-    console.log(`🧹 Component: Cleaning up periodic refetch interval`)
+    // console.log(`🧹 Component: Cleaning up periodic refetch interval`)
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
   }

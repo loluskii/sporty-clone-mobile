@@ -149,7 +149,7 @@ watch(
         // Handle other routes or provide a default behavior
         break
     }
-    console.log(container.value.clientHeight)
+    // console.log(container.value.clientHeight)
   },
   { immediate: true } // Trigger the watch callback immediately on component mount
 )
@@ -309,21 +309,21 @@ const handleScroll = async () => {
 }
 
 const observeElement = (element) => {
-  console.log('Initializing observer...')
+  // console.log('Initializing observer...')
   if (observer.value) {
-    console.log('Disconnecting existing observer...')
+    // console.log('Disconnecting existing observer...')
     observer.value.disconnect()
   }
   observer.value = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !isLastPage.value) {
-      console.log('Sentinel element is intersecting. Fetching more data...')
+      // console.log('Sentinel element is intersecting. Fetching more data...')
       fetchMoreData()
     }
   })
   if (element) {
     observer.value.observe(element)
   } else {
-    console.log('Element not found:', element)
+    // console.log('Element not found:', element)
   }
 }
 
@@ -331,7 +331,7 @@ const fetchMoreData = async () => {
   if (fetchingMore.value || !isPaginated.value) return
   fetchingMore.value = true
   page.value++
-  console.log(`Fetching data for page ${page.value}...`)
+  // console.log(`Fetching data for page ${page.value}...`)
   try {
     const { sportID } = getSportbyName(route.params.sport)
     const { period } = route.query

@@ -313,7 +313,7 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true;
   try {
-    console.log(`🔍 Fetching event details for ID: ${id}`) // Add fetch start log
+    // console.log(`🔍 Fetching event details for ID: ${id}`) // Add fetch start log
     const res = await getFixtureMarkets(id)
     isLoading.value = false
     if (Object.keys(res).length && res.markets) {
@@ -328,7 +328,7 @@ async function getEventDetail(id) {
 
       // Set up MQTT subscriptions after we have the event details
       if (res.matchID) {
-        console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
+        // console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
         setupMqttSubscriptions(res.matchID)
         setupPeriodicRefetch(res.matchID)
       } else {
@@ -497,29 +497,29 @@ onMounted(() => {
 })
 
 function setupMqttSubscriptions(matchId) {
-  console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`) // Add initial setup log
+  // console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`) // Add initial setup log
 
   const componentId = `live-fixture-detail-${matchId}-${Date.now()}`
 
   // Subscribe to odds changes
   const oddsChangeTopic = `feeds/live/odds_change/${matchId}`
-  console.log(`📊 Subscribing to odds changes on topic: ${oddsChangeTopic}`) // Add subscription log
+  // console.log(`📊 Subscribing to odds changes on topic: ${oddsChangeTopic}`) // Add subscription log
   const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`, data)
+    // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`, data)
     handleOddsChange(data)
   })
 
   // Subscribe to bet stop
   const betStopTopic = `feeds/live/bet_stop/${matchId}`
-  console.log(`⚠️ Subscribing to bet stops on topic: ${betStopTopic}`) // Add subscription log
+  // console.log(`⚠️ Subscribing to bet stops on topic: ${betStopTopic}`) // Add subscription log
   const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`, data)
+    // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`, data)
     handleBetStop(data)
   })
 
   // Store unsubscribe functions in ref
   unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop]
-  console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`) // Add completion log
+  // console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`) // Add completion log
 }
 
 function handleOddsChange(data) {
@@ -533,7 +533,7 @@ function handleOddsChange(data) {
   }
 
   if (data.score !== undefined || data.status !== undefined || data.match_status !== undefined) {
-    console.log(`📊 Match Update:`, data)
+    // console.log(`📊 Match Update:`, data)
 
     scores.home = data.sport_event_status.home_score
     scores.away = data.sport_event_status.away_score
@@ -606,11 +606,11 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
     return
   }
 
-  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
 
   // Suspend all markets
   if (eventMarkets.value.length > 0) {
@@ -629,7 +629,7 @@ function handleBetStop(data) {
 
   // Check if match has ended
   if (eventDetail.value.statusCode === 3) {
-    console.log('Match has ended, showing unavailable message')
+    // console.log('Match has ended, showing unavailable message')
     matchHasEnded.value = true
   }
 }
@@ -643,7 +643,7 @@ function setupPeriodicRefetch(matchId) {
   // Set up new interval
   refetchInterval.value = setInterval(async () => {
     if (!matchHasEnded.value) {
-      console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
+      // console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res).length && res.markets) {
@@ -652,31 +652,31 @@ function setupPeriodicRefetch(matchId) {
           scores.home = res.homeScore
           scores.away = res.awayScore
           eventTime.value = res.eventTime
-          console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
+          // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
         }
       } catch (error) {
         console.error(`❌ Error during periodic refetch:`, error)
       }
     } else {
-      console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`)
+      // console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`)
       clearInterval(refetchInterval.value)
     }
   }, REFETCH_INTERVAL_MS)
 
-  console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
+  // console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
 }
 
 onUnmounted(() => {
   // Clean up MQTT subscriptions
   if (unsubscribeFunctions.value.length > 0) {
-    console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
+    // console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
     unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
     unsubscribeFunctions.value = []
   }
   
   // Clean up refetch interval
   if (refetchInterval.value) {
-    console.log(`🧹 Component: Cleaning up periodic refetch interval`)
+    // console.log(`🧹 Component: Cleaning up periodic refetch interval`)
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
   }

@@ -274,7 +274,7 @@ function handleOddsChange(data) {
   const dataMatchId = data.event_id || data.match_id;
   
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log('📊 MQTT: Ignoring odds change for match ID', dataMatchId, 'our match ID is', matchId);
+    // console.log('📊 MQTT: Ignoring odds change for match ID', dataMatchId, 'our match ID is', matchId);
     return;
   }
   
@@ -316,11 +316,11 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id;
   
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
     return;
   }
   
-  console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
+  // console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
   
   setTimeout(() => {
     const newOutcomes = outcomes.value.map(outcome => ({
@@ -453,7 +453,7 @@ watch(
 )
 
 onMounted(() => {
-  console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
+  // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
   
   // Initialize scores from props
   scores.value = {
@@ -476,18 +476,18 @@ onMounted(() => {
     const betStopTopic = `feeds/live/bet_stop/${matchId}`;
     
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`);
+      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`);
       handleOddsChange(data);
     });
     
     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      console.log(`📊 MQTT: Received message on topic ${betStopTopic} for component ${componentId}`);
+      // console.log(`📊 MQTT: Received message on topic ${betStopTopic} for component ${componentId}`);
       handleBetStop(data);
     });
     
     // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
+      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
       unsubscribeOddsChange();
       unsubscribeBetStop();
     });

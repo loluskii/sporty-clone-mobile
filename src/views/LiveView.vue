@@ -273,10 +273,10 @@ function selectMarket(market) {
 
 // Function to handle odds changes
 const handleOddsChange = (data) => {
-  console.log('⚙️ LiveView: Received odds change:', data)
+  // console.log('⚙️ LiveView: Received odds change:', data)
   
   if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping odds update')
+    // console.log('⚙️ LiveView: No fixtures data available, skipping odds update')
     return
   }
 
@@ -286,7 +286,7 @@ const handleOddsChange = (data) => {
   )
 
   if (fixtureIndex !== -1) {
-    console.log(`⚙️ LiveView: Updating odds for match ID ${data.matchID}`)
+    // console.log(`⚙️ LiveView: Updating odds for match ID ${data.matchID}`)
     
     // Update the fixture's outcomes
     completeLiveData.value.fixtures[fixtureIndex] = {
@@ -307,10 +307,10 @@ const handleOddsChange = (data) => {
 
 // Function to handle bet stops
 const handleBetStop = (data) => {
-  console.log('⚙️ LiveView: Received bet stop:', data)
+  // console.log('⚙️ LiveView: Received bet stop:', data)
   
   if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
+    // console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
     return
   }
 
@@ -320,7 +320,7 @@ const handleBetStop = (data) => {
   )
 
   if (fixtureIndex !== -1) {
-    console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
+    // console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
     
     // Update all outcomes to be inactive with odds 0
     completeLiveData.value.fixtures[fixtureIndex] = {
@@ -336,10 +336,10 @@ const handleBetStop = (data) => {
 
 // Function to set up MQTT subscriptions
 const setupMqttSubscriptions = () => {
-  console.log('⚙️ LiveView: Setting up MQTT subscriptions')
+  // console.log('⚙️ LiveView: Setting up MQTT subscriptions')
   
   if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
+    // console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
     return
   }
 
