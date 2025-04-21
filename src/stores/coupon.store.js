@@ -285,7 +285,7 @@ export const useCouponStore = defineStore({
         }
       } else {
         const coupon = {
-          acceptChanges: false,
+          acceptChanges: true,
           selections: [],
           combos: [],
           totalOdds: 1,
@@ -485,7 +485,7 @@ export const useCouponStore = defineStore({
     clearBetslip() {
       // emit event for mqtt to stop listening
       const coupon = {
-        acceptChanges: false,
+        acceptChanges: true,
         selections: [],
         combos: [],
         totalOdds: 1,
