@@ -109,15 +109,18 @@
   <!---->
 </template>
 <script setup>
-import { defineComponent, computed, watch, ref } from 'vue'
+import { defineComponent, computed, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { createID, isSelected, sortArr, slugify } from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
 import { useCouponStore } from '../../stores'
 import emitter from '../../plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '../../helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
 const couponStore = useCouponStore()
+
+const { subscribe } = useMqttService()
 
 const props = defineProps({
   eventData: Object,
@@ -128,13 +131,22 @@ const activeSpecifier = ref()
 const specifierOpen = ref(false)
 
 const outcomes = ref([])
+// Create a local copy of eventData outcomes that we can update
+const localOutcomes = ref([])
+
+// Keep track of updated odds
+const updatedOutcomes = ref({})
+
+// Add the updatePending ref
+const updatePending = ref(false)
 
 const getSpecifiers = computed(() => {
   if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
     const result = []
 
+    // Always use props.eventData.outcomes as the base data
     const outcomes = props.eventData.outcomes
-    if (outcomes.length > 0) {
+    if (outcomes && outcomes.length > 0) {
       const filtered = outcomes.filter(
         (item) => item.marketID === parseInt(props.activeMarket.marketID)
       )
@@ -156,7 +168,7 @@ const getSpecifiers = computed(() => {
 })
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
     (market, index, self) =>
       index ===
@@ -181,11 +193,24 @@ const setActiveSpecifier = (spec) => {
     if (filtered) {
       let uniqueFiltered = uniqueOutcomes(filtered)
       uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
+      
+      // Apply any updates we've received from MQTT
+      uniqueFiltered = uniqueFiltered.map(outcome => {
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
+        if (updatedOutcomes.value[key]) {
+          return {
+            ...outcome,
+            odds: updatedOutcomes.value[key].odds,
+            active: updatedOutcomes.value[key].active
+          }
+        }
+        return outcome
+      })
+      
       outcomes.value = uniqueFiltered
       activeSpecifier.value = spec.value
       toggleList()
     }
-    // filtered = filtered.filter((item) => item.specifier === spec.specifier)
   }
 }
 
@@ -205,9 +230,24 @@ const getOdds = () => {
   // Find and return the odds based on marketID and outcomeID
   if (props.activeMarket && props.eventData.activeMarkets > 0) {
     if (props.eventData.outcomes) {
+      // Always start with the original data from props
       const odds = props.eventData.outcomes
       let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
       let uniqueFiltered = uniqueOutcomes(filtered)
+      
+      // Apply any updates we've received from MQTT
+      uniqueFiltered = uniqueFiltered.map(outcome => {
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
+        if (updatedOutcomes.value[key]) {
+          return {
+            ...outcome,
+            odds: updatedOutcomes.value[key].odds,
+            active: updatedOutcomes.value[key].active
+          }
+        }
+        return outcome
+      })
+      
       if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
         let defaultSpecifier = uniqueFiltered[0]?.specifier
         if (defaultSpecifier) {
@@ -232,6 +272,154 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  // console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.eventData.matchID)
+  
+  // Initialize outcomes from props
+  localOutcomes.value = props.eventData.outcomes || []
+  outcomes.value = props.eventData.outcomes || []
+  getOdds()
+  
+  // Subscribe to prematch odds changes for this specific match
+  const matchId = props.eventData.matchID
+  
+  if (matchId) {
+    // Create a unique component ID to help with debugging
+    const componentId = `prematch-fixture-${matchId}-${Date.now()}`
+    
+    // Subscribe to bet stop first (higher priority)
+    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
+      handleBetStop(data)
+    })
+    
+    // Then subscribe to odds changes
+    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
+      handleOddsChange(data)
+    })
+    
+    // Store unsubscribe functions for cleanup
+    onBeforeUnmount(() => {
+      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
+      unsubscribeBetStop()
+      unsubscribeOddsChange()
+    })
+  }
+})
+
+// Add a watch for eventData to check betslip when props change
+watch(
+  () => props.eventData,
+  () => {
+    // checkBetslipOnRefresh()
+  },
+  { deep: true }
+)
+
+// Function to handle odds changes
+function handleOddsChange(data) {
+  if (!data || !data.markets) return
+  
+  const matchId = props.eventData.matchID
+  const dataMatchId = data.event_id || data.match_id
+  
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return
+  }
+  
+  if (!updatePending.value) {
+    updatePending.value = true
+    
+    requestAnimationFrame(() => {
+      const markets = data.markets || []
+      
+      if (markets.length > 0) {
+        const updatedOutcomesCopy = {...updatedOutcomes.value}
+        
+        markets.forEach(market => {
+          if (market.outcomes) {
+            market.outcomes.forEach(outcome => {
+              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
+              updatedOutcomesCopy[key] = {
+                odds: outcome.odds,
+                active: outcome.active ? 1 : 0,
+                timestamp: Date.now()
+              }
+            })
+          }
+        })
+        
+        updatedOutcomes.value = updatedOutcomesCopy
+        
+        if (outcomes.value.length > 0) {
+          outcomes.value = outcomes.value.map(outcome => {
+            const market = markets.find(
+              m => m.id === outcome.marketID && (m.specifiers || '') === (outcome.specifier || '')
+            )
+            
+            if (market && market.outcomes) {
+              const newOutcome = market.outcomes.find(
+                o => String(o.id) === String(outcome.outcomeID)
+              )
+              
+              if (newOutcome) {
+                return {
+                  ...outcome,
+                  odds: newOutcome.odds,
+                  active: newOutcome.active ? 1 : 0
+                }
+              }
+            }
+            
+            return outcome
+          })
+        }
+      }
+      
+      updatePending.value = false
+    })
+  }
+}
+
+// Function to handle bet stop
+function handleBetStop(data) {
+  const matchId = props.eventData.matchID
+  const dataMatchId = data.event_id || data.match_id
+  
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    return
+  }
+  
+  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+  
+  outcomes.value = outcomes.value.map(outcome => ({
+    ...outcome,
+    odds: 0,
+    active: 0
+  }))
+  
+  outcomes.value.forEach(outcome => {
+    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+    updatedOutcomes.value[key] = {
+      odds: 0,
+      active: 0,
+      timestamp: Date.now()
+    }
+  })
+  
+  const matchTime = new Date(props.eventData.startTime)
+  const currentTime = new Date()
+  
+  if (matchTime < currentTime) {
+    // console.log('Match time has passed, removing fixture:', props.eventData.matchID)
+    emitter.emit('remove-fixture', props.eventData.matchID)
+  }
+}
 
 function addToBetslip(event, odd) {
   const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)

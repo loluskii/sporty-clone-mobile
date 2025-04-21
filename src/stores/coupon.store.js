@@ -17,9 +17,12 @@ import {
   bookBet2,
   CLIENT_ID
 } from '@/helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
+const { subscribe, unsubscribe } = useMqttService()
+const mqttService = useMqttService()
 
 export const useCouponStore = defineStore({
   id: 'coupon',
@@ -50,13 +53,195 @@ export const useCouponStore = defineStore({
       wthTax: 0,
       exciseDuty: 0,
       useBonus: false,
-      source: 'mobile'
-    }
+      source: 'mobile',
+    },
+    activeSubscriptions: [], // Will store objects with topic and unsubscribe function
   }),
   getters: {
     betslipMode: (state) => (state.mode === 'sim'),
   },
   actions: {
+    manageSubscription(selection, isAdding = true) {
+      try {
+        if (!selection) {
+          console.warn('📊 Betslip: Cannot manage subscription - selection is null/undefined')
+          return
+        }
+
+        const matchId = String(selection.matchId || selection.fixture?.matchID)
+        if (!matchId) {
+          console.warn('📊 Betslip: Cannot manage subscription - matchId is missing')
+          return
+        }
+
+        const type = selection.type
+        if (!type) {
+          console.warn('📊 Betslip: Cannot manage subscription - type is missing')
+          return
+        }
+
+        const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
+        const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
+        
+        if (isAdding) {
+          if (!this.activeSubscriptions.some(sub => String(sub.matchId) === matchId)) {
+            const unsubscribeOdds = subscribe(oddsChangeTopic, (data) => {
+              this.handleOddsChange(data, selection)
+            })
+            const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+              this.handleBetStop(data, selection)
+            })
+            this.activeSubscriptions.push({
+              matchId,
+              oddsChangeTopic,
+              betStopTopic,
+              unsubscribeOdds,
+              unsubscribeBetStop
+            })
+          }
+        } else {
+          const hasOtherSelectionsFromMatch = this.coupon.selections.some(
+            s => String(s.matchId || s.fixture?.matchID) === matchId && 
+                s.selectionId !== selection.selectionId
+          )
+          if (!hasOtherSelectionsFromMatch) {
+            const subscription = this.activeSubscriptions.find(sub => String(sub.matchId) === matchId)
+            if (subscription) {
+              try {
+                subscription.unsubscribeOdds()
+                subscription.unsubscribeBetStop()
+              } catch (error) {
+                console.error('📊 Betslip: Error unsubscribing from topics:', error)
+              }
+              this.activeSubscriptions = this.activeSubscriptions.filter(sub => String(sub.matchId) !== matchId)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('📊 Betslip: Error in manageSubscription:', error)
+      }
+    },
+
+    // Handle incoming odds changes
+    handleOddsChange(data, selection) {
+      if (!data || !data.markets) return;
+      
+      const matchId = selection.matchId || selection.fixture?.matchID;
+      const dataMatchId = data.event_id || data.match_id;
+      
+      // If the data doesn't match our event, ignore it
+      if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+        console.log('📊 Betslip: Ignoring odds change for match ID', dataMatchId, 'our match ID is', matchId);
+        return;
+      }
+      
+      console.log('📊 Betslip: Processing odds change for match ID', matchId);
+      
+      const markets = data.markets || [];
+      let updatedAnySelection = false;
+      
+      if (markets.length > 0) {
+        // Find all selections from this match
+        const matchSelections = this.coupon.selections.filter(
+          sel => String(sel.matchId) === String(matchId) || String(sel.fixture?.matchID) === String(matchId)
+        );
+        
+        matchSelections.forEach(selection => {
+          const marketId = selection.marketId || selection.market_id;
+          const outcomeId = selection.outcomeId || selection.odd_id;
+          
+          // Find the market
+          const market = markets.find(m => String(m.id) === String(marketId));
+          if (market && market.outcomes) {
+            // Find the outcome
+            const outcome = market.outcomes.find(
+              o => String(o.id) === String(outcomeId)
+            );
+            
+            if (outcome) {
+              console.log('📊 Betslip: Found outcome', outcome);
+              if (!outcome.active) {
+                // If outcome is not active, suspend the selection
+                console.log(`📊 Betslip: Outcome not active, suspending selection for match ID ${matchId}`);
+                selection.suspended = true;
+                selection.unavailable = true;
+                updatedAnySelection = true;
+              } else {
+                // If outcome is active, make sure it's not suspended
+                if (selection.suspended || selection.unavailable) {
+                  console.log(`📊 Betslip: Reactivating previously suspended selection for match ID ${matchId}`);
+                  selection.suspended = false;
+                  selection.unavailable = false;
+                  updatedAnySelection = true;
+                }
+                
+                // Update odds if they've changed
+                if (outcome.odds !== selection.odds) {
+                  console.log(`📊 Betslip: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
+                  selection.odds = outcome.odds;
+                  selection.changed = true;
+                  updatedAnySelection = true;
+                  
+                  // Reset the changed flag after 5 seconds
+                  setTimeout(() => {
+                    selection.changed = false;
+                    
+                    // Force a reactivity update
+                    this.updateWinnings({
+                      stake: this.coupon.totalStake,
+                      id: "all",
+                    });
+                  }, 5000);
+                }
+              }
+            }
+          }
+        });
+        
+        // Only update winnings if we actually changed any selections
+        if (updatedAnySelection) {
+          this.updateWinnings({
+            stake: this.coupon.totalStake,
+            id: "all",
+          });
+        }
+      }
+    },
+
+    // Handle bet stop messages
+    handleBetStop(data, selection) {
+      const matchId = selection.matchId || selection.fixture?.matchID;
+      const dataMatchId = data.event_id || data.match_id;
+      
+      if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+        console.log(`📊 Betslip: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+        return;
+      }
+      
+      console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
+      
+      // Find all selections from this match
+      const matchSelections = this.coupon.selections.filter(
+        sel => String(sel.matchId) === String(matchId) || String(sel.fixture?.matchID) === String(matchId)
+      );
+      
+      if (matchSelections.length > 0) {
+        console.log(`⚠️ BET STOP: Suspending ${matchSelections.length} selections in betslip for match ID ${matchId}`);
+        
+        matchSelections.forEach(selection => {
+          selection.suspended = true;
+          selection.unavailable = true;
+          selection.odds = 0;
+        });
+        
+        // Force a reactivity update
+        this.updateWinnings({
+          stake: this.coupon.totalStake,
+          id: "all",
+        });
+      }
+    },
+
     async addToCoupon(selection) {
       const couponPayload = selection
 
@@ -82,6 +267,7 @@ export const useCouponStore = defineStore({
 
         //calculate and get pot winnings with bonus
         const winnings = calculateWinnings(this.coupon, globalVars, bonusList)
+        console.log(winnings)
         this.coupon.maxWin = winnings.maxWin
         this.coupon.maxBonus = winnings.maxBonus
         this.coupon.wthTax = winnings.wthTax
@@ -190,32 +376,31 @@ export const useCouponStore = defineStore({
           }
         }
       }
+
+      // After successfully adding selection, subscribe to its updates
+      this.manageSubscription(selection, true)
     },
     async removeSelection(id) {
-      // const { id, globalVars } = action.payload;
-      // find deleted item
       const globalVars = this.SportsbookGlobalVariable
-
       const res = this.coupon.selections ? [...this.coupon.selections] : []
       const data = res.find((item) => item.selectionId === id || item.id === id);
+      // Call manageSubscription after updating selections array
+      if (data) {
+        this.manageSubscription(data, false)
+      }
 
       const bonusList = this.sportsbookBonusList
-      //
-      // get the new selections
       const newSelection = this.coupon.selections.filter(
         (item) => item.selectionId !== id && item.id !== id
       );
 
       this.coupon.selections = newSelection
 
+
       if (this.coupon.selections.length > 0) {
         const prevBetType = this.coupon.bet_type
-        //group selections by match
         this.coupon.tournaments = groupTournament(this.coupon.selections)
         this.coupon.fixtures = groupSelections(this.coupon.selections)
-        //check bet type
-        // console.log(this.coupon, "coups");
-        // this.coupon.bet_type = multibetCombination(this.coupon.selections);
 
         if (this.coupon.selections.length === 1) {
           this.coupon.bet_type = 'Single';
@@ -238,18 +423,23 @@ export const useCouponStore = defineStore({
           this.coupon.wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
         } else {
-          // recalculate totalOdds if prev bet type was Split
           if (prevBetType === 'Split') {
-            this.coupon.totalOdds = calculateTotalOdds(this.coupon.selections)
-            this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
+            this.coupon.totalOdds = calculateTotalOdds(
+              this.coupon.selections.filter(s => !s.suspended && !s.unavailable && parseFloat(s.odds) > 1)
+            )
           } else {
-            // else remove selection from total odds
-            this.coupon.totalOdds = (
-              parseFloat(this.coupon.totalOdds) / parseFloat(data.odds)
-            ).toFixed(2)
-            this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
+            if (!data.suspended && !data.unavailable && parseFloat(data.odds) > 1) {
+              this.coupon.totalOdds = (
+                parseFloat(this.coupon.totalOdds) / parseFloat(data.odds)
+              ).toFixed(2)
+            }
+            if (isNaN(this.coupon.totalOdds) || this.coupon.totalOdds <= 0) {
+              this.coupon.totalOdds = calculateTotalOdds(
+                this.coupon.selections.filter(s => !s.suspended && !s.unavailable && parseFloat(s.odds) > 1)
+              )
+            }
           }
-          // check if has live
+          this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
           this.coupon.hasLive = checkIfHasLive(this.coupon.selections)
 
           const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
@@ -285,7 +475,7 @@ export const useCouponStore = defineStore({
         }
       } else {
         const coupon = {
-          acceptChanges: false,
+          acceptChanges: true,
           selections: [],
           combos: [],
           totalOdds: 1,
@@ -309,10 +499,13 @@ export const useCouponStore = defineStore({
     updateWinnings(payload) {
       const { stake, id } = payload
       const globalVars = { ...this.SportsbookGlobalVariable }
-
       const coupondata = JSON.parse(JSON.stringify(this.coupon))
       const bonusList = this.sportsbookBonusList
-      const selections = [...this.coupon.selections]
+      
+      // Filter out suspended or unavailable selections
+      const activeSelections = this.coupon.selections.filter(selection => {
+        return !selection.suspended && !selection.unavailable && parseFloat(selection.odds) > 1;
+      });
 
       if (stake === '') {
         this.coupon.stake = ''
@@ -320,29 +513,48 @@ export const useCouponStore = defineStore({
 
         if (this.coupon.betslip_type == 'Single') {
           if (id === 'all') {
-            const newSelections = selections.map((item) => {
+            // Update only active selections
+            const newSelections = this.coupon.selections.map((item) => {
               const newItem = Object.assign({}, item)
-              newItem.stake = ''
+              // Only clear stake for active selections
+              if (!newItem.suspended && !newItem.unavailable && parseFloat(newItem.odds) > 1) {
+                newItem.stake = ''
+              }
               return newItem
             })
             this.coupon.selections = newSelections
             return
           }
+          
           let totalStake = 0
           let minWin = []
           let maxWin = 0
-          const newSelections = selections.map((item) => {
+          
+          // Update selections but only calculate for active ones
+          const newSelections = this.coupon.selections.map((item) => {
             const newItem = Object.assign({}, item)
-            if (item.selectionId === id) newItem.stake = 0
-            totalStake += newItem.stake
-            newItem.stake !== 0 && minWin.push(newItem.odds * newItem.stake)
-            maxWin += newItem.odds * parseFloat(newItem.stake)
+            
+            // Only update the specific selection if it's active
+            if (item.selectionId === id && !item.suspended && !item.unavailable && parseFloat(item.odds) > 1) {
+              newItem.stake = 0
+            }
+            
+            // Only include active selections in calculations
+            if (!newItem.suspended && !newItem.unavailable && parseFloat(newItem.odds) > 1) {
+              totalStake += parseFloat(newItem.stake || 0)
+              if (newItem.stake !== 0) {
+                minWin.push(newItem.odds * newItem.stake)
+                maxWin += newItem.odds * parseFloat(newItem.stake)
+              }
+            }
+            
             return newItem
           })
+          
           this.coupon.selections = newSelections
           this.coupon.totalStake = totalStake
-          this.coupon.minWin = Math.min(minWin)
-          // console.log(minWin.min());
+          this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
+          this.coupon.maxWin = maxWin
         }
       }
 
@@ -350,50 +562,81 @@ export const useCouponStore = defineStore({
         if (this.coupon.betslip_type === 'Single' || this.coupon.bet_type === 'Single') {
           let maxWin = 0
           let minWin = []
-          const maxOdds = Math.max(...this.coupon.selections.map((s) => s.odds))
-          const minOdds = Math.min(...this.coupon.selections.map((s) => s.odds))
+          let totalStake = 0
+          
+          // Only use active selections for odds calculations
+          const activeOdds = activeSelections.map(s => parseFloat(s.odds))
+          const maxOdds = activeOdds.length > 0 ? Math.max(...activeOdds) : 0
+          const minOdds = activeOdds.length > 0 ? Math.min(...activeOdds) : 0
 
           if (id === 'all') {
             const stakePerBet = parseFloat(stake)
             this.coupon.stake = stake // set new total stake
             this.coupon.totalStake = stake * this.coupon.selections.length
-
-            for (let index = 0; index < selections.length; index++) {
-              const selection = selections[index]
-              selection.stake = stakePerBet
-              selections[index] = selection
-
-              maxWin += selection.odds * stakePerBet
-              minWin.push(selection.odds * stakePerBet)
-            }
-            this.coupon.maxWin = maxWin
-            this.coupon.minWin = Math.min(...minWin)
-          } else if (id === 'single') {
-            this.coupon.stake = stake
-            this.coupon.totalStake = stake
-            this.coupon.maxWin = selections[0].odds * stake
-            // this.coupon.minWin = 0;
-          } else {
-            const index = this.coupon.selections.findIndex((i) => i.selectionId === id)
-            if (index !== -1) {
-              this.coupon.stake = ''
-              maxWin = 0
-              minWin = []
-              let totalStake = 0
-              selections[index].stake = parseFloat(stake)
-
-              for (let index = 0; index < selections.length; index++) {
-                const selection = selections[index]
-                if (selection.stake > 0) {
-                  maxWin += selection.odds * parseFloat(selection.stake)
-                  totalStake += parseFloat(selection.stake)
-                  selections[index] = selection
-                  minWin.push(selection.odds * selection.stake)
-                }
+            
+            // Update all selections but only calculate for active ones
+            const updatedSelections = this.coupon.selections.map(selection => {
+              const updatedSelection = {...selection}
+              
+              // Only set stake for active selections
+              if (!updatedSelection.suspended && !updatedSelection.unavailable && parseFloat(updatedSelection.odds) > 1) {
+                updatedSelection.stake = stakePerBet
+                maxWin += updatedSelection.odds * stakePerBet
+                minWin.push(updatedSelection.odds * stakePerBet)
+                totalStake += stakePerBet
+              } else {
+                updatedSelection.stake = 0
               }
+              
+              return updatedSelection
+            })
+            
+            this.coupon.selections = updatedSelections
+            this.coupon.stake = stake
+            this.coupon.maxWin = maxWin
+            this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
+            this.coupon.totalStake = totalStake
+          } else if (id === 'single') {
+            // For single selection bet
+            const selection = this.coupon.selections[0]
+            
+            // Only calculate if selection is active
+            if (!selection.suspended && !selection.unavailable && parseFloat(selection.odds) > 1) {
+              this.coupon.stake = stake
+              this.coupon.totalStake = parseFloat(stake)
+              this.coupon.maxWin = selection.odds * parseFloat(stake)
+            } else {
+              this.coupon.stake = stake
+              this.coupon.totalStake = parseFloat(stake)
+              this.coupon.maxWin = 0
+            }
+          } else {
+            // For updating a specific selection
+            const index = this.coupon.selections.findIndex((i) => i.selectionId === id)
+            
+            if (index !== -1) {
+              const updatedSelections = [...this.coupon.selections]
+              
+              // Only update stake if selection is active
+              if (!updatedSelections[index].suspended && !updatedSelections[index].unavailable && 
+                  parseFloat(updatedSelections[index].odds) > 1) {
+                updatedSelections[index].stake = parseFloat(stake)
+              }
+              
+              // Calculate totals using only active selections
+              updatedSelections.forEach(selection => {
+                if (!selection.suspended && !selection.unavailable && 
+                    parseFloat(selection.odds) > 1 && parseFloat(selection.stake) > 0) {
+                  maxWin += selection.odds * parseFloat(selection.stake)
+                  minWin.push(selection.odds * selection.stake)
+                  totalStake += parseFloat(selection.stake)
+                }
+              })
+              
+              this.coupon.selections = updatedSelections
+              this.coupon.stake = ''
               this.coupon.maxWin = maxWin
-              this.coupon.minWin = Math.min(...minWin)
-              this.coupon.selections = selections
+              this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
               this.coupon.totalStake = totalStake
             }
           }
@@ -401,20 +644,37 @@ export const useCouponStore = defineStore({
           this.coupon.totalOdds = parseFloat(maxOdds).toFixed(2)
           this.coupon.minOdds = parseFloat(minOdds).toFixed(2)
         } else {
-          this.coupon.totalOdds = calculateTotalOdds(this.coupon.selections).toFixed(2)
-          this.coupon.totalStake = parseFloat(stake)
-          this.coupon.exciseDuty = (coupondata.totalStake * 0) / 100
-          // console.log((coupondata.totalStake * 0) / 100, "calc")
-          this.coupon.stake = this.coupon.totalStake - coupondata.exciseDuty
-          // console.log(original(this.coupon), "the coup")
+          // For multiple bets, only use active selections
+          if (activeSelections.length === 0) {
+            // No valid selections for multiple bet
+            this.coupon.totalOdds = "0.00"
+            this.coupon.totalStake = parseFloat(stake) // Keep the stake as entered
+            this.coupon.exciseDuty = 0
+            this.coupon.stake = this.coupon.totalStake
+            this.coupon.maxWin = 0
+            this.coupon.maxBonus = 0
+            this.coupon.wthTax = 0
+            this.coupon.grossWin = 0
+          } else {
+            // Calculate total odds using only active selections
+            this.coupon.totalOdds = calculateTotalOdds(activeSelections).toFixed(2)
+            this.coupon.totalStake = parseFloat(stake)
+            this.coupon.exciseDuty = (this.coupon.totalStake * 0) / 100
+            this.coupon.stake = this.coupon.totalStake - this.coupon.exciseDuty
 
-          //calculate Winnings
-          const winnings = calculateWinnings(this.coupon, globalVars, bonusList)
-          // console.log(winnings, "win");
-          this.coupon.maxWin = winnings.maxWin
-          this.coupon.maxBonus = winnings.maxBonus
-          this.coupon.wthTax = winnings.wthTax
-          this.coupon.grossWin = winnings.grossWin
+            // Create a modified coupon with only active selections for winnings calculation
+            const activeCoupon = {
+              ...this.coupon,
+              selections: activeSelections
+            };
+
+            // Calculate Winnings using only active selections
+            const winnings = calculateWinnings(activeCoupon, globalVars, bonusList)
+            this.coupon.maxWin = winnings.maxWin
+            this.coupon.maxBonus = winnings.maxBonus
+            this.coupon.wthTax = winnings.wthTax
+            this.coupon.grossWin = winnings.grossWin
+          }
         }
       }
     },
@@ -483,31 +743,90 @@ export const useCouponStore = defineStore({
       }
     },
     clearBetslip() {
-      // emit event for mqtt to stop listening
-      const coupon = {
-        acceptChanges: false,
-        selections: [],
-        combos: [],
-        totalOdds: 1,
-        maxBonus: 0,
-        minBonus: 0,
-        grossWin: 0,
-        maxWin: 0,
-        minWin: 0,
-        stake: 100,
-        totalStake: 100,
-        minOdds: 1,
-        maxOdds: 1,
-        wthTax: 0,
-        exciseDuty: 0,
-        useBonus: false,
-        source: 'mobile'
-      }
+      try {
+        // Clean up all MQTT subscriptions using manageSubscription
+        if (Array.isArray(this.coupon.selections)) {
+          this.coupon.selections.forEach(selection => {
+            if (selection) {
+              this.manageSubscription(selection, false)
+            }
+          })
+        }
+        this.activeSubscriptions = []
 
-      this.coupon = coupon
+        // Reset coupon state
+        const coupon = {
+          acceptChanges: false,
+          selections: [],
+          combos: [],
+          totalOdds: 1,
+          maxBonus: 0,
+          minBonus: 0,
+          grossWin: 0,
+          maxWin: 0,
+          minWin: 0,
+          stake: 100,
+          totalStake: 100,
+          minOdds: 1,
+          maxOdds: 1,
+          wthTax: 0,
+          exciseDuty: 0,
+          useBonus: false,
+          source: 'mobile'
+        }
+
+        this.coupon = coupon
+      } catch (error) {
+        console.error('📊 Betslip: Error in clearBetslip:', error)
+        // Still try to reset the coupon state even if cleanup fails
+        this.coupon = {
+          acceptChanges: false,
+          selections: [],
+          combos: [],
+          totalOdds: 1,
+          maxBonus: 0,
+          minBonus: 0,
+          grossWin: 0,
+          maxWin: 0,
+          minWin: 0,
+          stake: 100,
+          totalStake: 100,
+          minOdds: 1,
+          maxOdds: 1,
+          wthTax: 0,
+          exciseDuty: 0,
+          useBonus: false,
+          source: 'mobile'
+        }
+        this.activeSubscriptions = []
+      }
+    },
+    resubscribeToAllSelections() {
+      try {
+        // Clear any existing subscriptions that might be invalid
+        this.activeSubscriptions = []
+        
+        // Resubscribe to all selections in the betslip
+        this.coupon.selections.forEach(selection => {
+          if (selection) {
+            this.manageSubscription(selection, true)
+          }
+        })
+        
+        console.log('📊 Betslip: Successfully resubscribed to all selections')
+      } catch (error) {
+        console.error('📊 Betslip: Error resubscribing to selections:', error)
+      }
     }
   },
   persist: {
-    storage: localStorage
+    storage: localStorage,
+    afterRestore: (ctx) => {
+      // Resubscribe to MQTT topics for all selections in the betslip
+      if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
+        console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
+        ctx.store.resubscribeToAllSelections()
+      }
+    }
   }
 })

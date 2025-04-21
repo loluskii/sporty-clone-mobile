@@ -27,7 +27,7 @@
         </div>
       </template>
 
-      <div class="total-odds mg-b-10" v-if="betSlipType === 'Multiple'">
+      <div class="total-odds mg-b-10" v-if="betType === 'Multiple'">
         <span>Total Odds</span>
         <span>{{ totalOdds }}</span>
       </div>
@@ -52,7 +52,7 @@
         </div>
       </template>
 
-      <div v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0" class="bonus mg-b-10">
+      <div v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance > 0 && !couponStore.betslipMode" class="bonus mg-b-10">
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
           <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
@@ -73,21 +73,28 @@
       </div>
 
       <div class="m-submit">
-        <!-- <div class="place-bet bet-accept-change bet-disabled" v-if="!acceptedChanges" @click="handleAcceptChange">
+        <div class="place-bet bet-accept-change" v-if="!acceptedChanges" @click="handleAcceptChange">
           <span>Accept Changes</span>
-        </div> -->
+        </div>
 
-        <div v-if="!betslipMode" class="m-book-btn" :class="couponStore.coupon.totalStake < 100 ? 'bet-disabled' : ''"
-          @click="book">
-          <div>Book Bet</div>
-        </div>
-        <div class="place-bet" :class="{ 'bet-disabled': placeBetDisabled || hasSuspendedSelections, 'sim-theme': betslipMode }"
-          @click="placeBet">
-          <span>{{ !betslipMode ? 'Place Bet':'Place Simulate Bet' }}</span>
-          <div class="m-pay-num" v-if="totalStake != 0">
-            <span>About to pay {{ totalStake }}</span>
+        <template v-else>
+          <div v-if="!betslipMode" class="m-book-btn" :class="[
+            couponStore.coupon.totalStake < 100 || hasSuspendedSelections ? 'bet-disabled' : ''
+          ]" @click="book">
+            <div>Book Bet</div>
           </div>
-        </div>
+          <div class="place-bet" :class="[
+            {
+              'bet-disabled': couponStore.coupon.totalStake < 100 || hasSuspendedSelections,
+              'sim-theme': betslipMode
+            }
+          ]" @click="placeBet">
+            <span>{{ !betslipMode ? 'Place Bet' : 'Place Simulate Bet' }}</span>
+            <div class="m-pay-num" v-if="totalStake != 0">
+              <span>About to pay {{ totalStake }}</span>
+            </div>
+          </div>
+        </template>
 
       </div>
     </div>
@@ -125,14 +132,6 @@ const betlistStake = computed(() => {
   return couponStore.coupon.totalStake;
 });
 
-
-const hasSuspendedSelections = computed(() => {
-  return couponStore.coupon.selections.some(selection =>
-    selection.suspended || selection.unavailable ||
-    (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
-  );
-});
-
 const placeBetDisabled = computed(() => {
   return couponStore.coupon.totalStake < parseFloat(SportsbookGlobalVariable.MinBetStake)
 })
@@ -164,28 +163,31 @@ const wthTax = computed(() => {
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
-  const stake = betlistStake.value;
-  const totalOdd = couponStore.coupon.totalOdds;
+  const stake = parseFloat(betlistStake.value) || 0;
+  const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0;
   let wth = parseFloat(couponStore.SportsbookGlobalVariable.wthTax || 0);
 
   if (taxEnabled.value) {
-    let finalPayout = stake * totalOdds;
+    let finalPayout = stake * totalOdd;
 
     if (exciseTax.value > 0) {
-      finalPayout = stakeAfterTax.value * totalOdd;
+      finalPayout = parseFloat(stakeAfterTax.value || 0) * totalOdd;
     }
 
     if (wth > 0) {
       // wth tax
-      finalPayout = finalPayout - wthTax.value;
+      finalPayout = finalPayout - parseFloat(wthTax.value || 0);
     }
-    return (finalPayout + maxBonus.value).toFixed(2);
+    return formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2));
   }
 
   const isSingleBet = props.betSlipType === "Single" && selectionsLength.value === 1;
   const isMultipleBet = props.betSlipType === "Multiple";
 
-  return isMultipleBet || isSingleBet ? formatNumber(maxWin.value) : `${formatNumber(minWin.value)} ~ ${formatNumber(maxWin.value)}`;
+  if (isMultipleBet || isSingleBet) {
+    return formatNumber(parseFloat(maxWin.value || 0));
+  }
+  return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(parseFloat(maxWin.value || 0))}`;
 });
 
 const toggleKeyboard = () => {
@@ -222,6 +224,14 @@ const totalStake = computed(() => {
     : formatNumber(couponStore.coupon.totalStake);
 });
 
+// Add this computed property to check for suspended selections
+const hasSuspendedSelections = computed(() => {
+  return couponStore.coupon.selections.some(selection =>
+    selection.suspended || selection.unavailable ||
+    (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+  );
+});
+
 async function book(e) {
   try {
     if (totalStake.value < 1) {
@@ -250,6 +260,11 @@ async function book(e) {
 }
 
 function placeBet() {
+  if (hasSuspendedSelections.value) {
+    emit("toggle-betslip");
+    emitter.emit("showErrorMessage", "Some selections are suspended");
+    return;
+  }
   if (!userStore.currentUser) {
     emit("toggle-betslip");
     return router.push({ name: "sign-in" });
@@ -314,21 +329,30 @@ function onKeyClick(type, value) {
   }
 }
 
-const handleAcceptChange = () => {
+function handleAcceptChange() {
+  // Set acceptChanges to true in the coupon store
   couponStore.coupon.acceptChanges = true;
-  couponStore.coupon.selections.forEach((selection) => {
-    if (selection.suspended && selection.unavailable) {
-      let element_id = selection.element_id;
-      couponStore.removeSelection(element_id);
-      return couponStore.updateWinnings({
-        stake: couponStore.coupon.totalStake,
-        id: selection.selectionId,
-      });
-    } else if (selection.changed) {
-      selection.changed = false;
-    }
+
+  // Clear the changed flag for all selections
+  couponStore.coupon.selections.forEach(selection => {
+    selection.changed = false;
   });
-};
+
+  // Remove any suspended selections that are unavailable
+  const updatedSelections = couponStore.coupon.selections.filter(selection => {
+    const isExpired = (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3;
+    return !(selection.suspended && isExpired);
+  });
+
+  if (updatedSelections.length !== couponStore.coupon.selections.length) {
+    couponStore.coupon.selections = updatedSelections;
+    // Recalculate winnings after removing suspended selections
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all",
+    });
+  }
+}
 
 onMounted(() => {
   couponStore.updateWinnings({

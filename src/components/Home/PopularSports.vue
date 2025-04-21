@@ -218,7 +218,7 @@
 <script setup>
 import FeaturedMatchCard from "./FeaturedMatchCard.vue";
 import Codes from "./Codes.vue";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import {
   getTopBets,
   getFixturesByTournamentId,
@@ -230,6 +230,11 @@ import {
 } from "@/helpers";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import FeaturedGamesContainer from "./FeaturedGamesContainer.vue";
+import { useMqttService } from '@/composables/useMqtt'
+
+const { subscribe } = useMqttService()
+const unsubscribeFunctions = ref({}) // Store unsubscribe functions by match ID
+const componentId = `popular-sports-${Date.now()}` // Unique ID for this component instance
 
 const isLoading = ref(false);
 const casinoIsLoading = ref(false);
@@ -314,8 +319,15 @@ function assignTournaments(tournament, games, tournamentID) {
     featuredTournamentGames.value.push({
       tournamentID: tournamentID,
       fixtures: [...gamesList],
-      markets: [...games.markets], // Spread inside an array to create a new array
+      markets: [...games.markets],
     });
+
+    // Set up MQTT subscriptions for each fixture
+    gamesList.forEach(fixture => {
+      if (fixture.matchID) {
+        setupMqttSubscriptions(fixture.matchID)
+      }
+    })
   } else {
     const index = featuredTournaments.value.findIndex(
       (x) => x.tournament_id == tournament.id
@@ -324,15 +336,121 @@ function assignTournaments(tournament, games, tournamentID) {
   }
 }
 
+function setupMqttSubscriptions(matchId) {
+  // Only clear our own component's subscriptions
+  const subscriptionKey = `${componentId}-${matchId}`
+  if (unsubscribeFunctions.value[subscriptionKey]) {
+    unsubscribeFunctions.value[subscriptionKey].forEach(unsubscribe => unsubscribe())
+  }
+
+  // Subscribe to odds changes
+  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+    handleOddsChange(matchId, data)
+  })
+
+  // Subscribe to bet stop
+  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+    handleBetStop(matchId, data)
+  })
+
+  // Store unsubscribe functions with our component-specific key
+  unsubscribeFunctions.value[subscriptionKey] = [unsubscribeOddsChange, unsubscribeBetStop]
+}
+
+function handleOddsChange(matchId, data) {
+  if (!data || !data.markets) return
+
+  // Find and update the fixture in featuredTournamentGames
+  featuredTournamentGames.value = featuredTournamentGames.value.map(tournament => {
+    const updatedFixtures = tournament.fixtures.map(fixture => {
+      if (String(fixture.matchID) === String(matchId)) {
+        // Update outcomes for the matching market
+        const updatedOutcomes = fixture.outcomes.map(outcome => {
+          const market = data.markets.find(m => m.id === outcome.marketID)
+          if (market && market.outcomes) {
+            const updatedOutcome = market.outcomes.find(o => String(o.id) === String(outcome.outcomeID))
+            if (updatedOutcome) {
+              return {
+                ...outcome,
+                odds: updatedOutcome.odds,
+                active: updatedOutcome.active ? 1 : 0
+              }
+            }
+          }
+          return outcome
+        })
+        return {
+          ...fixture,
+          outcomes: updatedOutcomes
+        }
+      }
+      return fixture
+    })
+    return {
+      ...tournament,
+      fixtures: updatedFixtures
+    }
+  })
+}
+
+function handleBetStop(matchId, data) {
+  // Find and update the fixture in featuredTournamentGames
+  featuredTournamentGames.value = featuredTournamentGames.value.map(tournament => {
+    const updatedFixtures = tournament.fixtures.map(fixture => {
+      if (String(fixture.matchID) === String(matchId)) {
+        // Set all outcomes to inactive
+        const updatedOutcomes = fixture.outcomes.map(outcome => ({
+          ...outcome,
+          odds: 0,
+          active: 0
+        }))
+        return {
+          ...fixture,
+          outcomes: updatedOutcomes
+        }
+      }
+      return fixture
+    })
+    return {
+      ...tournament,
+      fixtures: updatedFixtures
+    }
+  })
+}
+
+onBeforeUnmount(() => {
+  // Clean up all MQTT subscriptions
+  Object.values(unsubscribeFunctions.value).forEach(subscriptions => {
+    subscriptions.forEach(unsubscribe => unsubscribe())
+  })
+  unsubscribeFunctions.value = {}
+})
+
 async function getFeaturedGames() {
   isLoading.value = true;
   try {
     const res = await getTopBets();
     if (res.data) {
-      featuredTournaments.value = res.data?.sort(
-        (a, b) => a.tournamentID - b.tournamentID
-      );
-      activeFeaturedTournament.value = res.data[0]?.tournamentID;
+      // Create a Map to store unique tournaments by ID
+      const uniqueTournaments = new Map();
+      
+      // Filter out duplicates and store in Map
+      res.data.forEach(tournament => {
+        if (!uniqueTournaments.has(tournament.tournamentID)) {
+          uniqueTournaments.set(tournament.tournamentID, tournament);
+        }
+      });
+
+      // Convert Map back to array and sort
+      featuredTournaments.value = Array.from(uniqueTournaments.values())
+        .sort((a, b) => a.tournamentID - b.tournamentID);
+
+      // Set active tournament to first one if available
+      activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+
+      // Process each unique tournament
       await Promise.all(
         featuredTournaments.value.map(async (tournament) => {
           const games = await getFixturesByTournamentId(
@@ -346,6 +464,7 @@ async function getFeaturedGames() {
     } else throw Error;
   } catch (error) {
     isLoading.value = false;
+    console.error('Error fetching featured games:', error);
   }
 }
 
