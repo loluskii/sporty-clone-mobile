@@ -9,34 +9,116 @@ export const useUsersStore = defineStore({
   state: () => ({
     currentUser: null,
     activeBonus: null,
-    casinoActiveBonus: null
+    casinoActiveBonus: null,
+    error: null
   }),
   getters: {
-    balance: (state) => (state.currentUser ? state.currentUser.availableBalance : 0),
-    details: (state) => (state.currentUser ? state.currentUser : null),
-    bonus: (state) => (state.activeBonus ? state.activeBonus : null),
-    sportBonusBalance: (state) => (state.currentUser ? state.currentUser.sportBonusBalance : 0),
-    casinoBonusBalance: (state) => (state.currentUser ? state.currentUser.casinoBonusBalance : 0),
-    virtualBonusBalance: (state) => (state.currentUser ? state.currentUser.virtualBonusBalance : 0),
-    TrustBalance: (state) => (state.currentUser ? state.currentUser.trustBalance : 0)
+    // Helper function to safely access nested properties
+    safeGet: (state) => (property, defaultValue = 0) => {
+      try {
+        return state.currentUser && property in state.currentUser 
+          ? state.currentUser[property] 
+          : defaultValue;
+      } catch (error) {
+        console.warn(`Error accessing ${property}:`, error);
+        return defaultValue;
+      }
+    },
+    
+    balance: (state) => state.safeGet('availableBalance'),
+    details: (state) => state.currentUser || null,
+    bonus: (state) => state.activeBonus || null,
+    sportBonusBalance: (state) => state.safeGet('sportBonusBalance'),
+    casinoBonusBalance: (state) => state.safeGet('casinoBonusBalance'),
+    virtualBonusBalance: (state) => state.safeGet('virtualBonusBalance'),
+    trustBalance: (state) => state.safeGet('trustBalance'),
+    
+    // Add a getter for error state
+    hasError: (state) => Boolean(state.error),
+    errorMessage: (state) => state.error
   },
   actions: {
     async loadCurrentUser() {
-      // this.currentUser contains all user properties. E.g. this.currentUser.first_name
-      Promise.all([
-        getUserDetailsByToken(), 
-        getUserActiveBonus()
-      ]).then((res) => {
-        this.currentUser = res[0].data
-        if (res[1] && res[1].data) {
-          this.casinoActiveBonus = res[1].data
+      try {
+        this.error = null;
+        const [userResponse, bonusResponse] = await Promise.allSettled([
+          getUserDetailsByToken(),
+          getUserActiveBonus()
+        ]);
+
+        // Handle user details response
+        if (userResponse.status === 'rejected') {
+          throw new Error('Failed to fetch user details');
+        }
+
+        if (!userResponse.value?.data) {
+          throw new Error('No user data received');
+        }
+
+        this.currentUser = userResponse.value.data;
+        
+        // Handle bonus response
+        if (bonusResponse.status === 'fulfilled' && bonusResponse.value?.data) {
+          this.casinoActiveBonus = bonusResponse.value.data;
+          // Only emit if we actually have bonus data
+          emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
+        } else if (bonusResponse.status === 'rejected') {
+          console.warn('Failed to fetch active bonus:', bonusResponse.reason);
+        }
+
+        // Validate required properties
+        const requiredProperties = [
+          'availableBalance',
+          'sportBonusBalance',
+          'casinoBonusBalance',
+          'virtualBonusBalance',
+          'trustBalance'
+        ];
+
+        const missingProperties = requiredProperties.filter(
+          prop => !(prop in this.currentUser)
+        );
+
+        if (missingProperties.length > 0) {
+          console.warn('Missing user properties:', missingProperties);
+        }
+
+      } catch (error) {
+        console.error('Error loading user:', error);
+        this.error = error.message;
+        this.currentUser = null;
+        this.casinoActiveBonus = null;
+      }
+    },
+
+    async refreshActiveBonus() {
+      if (!this.currentUser) {
+        return;
+      }
+      try {
+        const response = await getUserActiveBonus();
+        if (response?.data) {
+          this.casinoActiveBonus = response.data;
           emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
         }
-      })
+      } catch (error) {
+        console.warn('Failed to refresh active bonus:', error);
+        // Not setting main error state as this is not a critical failure
+      }
     },
+
     setActiveBonus(bonus) {
-      this.activeBonus = bonus;
-    }, 
+      try {
+        this.activeBonus = bonus;
+      } catch (error) {
+        console.error('Error setting active bonus:', error);
+        this.error = 'Failed to set active bonus';
+      }
+    },
+
+    clearError() {
+      this.error = null;
+    }
   },
   persist: {
     storage: localStorage
