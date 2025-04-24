@@ -20,7 +20,7 @@
           <div class="balance-wrap">
             <div class="title">Total Balance</div>
             <div data-op="me_balance" class="value">
-              <span>NGN </span><span> {{ balance.toLocaleString('en') }}</span>
+              <span>NGN </span><span> {{ balance }}</span>
             </div>
           </div>
           <div class="w-d-wrap">
@@ -90,11 +90,7 @@ import { useAuthStore, useUsersStore } from '../../stores'
 // import { formatNumber } from '../../helpers'
 const router = useRouter()
 const { isAuthenticated } = useAuthStore()
-const { currentUser } = useUsersStore()
-
-const balance = computed(() => {
-  return currentUser ? currentUser.availableBalance : 0
-})
+const { currentUser, balance } = useUsersStore()
 
 function redirectToAccount() {
   if (currentUser) {
