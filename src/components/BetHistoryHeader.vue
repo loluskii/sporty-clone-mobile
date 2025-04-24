@@ -42,14 +42,7 @@ import { defineProps, computed } from 'vue'
 
 const route = useRoute()
 const { isAuthenticated } = useAuthStore()
-const usersStore = useUsersStore()
-
-const balance = computed(() => {
-  if (usersStore.currentUser) {
-    return usersStore.balance
-  }
-  return 0
-})
+const {balance} = useUsersStore()
 
 defineProps({
   active: String

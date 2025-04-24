@@ -1,37 +1,49 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore, useUtilstStore } from '../stores'
-import HomeView from '@/views/HomeView.vue'
-import AZView from '@/views/AZView.vue'
-import FixtureView from '@/views/Sport/FixtureView.vue'
-import SignInView from '@/views/SignInView.vue'
-import SignUpView from '@/views/SignUpView.vue'
-import BetHistoryView from '@/views/Account/BetHistoryView.vue'
-import OpenBetsView from '@/views/Account/OpenBetsView.vue'
-import BetDetailView from '@/views/Account/BetDetailView.vue'
-import MeView from '@/views/Account/MeView.vue'
-import ProfileView from '@/views/Account/ProfileView.vue'
-import FixtureDetail from '@/views/Sport/FixtureDetail.vue'
-import LiveFixtureDetail from '@/views/Sport/LiveFixtureDetail.vue'
-import TransactionView from '@/views/Account/TransactionView.vue'
-import SportsView from '@/views/SportsView.vue'
-import LiveView from '@/views/LiveView.vue'
-import LoadBetView from '@/views/LoadBetView.vue'
-import DepositView from '@/views/Account/DepositView.vue'
-import VerifyPaymentView from '@/views/Account/VerifyPaymentView.vue'
-import WithDrawalView from '@/views/Account/WithDrawalView.vue'
-import BonusView from '@/views/Account/BonusView.vue'
-import CMSPage from '@/views/CMS.vue'
+// Convert all static imports to dynamic imports
+const HomeView = () => import('@/views/HomeView.vue')
+const AZView = () => import('@/views/AZView.vue')
+const FixtureView = () => import('@/views/Sport/FixtureView.vue')
+const SignInView = () => import('@/views/SignInView.vue')
+const SignUpView = () => import('@/views/SignUpView.vue')
+const BetHistoryView = () => import('@/views/Account/BetHistoryView.vue')
+const OpenBetsView = () => import('@/views/Account/OpenBetsView.vue')
+const BetDetailView = () => import('@/views/Account/BetDetailView.vue')
+const MeView = () => import('@/views/Account/MeView.vue')
+const ProfileView = () => import('@/views/Account/ProfileView.vue')
+const FixtureDetail = () => import('@/views/Sport/FixtureDetail.vue')
+const LiveFixtureDetail = () => import('@/views/Sport/LiveFixtureDetail.vue')
+const TransactionView = () => import('@/views/Account/TransactionView.vue')
+const SportsView = () => import('@/views/SportsView.vue')
+const LiveView = () => import('@/views/LiveView.vue')
+const LoadBetView = () => import('@/views/LoadBetView.vue')
+const DepositView = () => import('@/views/Account/DepositView.vue')
+const VerifyPaymentView = () => import('@/views/Account/VerifyPaymentView.vue')
+const WithDrawalView = () => import('@/views/Account/WithDrawalView.vue')
+const BonusView = () => import('@/views/Account/BonusView.vue')
+const CMSPage = () => import('@/views/CMS.vue')
 // import SupportView from '@/views/Account/SupportView.vue'
-import SearchView from '@/views/SearchView.vue'
-import GroupView from '@/views/Games/GroupView.vue'
-import Search from '../views/Games/SearchView.vue'
+const SearchView = () => import('@/views/SearchView.vue')
+const GroupView = () => import('@/views/Games/GroupView.vue')
+const Search = () => import('../views/Games/SearchView.vue')
 
-import GamesView from '@/views/Games/GamesView.vue'
-import PlayView from '@/views/Games/PlayView.vue'
-import CodeHubView from '@/views/CodeHubView.vue'
-import Promotions from '@/views/Promotions.vue'
-import JackpotView from '../views/Games/JackpotView.vue'
+const GamesView = () => import('@/views/Games/GamesView.vue')
+const PlayView = () => import('@/views/Games/PlayView.vue')
+const CodeHubView = () => import('@/views/CodeHubView.vue')
+const Promotions = () => import('@/views/Promotions.vue')
+const JackpotView = () => import('../views/Games/JackpotView.vue')
 
+// Add loading component
+const LoadingComponent = {
+  template: `
+    <div class="route-loading">
+      <div class="loading-spinner"></div>
+    </div>
+  `
+}
+
+// Add route preloading for frequently accessed routes
+const preloadRoutes = ['home', 'az_menu', 'live', 'casino-games']
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,7 +56,8 @@ export const router = createRouter({
       meta: {
         showFooter: true,
         showMobileNavigation: true,
-        showBetslipCount: true
+        showBetslipCount: true,
+        preload: true // Preload home page
       }
     },
     {
@@ -289,9 +302,32 @@ export const router = createRouter({
   ]
 });
 
-
-// Navigation guard to handle footer visibility
+// Add route preloading
 router.beforeEach((to, from, next) => {
+  // Show loading state
+  document.body.classList.add('route-loading')
+
+  // Preload next route's component
+  if (to.matched.length) {
+    const component = to.matched[0].components.default
+    if (typeof component === 'function') {
+      component()
+    }
+  }
+
+  // Preload frequently accessed routes
+  if (preloadRoutes.includes(to.name)) {
+    preloadRoutes.forEach(routeName => {
+      const route = router.resolve({ name: routeName })
+      if (route.matched.length) {
+        const component = route.matched[0].components.default
+        if (typeof component === 'function') {
+          component()
+        }
+      }
+    })
+  }
+
   const utilStore = useUtilstStore()
   // Check if the meta field is set and decide whether to show the footer
   const showFooter = to.meta.showFooter
@@ -317,6 +353,11 @@ router.beforeEach((to, from, next) => {
     router.push('/')
   }
   next()
+})
+
+// Add afterEach to remove loading state
+router.afterEach(() => {
+  document.body.classList.remove('route-loading')
 })
 
 export default router

@@ -24,16 +24,27 @@ const startApp = async () => {
   try {
     const app = createApp(App)
     const pinia = createPinia()
+    
+    // Add performance monitoring
+    app.config.performance = true
+    
     pinia.use(piniaPluginPersistedstate)
     app.use(pinia)
+    
+    // Add error boundary
+    app.config.errorHandler = (err, vm, info) => {
+      console.error('Vue error:', err)
+      // Handle error appropriately
+    }
+    
     await applyBranding()
-
     app.use(router)
     app.use(VueQueryPlugin)
     app.use(Vue3Marquee)
 
-    app.component('v-otp-input', VOtpInput)
-    app.component('VueDatePicker', VueDatePicker)
+    // Lazy load components
+    app.component('v-otp-input', () => import('vue3-otp-input'))
+    app.component('VueDatePicker', () => import('@vuepic/vue-datepicker'))
 
     app.mount('#app')
   } catch (error) {
@@ -41,6 +52,9 @@ const startApp = async () => {
   }
 }
 
-;(async () => {
-  await startApp()
-})()
+// Add performance monitoring
+const startTime = performance.now()
+startApp().then(() => {
+  const loadTime = performance.now() - startTime
+  console.log('App initialization time:', loadTime)
+})

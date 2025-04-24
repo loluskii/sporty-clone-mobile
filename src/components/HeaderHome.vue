@@ -50,16 +50,9 @@ import { useAuthStore, useUsersStore } from "@/stores";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 const { isAuthenticated } = useAuthStore();
-const usersStore = useUsersStore();
+const {balance} = useUsersStore();
 const myHeader = ref();
-const headerHeight = ref("48px");
-
-const balance = computed(() => {
-  if (usersStore.currentUser) {
-    return usersStore.balance.toLocaleString("en");
-  }
-  return "0.00";
-});
+const headerHeight = ref("48px")
 
 // Create a ResizeObserver to dynamically track header height
 const resizeObserver = new ResizeObserver(() => {
