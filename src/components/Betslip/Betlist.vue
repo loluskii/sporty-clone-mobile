@@ -168,7 +168,6 @@ import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
-import VueToggles from "vue-toggles";
 import Simulation from "./Simulation.vue";
 import BetslipModeToggle from "./BetslipModeToggle.vue";
 

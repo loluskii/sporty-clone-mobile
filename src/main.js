@@ -13,12 +13,30 @@ import VOtpInput from 'vue3-otp-input'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import applyBranding from './helpers/utils'
 import Vue3Marquee from 'vue3-marquee'
+import { securityConfig } from './config/security'
+import { performanceMetrics, apiPerformance } from './utils/performance'
 
 import App from './App.vue'
 import router from './router'
 import {
   VueQueryPlugin
 } from 'vue-query'
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+  });
+}
+
+// Start performance monitoring
+performanceMetrics.start()
 
 const startApp = async () => {
   try {
@@ -31,13 +49,19 @@ const startApp = async () => {
     pinia.use(piniaPluginPersistedstate)
     app.use(pinia)
     
-    // Add error boundary
-    app.config.errorHandler = (err, vm, info) => {
-      console.error('Vue error:', err)
-      // Handle error appropriately
-    }
+    // Apply security headers
+    app.config.globalProperties.$security = securityConfig
     
+    // Apply branding
     await applyBranding()
+
+    // Initialize router with security headers
+    router.beforeEach((to, from, next) => {
+      // Add security headers to each route
+      document.documentElement.style.setProperty('--csp', securityConfig.csp)
+      next()
+    })
+
     app.use(router)
     app.use(VueQueryPlugin)
     app.use(Vue3Marquee)
@@ -46,7 +70,13 @@ const startApp = async () => {
     app.component('v-otp-input', () => import('vue3-otp-input'))
     app.component('VueDatePicker', () => import('@vuepic/vue-datepicker'))
 
+    // Performance mark for app initialization
+    performanceMetrics.mark('appInit')
+
     app.mount('#app')
+    
+    // Log performance metrics after mount
+    performanceMetrics.logMetrics()
   } catch (error) {
     console.error('Failed to load app:', error)
   }

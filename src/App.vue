@@ -206,13 +206,7 @@ watch(
   { immediate: true } // Trigger the watch callback immediately on component mount
 );
 
-// Add performance monitoring
-const startTime = performance.now();
-
 onMounted(async () => {
-  // Track initial load time
-  const loadTime = performance.now() - startTime;
-  console.log('Initial component load time:', loadTime);
 
   if (route.path !== "/") {
     isLoading.value = false;
@@ -221,6 +215,7 @@ onMounted(async () => {
   if (usersStore.currentUser) {
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
+        console.log(res[2]);
       })
       .catch(() => {
         isLoading.value = false;
@@ -230,7 +225,7 @@ onMounted(async () => {
       });
   }
 
-  Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
+  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
@@ -262,7 +257,37 @@ defineComponent({
 
 <template>
   <div class="page-content page-content--ng">
-    <transition name="move">
+    <!-- Main content -->
+    <div class="x-main x-layout-main">
+      <div class="x-main-mid x-has-bottom-nav">
+        <RouterView />
+        <AppFooter v-show="utilsStore.showFooter"></AppFooter>
+        <MobileFooter
+          @show-betslip="toggleBetslip"
+          :open-bet-count="openBets"
+        ></MobileFooter>
+        <ErrorDialogue
+          v-if="dialogueShown"
+          @hide-dialogue="toggleDialogue"
+          :dialogue-message="dialogueMessage"
+          :error-message="errorMessage"
+          :dialogue-type="dialogueType"
+          :next-route="nextRoute"
+        ></ErrorDialogue>
+        <CasinoDialog
+          v-if="casinoDailogShown"
+          @hide-dialogue="casinoDailogShown = false"
+          :data="casinoGameData"
+        />
+      </div>
+      <Betlist
+        @toggle-betslip="toggleBetslip"
+        v-if="showBetslip"
+        @update-betcount="getBetsData"
+      ></Betlist>
+    </div>
+
+    <!-- <transition name="move">
       <div class="loading-overlay" v-if="isLoading">
         <div class="loading-spinner">
           <img
@@ -274,45 +299,12 @@ defineComponent({
           <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
         </div>
       </div>
-    </transition>
-    <!-- Main content -->
-     <template v-if="!isLoading">
-      <div class="x-main x-layout-main">
-        <div class="x-main-mid x-has-bottom-nav">
-          <RouterView />
-          <AppFooter v-show="utilsStore.showFooter"></AppFooter>
-          <MobileFooter
-            @show-betslip="toggleBetslip"
-            :open-bet-count="openBets"
-          ></MobileFooter>
-          <ErrorDialogue
-            v-if="dialogueShown"
-            @hide-dialogue="toggleDialogue"
-            :dialogue-message="dialogueMessage"
-            :error-message="errorMessage"
-            :dialogue-type="dialogueType"
-            :next-route="nextRoute"
-          ></ErrorDialogue>
-          <CasinoDialog
-            v-if="casinoDailogShown"
-            @hide-dialogue="casinoDailogShown = false"
-            :data="casinoGameData"
-          />
-        </div>
-        <Betlist
-          @toggle-betslip="toggleBetslip"
-          v-if="showBetslip"
-          @update-betcount="getBetsData"
-        ></Betlist>
-      </div>
-  
-      
-      <CalendarBox
-        v-if="customDatePickerShown"
-        @hide="toggleDatePicker"
-        @set-date="handleCustomDatePicker"
-      />
-    </template>
+    </transition> -->
+    <CalendarBox
+      v-if="customDatePickerShown"
+      @hide="toggleDatePicker"
+      @set-date="handleCustomDatePicker"
+    />
     <div
       class="dialog-mask"
       v-if="bookBetModalShown"
@@ -330,10 +322,8 @@ defineComponent({
         </div>
       </div>
     </div>
-
   </div>
 </template>
-
 <style>
 @import url("./assets/css/loading.css");
 html,
