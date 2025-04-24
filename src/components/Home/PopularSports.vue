@@ -250,6 +250,8 @@ const featuredCasinogames = ref([]);
 const featuredCasino = ref([]);
 const codes = ref([])
 
+// live tracker of fatured games
+
 function scrollGamesIntoView() {
   document
     .getElementById("featuredMatchCard_" + activeFeaturedTournament.value)
