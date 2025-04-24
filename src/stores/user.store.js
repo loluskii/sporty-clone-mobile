@@ -25,13 +25,43 @@ export const useUsersStore = defineStore({
       }
     },
     
-    balance: (state) => state.safeGet('availableBalance'),
+    balance: (state) => {
+      const balance = state.safeGet('availableBalance');
+      return balance ? Number(balance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '0.00';
+    },
     details: (state) => state.currentUser || null,
     bonus: (state) => state.activeBonus || null,
-    sportBonusBalance: (state) => state.safeGet('sportBonusBalance'),
-    casinoBonusBalance: (state) => state.safeGet('casinoBonusBalance'),
-    virtualBonusBalance: (state) => state.safeGet('virtualBonusBalance'),
-    trustBalance: (state) => state.safeGet('trustBalance'),
+    sportBonusBalance: (state) => {
+      const balance = state.safeGet('sportBonusBalance');
+      return balance ? Number(balance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '0.00';
+    },
+    casinoBonusBalance: (state) => {
+      const balance = state.safeGet('casinoBonusBalance');
+      return balance ? Number(balance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '0.00';
+    },
+    virtualBonusBalance: (state) => {
+      const balance = state.safeGet('virtualBonusBalance');
+      return balance ? Number(balance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '0.00';
+    },
+    trustBalance: (state) => {
+      const balance = state.safeGet('trustBalance');
+      return balance ? Number(balance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '0.00';
+    },
     
     // Add a getter for error state
     hasError: (state) => Boolean(state.error),
@@ -51,7 +81,7 @@ export const useUsersStore = defineStore({
           throw new Error('Failed to fetch user details');
         }
 
-        if (!userResponse.value?.data) {
+        if (this.currentUser && !userResponse.value?.data) {
           throw new Error('No user data received');
         }
 
