@@ -13,7 +13,7 @@
         <PopularSports></PopularSports>
       </KeepAlive>
       <!-- Popular Sports -->
-      <!-- <LiveContainer></LiveContainer> Highlights -->
+      <LiveContainer></LiveContainer>
       <Highlights></Highlights>
       <!-- Highlights -->
     </div>
