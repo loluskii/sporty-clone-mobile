@@ -1,9 +1,9 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
 export const useUtilstStore = defineStore({
-  id: 'utils',
+  id: "utils",
   state: () => ({
-    brandName: '',
+    brandName: "",
     sportID: 1,
     live: false,
     sportsMenu: [],
@@ -18,11 +18,11 @@ export const useUtilstStore = defineStore({
     errorMessage: null,
     categoriesList: [],
     casinoBonusShown: false,
-    previousRoute: null
+    previousRoute: null,
   }),
   getters: {},
   actions: {},
   persist: {
-    storage: localStorage
-  }
-})
+    storage: localStorage,
+  },
+});

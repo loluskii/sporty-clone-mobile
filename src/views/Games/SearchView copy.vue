@@ -6,7 +6,9 @@
       </div>
       <form id="search" class="m-l-right">
         <div class="m-input-wap-wrapper">
-          <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+          <i
+            class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
+          ></i>
 
           <input
             role=""
@@ -34,7 +36,6 @@
       </div>
     </div>
     <LoadingSpinner v-if="isLoading" />
-
   </div>
 </template>
 
@@ -245,7 +246,6 @@ const prematchSports = computed(() => {
   font-style: normal;
 }
 
-
 .m-search--bar {
   background: var(--brand-primary);
   -webkit-box-sizing: border-box;
@@ -318,5 +318,4 @@ const prematchSports = computed(() => {
 .m-search--bar input[type="search"] {
   -webkit-appearance: none;
 }
-
 </style>

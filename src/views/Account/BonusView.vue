@@ -15,11 +15,13 @@
       <template v-if="activeBonus && !isLoading">
         <div style="padding-top: 10px; padding-bottom: 10px">
           <div className="bonus_text">
-            Available Bonus Fund: {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+            Available Bonus Fund:
+            {{ couponStore.SportsbookGlobalVariable.CurrencyCode
             }}{{ formatNumber(userStore.sportBonusBalance) }}
           </div>
           <div className="bonus_text">
-            Pending Bonus Fund: {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+            Pending Bonus Fund:
+            {{ couponStore.SportsbookGlobalVariable.CurrencyCode
             }}{{ formatNumber(pendingBalance) }}
           </div>
         </div>
@@ -65,7 +67,11 @@
       >
         <div
           class="bonus-title"
-          style="padding: 10px 0; border-bottom: 1px solid #cacaca; margin-bottom: 15px"
+          style="
+            padding: 10px 0;
+            border-bottom: 1px solid #cacaca;
+            margin-bottom: 15px;
+          "
         >
           <h5 style="font-size: medium; font-weight: 500">{{ bonus.name }}</h5>
         </div>

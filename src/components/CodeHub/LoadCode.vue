@@ -27,12 +27,16 @@
       <button
         class="af-button af-button--primary"
         @click.prevent="loadBet"
-        :class="[isLoading ? 'is-disabled' : '', bookingCode == '' ? 'is-disabled' : '']"
+        :class="[
+          isLoading ? 'is-disabled' : '',
+          bookingCode == '' ? 'is-disabled' : '',
+        ]"
       >
         <span>Load</span>
       </button>
       <div class="m-form-desc">
-        A booking code enables you to book a bet. Odds or availabilities may change.
+        A booking code enables you to book a bet. Odds or availabilities may
+        change.
       </div>
     </div>
   </div>
@@ -83,7 +87,6 @@ async function loadBet() {
 </script>
 
 <style scoped>
-
 .m-main-info {
   padding: 1.66666667rem 1.33333333rem;
 }
@@ -193,7 +196,12 @@ async function loadBet() {
   padding: 0 0.91666667rem;
   width: 10.66666667rem;
 }
-.m-int .m-main-info .m-form-wrap .m-input-container .country-select .af-select-title {
+.m-int
+  .m-main-info
+  .m-form-wrap
+  .m-input-container
+  .country-select
+  .af-select-title {
   border-radius: 0;
 }
 .m-int
@@ -371,7 +379,8 @@ async function loadBet() {
   border-color: #e41827 !important;
   border-color: var(--warning-primary) !important;
 }
-.m-input-wrapper.m-input-wrapper--error.m-input-group--prepend .m-input-prepend {
+.m-input-wrapper.m-input-wrapper--error.m-input-group--prepend
+  .m-input-prepend {
   border: 1px solid #e41827;
   border-right: none;
   border-color: #e41827;

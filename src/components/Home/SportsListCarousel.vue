@@ -89,11 +89,7 @@
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="playSmatVirtual"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/dice.png"
-              loading="eager"
-              height="20"
-            />
+            <img src="@/assets/images/dice.png" loading="eager" height="20" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
             >Dice</span
@@ -183,7 +179,7 @@ const usersStore = useUsersStore();
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(
     `../../assets/images/sports/${sportId}.png`,
-    import.meta.url
+    import.meta.url,
   );
   return imageUrl;
 };
@@ -226,7 +222,7 @@ const hashStr = computed(() => {
   return MD5(
     `${token.value}10100${import.meta.env.VITE_SITE_URL}${mode.value}${
       group.value
-    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`
+    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`,
   ).toString();
 });
 
@@ -242,7 +238,7 @@ const goToLiveScore = () => {
   return window.open(
     `https://ls.sir.sportradar.com/bematrics`,
     "stats",
-    "width=1078,height=768"
+    "width=1078,height=768",
   );
 };
 
@@ -250,7 +246,7 @@ const goToStatistics = () => {
   return window.open(
     `https://s5.sir.sportradar.com/bematrics`,
     "stats",
-    "width=1078,height=768"
+    "width=1078,height=768",
   );
 };
 
@@ -273,11 +269,11 @@ async function playJetX() {
   }
 }
 
-function playSmatVirtual(){
+function playSmatVirtual() {
   if (usersStore.currentUser) {
     return router.push({
       name: "game-play",
-      params: { game_name: slugify("SmatVirtual"), game_id: 'smat_virtual' },
+      params: { game_name: slugify("SmatVirtual"), game_id: "smat_virtual" },
     });
   } else {
     return router.push("/sign-in");

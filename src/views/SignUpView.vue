@@ -63,14 +63,17 @@
               <span v-else> Loading... </span>
             </button>
           </form>
-          <div class="action-label" @click="toLogin">Already have an account? Log In</div>
+          <div class="action-label" @click="toLogin">
+            Already have an account? Log In
+          </div>
         </div>
         <div v-else class="enter-mobile-container">
           <form>
             <div class="enter-mobile-label">
               <p>Verify Your Number</p>
               <span style="font-size: 15px; font-weight: 400"
-                >We’ve sent you a 6-digit code to +234 {{ formData.phone_no }}</span
+                >We’ve sent you a 6-digit code to +234
+                {{ formData.phone_no }}</span
               >
             </div>
             <div id="verify-otp-container" class="text-center">
@@ -97,14 +100,22 @@
                   :disabled="isDisabled"
                   :style="{
                     fontWeight: 'bold',
-                    color: isDisabled ? '#aaa' : ''
+                    color: isDisabled ? '#aaa' : '',
                   }"
                 >
-                  {{ isDisabled ? `Send Again in ${remainingTime}s` : 'Send Again' }} </span
+                  {{
+                    isDisabled
+                      ? `Send Again in ${remainingTime}s`
+                      : "Send Again"
+                  }} </span
                 >&nbsp;
               </div>
             </div>
-            <div v-if="registerError" class="error-message" style="text-align: center">
+            <div
+              v-if="registerError"
+              class="error-message"
+              style="text-align: center"
+            >
               <p>
                 {{ registerErrorMessage }}
               </p>
@@ -128,191 +139,192 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue' // Import ref from Vue 3
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted } from "vue"; // Import ref from Vue 3
+import { useRouter, useRoute } from "vue-router";
 import {
   CLIENT_ID,
   formattedPhoneNumber,
   sendOTP,
   verifyUsername,
   register,
-  verifyOTP
-} from '../helpers'
-import { useAuthStore, useUtilstStore } from '../stores'
+  verifyOTP,
+} from "../helpers";
+import { useAuthStore, useUtilstStore } from "../stores";
 
 // Use ref for reactive data properties
-const authStore = useAuthStore()
-const { brandName } = useUtilstStore()
+const authStore = useAuthStore();
+const { brandName } = useUtilstStore();
 const formData = ref({
   phone_no: null,
   password: null,
-  promoCode: null
-})
+  promoCode: null,
+});
 // const showPassword = ref(false)
-const isLoading = ref(false)
-const router = useRouter()
-const route = useRoute()
-const registerError = ref(false)
-const registerErrorMessage = ref('')
-const activeStep = ref(1)
-const OTP = ref('')
-const isDisabled = ref(false)
-const remainingTime = ref(60)
-const clickId = ref(null)
-let timer
+const isLoading = ref(false);
+const router = useRouter();
+const route = useRoute();
+const registerError = ref(false);
+const registerErrorMessage = ref("");
+const activeStep = ref(1);
+const OTP = ref("");
+const isDisabled = ref(false);
+const remainingTime = ref(60);
+const clickId = ref(null);
+let timer;
 
 // Define methods using the Composition API
 const clear = () => {
-  formData.value.phone_no = ''
-}
+  formData.value.phone_no = "";
+};
 
 const startTimer = () => {
-  isDisabled.value = true
-  remainingTime.value = 60
+  isDisabled.value = true;
+  remainingTime.value = 60;
 
-  if (timer) clearInterval(timer) // Clear any existing timer
+  if (timer) clearInterval(timer); // Clear any existing timer
 
   timer = setInterval(() => {
-    remainingTime.value -= 1
+    remainingTime.value -= 1;
     if (remainingTime.value === 0) {
-      clearInterval(timer)
-      isDisabled.value = false
+      clearInterval(timer);
+      isDisabled.value = false;
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
 const registerUser = async () => {
-  isLoading.value = true
-  let phoneNumber = formData.value.phone_no.replace(/^0/, '')
-  const internationalNumber = `234${phoneNumber}`
-  let payload = {
-    clientID: CLIENT_ID,
-    phoneNumber: internationalNumber
-  }
-
-  // await doRegistration()
-
-  const res = await sendOTP(payload)
-  isLoading.value = false
-
-  if (res.data.status) {
-    activeStep.value = 2
-    startTimer()
-  } else {
-    registerError.value = true
-    registerErrorMessage.value = res.data.message
-  }
-}
-
-const resendOtp = async () => {
-  if (!isDisabled.value && remainingTime.value === 0) {
-    let phoneNumber = formData.value.phone_no.replace(/^0/, '')
-    const internationalNumber = `234${phoneNumber}`
-    let payload = {
-      clientID: CLIENT_ID,
-      phoneNumber: internationalNumber
-    }
-
-    const res = await sendOTP(payload)
-    if (res.data.status) {
-      startTimer()
-    }
-  }
-}
-
-const storeOTP = async (data) => {
-  OTP.value = data
-}
-
-const verifyOTPRequest = async () => {
-  isLoading.value = true
-  let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  isLoading.value = true;
+  let phoneNumber = formData.value.phone_no.replace(/^0/, "");
+  const internationalNumber = `234${phoneNumber}`;
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber,
-    code: OTP.value
-  }
+  };
 
-  const res = await verifyOTP(payload)
+  // await doRegistration()
+
+  const res = await sendOTP(payload);
+  isLoading.value = false;
+
   if (res.data.status) {
-    await doRegistration()
+    activeStep.value = 2;
+    startTimer();
   } else {
-    isLoading.value = false
-    registerError.value = true
-    registerErrorMessage.value = res.data.message
+    registerError.value = true;
+    registerErrorMessage.value = res.data.message;
   }
-}
+};
+
+const resendOtp = async () => {
+  if (!isDisabled.value && remainingTime.value === 0) {
+    let phoneNumber = formData.value.phone_no.replace(/^0/, "");
+    const internationalNumber = `234${phoneNumber}`;
+    let payload = {
+      clientID: CLIENT_ID,
+      phoneNumber: internationalNumber,
+    };
+
+    const res = await sendOTP(payload);
+    if (res.data.status) {
+      startTimer();
+    }
+  }
+};
+
+const storeOTP = async (data) => {
+  OTP.value = data;
+};
+
+const verifyOTPRequest = async () => {
+  isLoading.value = true;
+  let phoneNumber = formattedPhoneNumber(formData.value.phone_no);
+  const internationalNumber = `234${phoneNumber}`;
+  let payload = {
+    clientID: CLIENT_ID,
+    phoneNumber: internationalNumber,
+    code: OTP.value,
+  };
+
+  const res = await verifyOTP(payload);
+  if (res.data.status) {
+    await doRegistration();
+  } else {
+    isLoading.value = false;
+    registerError.value = true;
+    registerErrorMessage.value = res.data.message;
+  }
+};
 
 const doRegistration = async () => {
-  isLoading.value = true
-  registerError.value = false
-  registerErrorMessage.value = ''
-  let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  isLoading.value = true;
+  registerError.value = false;
+  registerErrorMessage.value = "";
+  let phoneNumber = formattedPhoneNumber(formData.value.phone_no);
+  const internationalNumber = `234${phoneNumber}`;
 
   const payload = {
     username: phoneNumber,
     password: formData.value.password,
     phone: internationalNumber,
     clientId: CLIENT_ID,
-    promoCode: formData.value.promoCode
-  }
+    promoCode: formData.value.promoCode,
+  };
 
   if (clickId.value) {
-    payload.trackingToken = clickId.value
+    payload.trackingToken = clickId.value;
   }
 
   try {
-    const res = await register(payload)
+    const res = await register(payload);
     if (res.data.success) {
-      await authStore.doLogin(payload)
-      isLoading.value = false
+      await authStore.doLogin(payload);
+      isLoading.value = false;
     } else {
-      isLoading.value = false
-      registerError.value = true
-      registerErrorMessage.value = 'Something went wrong, process your request.'
+      isLoading.value = false;
+      registerError.value = true;
+      registerErrorMessage.value =
+        "Something went wrong, process your request.";
     }
   } catch (error) {
-    isLoading.value = false
-    registerError.value = true
-    registerErrorMessage.value = error.message
+    isLoading.value = false;
+    registerError.value = true;
+    registerErrorMessage.value = error.message;
   }
-}
+};
 
 const restartProcess = () => {
-  activeStep.value = 1
-  formData.value.phone_no = ''
-  formData.value.password = ''
-  registerError.value = false
-  registerErrorMessage.value = ''
-}
+  activeStep.value = 1;
+  formData.value.phone_no = "";
+  formData.value.password = "";
+  registerError.value = false;
+  registerErrorMessage.value = "";
+};
 
 const validateUsername = async (e) => {
-  const username = formattedPhoneNumber(e.target.value)
+  const username = formattedPhoneNumber(e.target.value);
   await verifyUsername({
     username,
-    clientId: CLIENT_ID
+    clientId: CLIENT_ID,
   }).then((res) => {
-    if (res.responseMessage === 'SUCCESSFUL') {
-      registerError.value = true
-      registerErrorMessage.value = 'Phone number already registered'
+    if (res.responseMessage === "SUCCESSFUL") {
+      registerError.value = true;
+      registerErrorMessage.value = "Phone number already registered";
     } else {
-      registerError.value = false
-      registerErrorMessage.value = ''
+      registerError.value = false;
+      registerErrorMessage.value = "";
     }
-  })
-}
+  });
+};
 const toLogin = () => {
   // Access router through the `router` property of the `this.$route` object
-  return router.push({ name: 'sign-in' })
-}
+  return router.push({ name: "sign-in" });
+};
 
 onMounted(() => {
   if (route.query.clickid || route.query.token) {
-    clickId.value = route.query.clickid || route.query.token
+    clickId.value = route.query.clickid || route.query.token;
   }
-})
+});
 </script>
 
 <style>
@@ -411,8 +423,8 @@ onMounted(() => {
 }
 
 #enterMobile .change-region-wrap .m-icon-right::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -426,8 +438,8 @@ onMounted(() => {
   float: right;
 }
 #enterMobile .change-region-wrap .close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -484,9 +496,12 @@ onMounted(() => {
   padding-right: 1px;
   width: 100%;
 }
-#enterMobile .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+#enterMobile
+  .enter-mobile-container
+  .verifyInputs
+  .m-loading-circle-icon::before {
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

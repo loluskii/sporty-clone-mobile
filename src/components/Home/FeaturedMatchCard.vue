@@ -14,8 +14,8 @@
             params: {
               sport: matchDetails.sportName,
               categories: matchDetails.categoryID,
-              tournaments: matchDetails.tournamentID
-            }
+              tournaments: matchDetails.tournamentID,
+            },
           })
         "
         >{{ matchDetails.categoryName }} - {{ matchDetails.tournament }}</a
@@ -34,7 +34,7 @@
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
       <div class="dateTime">
         <div class="time">{{ matchDetails.eventTime }}</div>
-        <div class="date">{{ formatDate(matchDetails.date, 'ddd D') }}</div>
+        <div class="date">{{ formatDate(matchDetails.date, "ddd D") }}</div>
       </div>
       <div class="market">
         <span>{{ props.markets[0].marketName }}</span>
@@ -64,9 +64,9 @@
                 matchDetails.matchID,
                 market.outcomeName,
                 market.oddID,
-                matchDetails.name
+                matchDetails.name,
               ),
-              couponStore.coupon
+              couponStore.coupon,
             )
               ? 'm-outcome--checked'
               : ''
@@ -84,89 +84,104 @@
 </template>
 
 <script setup>
-import { defineProps, computed, watch } from 'vue'
-import { formatDate, slugify, isSelected, createID } from '@/helpers'
-import { useCouponStore } from '@/stores'
-import { useRouter } from 'vue-router'
+import { defineProps, computed, watch } from "vue";
+import { formatDate, slugify, isSelected, createID } from "@/helpers";
+import { useCouponStore } from "@/stores";
+import { useRouter } from "vue-router";
 import { SIM_ALLOWED_MARKETS } from "@/helpers";
-import emitter from '@/plugins/emitter';
+import emitter from "@/plugins/emitter";
 
-const router = useRouter()
-const couponStore = useCouponStore()
+const router = useRouter();
+const couponStore = useCouponStore();
 
 const props = defineProps({
   matchDetails: Object,
-  markets: Object
-})
+  markets: Object,
+});
 
 const getMatchOdds = computed(() => {
   // Get the latest odds from the coupon store if available
   const matchSelections = couponStore.coupon.selections.filter(
-    sel => String(sel.matchId) === String(props.matchDetails.matchID)
-  )
-  
+    (sel) => String(sel.matchId) === String(props.matchDetails.matchID),
+  );
+
   if (matchSelections.length > 0) {
     // If we have selections in the betslip, use their updated odds
     return props.matchDetails?.outcomes
       .filter((x) => x.marketID == props.markets[0].marketID)
-      .map(outcome => {
+      .map((outcome) => {
         const selection = matchSelections.find(
-          sel => String(sel.outcomeId) === String(outcome.outcomeID)
-        )
-        return selection ? {
-          ...outcome,
-          odds: selection.odds,
-          active: !selection.suspended && !selection.unavailable
-        } : outcome
-      })
+          (sel) => String(sel.outcomeId) === String(outcome.outcomeID),
+        );
+        return selection
+          ? {
+              ...outcome,
+              odds: selection.odds,
+              active: !selection.suspended && !selection.unavailable,
+            }
+          : outcome;
+      });
   }
-  
+
   // Otherwise use the original odds
-  return props.matchDetails?.outcomes.filter((x) => x.marketID == props.markets[0].marketID)
-})
+  return props.matchDetails?.outcomes.filter(
+    (x) => x.marketID == props.markets[0].marketID,
+  );
+});
 
 function getEncodedURI(name) {
-  return encodeURIComponent(name.toUpperCase())
+  return encodeURIComponent(name.toUpperCase());
 }
 
 function goToMarket() {
   return router.push({
-    name: 'fixtures-detail',
+    name: "fixtures-detail",
     params: {
       sport: slugify(props.matchDetails.sportName),
       tournament_name: slugify(props.matchDetails.tournament),
       event_name: slugify(props.matchDetails.name),
-      event_id: slugify(props.matchDetails.matchID)
-    }
-  })
+      event_id: slugify(props.matchDetails.matchID),
+    },
+  });
 }
 
 function addToBetslip(event, odd) {
-  if (odd.odds <= 1) return
-  let marketId = parseInt(odd.marketID)
-  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
-    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+  if (odd.odds <= 1) return;
+  let marketId = parseInt(odd.marketID);
+  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
+    emitter.emit(
+      "showErrorMessage",
+      "This market is not supported in simulation mode. Exit Simulation mode to add to betslip",
+    );
     return;
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(
+    event.gameID,
+    event.matchID,
+    odd.outcomeName,
+    odd.oddID,
+    event.name,
+  );
   const data = {
     fixture: event,
-    market_name: '1X2',
+    market_name: "1X2",
     market_id: odd.marketID,
     ele_id: id,
     outcome: odd,
     odds: odd.odds,
     odd_id: odd.oddID,
     odd_name: odd.outcomeName,
-    type: 'prematch',
+    type: "prematch",
     event_id: event.gameID,
-    specifier: ''
-  }
+    specifier: "",
+  };
 
   // return couponStore.addToCoupon(data)
 
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  const existsInBetslip = isSelected(id, couponStore.coupon);
+  return existsInBetslip
+    ? couponStore.removeSelection(id)
+    : couponStore.addToCoupon(data);
 }
 </script>
 
@@ -248,17 +263,17 @@ function addToBetslip(event, odd) {
   padding: 0 0.5rem;
 }
 .featuredMatchCard .mid:not(.live) {
-  grid-template-areas: 'HomeIcon DateTime AwayIcon' 'HomeIcon DateTime AwayIcon' 'HomeName Market AwayName';
+  grid-template-areas: "HomeIcon DateTime AwayIcon" "HomeIcon DateTime AwayIcon" "HomeName Market AwayName";
 }
 .featuredMatchCard .mid:not(.live).noIcon {
-  grid-template-areas: 'HomeName DateTime AwayName' 'HomeName DateTime AwayName' 'HomeName Market AwayName';
+  grid-template-areas: "HomeName DateTime AwayName" "HomeName DateTime AwayName" "HomeName Market AwayName";
   grid-template-rows: 25% 25% 1fr;
 }
 .featuredMatchCard .mid.live {
-  grid-template-areas: 'HomeIcon Score AwayIcon' 'HomeIcon PlaySeconds AwayIcon' 'HomeName Market AwayName';
+  grid-template-areas: "HomeIcon Score AwayIcon" "HomeIcon PlaySeconds AwayIcon" "HomeName Market AwayName";
 }
 .featuredMatchCard .mid.live.noIcon {
-  grid-template-areas: 'HomeName Score AwayName' 'HomeName PlaySeconds AwayName' 'HomeName Market AwayName';
+  grid-template-areas: "HomeName Score AwayName" "HomeName PlaySeconds AwayName" "HomeName Market AwayName";
   grid-template-rows: 25% 25% 1fr;
 }
 .featuredMatchCard .mid .homeName,
@@ -321,7 +336,7 @@ function addToBetslip(event, odd) {
 }
 .featuredMatchCard .mid .dateTime .date::before {
   color: #dfe0e6;
-  content: '|';
+  content: "|";
   margin: 0 0.5rem;
 }
 .featuredMatchCard .mid .market {
@@ -422,8 +437,8 @@ function addToBetslip(event, odd) {
   width: 100%;
 }
 .m-icon-lock::before {
-  content: '\e647';
-  font-family: 'iconfont' !important;
+  content: "\e647";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

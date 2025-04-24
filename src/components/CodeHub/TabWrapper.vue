@@ -30,10 +30,13 @@
             :class="active === 'load-code' ? 'active' : ''"
             @click="$emit('set-active', 'load-code')"
           >
-            <span data-cms-key="load_code" data-cms-page="page_code_hub">Load Code</span>
+            <span data-cms-key="load_code" data-cms-page="page_code_hub"
+              >Load Code</span
+            >
           </li>
         </ul>
-        <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+        <i class="controls left-controls"></i>
+        <i class="controls right-controls"></i>
       </div>
     </div>
   </div>

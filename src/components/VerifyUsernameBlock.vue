@@ -24,8 +24,12 @@
           <div
             class="verifyInputs m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
           >
-            <div class="m-input-wap-prepend m-input-wap-prepend--default"><div>+234</div></div>
-            <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+            <div class="m-input-wap-prepend m-input-wap-prepend--default">
+              <div>+234</div>
+            </div>
+            <i
+              class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
+            ></i>
             <input
               type="tel"
               name=""
@@ -99,8 +103,8 @@
             <p>Reset Password</p>
           </div>
           <div class="action-label">
-            Your password must be at least 8 characters long and must contain at least one upper
-            case letter, one lower case letter and one number.
+            Your password must be at least 8 characters long and must contain at
+            least one upper case letter, one lower case letter and one number.
           </div>
           <div class="verifyInputs m-input-wap-wrapper">
             <input
@@ -127,126 +131,126 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import {
   verifyUsername,
   CLIENT_ID,
   sendOTP,
   verifyOTP,
   resetPassword,
-  formattedPhoneNumber
-} from '../helpers'
-import emitter from '../plugins/emitter'
-const emit = defineEmits(['restart'])
+  formattedPhoneNumber,
+} from "../helpers";
+import emitter from "../plugins/emitter";
+const emit = defineEmits(["restart"]);
 
-const isLoading = ref(false)
-const phoneNumber = ref('')
-const activeStep = ref(1)
+const isLoading = ref(false);
+const phoneNumber = ref("");
+const activeStep = ref(1);
 
-const password = ref('')
+const password = ref("");
 
-const router = useRouter()
+const router = useRouter();
 
-const OTP = ref('')
-const otpError = ref(false)
-const otpErrorMessage = ref('')
+const OTP = ref("");
+const otpError = ref(false);
+const otpErrorMessage = ref("");
 
 async function findAccount() {
-  isLoading.value = true
-  const phone = formattedPhoneNumber(phoneNumber.value)
+  isLoading.value = true;
+  const phone = formattedPhoneNumber(phoneNumber.value);
 
   try {
-    const res = await verifyUsername({ username: phone, clientId: CLIENT_ID })
+    const res = await verifyUsername({ username: phone, clientId: CLIENT_ID });
 
-    if (res.responseMessage === 'SUCCESSFUL') {
+    if (res.responseMessage === "SUCCESSFUL") {
       let payload = {
         clientID: CLIENT_ID,
-        phoneNumber: `234${phone}`
-      }
-      const otp = await sendOTP(payload)
+        phoneNumber: `234${phone}`,
+      };
+      const otp = await sendOTP(payload);
 
-      isLoading.value = false
+      isLoading.value = false;
 
       if (otp.status) {
-        activeStep.value = 2
+        activeStep.value = 2;
       } else {
-        isLoading.value = false
-        otpErrorMessage.value = otp.data.message
+        isLoading.value = false;
+        otpErrorMessage.value = otp.data.message;
       }
     }
   } catch (err) {
-    isLoading.value = false
-    otpErrorMessage.value = 'Error processing your request'
+    isLoading.value = false;
+    otpErrorMessage.value = "Error processing your request";
   }
 }
 
 const storeOTP = async (data) => {
-  OTP.value = data
-}
+  OTP.value = data;
+};
 
 const verifyOTPRequest = async () => {
-  isLoading.value = true
-  const phone = formattedPhoneNumber(phoneNumber.value)
-  const internationalNumber = `234${phone}`
+  isLoading.value = true;
+  const phone = formattedPhoneNumber(phoneNumber.value);
+  const internationalNumber = `234${phone}`;
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber,
-    code: OTP.value
-  }
+    code: OTP.value,
+  };
 
-  const res = await verifyOTP(payload)
+  const res = await verifyOTP(payload);
   if (res.data.status) {
-    activeStep.value = 3
+    activeStep.value = 3;
   } else {
-    isLoading.value = false
-    otpError.value = true
-    otpErrorMessage.value = res.data.message || 'Invalid OTP'
+    isLoading.value = false;
+    otpError.value = true;
+    otpErrorMessage.value = res.data.message || "Invalid OTP";
   }
-}
+};
 
 const savePassword = async () => {
-  isLoading.value = true
+  isLoading.value = true;
   let payload = {
-    username: phoneNumber.value.replace(/^0/, ''),
+    username: phoneNumber.value.replace(/^0/, ""),
     password: password.value,
-    clientId: CLIENT_ID
-  }
+    clientId: CLIENT_ID,
+  };
 
-  const res = await resetPassword(payload)
+  const res = await resetPassword(payload);
   if (res.success) {
-    emitter.emit('showDialogueToaster', 'Passwowrd Reset Successful')
+    emitter.emit("showDialogueToaster", "Passwowrd Reset Successful");
     setInterval(() => {
-      emitter.emit('hideDialogueToaster')
-    }, 3000)
+      emitter.emit("hideDialogueToaster");
+    }, 3000);
 
     // test this
-    emit('restart')
+    emit("restart");
   }
-}
+};
 
 const passwordErrors = computed(() => {
-  const errors = []
+  const errors = [];
   // Check if password length is at least 8 characters
   if (password.value.length >= 1 && password.value.length < 8) {
-    errors.push('Password must be at least 8 characters long.')
+    errors.push("Password must be at least 8 characters long.");
   }
   // Check if password contains at least one uppercase letter
   if (password.value.length >= 1 && !/[A-Z]/.test(password.value)) {
-    errors.push('Please add an uppercase letter.')
+    errors.push("Please add an uppercase letter.");
   }
   // Check if password contains at least one lowercase letter
   if (password.value.length >= 1 && !/[a-z]/.test(password.value)) {
-    errors.push('Please add a lowercase letter.')
+    errors.push("Please add a lowercase letter.");
   }
   // Check if password contains at least one number
   if (password.value.length >= 1 && !/\d/.test(password.value)) {
-    errors.push('Please add a number.')
+    errors.push("Please add a number.");
   }
-  return errors
-})
+  return errors;
+});
 
-const isPasswordValid = computed(() => passwordErrors.value.length === 0)
+const isPasswordValid = computed(() => passwordErrors.value.length === 0);
 
 function restartProcess() {}
 </script>
@@ -281,8 +285,8 @@ function restartProcess() {}
   color: var(--text-type1-secondary);
 }
 .register-and-login .m-nav-secondary .close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -391,9 +395,12 @@ function restartProcess() {}
   box-sizing: border-box;
   font-size: 1.066rem;
 }
-#findAccount .find-account-container .verifyInputs .m-loading-circle-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+#findAccount
+  .find-account-container
+  .verifyInputs
+  .m-loading-circle-icon::before {
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -427,8 +434,8 @@ function restartProcess() {}
   font-size: 1.066rem;
 }
 #findAccount .find-account-container .af-icon-loading:before {
-  content: '\e648';
-  font-family: 'iconfont' !important;
+  content: "\e648";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -497,16 +504,16 @@ function restartProcess() {}
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon--back::before {
-  content: '\e620';
-  font-family: 'iconfont' !important;
+  content: "\e620";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -550,7 +557,7 @@ function restartProcess() {}
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: '';
+  content: "";
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -583,8 +590,8 @@ function restartProcess() {}
   padding: 0.41666667rem 0.83333333rem;
 }
 .m-nav-secondary .m-nav-right .m-icon-search::before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
+  content: "\e613";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -606,8 +613,8 @@ function restartProcess() {}
   padding: 0 1.5rem 0 1.33333333rem;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: '\e6cb';
-  font-family: 'iconfont' !important;
+  content: "\e6cb";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -666,8 +673,8 @@ function restartProcess() {}
   width: 100%;
 }
 .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -732,8 +739,8 @@ function restartProcess() {}
   margin: 1.33333333rem 0;
 }
 #resetPassword .header .icon-back::before {
-  content: '\e620';
-  font-family: 'iconfont' !important;
+  content: "\e620";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -794,9 +801,12 @@ function restartProcess() {}
   padding-right: 1px;
   width: 100%;
 }
-#resetPassword .reset-password-container .verifyInputs .m-loading-circle-icon::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+#resetPassword
+  .reset-password-container
+  .verifyInputs
+  .m-loading-circle-icon::before {
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

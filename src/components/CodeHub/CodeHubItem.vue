@@ -5,7 +5,8 @@
         <div role="row" class="header">
           <div role="rowheader" class="code flex-1">{{ code.betslipId }}</div>
           <div class="folds text-center flex-1">
-            <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
+            <span class="label">Folds:</span
+            ><span>{{ code.totalSelections }}</span>
           </div>
           <div class="odds text-right flex-1">
             <span class="label">Odds:</span><span>{{ code.total_odd }}</span>
@@ -45,7 +46,9 @@
                 
               </div>
             </div>
-            <span v-else class="loading-button-click-area share-button-click-area mr-auto"
+            <span
+              v-else
+              class="loading-button-click-area share-button-click-area mr-auto"
               ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
               <span>Share</span></span
             >

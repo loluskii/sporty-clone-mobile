@@ -14,7 +14,11 @@
           class="scroll-wrap scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
         >
           <div class="code-hub-list-item-container">
-            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+            <CodeHubItem
+              v-for="code in codes"
+              :code="code"
+              :key="code.betslipId"
+            />
           </div>
           <div class="loading-more-wrapper" style="position: relative"></div>
           <div class="bottom-ele"></div>
@@ -34,7 +38,7 @@ import OptionsContainer from "../components/CodeHub/OptionsContainer.vue";
 import { onMounted, ref } from "vue";
 import { getCodeHubItems, getNext7Days } from "../helpers";
 const codes = ref([]);
-const activeTab = ref('code-hub')
+const activeTab = ref("code-hub");
 
 async function getCodes() {
   let payload = {
@@ -46,8 +50,8 @@ async function getCodes() {
   codes.value = res.data.data;
 }
 
-function setActive(data){
-  activeTab.value = data
+function setActive(data) {
+  activeTab.value = data;
 }
 onMounted(async () => {
   await getCodes();

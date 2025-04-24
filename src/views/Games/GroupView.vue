@@ -10,20 +10,32 @@
         <Providers v-if="viewType === 'provider'" :providers="providers" />
         <Categories v-else :categories="categories" />
       </template>
-      <GameByProviderCategory v-if="viewMode === 'games-list-view'" :games="gamesList" :titleText="categoryName"
-        :type="viewType" />
+      <GameByProviderCategory
+        v-if="viewMode === 'games-list-view'"
+        :games="gamesList"
+        :titleText="categoryName"
+        :type="viewType"
+      />
     </div>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-    <div v-else-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'" class="no-data">
+    <div
+      v-else-if="
+        !isLoading && !gamesList.length && viewMode === 'games-list-view'
+      "
+      class="no-data"
+    >
       <div style="white-space: pre-line">
-        Sorry, there are no games currently<br />available in this category. Please try
-        later.<br />Thank you.
+        Sorry, there are no games currently<br />available in this category.
+        Please try later.<br />Thank you.
       </div>
     </div>
-    <div v-else-if="!isLoading && !providers && viewMode === 'games-group-view'" class="no-data">
+    <div
+      v-else-if="!isLoading && !providers && viewMode === 'games-group-view'"
+      class="no-data"
+    >
       <div style="white-space: pre-line">
-        Sorry, there are no {{ viewHeaderTitle }} currently<br />available. Please try
-        later.<br />Thank you.
+        Sorry, there are no {{ viewHeaderTitle }} currently<br />available.
+        Please try later.<br />Thank you.
       </div>
     </div>
   </div>
@@ -87,7 +99,7 @@ watch(
     gameIds,
   ]) => {
     // Check the route name
-    isLoading.value = true
+    isLoading.value = true;
     switch (routeName) {
       case "casino-providers":
         handleProvidersView();
@@ -106,12 +118,12 @@ watch(
         break;
       case "casino-jackpots":
         handleCasinoJackpots(gameIds);
-        break
+        break;
       default:
         break;
     }
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
+  { immediate: true }, // Trigger the watch callback immediately on component mount
 );
 
 async function handleProvidersView() {
@@ -124,8 +136,7 @@ async function handleProvidersView() {
     isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
-    providers.value = []
-
+    providers.value = [];
   }
 }
 
@@ -163,13 +174,15 @@ async function handleGamesByProviderView(name, id) {
 }
 
 async function handleFilteredGamesView(title, gameIds) {
-  console.log(gameIds)
+  console.log(gameIds);
   viewMode.value = "games-list-view";
   viewHeaderTitle.value = title;
   categoryName.value = title;
   const res = await getGames();
   const gameIdSet = new Set(gameIds.split(","));
-  gamesList.value = res.data ? res.data.filter(game => gameIdSet.has(game.gameId)) : [];
+  gamesList.value = res.data
+    ? res.data.filter((game) => gameIdSet.has(game.gameId))
+    : [];
   viewType.value = "category";
   isLoading.value = false;
 }
@@ -282,7 +295,7 @@ onMounted(() => {
   padding: 0 15px;
 }
 
-.game-provider>span {
+.game-provider > span {
   font-size: 18px;
   font-weight: bold;
   border-radius: 10px;

@@ -33,9 +33,9 @@ import { useUtilstStore } from "../../stores";
 const props = defineProps(["game"]);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
-const router = useRouter()
+const router = useRouter();
 const route = useRoute();
-const utilsStore = useUtilstStore()
+const utilsStore = useUtilstStore();
 
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
@@ -57,13 +57,22 @@ const handleImageError = (event) => {
 async function redirectToGamePlay() {
   utilsStore.previousRoute = route.fullPath;
   if (userStore.currentUser) {
-    
-    if (activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(props.game.gameId)) {
-      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
+    if (
+      activeBonus.value &&
+      activeBonus.value.gameId &&
+      activeBonus.value.gameId.includes(props.game.gameId)
+    ) {
+      emitter.emit("showCasinoDialog", {
+        bonus: activeBonus.value,
+        game: props.game,
+      });
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(props.game.title), game_id: props.game.id },
+        params: {
+          game_name: slugify(props.game.title),
+          game_id: props.game.id,
+        },
       });
     }
   } else {

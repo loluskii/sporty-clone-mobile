@@ -1,14 +1,11 @@
 <template>
-  <div
-    class="simulate-card pd-h-16 sim-card-mb-8"
-    style="position: relative"
-  >
+  <div class="simulate-card pd-h-16 sim-card-mb-8" style="position: relative">
     <!-- Status Icon -->
-    <span 
-      v-if="timerEnded" 
+    <span
+      v-if="timerEnded"
       class="status-icon"
-      :class="{ 'win': isSelectionWinner }"
-      style="position: absolute; top:5px; right: 5px;"
+      :class="{ win: isSelectionWinner }"
+      style="position: absolute; top: 5px; right: 5px"
     >
       <template v-if="simulationData?.status === 1">
         <svg
@@ -52,10 +49,12 @@
         </template>
         <template v-else>
           <span class="teamScore__finished">
-            {{ simulationData?.finalScore.home }} - {{ simulationData?.finalScore.away }}
+            {{ simulationData?.finalScore.home }} -
+            {{ simulationData?.finalScore.away }}
           </span>
           <span class="teamScore__half">
-            ({{ simulationData?.halfTime.home }} - {{ simulationData?.halfTime.away }})
+            ({{ simulationData?.halfTime.home }} -
+            {{ simulationData?.halfTime.away }})
           </span>
         </template>
       </div>
@@ -75,33 +74,37 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   selection: {
     type: Object,
-    required: true
+    required: true,
   },
   simulationData: {
     type: Object,
-    required: true
+    required: true,
   },
   currentTime: {
     type: Number,
-    required: true
+    required: true,
   },
   timerEnded: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const currentScore = computed(() => {
   if (!props.simulationData) return { home: 0, away: 0 };
 
   return {
-    home: props.simulationData.goalEvents.filter(g => g.team === "home" && g.time <= props.currentTime).length,
-    away: props.simulationData.goalEvents.filter(g => g.team === "away" && g.time <= props.currentTime).length
+    home: props.simulationData.goalEvents.filter(
+      (g) => g.team === "home" && g.time <= props.currentTime,
+    ).length,
+    away: props.simulationData.goalEvents.filter(
+      (g) => g.team === "away" && g.time <= props.currentTime,
+    ).length,
   };
 });
 

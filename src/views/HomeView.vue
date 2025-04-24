@@ -7,7 +7,8 @@
       <!-- <Carousel></Carousel> -->
       <!-- Banner Carousel -->
       <!-- SportsList Carousel -->
-      <SportsListCarousel></SportsListCarousel> <!-- SportsList Carousel -->
+      <SportsListCarousel></SportsListCarousel>
+      <!-- SportsList Carousel -->
       <!-- Popular Sports -->
       <KeepAlive>
         <PopularSports></PopularSports>
@@ -33,9 +34,7 @@ import { onMounted } from "vue";
 const userStore = useUsersStore();
 const utilsStore = useUtilstStore();
 
-onMounted(async () => {
-
-});
+onMounted(async () => {});
 </script>
 
 <style>
@@ -315,7 +314,7 @@ onMounted(async () => {
   padding-top: 11.91666667rem;
 }
 
-.m-sports .m-pre-opts.nav-fixed>.m-tabs-nav {
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
   left: 0;
@@ -329,7 +328,7 @@ onMounted(async () => {
   z-index: 219;
 }
 
-.m-sports .m-pre-opts.nav-fixed>.m-tabs-nav:before {
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav:before {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
   bottom: 0;
@@ -344,7 +343,7 @@ onMounted(async () => {
   z-index: -1;
 }
 
-.m-sports .m-pre-opts.nav-fixed.nav-up>.m-tabs-nav {
+.m-sports .m-pre-opts.nav-fixed.nav-up > .m-tabs-nav {
   position: fixed;
   top: 7.58333333rem;
 }
@@ -377,7 +376,7 @@ onMounted(async () => {
   width: 55%;
 }
 
-.m-sports-table .m-date-row .market-title>div {
+.m-sports-table .m-date-row .market-title > div {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   -webkit-box-flex: 1;

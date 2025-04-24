@@ -12,10 +12,15 @@
             class="m-tabs-tab"
             @click="setActiveTab(method.provider)"
           >
-            <span style="text-transform: capitalize">{{ method.provider === 'sbengine' ? 'Shop' : method.provider }}</span>
+            <span style="text-transform: capitalize">{{
+              method.provider === "sbengine" ? "Shop" : method.provider
+            }}</span>
           </div>
         </div>
-        <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
+        <div
+          class="m-tabs-content"
+          style="transform: translateX(0%) translateZ(0px)"
+        >
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
             <img
               src="@/assets/images/monnify.svg"
@@ -24,14 +29,33 @@
               style="height: 23px"
               srcset=""
             />
-            <img src="@/assets/images/paystack.png" v-show="activeTab == 'paystack'" alt="" style="height: 30px" srcset="" />
-            <img src="@/assets/images/flutterwave.png" v-show="activeTab == 'flutterwave'" alt="" style="height: 30px" srcset="" />
-            <img src="@/assets/images/korapay.png" v-show="activeTab == 'korapay'" alt="" style="height: 30px" srcset="" />
+            <img
+              src="@/assets/images/paystack.png"
+              v-show="activeTab == 'paystack'"
+              alt=""
+              style="height: 30px"
+              srcset=""
+            />
+            <img
+              src="@/assets/images/flutterwave.png"
+              v-show="activeTab == 'flutterwave'"
+              alt=""
+              style="height: 30px"
+              srcset=""
+            />
+            <img
+              src="@/assets/images/korapay.png"
+              v-show="activeTab == 'korapay'"
+              alt=""
+              style="height: 30px"
+              srcset=""
+            />
             <br /><br />
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
-                  ><span data-cms-key="balance">Balance</span> (NGN) {{ balance }}
+                  ><span data-cms-key="balance">Balance</span> (NGN)
+                  {{ balance }}
                 </span>
               </div>
             </div>
@@ -45,7 +69,9 @@
                     (NGN)
                   </span>
                 </div>
-                <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+                <i
+                  class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
+                ></i>
                 <input
                   type="number"
                   v-model="amount"
@@ -75,8 +101,9 @@
             </button>
             <p v-if="bonus">
               You have activated <strong>{{ availableBonus?.name }}</strong
-              >. Complete payment to receive <strong>{{ formatNumber(bonus?.amount) }}</strong> in
-              your bonus account.
+              >. Complete payment to receive
+              <strong>{{ formatNumber(bonus?.amount) }}</strong> in your bonus
+              account.
             </p>
           </div>
         </div>
@@ -87,84 +114,84 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import HeaderOther from '../../components/HeaderOther.vue'
-import { useUsersStore } from '@/stores'
-import { getPaymentMethods, getDepositURL } from '@/helpers'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import emitter from '../../plugins/emitter'
-import { CLIENT_ID, checkFirstDeposit, formatNumber } from '../../helpers'
+import { ref, onMounted, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import HeaderOther from "../../components/HeaderOther.vue";
+import { useUsersStore } from "@/stores";
+import { getPaymentMethods, getDepositURL } from "@/helpers";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import emitter from "../../plugins/emitter";
+import { CLIENT_ID, checkFirstDeposit, formatNumber } from "../../helpers";
 
-const activeTab = ref('')
-const depositMethods = ref([])
-const { currentUser } = useUsersStore()
-const router = useRouter()
-const amount = ref('')
-const isLoading = ref(false)
-const availableBonus = ref(null)
+const activeTab = ref("");
+const depositMethods = ref([]);
+const { currentUser } = useUsersStore();
+const router = useRouter();
+const amount = ref("");
+const isLoading = ref(false);
+const availableBonus = ref(null);
 
-const usersStore = useUsersStore()
+const usersStore = useUsersStore();
 
 const balance = computed(() => {
-  return parseFloat(usersStore.balance).toFixed(2)
-})
+  return parseFloat(usersStore.balance).toFixed(2);
+});
 
 const bonus = computed(() => {
-  return usersStore.bonus
-})
+  return usersStore.bonus;
+});
 
 function setActiveTab(method) {
-  activeTab.value = method
-  amount.value = ''
+  activeTab.value = method;
+  amount.value = "";
 }
 
 async function getPayments() {
-  isLoading.value = true
-  const res = await getPaymentMethods()
-  depositMethods.value = res.data
-  activeTab.value = res.data[0].provider
-  isLoading.value = false
+  isLoading.value = true;
+  const res = await getPaymentMethods();
+  depositMethods.value = res.data;
+  activeTab.value = res.data[0].provider;
+  isLoading.value = false;
 }
 
 async function checkForBonus() {
-  const resp = await checkFirstDeposit()
+  const resp = await checkFirstDeposit();
   if (resp.success) {
-    availableBonus.value = resp.data
+    availableBonus.value = resp.data;
   }
 }
 
 function activateBonus() {
-  let bonusAmount = amount.value
-  if (availableBonus.value.type === 'flat') {
-    bonusAmount = availableBonus.value.value
+  let bonusAmount = amount.value;
+  if (availableBonus.value.type === "flat") {
+    bonusAmount = availableBonus.value.value;
   } else {
-    bonusAmount = (parseFloat(amount.value) * availableBonus.value.value) / 100
+    bonusAmount = (parseFloat(amount.value) * availableBonus.value.value) / 100;
   }
 
   const bonus = {
     bonusId: availableBonus.value.bonusId,
     amount: bonusAmount,
-    username: currentUser.username
-  }
-  usersStore.setActiveBonus(bonus)
+    username: currentUser.username,
+  };
+  usersStore.setActiveBonus(bonus);
   // availableBonus.value = null;
 }
 
 async function beginDeposit() {
-  isLoading.value = true
+  isLoading.value = true;
   let payload = {
     amount: amount.value,
     paymentMethod: activeTab.value,
-    clientId: CLIENT_ID
-  }
+    clientId: CLIENT_ID,
+  };
 
-  const res = await getDepositURL(payload)
+  const res = await getDepositURL(payload);
   if (res.success) {
-    window.location.href = res.data.link
+    window.location.href = res.data.link;
   } else {
-    emitter.emit('showErrorMessage', res)
-    console.error(res)
+    emitter.emit("showErrorMessage", res);
+    console.error(res);
   }
   // if(currentUser.email){
   // }else{
@@ -174,17 +201,17 @@ async function beginDeposit() {
 
 onMounted(async () => {
   if (!currentUser) {
-    return router.push({ name: 'sign-in' })
+    return router.push({ name: "sign-in" });
   }
-  usersStore.setActiveBonus(null)
+  usersStore.setActiveBonus(null);
 
-  await getPayments()
-  await checkForBonus()
-})
+  await getPayments();
+  await checkForBonus();
+});
 </script>
 
 <style>
-@import url('@/assets/css/deposit.css');
+@import url("@/assets/css/deposit.css");
 .af-button--primary {
   background: var(--brand-secondary);
   border: 0;
@@ -216,7 +243,7 @@ onMounted(async () => {
   counter-increment: step-counter;
 }
 .bank-transfer-card-steps li:before {
-  content: 'Step ' counter(step-counter);
+  content: "Step " counter(step-counter);
   margin-right: 1rem;
   color: #9ca0ab;
   display: block;
@@ -229,19 +256,18 @@ onMounted(async () => {
 ol.bank-transfer-card-steps {
   padding: 0;
 }
-html[theme='dark'] {
+html[theme="dark"] {
   color: #fff;
   background-color: #1b1e25;
 }
 
 html,
-html[theme='light'] {
+html[theme="light"] {
   color: #000;
   background-color: #fafafa;
 }
 
-.m-tabs-tab-active{
+.m-tabs-tab-active {
   font-weight: bold;
-  
 }
 </style>

@@ -1,35 +1,30 @@
 <template lang="">
-
   <!-- The class is m-outcome--up/m-outcome--down -->
   <div
     class="m-outcome m-event-outcome-default"
     :class="[
       selectionClass,
       odds.odds <= 1 ? 'm-outcome--disabled' : 'x',
-      oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : ''
+      oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : '',
     ]"
   >
     <span v-if="odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
-    <span
-      v-else
-      data-op="label-odds-amount"
-      class="m-outcome-odds"
-    >
+    <span v-else data-op="label-odds-amount" class="m-outcome-odds">
       {{ odds.odds.toFixed(2) }}
     </span>
   </div>
 </template>
 <script setup>
 // import { formatOdd } from '../../helpers'
-import { defineComponent, watch, ref } from 'vue'
+import { defineComponent, watch, ref } from "vue";
 
-const oddUp = ref(false)
-const oddDown = ref(false)
+const oddUp = ref(false);
+const oddDown = ref(false);
 
 const props = defineProps({
   odds: Object,
-  selectionClass: String
-})
+  selectionClass: String,
+});
 
 watch(
   () => props.odds.odds,
@@ -39,24 +34,24 @@ watch(
       const oVal = oldValue.toFixed(2);
 
       if (parseFloat(nVal) > parseFloat(oVal)) {
-        oddUp.value = true
-        oddDown.value = false
+        oddUp.value = true;
+        oddDown.value = false;
       } else if (parseFloat(nVal) < parseFloat(oVal)) {
-        oddUp.value = false
-        oddDown.value = true
+        oddUp.value = false;
+        oddDown.value = true;
       }
       // reset indicators
       setTimeout(() => {
-        oddDown.value = false
-        oddUp.value = false
-      }, 5000)
+        oddDown.value = false;
+        oddUp.value = false;
+      }, 5000);
     }
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 defineComponent({
-  name: 'prematch-odds'
-})
+  name: "prematch-odds",
+});
 </script>
 <!-- <style scoped>
 .m-outcome-odds.m-outcome-up:before {

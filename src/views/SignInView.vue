@@ -90,7 +90,9 @@
             </div>
             <div class="blank-block"></div>
             <div>
-              <router-link :to="{ name: 'sign-up' }"> Create New Account</router-link>
+              <router-link :to="{ name: 'sign-up' }">
+                Create New Account</router-link
+              >
             </div>
           </div>
         </div>

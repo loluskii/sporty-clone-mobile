@@ -6,7 +6,9 @@
     <div
       class="card bg-dark rounded-lg"
       :style="
-        props.jackpots.length < 2 ? 'width: 100%; grid-template-columns: auto;' : 'width: 300px'
+        props.jackpots.length < 2
+          ? 'width: 100%; grid-template-columns: auto;'
+          : 'width: 300px'
       "
       @click="goToJackpotView(j)"
       v-for="(j, index) in props.jackpots"
@@ -19,7 +21,10 @@
         @error="handleImageError($event, j.image)"
       />
       <div class="card-body d-flex flex-column p-2">
-        <div class="text-truncate fw-bold" style="color: var(--brand-highlight-text)">
+        <div
+          class="text-truncate fw-bold"
+          style="color: var(--brand-highlight-text)"
+        >
           {{ j.name }}
         </div>
       </div>
@@ -37,7 +42,10 @@ const router = useRouter();
 // const
 
 function goToJackpotView(j) {
-  return router.push({ name: "casino-jackpots", query: { jId: j.mainJackpotID } });
+  return router.push({
+    name: "casino-jackpots",
+    query: { jId: j.mainJackpotID },
+  });
 }
 function getImagePath() {
   return `https://placehold.co/175?text=${name}`;

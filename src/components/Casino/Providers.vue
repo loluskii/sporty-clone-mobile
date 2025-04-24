@@ -60,13 +60,12 @@ watch(
         break;
     }
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
+  { immediate: true }, // Trigger the watch callback immediately on component mount
 );
 
 function handleProvidersView() {
   viewMode.value = "providers";
 }
-
 </script>
 
 <style scoped>

@@ -14,7 +14,7 @@ import {
   getBets,
   applyBranding,
   CLIENT_ID,
-  validateBetslipSelections
+  validateBetslipSelections,
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
@@ -41,7 +41,7 @@ const dateRange = ref(null);
 const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
-const casinoGameData = ref(null)
+const casinoGameData = ref(null);
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -68,7 +68,7 @@ function handleError(error) {
   dialogueType.value = "error";
 }
 
-function handleBetslipConfirmation(data){
+function handleBetslipConfirmation(data) {
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "betslip";
@@ -131,9 +131,9 @@ async function getBetsData() {
 }
 
 function showCasinoDialog(data = null) {
-  if(route.name === 'home' || (data.bonus && data.game)){
+  if (route.name === "home" || (data.bonus && data.game)) {
     casinoDailogShown.value = true;
-    casinoGameData.value = data
+    casinoGameData.value = data;
   }
 }
 
@@ -151,35 +151,36 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
-async function validateSelections(){
-  if(!couponStore.coupon.selections.length) return;
+async function validateSelections() {
+  if (!couponStore.coupon.selections.length) return;
 
   const selections = couponStore.coupon.selections.map((event) => ({
     matchId: parseInt(event.matchId),
     marketId: event.marketId.toString(),
     outcomeId: event.outcomeId,
-    specifier: event.specifier
-  }))
-  const res = await validateBetslipSelections({events: selections})
-  
-  if(res.success){
+    specifier: event.specifier,
+  }));
+  const res = await validateBetslipSelections({ events: selections });
+
+  if (res.success) {
     // Convert response object to array of validated selections
     const validatedSelections = Object.values(res.data);
-    
+
     // Update each selection with the new odds and active status
-    validatedSelections.forEach(validatedSelection => {
-      const selection = couponStore.coupon.selections.find(sel => 
-        String(sel.matchId) === String(validatedSelection.matchId) && 
-        String(sel.marketId) === validatedSelection.marketId && 
-        String(sel.outcomeId) === validatedSelection.outcomeId
+    validatedSelections.forEach((validatedSelection) => {
+      const selection = couponStore.coupon.selections.find(
+        (sel) =>
+          String(sel.matchId) === String(validatedSelection.matchId) &&
+          String(sel.marketId) === validatedSelection.marketId &&
+          String(sel.outcomeId) === validatedSelection.outcomeId,
       );
-      
-      if(selection) {
+
+      if (selection) {
         selection.odds = validatedSelection.odds;
         selection.suspended = !validatedSelection.active;
         selection.unavailable = !validatedSelection.active;
         selection.changed = true;
-        
+
         // Reset the changed flag after 5 seconds
         setTimeout(() => {
           selection.changed = false;
@@ -190,7 +191,7 @@ async function validateSelections(){
     // Recalculate winnings after updating all selections
     couponStore.updateWinnings({
       stake: couponStore.coupon.totalStake,
-      id: "all"
+      id: "all",
     });
   }
 }
@@ -203,11 +204,10 @@ watch(
       await loadBet(code);
     }
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
+  { immediate: true }, // Trigger the watch callback immediately on component mount
 );
 
 onMounted(async () => {
-
   if (route.path !== "/") {
     isLoading.value = false;
   }
@@ -225,7 +225,12 @@ onMounted(async () => {
       });
   }
 
-  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
+  Promise.all([
+    fetchBonusList(),
+    fetchGlobalVars(),
+    getSportsMenu(),
+    validateSelections(),
+  ])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
@@ -326,24 +331,29 @@ defineComponent({
 </template>
 <style>
 @import url("./assets/css/loading.css");
+
 html,
 body {
   width: 100%;
 }
+
 .no-scroll {
   overflow: hidden !important;
 }
+
 .loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #fafafa; /* semi-transparent white */
+  background-color: #fafafa;
+  /* semi-transparent white */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999; /* ensure overlay is on top */
+  z-index: 999;
+  /* ensure overlay is on top */
 }
 
 .loading-spinner {
@@ -352,7 +362,8 @@ body {
 }
 
 .scaling-image {
-  transition: transform 0.5s ease; /* Add a transition effect on the transform property */
+  transition: transform 0.5s ease;
+  /* Add a transition effect on the transform property */
 }
 
 .x-layout-main {
@@ -380,9 +391,11 @@ body {
   0% {
     width: 0;
   }
+
   50% {
     width: 100px;
   }
+
   100% {
     width: 0;
   }
@@ -393,13 +406,16 @@ body {
   -webkit-transition: opacity 0.3s;
   transition: opacity 0.3s;
 }
+
 .x-layout-main .fade-enter,
 .x-layout-main .fade-leave-to {
   opacity: 0;
 }
+
 .x-layout-main > * {
   min-height: 100%;
 }
+
 .x-layout-main .x-main-left,
 .x-layout-main .x-main-right {
   background-color: rgba(0, 0, 0, 0.7);
@@ -408,12 +424,15 @@ body {
   width: 100%;
   z-index: 800;
 }
+
 .x-layout-main .x-main-left {
   top: 0px;
 }
+
 .x-layout-main .x-main-right {
   bottom: 0px;
 }
+
 .x-layout-main .x-main-mid {
   height: 100%;
   left: 0px;
@@ -422,13 +441,16 @@ body {
   width: 100%;
   z-index: 2;
 }
+
 .x-layout-main .x-main-mid.has-bg-color {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
 }
+
 .x-layout-main .x-main-mid.x-has-bottom-nav .x-footer {
   padding-bottom: 5rem;
 }
+
 .x-layout-main .refresh-page {
   margin-top: 64px;
 }
@@ -437,6 +459,7 @@ body {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -450,7 +473,10 @@ body {
   transition: transform 0.1s ease;
 }
 
-.move-enter, .move-leave-to /* .fade-leave-active in <2.1.8 */ {
+.move-enter,
+.move-leave-to
+
+/* .fade-leave-active in <2.1.8 */ {
   transform: translateX(0);
 }
 </style>

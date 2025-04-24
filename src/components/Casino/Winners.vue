@@ -1,8 +1,7 @@
 <template>
-  <div  v-if="winners">
+  <div v-if="winners">
     <Vue3Marquee>
       <div
-       
         style="
           padding: 3px 10px;
           background-color: var(--brand-secondary);
@@ -32,7 +31,7 @@ const winners = ref(null);
 onMounted(async () => {
   try {
     const res = await getJackpotWinners();
-    winners.value =(res.data && res.data.winners.length) ?? null;
+    winners.value = (res.data && res.data.winners.length) ?? null;
   } catch (error) {
     winners.value = null;
   }

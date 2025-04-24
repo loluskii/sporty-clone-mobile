@@ -1,7 +1,10 @@
 <template>
   <div class="m-nav-secondary withHome">
     <div class="m-nav-left">
-      <span @click="$emit('open-leave-modal')" class="m-icon m-icon--back"></span>
+      <span
+        @click="$emit('open-leave-modal')"
+        class="m-icon m-icon--back"
+      ></span>
     </div>
     <div class="info-container">
       <div class="m-nav-right">
@@ -27,15 +30,12 @@
 import { defineProps, ref } from "vue";
 import { useUsersStore } from "../stores";
 
-
 const usersStore = useUsersStore();
-defineEmits(['open-leave-modal'])
+defineEmits(["open-leave-modal"]);
 
 defineProps({
   headerTitle: String,
 });
-
-
 </script>
 
 <style scoped>
