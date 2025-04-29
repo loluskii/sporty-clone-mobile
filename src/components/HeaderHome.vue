@@ -29,7 +29,7 @@
                   @click="$router.push({ name: 'account-me' })"
                 >
                   <span class="currency">NGN</span>
-                  <span> {{ balance }}</span>
+                  <span> {{ usersStore.balance }}</span>
                 </div>
               </span>
             </span>
@@ -53,13 +53,12 @@
 
 <script setup>
 import { useAuthStore, useUsersStore } from "@/stores";
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 const { isAuthenticated } = useAuthStore();
-const { balance } = useUsersStore();
+const usersStore = useUsersStore();
 const myHeader = ref();
 const headerHeight = ref("48px");
-
 // Create a ResizeObserver to dynamically track header height
 const resizeObserver = new ResizeObserver(() => {
   if (myHeader.value) {
@@ -71,6 +70,11 @@ onMounted(() => {
   // Observe the header element
   if (myHeader.value) {
     resizeObserver.observe(myHeader.value);
+  }
+  
+  // Load user data if authenticated
+  if (isAuthenticated) {
+    usersStore.loadCurrentUser();
   }
 });
 

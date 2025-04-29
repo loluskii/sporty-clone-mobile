@@ -93,7 +93,8 @@ export const useUsersStore = defineStore({
           throw new Error("Failed to fetch user details");
         }
 
-        if (this.currentUser && !userResponse.value?.data) {
+        // Always validate the response data
+        if (!userResponse.value?.data) {
           throw new Error("No user data received");
         }
 
@@ -102,7 +103,6 @@ export const useUsersStore = defineStore({
         // Handle bonus response
         if (bonusResponse.status === "fulfilled" && bonusResponse.value?.data) {
           this.casinoActiveBonus = bonusResponse.value.data;
-          // Only emit if we actually have bonus data
           emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
         } else if (bonusResponse.status === "rejected") {
           console.warn("Failed to fetch active bonus:", bonusResponse.reason);
@@ -114,15 +114,16 @@ export const useUsersStore = defineStore({
           "sportBonusBalance",
           "casinoBonusBalance",
           "virtualBonusBalance",
-          "trustBalance",
+          "trustBalance"
         ];
 
         const missingProperties = requiredProperties.filter(
-          (prop) => !(prop in this.currentUser),
+          prop => !(prop in this.currentUser)
         );
 
         if (missingProperties.length > 0) {
           console.warn("Missing user properties:", missingProperties);
+          // Don't throw error, just log warning
         }
       } catch (error) {
         console.error("Error loading user:", error);
