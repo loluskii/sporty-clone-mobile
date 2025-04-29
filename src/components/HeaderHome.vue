@@ -13,7 +13,10 @@
             <img src="/default.png" alt="" />
           </a>
           <div class="mobile-navbar-right">
-            <span class="x-icon-search" @click="$router.push({ name: 'search' })"></span>
+            <span
+              class="x-icon-search"
+              @click="$router.push({ name: 'search' })"
+            ></span>
             <span v-if="isAuthenticated" class="x-login-yes">
               <span class="x-btn-deposit">
                 <span
@@ -21,7 +24,10 @@
                   @click="$router.push({ name: 'account-deposit' })"
                   >Deposit</span
                 >
-                <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
+                <div
+                  class="avatar-box"
+                  @click="$router.push({ name: 'account-me' })"
+                >
                   <span class="currency">NGN</span>
                   <span> {{ balance }}</span>
                 </div>
@@ -50,16 +56,9 @@ import { useAuthStore, useUsersStore } from "@/stores";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 const { isAuthenticated } = useAuthStore();
-const usersStore = useUsersStore();
+const { balance } = useUsersStore();
 const myHeader = ref();
 const headerHeight = ref("48px");
-
-const balance = computed(() => {
-  if (usersStore.currentUser) {
-    return usersStore.balance.toLocaleString("en");
-  }
-  return "0.00";
-});
 
 // Create a ResizeObserver to dynamically track header height
 const resizeObserver = new ResizeObserver(() => {

@@ -10,7 +10,9 @@
             :class="{ 'm-input-wrapper--error': isInvalidCode }"
           >
             <span class="m-input-com"
-              ><i class="m-input-icon m-input-icon--clickable m-icon-delete"></i>
+              ><i
+                class="m-input-icon m-input-icon--clickable m-icon-delete"
+              ></i>
               <input
                 type="input"
                 v-model="bookingCode"
@@ -29,12 +31,16 @@
         <button
           class="af-button af-button--primary"
           @click.prevent="loadBet"
-          :class="[isLoading ? 'is-disabled' : '', bookingCode == '' ? 'is-disabled' : '']"
+          :class="[
+            isLoading ? 'is-disabled' : '',
+            bookingCode == '' ? 'is-disabled' : '',
+          ]"
         >
           <span>Load</span>
         </button>
         <div class="m-form-desc">
-          A booking code enables you to book a bet. Odds or availabilities may change.
+          A booking code enables you to book a bet. Odds or availabilities may
+          change.
         </div>
       </div>
     </div>
@@ -42,46 +48,46 @@
 </template>
 
 <script setup>
-import HeaderOther from '@/components/HeaderOther.vue'
-import { ref } from 'vue'
-import { loadBetslipByCode } from '../helpers'
-import { useCouponStore } from '../stores'
-import emitter from '../plugins/emitter'
-import { useRouter } from 'vue-router'
+import HeaderOther from "@/components/HeaderOther.vue";
+import { ref } from "vue";
+import { loadBetslipByCode } from "../helpers";
+import { useCouponStore } from "../stores";
+import emitter from "../plugins/emitter";
+import { useRouter } from "vue-router";
 
-const isInvalidCode = ref()
-const bookingCode = ref('')
-const isLoading = ref(false)
-const couponStore = useCouponStore()
-const router = useRouter()
-const errorMesssage = ref('')
+const isInvalidCode = ref();
+const bookingCode = ref("");
+const isLoading = ref(false);
+const couponStore = useCouponStore();
+const router = useRouter();
+const errorMesssage = ref("");
 
 async function loadBet() {
-  isLoading.value = true
-  isInvalidCode.value = false
+  isLoading.value = true;
+  isInvalidCode.value = false;
   try {
-    const res = await loadBetslipByCode(bookingCode.value)
-    isLoading.value = false
+    const res = await loadBetslipByCode(bookingCode.value);
+    isLoading.value = false;
     if (res.success) {
       if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections
-        couponStore.coupon.totalOdds = res.data.totalOdd
-        couponStore.coupon.totalStake = res.data.stake
-        couponStore.coupon.stake = res.data.stake
-        couponStore.coupon.maxWin = res.data.possibleWin
-        couponStore.coupon.source = 'mobile'
-        emitter.emit('openBetslip')
-        return router.push({ name: 'home' })
+        couponStore.coupon.selections = res.data.selections;
+        couponStore.coupon.totalOdds = res.data.totalOdd;
+        couponStore.coupon.totalStake = res.data.stake;
+        couponStore.coupon.stake = res.data.stake;
+        couponStore.coupon.maxWin = res.data.possibleWin;
+        couponStore.coupon.source = "mobile";
+        emitter.emit("openBetslip");
+        return router.push({ name: "home" });
       } else {
-        emitter.emit('showDialogueToaster', 'All selections are expired')
+        emitter.emit("showDialogueToaster", "All selections are expired");
       }
     } else {
-      throw new Error(res.message)
+      throw new Error(res.message);
     }
   } catch (error) {
-    isInvalidCode.value = true
-    isLoading.value = false
-    errorMesssage.value = 'An error occured. Try again'
+    isInvalidCode.value = true;
+    isLoading.value = false;
+    errorMesssage.value = "An error occured. Try again";
   }
 }
 </script>
@@ -187,14 +193,24 @@ async function loadBet() {
 .m-int .m-main-info .m-form-wrap .m-input-container .country-select {
   margin-right: 0.91666667rem;
 }
-.m-int .m-main-info .m-form-wrap .m-input-container .country-select.selected .af-select-title {
+.m-int
+  .m-main-info
+  .m-form-wrap
+  .m-input-container
+  .country-select.selected
+  .af-select-title {
   background-color: #353a45;
   border-color: transparent;
   color: #ffffff;
   padding: 0 0.91666667rem;
   width: 10.66666667rem;
 }
-.m-int .m-main-info .m-form-wrap .m-input-container .country-select .af-select-title {
+.m-int
+  .m-main-info
+  .m-form-wrap
+  .m-input-container
+  .country-select
+  .af-select-title {
   border-radius: 0;
 }
 .m-int
@@ -324,10 +340,10 @@ async function loadBet() {
 .m-input-wrapper .m-input-icon:before {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
-  content: '\e602';
+  content: "\e602";
   display: inline-block;
   vertical-align: middle;
-  font-family: 'iconfont' !important;
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -372,7 +388,8 @@ async function loadBet() {
   border-color: #e41827 !important;
   border-color: var(--warning-primary) !important;
 }
-.m-input-wrapper.m-input-wrapper--error.m-input-group--prepend .m-input-prepend {
+.m-input-wrapper.m-input-wrapper--error.m-input-group--prepend
+  .m-input-prepend {
   border: 1px solid #e41827;
   border-right: none;
   border-color: #e41827;

@@ -27,20 +27,28 @@
               srcset=""
             />
             <Transition name="bounce">
-              <span v-if="sport.sportID == activeSport.sportId">{{ sport.sportName }}</span>
+              <span v-if="sport.sportID == activeSport.sportId">{{
+                sport.sportName
+              }}</span>
             </Transition>
           </li>
         </ul>
       </div>
     </div>
-    <div class="m-pre-opts m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
+    <div
+      class="m-pre-opts m-tabs m-tabs-mini m-tabs-no-animation"
+      style="overflow: hidden"
+    >
       <div class="m-tabs-content">
         <div class="m-tabs-tabpane">
           <div class="m-highlights-wrap" style="position: relative">
             <!-- <templat/>e> -->
             <div style="position: relative">
               <div class="m-bet-content">
-                <div v-if="Object.keys(activeSportFixtures).length" class="market-wrapper">
+                <div
+                  v-if="Object.keys(activeSportFixtures).length"
+                  class="market-wrapper"
+                >
                   <div
                     class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation"
                     style="overflow: hidden"
@@ -54,7 +62,11 @@
                         v-for="(market, m) in sportMarkets"
                         :key="m"
                         class="m-tabs-tab"
-                        :class="market.marketID === activeMarket.marketID ? 'm-tab-active' : ''"
+                        :class="
+                          market.marketID === activeMarket.marketID
+                            ? 'm-tab-active'
+                            : ''
+                        "
                         @click="selectMarket(market)"
                       >
                         {{ market.marketName }}
@@ -79,7 +91,10 @@
                           {{ activeMarket.specifier }}
                         </div>
                         <template
-                          v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
+                          v-for="(market, m) in _.sortBy(
+                            activeMarket.outcomes,
+                            'outcomeID',
+                          )"
                           :key="m"
                         >
                           <div>
@@ -98,8 +113,8 @@
                 </template>
                 <div v-else class="no-data">
                   <div style="white-space: pre-line">
-                    Sorry, there are no games currently<br />available in this category. Please try
-                    later.<br />Thank you.
+                    Sorry, there are no games currently<br />available in this
+                    category. Please try later.<br />Thank you.
                   </div>
                 </div>
               </div>
@@ -112,55 +127,62 @@
   </div>
 </template>
 <script setup>
-import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
-import { ref, computed, onMounted } from 'vue'
-import _ from 'lodash'
+import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
+import { ref, computed, onMounted } from "vue";
+import _ from "lodash";
 
-const props = defineProps(['fixturesData', 'markets'])
+const props = defineProps(["fixturesData", "markets"]);
 const activeSport = ref({
   sportId: props.fixturesData[0].sportID,
-  sportName: props.fixturesData[0].sportName
-})
-const activeMarket = ref({})
+  sportName: props.fixturesData[0].sportName,
+});
+const activeMarket = ref({});
 const sportsListData = computed(() => {
-  return props.fixturesData
-})
+  return props.fixturesData;
+});
 
 const activeSportFixtures = computed(() => {
-  let data = props.fixturesData.find((group) => group.sportID == activeSport.value.sportId)
-  return _.groupBy(data.fixtures, (fixture) => fixture.date.split(' ')[0])
-})
+  let data = props.fixturesData.find(
+    (group) => group.sportID == activeSport.value.sportId,
+  );
+  return _.groupBy(data.fixtures, (fixture) => fixture.date.split(" ")[0]);
+});
 
 const sportMarkets = computed(() => {
-  return props.markets.filter((market) => market.sportID == activeSport.value.sportId)
-})
+  return props.markets.filter(
+    (market) => market.sportID == activeSport.value.sportId,
+  );
+});
 
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
-  return imageUrl
-}
+  const imageUrl = new URL(
+    `../../assets/images/sports/${sportId}.png`,
+    import.meta.url,
+  );
+  return imageUrl;
+};
 
 function selectMarket(market) {
-  activeMarket.value = market
+  activeMarket.value = market;
 }
 
 async function setActiveSport(sport) {
-  activeSport.value.sportId = sport.sportID
-  activeSport.value.sportName = sport.sportName
-  activeMarket.value = sportMarkets.value.length ? sportMarkets.value[0] : {}
-  document.getElementById('highlights_' + sport.sportId).scrollIntoView({
-    behavior: 'smooth',
-    block: 'nearest',
-    inline: 'center'
-  })
+  activeSport.value.sportId = sport.sportID;
+  activeSport.value.sportName = sport.sportName;
+  activeMarket.value = sportMarkets.value.length ? sportMarkets.value[0] : {};
+  document.getElementById("highlights_" + sport.sportId).scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+    inline: "center",
+  });
 }
 
 // Set the initial activeMarket on mount
 onMounted(() => {
   if (sportMarkets.value.length > 0) {
-    activeMarket.value = sportMarkets.value[0]
+    activeMarket.value = sportMarkets.value[0];
   }
-})
+});
 </script>
 
 <style scoped>

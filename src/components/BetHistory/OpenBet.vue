@@ -3,7 +3,7 @@
 </template>
 
 <script>
-export default {}
+export default {};
 </script>
 
 <style>
@@ -156,7 +156,7 @@ export default {}
 
 .m-openbet-header .no-login span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: '';
+  content: "";
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -338,7 +338,7 @@ export default {}
 }
 
 .m-sportBets .f-count-item::before {
-  content: counter(index) '.';
+  content: counter(index) ".";
   counter-increment: index;
 }
 
@@ -371,7 +371,7 @@ export default {}
 
 .m-sportBets .top-bar .card-format-btn:before {
   background: #ffffff;
-  content: '';
+  content: "";
   height: 100%;
   left: 50%;
   position: absolute;
@@ -383,7 +383,7 @@ export default {}
 
 .m-sportBets .top-bar .card-format-btn:after {
   background: #ffffff;
-  content: '';
+  content: "";
   height: 0.16666667rem;
   position: absolute;
   top: 50%;
@@ -555,8 +555,8 @@ export default {}
 }
 
 .m-sportsBet--bets .m-tips .m-i-close:before {
-  content: '\e602';
-  font-family: 'iconfont' !important;
+  content: "\e602";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -584,7 +584,7 @@ export default {}
   box-sizing: border-box;
   color: var(--brand-secondary);
   display: inline-block;
-  font-family: 'Roboto';
+  font-family: "Roboto";
   font-size: 1rem;
   margin-left: 0.66666667rem;
   padding: 0.08333333rem 0.56666667rem;
@@ -641,7 +641,7 @@ export default {}
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  font-family: 'Roboto';
+  font-family: "Roboto";
 }
 
 .m-sportsBet--bets .m-title .actions > .divider {
@@ -717,8 +717,8 @@ export default {}
 }
 
 .m-sportsBet--bets .m-more .m-icon-more:before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -961,7 +961,7 @@ export default {}
 }
 
 .m-sportBets .f-count-item::before {
-  content: counter(index) '.';
+  content: counter(index) ".";
   counter-increment: index;
 }
 
@@ -1157,8 +1157,8 @@ export default {}
 }
 
 .m-bet-sel .m-l-left.m-i-suc:before {
-  content: '\e60b';
-  font-family: 'iconfont' !important;
+  content: "\e60b";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -1192,7 +1192,7 @@ export default {}
 
 .m-bet-sel .m-icon-banker:before {
   color: #ffffff;
-  content: 'B';
+  content: "B";
   font-size: 0.83333333rem;
   line-height: 1;
 }
@@ -1244,8 +1244,8 @@ export default {}
 }
 
 .m-bet-sel .m-live-odds .m-odds--up :before {
-  content: '\e609';
-  font-family: 'iconfont' !important;
+  content: "\e609";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -1259,8 +1259,8 @@ export default {}
 }
 
 .m-bet-sel .m-live-odds .m-odds--down :before {
-  content: '\e605';
-  font-family: 'iconfont' !important;
+  content: "\e605";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;

@@ -31,10 +31,11 @@
         </div>
       </div>
       <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play
-        Responsibly. Betting is addictive and can be psychologically harmful. |
-        {{ utilsStore.brandName }} is licensed by the Oyo State Gaming Board, according to
-        the License No: OYSGB/SPB/232975 issued by the Oyo State Gaming Board.
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}.
+        Play Responsibly. Betting is addictive and can be psychologically
+        harmful. | {{ utilsStore.brandName }} is licensed by the Oyo State
+        Gaming Board, according to the License No: OYSGB/SPB/232975 issued by
+        the Oyo State Gaming Board.
       </p>
     </div>
     <div class="hr"></div>
@@ -42,21 +43,43 @@
       <h5
         class="underline"
         @click="
-          $router.push({ name: 'cms-page', params: { page: 'terms-and-conditions' } })
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'terms-and-conditions' },
+          })
         "
       >
         Terms &amp; Conditions
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })">About Us</h5>
+      <h5
+        class="underline"
+        @click="
+          $router.push({ name: 'cms-page', params: { page: 'about-us' } })
+        "
+      >
+        About Us
+      </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'responsible-gaming' },
+          })
+        "
+      >
         Responsible Gaming
       </h5>
     </div>
     <div class="btn" @click="handleClick">
       <button>
-        {{ route.name == "account-me" && authStore.token ? "Logout" : "Back to Top" }}
+        {{
+          route.name == "account-me" && authStore.token
+            ? "Logout"
+            : "Back to Top"
+        }}
       </button>
     </div>
   </footer>

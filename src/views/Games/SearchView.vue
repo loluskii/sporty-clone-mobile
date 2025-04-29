@@ -44,11 +44,17 @@
               data-cms-key="search_found_single"
               data-cms-page="sg_lobby"
             >
-              {{ searchResult.length }} result{{ searchResult.length > 1 ? "s" : "" }}
+              {{ searchResult.length }} result{{
+                searchResult.length > 1 ? "s" : ""
+              }}
               found
             </div>
             <div class="row mb-3 pb-3" ref="scrollComponent">
-              <div class="col-6" v-for="(game, index) in searchResult" :key="index">
+              <div
+                class="col-6"
+                v-for="(game, index) in searchResult"
+                :key="index"
+              >
                 <Game :game="game" />
               </div>
             </div>
@@ -78,7 +84,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
-import Game from "@/components/Casino/Game.vue"
+import Game from "@/components/Casino/Game.vue";
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -126,11 +132,12 @@ const clearSearch = () => {
 
 const updateCSSVar = () => {
   if (myElement.value) {
-    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY;
+    const distanceFromTop =
+      myElement.value.getBoundingClientRect().top + window.scrollY;
     // Assign the distance to a CSS variable
     document.documentElement.style.setProperty(
       "--distance-from-top",
-      `${distanceFromTop}px`
+      `${distanceFromTop}px`,
     );
   }
 };

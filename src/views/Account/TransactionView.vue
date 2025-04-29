@@ -17,20 +17,36 @@
       <LoadingSpinner v-if="isLoading"></LoadingSpinner>
       <div class="list-bg" v-else style="position: relative">
         <ul v-if="transactionData" class="m-trans-list">
-          <li v-for="(item, index) in transactionData" :key="index" data-op="transaction_item">
+          <li
+            v-for="(item, index) in transactionData"
+            :key="index"
+            data-op="transaction_item"
+          >
             <div class="m-trans-r1">
               <em data-op="transaction_type">{{ item.subject }}</em>
               <i
                 data-op="transaction_amount"
                 class=""
-                :class="item.type == 'credit' && item.status ? 'm-txt-green' : 'm-txt-dark-gray'"
+                :class="
+                  item.type == 'credit' && item.status
+                    ? 'm-txt-green'
+                    : 'm-txt-dark-gray'
+                "
               >
-                {{ item.type == 'credit' && item.status ? '+' : item.type == 'debit' ? '-' : '' }}
+                {{
+                  item.type == "credit" && item.status
+                    ? "+"
+                    : item.type == "debit"
+                    ? "-"
+                    : ""
+                }}
                 {{ formatNumber(item.amount) }}
               </i>
             </div>
             <div class="m-trans-r2">
-              <em>{{ formatDate(item.transactionDate, 'YYYY-MM-DD h:mma') }}</em>
+              <em>{{
+                formatDate(item.transactionDate, "YYYY-MM-DD h:mma")
+              }}</em>
               <i class="text-danger" v-if="item.status === 2">Failed</i>
               <i class="text-success" v-if="item.status === 1">Completed</i>
               <i class="text-warning" v-if="item.status === 0">Pending</i>
@@ -40,7 +56,9 @@
         <div v-else class="m-list-none">
           <span class="no-list-txt"
             ><i class="m-icon--pageques"></i>
-            <span data-cms-key="no_records_found" data-cms-page="common_feedback"
+            <span
+              data-cms-key="no_records_found"
+              data-cms-page="common_feedback"
               >No Records Found.</span
             ></span
           >
@@ -59,69 +77,69 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import HeaderOther from '@/components/HeaderOther.vue'
-import { getTransactionsData, formatDate, formatNumber } from '@/helpers'
-import { useAuthStore, useUsersStore } from '@/stores'
-import { useRouter } from 'vue-router'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import moment from 'moment'
-import { CLIENT_ID } from '../../helpers'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import { onMounted, ref } from "vue";
+import HeaderOther from "@/components/HeaderOther.vue";
+import { getTransactionsData, formatDate, formatNumber } from "@/helpers";
+import { useAuthStore, useUsersStore } from "@/stores";
+import { useRouter } from "vue-router";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import moment from "moment";
+import { CLIENT_ID } from "../../helpers";
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
-const transactionData = ref()
-const { isAuthenticated } = useAuthStore()
-const router = useRouter()
-const isLoading = ref(false)
-const { currentUser } = useUsersStore()
-const range = ref('')
+const transactionData = ref();
+const { isAuthenticated } = useAuthStore();
+const router = useRouter();
+const isLoading = ref(false);
+const { currentUser } = useUsersStore();
+const range = ref("");
 
 async function getData(start, end) {
   try {
-    isLoading.value = true
+    isLoading.value = true;
     let payload = {
       clientId: CLIENT_ID.toString(),
-      startDate: moment().subtract(7, 'days').format('YYYY-MM-DD'),
-      endDate: moment().format('YYYY-MM-DD'),
-      page: 1
-    }
-    const res = await getTransactionsData(payload, 1)
-    transactionData.value = res.data
-    isLoading.value = false
+      startDate: moment().subtract(7, "days").format("YYYY-MM-DD"),
+      endDate: moment().format("YYYY-MM-DD"),
+      page: 1,
+    };
+    const res = await getTransactionsData(payload, 1);
+    transactionData.value = res.data;
+    isLoading.value = false;
   } catch (error) {
-    console.log(error)
-    isLoading.value = false
+    console.log(error);
+    isLoading.value = false;
   }
 }
 
 const handleDate = async (modelData) => {
-  const start = moment(range.value[0]).format('YYYY-MM-DD')
-  const end = moment(range.value[1]).format('YYYY-MM-DD')
+  const start = moment(range.value[0]).format("YYYY-MM-DD");
+  const end = moment(range.value[1]).format("YYYY-MM-DD");
   try {
-    isLoading.value = true
+    isLoading.value = true;
     let payload = {
       clientId: CLIENT_ID.toString(),
       startDate: start,
       endDate: end,
-      page: 1
-    }
-    const res = await getTransactionsData(payload, 1)
-    transactionData.value = res.data
-    isLoading.value = false
+      page: 1,
+    };
+    const res = await getTransactionsData(payload, 1);
+    transactionData.value = res.data;
+    isLoading.value = false;
   } catch (error) {
-    console.log(error)
-    isLoading.value = false
+    console.log(error);
+    isLoading.value = false;
   }
-}
+};
 
 onMounted(async () => {
   if (isAuthenticated) {
-    await getData()
+    await getData();
   } else {
-    router.push({ name: 'sign-in' })
+    router.push({ name: "sign-in" });
   }
-})
+});
 </script>
 
 <style type="text/css">
@@ -161,7 +179,7 @@ onMounted(async () => {
 }
 .m-trans-list li:not(.m-trans-mon):after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;
@@ -184,7 +202,7 @@ onMounted(async () => {
 }
 .m-trans-list .m-trans-r1:after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;
@@ -203,7 +221,7 @@ onMounted(async () => {
 }
 .m-trans-list .m-trans-r2:after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;
@@ -259,8 +277,8 @@ onMounted(async () => {
   margin: 0 auto 1.08333333rem;
 }
 .no-list-txt .m-icon--pageques::before {
-  content: '\e61b';
-  font-family: 'iconfont' !important;
+  content: "\e61b";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -359,7 +377,11 @@ onMounted(async () => {
   background-color: var(--background-type1-quaternary);
   min-height: 1.66666667rem;
 }
-#transaction-list-container .loading-more-wrapper .m-loading-wrap .m-loading .loading {
+#transaction-list-container
+  .loading-more-wrapper
+  .m-loading-wrap
+  .m-loading
+  .loading {
   background-color: var(--background-type1-quaternary);
 }
 #transaction-list-container .m-transaction-header {
@@ -384,7 +406,11 @@ onMounted(async () => {
 #transaction-list-container .trans-select .af-select .af-select-title {
   display: none;
 }
-#transaction-list-container .trans-select .af-select .af-select-title .af-select-input {
+#transaction-list-container
+  .trans-select
+  .af-select
+  .af-select-title
+  .af-select-input {
   display: hidden;
 }
 #transaction-list-container .trans-select .af-select .af-select-list {
@@ -398,7 +424,11 @@ onMounted(async () => {
   border-top-color: #dcdee5;
   border-top-color: var(--disable-brand-secondary);
 }
-#transaction-list-container .trans-select .af-select .af-select-list .af-select-item {
+#transaction-list-container
+  .trans-select
+  .af-select
+  .af-select-list
+  .af-select-item {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   display: -webkit-box;
@@ -415,13 +445,21 @@ onMounted(async () => {
   padding: 0 2rem;
   text-align: left;
 }
-#transaction-list-container .trans-select .af-select .af-select-list .af-select-item.active:after {
-  content: '\e611';
+#transaction-list-container
+  .trans-select
+  .af-select
+  .af-select-list
+  .af-select-item.active:after {
+  content: "\e611";
   float: right;
-  font-family: 'iconfont';
+  font-family: "iconfont";
   font-size: 1.33333333rem;
 }
-#transaction-list-container .trans-select .af-select .af-select-list .af-select-item.hover {
+#transaction-list-container
+  .trans-select
+  .af-select
+  .af-select-list
+  .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
 }
@@ -465,7 +503,9 @@ onMounted(async () => {
   border-right-color: #eaecef;
   border-right-color: var(--background-type1-tertiary);
 }
-#transaction-list-container .m-custom-selection-wrapper .m-custom-type.m-custom-type-active {
+#transaction-list-container
+  .m-custom-selection-wrapper
+  .m-custom-type.m-custom-type-active {
   color: #0d9737;
   color: var(--brand-secondary);
 }
@@ -484,24 +524,28 @@ onMounted(async () => {
   -ms-flex-pack: distribute;
   justify-content: space-around;
 }
-#transaction-list-container .m-custom-selection-wrapper .m-calendar.m-custom-date-active {
+#transaction-list-container
+  .m-custom-selection-wrapper
+  .m-calendar.m-custom-date-active {
   color: #0d9737;
   color: var(--brand-secondary);
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon {
   color: #0d9737;
   color: var(--brand-secondary);
-  font-family: 'iconfont';
+  font-family: "iconfont";
   width: auto;
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon:before {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
-  content: '\e6A3';
+  content: "\e6A3";
   display: inline-block;
   font-size: 0.83333333rem;
 }
-#transaction-list-container .m-custom-selection-wrapper .arrow-icon.open:before {
+#transaction-list-container
+  .m-custom-selection-wrapper
+  .arrow-icon.open:before {
   color: #0d9737;
   color: var(--brand-secondary);
   -webkit-transform: rotate(180deg);

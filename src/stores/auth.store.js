@@ -26,7 +26,7 @@ export const useAuthStore = defineStore({
         this.token = res.data.token;
         this.mobile_number = payload.username;
         const userStore = useUsersStore();
-        userStore.loadCurrentUser()
+        userStore.loadCurrentUser();
         this.loading = false;
         if (!this.returnUrl || this.returnUrl === "/") {
           return router.push("/");

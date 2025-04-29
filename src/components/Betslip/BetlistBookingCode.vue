@@ -1,6 +1,5 @@
 <template>
   <div class="m-default">
-
     <div class="featured-code-container" v-if="codes.length">
       <div
         class="recommended-code"
@@ -13,7 +12,9 @@
       <LoadingSpinner v-else />
     </div>
     <p class="m-default-info">
-      <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
+      <span
+        data-cms-key="please_insert_booking_code"
+        data-cms-page="component_betslip"
         >Enter a booking code</span
       >
       <span class="m-dialog-tip"></span>
@@ -23,7 +24,9 @@
         class="m-default-code m-input-wap-wrapper"
         :class="{ 'm-input-wap-wrapper--error': isInvalidCode }"
       >
-        <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+        <i
+          class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
+        ></i>
         <input
           type="input"
           name=""
@@ -56,17 +59,17 @@ import { loadBetslipByCode, getNext7Days, getCodeHubItems } from "@/helpers";
 import { useCouponStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
-import Codes from '@/components/Home/Codes.vue'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import Codes from "@/components/Home/Codes.vue";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 
 const isInvalidCode = ref();
 const bookingCode = ref("");
 const isLoading = ref(false);
-const codeHubLoading = ref(true)
+const codeHubLoading = ref(true);
 const couponStore = useCouponStore();
 const router = useRouter();
 const errorMesssage = ref("");
-const codes = ref([])
+const codes = ref([]);
 
 async function loadBet() {
   isLoading.value = true;
@@ -112,14 +115,13 @@ async function getCodes() {
     betType: 0,
   };
   const res = await getCodeHubItems(payload);
-  codeHubLoading.value = false
-  codes.value = res.data.data
+  codeHubLoading.value = false;
+  codes.value = res.data.data;
 }
 
 onMounted(async () => {
-  await getCodes()
-})
-
+  await getCodes();
+});
 </script>
 
 <style scoped>

@@ -34,9 +34,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from "vue";
 import { useCouponStore, useUtilstStore } from "@/stores";
-import SimulationHeader from './SimulationHeader.vue';
-import SimulationEvent from './SimulationEvent.vue';
-import SimulationControls from './SimulationControls.vue';
+import SimulationHeader from "./SimulationHeader.vue";
+import SimulationEvent from "./SimulationEvent.vue";
+import SimulationControls from "./SimulationControls.vue";
 
 // Store and Props
 const couponStore = useCouponStore();
@@ -44,11 +44,11 @@ const { SportsbookGlobalVariable } = useUtilstStore();
 const props = defineProps({
   simulationResults: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(['exit']);
+const emit = defineEmits(["exit"]);
 // Constants
 const SIMULATION_DURATION = 9; // seconds
 const UPDATE_INTERVAL = 250; // milliseconds
@@ -65,10 +65,16 @@ const simulationData = computed(() => {
     return events.reduce((acc, ev) => {
       const matchId = Number(ev.reference);
       const playout = ev.playout;
-      
+
       const goalEvents = [
-        ...(playout.homeCompetitorGoals?.map(time => ({ time: time / 10, team: "home" })) || []),
-        ...(playout.awayCompetitorGoals?.map(time => ({ time: time / 10, team: "away" })) || [])
+        ...(playout.homeCompetitorGoals?.map((time) => ({
+          time: time / 10,
+          team: "home",
+        })) || []),
+        ...(playout.awayCompetitorGoals?.map((time) => ({
+          time: time / 10,
+          team: "away",
+        })) || []),
       ].sort((a, b) => a.time - b.time);
 
       acc[matchId] = {
@@ -81,12 +87,12 @@ const simulationData = computed(() => {
           home: playout.homeCompetitorHalfTimeScore,
           away: playout.awayCompetitorHalfTimeScore,
         },
-        status: ev.status
+        status: ev.status,
       };
       return acc;
     }, {});
   } catch (error) {
-    console.error('Error processing simulation data:', error);
+    console.error("Error processing simulation data:", error);
     return {};
   }
 });
@@ -102,26 +108,26 @@ const timerDisplay = computed(() => {
 
 const formattedWinAmount = computed(() => {
   const amount = props.simulationResults.possibleWin;
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`;
+  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString("en")}`;
 });
 
 // Methods
 const handleSimulationExit = (action) => {
-  if (action === 'skip') {
+  if (action === "skip") {
     currentTime.value = SIMULATION_DURATION;
     clearInterval(intervalId.value);
     return;
   }
-  
-  if (action === 'close') {
-    emit('exit');
+
+  if (action === "close") {
+    emit("exit");
   }
 };
 
 // Lifecycle Hooks
 onMounted(() => {
   currentTime.value = 0;
-  
+
   setTimeout(() => {
     intervalId.value = setInterval(() => {
       if (currentTime.value >= SIMULATION_DURATION) {

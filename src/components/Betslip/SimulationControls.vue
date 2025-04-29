@@ -10,24 +10,24 @@
 const props = defineProps({
   timerEnded: {
     type: Boolean,
-    required: true
+    required: true,
   },
   timerStarted: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(['exit']);
+const emit = defineEmits(["exit"]);
 
 const handleSimulationExit = () => {
   if (props.timerStarted && !props.timerEnded) {
-    emit('exit', 'skip');
+    emit("exit", "skip");
     return;
   }
-  
+
   if (props.timerEnded) {
-    emit('exit', 'close');
+    emit("exit", "close");
   }
 };
 </script>
@@ -59,4 +59,4 @@ const handleSimulationExit = () => {
 .size-16 {
   font-size: 1.33333333rem;
 }
-</style> 
+</style>

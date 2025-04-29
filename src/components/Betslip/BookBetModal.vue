@@ -107,11 +107,12 @@ function redirectToPlatform(platform) {
       return window.open("https://wa.me/?text=" + encodeURIComponent(message));
     case "x":
       return window.open(
-        "https://x.com/intent/tweet?text=" + encodeURIComponent(message)
+        "https://x.com/intent/tweet?text=" + encodeURIComponent(message),
       );
     case "facebook":
       return window.open(
-        "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(message)
+        "https://www.facebook.com/sharer/sharer.php?u=" +
+          encodeURIComponent(message),
       );
   }
 }
@@ -227,7 +228,11 @@ function redirectToPlatform(platform) {
   display: inline-block;
   margin: 0px 7px;
 }
-.booking-code .booking-code-share .booking-code-links .links-container .link-icon {
+.booking-code
+  .booking-code-share
+  .booking-code-links
+  .links-container
+  .link-icon {
   cursor: pointer;
   margin-bottom: 8px;
 }
@@ -389,10 +394,19 @@ function redirectToPlatform(platform) {
   font-size: 10px;
   line-height: 21px;
 }
-.booking-code .booking-code-int .booking-code-links .links-container .link-icon {
+.booking-code
+  .booking-code-int
+  .booking-code-links
+  .links-container
+  .link-icon {
   margin-bottom: 0;
 }
-.booking-code .booking-code-int .booking-code-links .links-container .link-icon img {
+.booking-code
+  .booking-code-int
+  .booking-code-links
+  .links-container
+  .link-icon
+  img {
   height: 29px;
   width: 29px;
 }

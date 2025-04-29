@@ -25,8 +25,8 @@
       <div class="es-dialog-body m-dialog-body">
         <div class="es-dialog-main m-dialog-main" style="height: auto">
           <div>
-            You have items in Betslip. Are you sure to replace Betslip with this new
-            selections?
+            You have items in Betslip. Are you sure to replace Betslip with this
+            new selections?
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ function nextAction() {
 
 function replaceBetslip() {
   try {
-    emits('hide-dialogue')
+    emits("hide-dialogue");
     couponStore.clearBetslip();
     couponStore.coupon.selections = props.dialogueMessage.selections;
     couponStore.coupon.totalOdds = parseFloat(props.dialogueMessage.totalOdd);
@@ -152,7 +152,9 @@ onMounted(() => {
 .es-dialog {
   background-color: #fafafa;
   border-radius: 0.3rem;
-  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25), 0 0 24px 0 rgba(112, 76, 76, 0.25);
+  box-shadow:
+    0 0 24px 0 rgba(0, 0, 0, 0.25),
+    0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
   font-family: "Roboto", "Microsoft Yahei", "simsun";
   font-size: 1rem;
@@ -288,10 +290,31 @@ onMounted(() => {
   width: 30%;
 }
 .es-dialog.es-ani-show {
-  -webkit-transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
-  transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
-  transition: width, height, transform 3s, 2s liner 3s, 2s;
-  transition: width, height, transform 3s, 2s liner 3s, 2s, -webkit-transform 3s;
+  -webkit-transition:
+    width,
+    height,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
+  transition:
+    width,
+    height,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
+  transition:
+    width,
+    height,
+    transform 3s,
+    2s liner 3s,
+    2s;
+  transition:
+    width,
+    height,
+    transform 3s,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
 }
 .es-dialog.es-ani-hide {
   -webkit-transition: all 0.3s linear;

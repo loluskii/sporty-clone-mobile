@@ -27,7 +27,10 @@
           </div>
         </div>
       </div>
-      <div class="m-dialog-footer es-dialog-footer" style="margin-top: 1rem; padding: 0">
+      <div
+        class="m-dialog-footer es-dialog-footer"
+        style="margin-top: 1rem; padding: 0"
+      >
         <div v-if="route.name !== 'home'" class="button-row">
           <div class="real-money-btn" @click="setBalanceType('real')">
             <div class="real-money-btn-text">Real Money</div>
@@ -37,7 +40,11 @@
           </div>
         </div>
         <div v-else class="button-row">
-          <div v-if="props.data.bonus.type === 'casino'" class="real-money-btn" @click="goToCasino">
+          <div
+            v-if="props.data.bonus.type === 'casino'"
+            class="real-money-btn"
+            @click="goToCasino"
+          >
             <div class="real-money-btn-text">Go to Casino</div>
           </div>
           <div class="bonus-btn" @click="goToBonus">
@@ -73,14 +80,18 @@ const { SportsbookGlobalVariable } = useUtilstStore();
 const utilsStore = useUtilstStore();
 
 const modalText = computed(() => {
-  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+  return props.data.bonus.bonusType === "free_rounds" &&
+    props.data.bonus.freeSpins
     ? `Congratulations! You have been gifted ${props.data.bonus.freeSpins} free spins.`
-    : `Congratulations! You have a ${props.data.bonus.type === "sport" ? "Sports" : "Casino"} bonus of
+    : `Congratulations! You have a ${
+        props.data.bonus.type === "sport" ? "Sports" : "Casino"
+      } bonus of
             ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value}`;
 });
 
 const gamePlayModalText = computed(() => {
-  return props.data.bonus.bonusType === "free_rounds" && props.data.bonus.freeSpins
+  return props.data.bonus.bonusType === "free_rounds" &&
+    props.data.bonus.freeSpins
     ? `You have ${props.data.bonus.freeSpins} free spins on this game. Choose the balance to use for
             this session.`
     : `You have an active casino bonus of ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value} for this game. Choose the balance to use for
@@ -92,8 +103,15 @@ const setBalanceType = (type) => {
   emits("hide-dialogue");
   return router.push({
     name: "game-play",
-    params: { game_name: slugify(props.data.game.title), game_id: props.data.game.id },
-    query: { bonusId: props.data.bonus.bonusId, balanceType: type, bonusType: props.data.bonus.bonusType },
+    params: {
+      game_name: slugify(props.data.game.title),
+      game_id: props.data.game.id,
+    },
+    query: {
+      bonusId: props.data.bonus.bonusId,
+      balanceType: type,
+      bonusType: props.data.bonus.bonusType,
+    },
   });
 };
 
@@ -164,7 +182,9 @@ onMounted(() => {});
 .es-dialog {
   background-color: #373b41;
   border-radius: 0.3rem;
-  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25), 0 0 24px 0 rgba(112, 76, 76, 0.25);
+  box-shadow:
+    0 0 24px 0 rgba(0, 0, 0, 0.25),
+    0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
   font-family: "Roboto", "Microsoft Yahei", "simsun";
   font-size: 1rem;
@@ -286,10 +306,31 @@ onMounted(() => {});
   width: 30%;
 }
 .es-dialog.es-ani-show {
-  -webkit-transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
-  transition: width, height, 2s liner 3s, 2s, -webkit-transform 3s;
-  transition: width, height, transform 3s, 2s liner 3s, 2s;
-  transition: width, height, transform 3s, 2s liner 3s, 2s, -webkit-transform 3s;
+  -webkit-transition:
+    width,
+    height,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
+  transition:
+    width,
+    height,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
+  transition:
+    width,
+    height,
+    transform 3s,
+    2s liner 3s,
+    2s;
+  transition:
+    width,
+    height,
+    transform 3s,
+    2s liner 3s,
+    2s,
+    -webkit-transform 3s;
 }
 .es-dialog.es-ani-hide {
   -webkit-transition: all 0.3s linear;

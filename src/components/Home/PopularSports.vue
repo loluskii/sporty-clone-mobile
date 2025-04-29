@@ -24,7 +24,12 @@
         "
       >
         <div class="image">
-          <img src="@/assets/images/3hrs.jpeg" style="height: 24px" alt="" srcset="" />
+          <img
+            src="@/assets/images/3hrs.jpeg"
+            style="height: 24px"
+            alt=""
+            srcset=""
+          />
         </div>
         <div class="text">football in 3 hours</div>
       </div>
@@ -57,7 +62,11 @@
 
     <div class="featured-match-placeholder">
       <div class="featured-widget with-nav" style="">
-        <div role="tablist" aria-label="featured widgets tabs" class="featured-nav-list">
+        <div
+          role="tablist"
+          aria-label="featured widgets tabs"
+          class="featured-nav-list"
+        >
           <div class="featured-header-left">
             <span
               role="heading"
@@ -79,27 +88,35 @@
                 <ul class="m-snap-nav flex">
                   <li
                     class="featured-nav-item m-snap-nav-item"
-                    :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
+                    :class="
+                      activeFeaturedTab == 'featuredMatches' ? 'active' : ''
+                    "
                     @click="setActiveTab('featuredMatches')"
                     role="tab"
                     aria-label="featured matches"
                   >
                     <span
                       class="feature-nav-span"
-                      :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
+                      :class="
+                        activeFeaturedTab == 'featuredMatches' ? 'active' : ''
+                      "
                       >Matches</span
                     >
                   </li>
                   <li
                     class="featured-nav-item m-snap-nav-item"
                     @click="setActiveTab('featuredGames')"
-                    :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
+                    :class="
+                      activeFeaturedTab == 'featuredGames' ? 'active' : ''
+                    "
                     role="tab"
                     aria-label="featured games"
                   >
                     <span
                       class="feature-nav-span"
-                      :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
+                      :class="
+                        activeFeaturedTab == 'featuredGames' ? 'active' : ''
+                      "
                       >Casino</span
                     >
                   </li>
@@ -147,7 +164,8 @@
                   fill="currentColor"
                   stroke="currentColor"
                   stroke-width=".4"
-                ></path></svg>
+                ></path>
+              </svg>
             </a>
           </div>
         </div>
@@ -171,7 +189,9 @@
                     <div
                       class="featuredMatchCategory"
                       :class="
-                        activeFeaturedTournament == top.tournamentID ? 'active' : ''
+                        activeFeaturedTournament == top.tournamentID
+                          ? 'active'
+                          : ''
                       "
                     >
                       <div class="wrapper">
@@ -187,7 +207,11 @@
                 <i class="controls right-controls"></i>
               </div>
             </div>
-            <div class="HorizonSwipe" id="featuredMatchCardBox" style="overflow: auto">
+            <div
+              class="HorizonSwipe"
+              id="featuredMatchCardBox"
+              style="overflow: auto"
+            >
               <template v-for="tournament in sortedTournamentGames">
                 <!-- {{ tournament }} -->
                 <FeaturedMatchCard
@@ -226,15 +250,15 @@ import {
   getTopGameCategories,
   gamesByTopCategory,
   getCodeHubItems,
-  getNext7Days
+  getNext7Days,
 } from "@/helpers";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import FeaturedGamesContainer from "./FeaturedGamesContainer.vue";
-import { useMqttService } from '@/composables/useMqtt'
+import { useMqttService } from "@/composables/useMqtt";
 
-const { subscribe } = useMqttService()
-const unsubscribeFunctions = ref({}) // Store unsubscribe functions by match ID
-const componentId = `popular-sports-${Date.now()}` // Unique ID for this component instance
+const { subscribe } = useMqttService();
+const unsubscribeFunctions = ref({}); // Store unsubscribe functions by match ID
+const componentId = `popular-sports-${Date.now()}`; // Unique ID for this component instance
 
 const isLoading = ref(false);
 const casinoIsLoading = ref(false);
@@ -248,7 +272,9 @@ const activeFeaturedTab = ref("featuredMatches");
 const activeCasinoCategory = ref(null);
 const featuredCasinogames = ref([]);
 const featuredCasino = ref([]);
-const codes = ref([])
+const codes = ref([]);
+
+// live tracker of fatured games
 
 function scrollGamesIntoView() {
   document
@@ -266,13 +292,18 @@ function setActiveTab(tab) {
 
 const sortedTournamentGames = computed(() => {
   return featuredTournamentGames.value.length
-    ? [...featuredTournamentGames.value].sort((a, b) => a.tournamentID - b.tournamentID)
+    ? [...featuredTournamentGames.value].sort(
+        (a, b) => a.tournamentID - b.tournamentID,
+      )
     : [];
 });
 
 function getImageURL(name) {
   if (name == "Championship") {
-    return new URL("../../assets/images/EFL_Championship_Logo.png", import.meta.url);
+    return new URL(
+      "../../assets/images/EFL_Championship_Logo.png",
+      import.meta.url,
+    );
   } else if (name == "Bundesliga") {
     return new URL("../../assets/images/Bundesliga.png", import.meta.url);
   } else {
@@ -310,7 +341,7 @@ async function getCodes() {
     betType: 0,
   };
   const res = await getCodeHubItems(payload);
-  codes.value = res.data.data
+  codes.value = res.data.data;
 }
 
 function assignTournaments(tournament, games, tournamentID) {
@@ -323,14 +354,14 @@ function assignTournaments(tournament, games, tournamentID) {
     });
 
     // Set up MQTT subscriptions for each fixture
-    gamesList.forEach(fixture => {
+    gamesList.forEach((fixture) => {
       if (fixture.matchID) {
-        setupMqttSubscriptions(fixture.matchID)
+        setupMqttSubscriptions(fixture.matchID);
       }
-    })
+    });
   } else {
     const index = featuredTournaments.value.findIndex(
-      (x) => x.tournament_id == tournament.id
+      (x) => x.tournament_id == tournament.id,
     );
     featuredTournaments.value.splice(index, 1);
   }
@@ -338,95 +369,106 @@ function assignTournaments(tournament, games, tournamentID) {
 
 function setupMqttSubscriptions(matchId) {
   // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchId}`
+  const subscriptionKey = `${componentId}-${matchId}`;
   if (unsubscribeFunctions.value[subscriptionKey]) {
-    unsubscribeFunctions.value[subscriptionKey].forEach(unsubscribe => unsubscribe())
+    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) =>
+      unsubscribe(),
+    );
   }
 
   // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
   const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    handleOddsChange(matchId, data)
-  })
+    handleOddsChange(matchId, data);
+  });
 
   // Subscribe to bet stop
-  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
   const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    handleBetStop(matchId, data)
-  })
+    handleBetStop(matchId, data);
+  });
 
   // Store unsubscribe functions with our component-specific key
-  unsubscribeFunctions.value[subscriptionKey] = [unsubscribeOddsChange, unsubscribeBetStop]
+  unsubscribeFunctions.value[subscriptionKey] = [
+    unsubscribeOddsChange,
+    unsubscribeBetStop,
+  ];
 }
 
 function handleOddsChange(matchId, data) {
-  if (!data || !data.markets) return
+  if (!data || !data.markets) return;
 
   // Find and update the fixture in featuredTournamentGames
-  featuredTournamentGames.value = featuredTournamentGames.value.map(tournament => {
-    const updatedFixtures = tournament.fixtures.map(fixture => {
-      if (String(fixture.matchID) === String(matchId)) {
-        // Update outcomes for the matching market
-        const updatedOutcomes = fixture.outcomes.map(outcome => {
-          const market = data.markets.find(m => m.id === outcome.marketID)
-          if (market && market.outcomes) {
-            const updatedOutcome = market.outcomes.find(o => String(o.id) === String(outcome.outcomeID))
-            if (updatedOutcome) {
-              return {
-                ...outcome,
-                odds: updatedOutcome.odds,
-                active: updatedOutcome.active ? 1 : 0
+  featuredTournamentGames.value = featuredTournamentGames.value.map(
+    (tournament) => {
+      const updatedFixtures = tournament.fixtures.map((fixture) => {
+        if (String(fixture.matchID) === String(matchId)) {
+          // Update outcomes for the matching market
+          const updatedOutcomes = fixture.outcomes.map((outcome) => {
+            const market = data.markets.find((m) => m.id === outcome.marketID);
+            if (market && market.outcomes) {
+              const updatedOutcome = market.outcomes.find(
+                (o) => String(o.id) === String(outcome.outcomeID),
+              );
+              if (updatedOutcome) {
+                return {
+                  ...outcome,
+                  odds: updatedOutcome.odds,
+                  active: updatedOutcome.active ? 1 : 0,
+                };
               }
             }
-          }
-          return outcome
-        })
-        return {
-          ...fixture,
-          outcomes: updatedOutcomes
+            return outcome;
+          });
+          return {
+            ...fixture,
+            outcomes: updatedOutcomes,
+          };
         }
-      }
-      return fixture
-    })
-    return {
-      ...tournament,
-      fixtures: updatedFixtures
-    }
-  })
+        return fixture;
+      });
+      return {
+        ...tournament,
+        fixtures: updatedFixtures,
+      };
+    },
+  );
 }
 
 function handleBetStop(matchId, data) {
   // Find and update the fixture in featuredTournamentGames
-  featuredTournamentGames.value = featuredTournamentGames.value.map(tournament => {
-    const updatedFixtures = tournament.fixtures.map(fixture => {
-      if (String(fixture.matchID) === String(matchId)) {
-        // Set all outcomes to inactive
-        const updatedOutcomes = fixture.outcomes.map(outcome => ({
-          ...outcome,
-          odds: 0,
-          active: 0
-        }))
-        return {
-          ...fixture,
-          outcomes: updatedOutcomes
+  featuredTournamentGames.value = featuredTournamentGames.value.map(
+    (tournament) => {
+      const updatedFixtures = tournament.fixtures.map((fixture) => {
+        if (String(fixture.matchID) === String(matchId)) {
+          // Set all outcomes to inactive
+          const updatedOutcomes = fixture.outcomes.map((outcome) => ({
+            ...outcome,
+            odds: 0,
+            active: 0,
+          }));
+          return {
+            ...fixture,
+            outcomes: updatedOutcomes,
+          };
         }
-      }
-      return fixture
-    })
-    return {
-      ...tournament,
-      fixtures: updatedFixtures
-    }
-  })
+        return fixture;
+      });
+      return {
+        ...tournament,
+        fixtures: updatedFixtures,
+      };
+    },
+  );
 }
 
 onBeforeUnmount(() => {
   // Clean up all MQTT subscriptions
-  Object.values(unsubscribeFunctions.value).forEach(subscriptions => {
-    subscriptions.forEach(unsubscribe => unsubscribe())
-  })
-  unsubscribeFunctions.value = {}
-})
+  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+    subscriptions.forEach((unsubscribe) => unsubscribe());
+  });
+  unsubscribeFunctions.value = {};
+});
 
 async function getFeaturedGames() {
   isLoading.value = true;
@@ -435,36 +477,38 @@ async function getFeaturedGames() {
     if (res.data) {
       // Create a Map to store unique tournaments by ID
       const uniqueTournaments = new Map();
-      
+
       // Filter out duplicates and store in Map
-      res.data.forEach(tournament => {
+      res.data.forEach((tournament) => {
         if (!uniqueTournaments.has(tournament.tournamentID)) {
           uniqueTournaments.set(tournament.tournamentID, tournament);
         }
       });
 
       // Convert Map back to array and sort
-      featuredTournaments.value = Array.from(uniqueTournaments.values())
-        .sort((a, b) => a.tournamentID - b.tournamentID);
+      featuredTournaments.value = Array.from(uniqueTournaments.values()).sort(
+        (a, b) => a.tournamentID - b.tournamentID,
+      );
 
       // Set active tournament to first one if available
-      activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+      activeFeaturedTournament.value =
+        featuredTournaments.value[0]?.tournamentID;
 
       // Process each unique tournament
       await Promise.all(
         featuredTournaments.value.map(async (tournament) => {
           const games = await getFixturesByTournamentId(
             tournament.tournamentID,
-            tournament.sportID
+            tournament.sportID,
           );
           assignTournaments(tournament, games, tournament.tournamentID);
-        })
+        }),
       );
       isLoading.value = false;
     } else throw Error;
   } catch (error) {
     isLoading.value = false;
-    console.error('Error fetching featured games:', error);
+    console.error("Error fetching featured games:", error);
   }
 }
 

@@ -11,7 +11,8 @@
               {{ code.betslipId }}
             </div>
             <div class="folds text-center flex-1">
-              <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
+              <span class="label">Folds:</span
+              ><span>{{ code.totalSelections }}</span>
             </div>
             <div class="odds text-right flex-1">
               <span class="label">Odds:</span><span>{{ code.total_odd }}</span>
@@ -69,12 +70,15 @@
                   
                 </div>
               </div>
-              <span v-else class="loading-button-click-area share-button-click-area mr-auto"
-                ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
+              <span
+                v-else
+                class="loading-button-click-area share-button-click-area mr-auto"
+                ><div class="mr-8 icon-font-base" style="font-size: 12px">
+                  
+                </div>
                 <span>Share</span></span
               >
             </div>
-            
 
             <div
               data-op="add-to-betslip"
@@ -128,7 +132,10 @@ const couponStore = useCouponStore();
 
 function getImageURL(name) {
   if (name == "Championship") {
-    return new URL("../../assets/images/EFL_Championship_Logo.png", import.meta.url);
+    return new URL(
+      "../../assets/images/EFL_Championship_Logo.png",
+      import.meta.url,
+    );
   } else if (name == "Bundesliga") {
     return new URL("../../assets/images/Bundesliga.png", import.meta.url);
   } else {
@@ -202,14 +209,14 @@ function shareCode(data) {
   padding: 0 1rem;
 }
 .featured-code-container #featuredCodeCardBox {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    height: 100%;
-    margin-top: 0.33333333rem;
-    padding-bottom: 0.33333333rem;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
-    scroll-behavior: smooth;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
+  scroll-behavior: smooth;
 }
 .featured-code-container #featuredCodeCardBox > * {
   margin-right: 0.66666667rem;
@@ -225,12 +232,15 @@ function shareCode(data) {
 .featured-code-card-container {
   background-color: #ffffff;
   background-color: var(--c-featured-match-card-bg);
-  -webkit-box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1),
+  -webkit-box-shadow:
+    0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1), 2px 2px 4px 0px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0px 2px 4px 2px rgba(0, 0, 0, 0.1),
+    2px 2px 4px 0px rgba(0, 0, 0, 0.1);
   width: 88%;
   scroll-snap-align: center; /* Snap the cards to the center */
-    flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 .featured-code-card-container .featured-code-card-style {
   height: 100%;

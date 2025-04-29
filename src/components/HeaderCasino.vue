@@ -15,13 +15,13 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-import { useUtilstStore } from '../stores'
+import { defineProps } from "vue";
+import { useUtilstStore } from "../stores";
 
-const { brandName } = useUtilstStore
+const { brandName } = useUtilstStore;
 defineProps({
-  headerTitle: String
-})
+  headerTitle: String,
+});
 </script>
 
 <style scoped>
@@ -83,16 +83,16 @@ defineProps({
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
-  content: '\e620';
-  font-family: 'iconfont' !important;
+  content: "\e620";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -136,7 +136,7 @@ defineProps({
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: '';
+  content: "";
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -175,8 +175,8 @@ defineProps({
   margin-left: 15px;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: '\e6cb';
-  font-family: 'iconfont' !important;
+  content: "\e6cb";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -186,8 +186,8 @@ defineProps({
   font-size: 1.5rem;
 }
 .x-icon-search::before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
+  content: "\e613";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

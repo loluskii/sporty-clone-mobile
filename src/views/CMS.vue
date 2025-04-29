@@ -1,7 +1,7 @@
 import HeaderOther from '../../components/HeaderOther.vue';
 <template>
   <div>
-    <HeaderOther :header-title="pageTitle.toUpperCase()" ></HeaderOther>
+    <HeaderOther :header-title="pageTitle.toUpperCase()"></HeaderOther>
     <div class="body">
       <LoadingSpinner v-if="isLoading"></LoadingSpinner>
       <div v-else v-html="html"></div>

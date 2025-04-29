@@ -3,22 +3,31 @@
     <template v-if="!selectTournaments">
       <div class="top">
         <a href="/Search" class="azmenu-search-wrap"
-          ><span>Teams/Players, League, Game ID</span> <span class="m-icon m-icon-search"></span
+          ><span>Teams/Players, League, Game ID</span>
+          <span class="m-icon m-icon-search"></span
         ></a>
       </div>
       <div class="sport-menu" style="position: relative">
         <div class="tab-wrap">
-          <div class="az-tabs m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
+          <div
+            class="az-tabs m-tabs m-tabs-mini m-tabs-no-animation"
+            style="overflow: hidden"
+          >
             <div class="m-tabs-nav" style="width: 100%">
               <div class="m-tabs-tab" style="font-weight: bold">Sports</div>
             </div>
-            <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
+            <div
+              class="m-tabs-content"
+              style="transform: translateX(0%) translateZ(0px)"
+            >
               <div class="m-tabs-tabpane">
                 <div class="tab-pane-content">
                   <div class="tab-pane-left">
                     <div
                       class="right-panel-item"
-                      :class="sport.sportID === activeSport.sportID ? 'active' : ''"
+                      :class="
+                        sport.sportID === activeSport.sportID ? 'active' : ''
+                      "
                       v-for="(sport, index) in sportsMenu"
                       :key="index"
                       @click="setActiveSport(sport)"
@@ -32,7 +41,9 @@
                       <template v-for="(category, i) in countriesList" :key="i">
                         <div
                           class="right-panel-item"
-                          v-if="category.categoryID && category.categoryID !== 0"
+                          v-if="
+                            category.categoryID && category.categoryID !== 0
+                          "
                           @click="redirectToFixturesView(category)"
                         >
                           <span>{{ category.categoryName }}</span>
@@ -61,55 +72,55 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
-import { useUtilstStore } from '../stores/utils.store'
-import { getCategoriesBySport } from '../helpers'
-const { sportsMenu } = useUtilstStore()
+import { ref, onMounted, reactive } from "vue";
+import { useUtilstStore } from "../stores/utils.store";
+import { getCategoriesBySport } from "../helpers";
+const { sportsMenu } = useUtilstStore();
 // import { useRouter } from 'vue-router'
-import AZTournmentSelect from '@/components/AZTournmentSelect.vue'
-import LoadingSpinner from '../components/Loaders/LoadingSpinner.vue'
+import AZTournmentSelect from "@/components/AZTournmentSelect.vue";
+import LoadingSpinner from "../components/Loaders/LoadingSpinner.vue";
 
-const countriesList = ref([])
-const selectTournaments = ref(false)
-const utilsStore = useUtilstStore()
+const countriesList = ref([]);
+const selectTournaments = ref(false);
+const utilsStore = useUtilstStore();
 
-const page = ref()
-const isLoading = ref(true)
+const page = ref();
+const isLoading = ref(true);
 
-const activeCategory = ref(null)
+const activeCategory = ref(null);
 
 const activeSport = reactive({
-  sportName: 'Soccer',
-  sportID: 1
-})
+  sportName: "Soccer",
+  sportID: 1,
+});
 
 async function getCountriesList() {
-  isLoading.value = true
-  const sports = await getCategoriesBySport(activeSport.sportID)
+  isLoading.value = true;
+  const sports = await getCategoriesBySport(activeSport.sportID);
   const existingIndex = utilsStore.categoriesList.findIndex(
-    (sport) => sport.id === activeSport.sportID
-  )
+    (sport) => sport.id === activeSport.sportID,
+  );
   const updatedCategories = {
     id: activeSport.sportID,
     name: activeSport.sportName,
-    categories: sports.sports
-  }
+    categories: sports.sports,
+  };
   existingIndex === -1
     ? utilsStore.categoriesList.push(updatedCategories)
-    : (utilsStore.categoriesList[existingIndex] = updatedCategories)
-  countriesList.value = sports.sports
-  isLoading.value = false
+    : (utilsStore.categoriesList[existingIndex] = updatedCategories);
+  countriesList.value = sports.sports;
+  isLoading.value = false;
 }
 
 async function setActiveSport(sport) {
-  activeSport.sportName = sport.sportName
-  activeSport.sportID = sport.sportID
-  await getCountriesList()
+  activeSport.sportName = sport.sportName;
+  activeSport.sportID = sport.sportID;
+  await getCountriesList();
 }
 
 function redirectToFixturesView(category) {
-  selectTournaments.value = true
-  activeCategory.value = category
+  selectTournaments.value = true;
+  activeCategory.value = category;
 
   // return router.push({
   //   name: 'fixtures-by-category',
@@ -122,9 +133,9 @@ function redirectToFixturesView(category) {
 }
 
 onMounted(async () => {
-  await getCountriesList()
-  document.getElementById('azmenu').style.height = 'calc(100% - 48px)'
-})
+  await getCountriesList();
+  document.getElementById("azmenu").style.height = "calc(100% - 48px)";
+});
 </script>
 
 <style type="text/css">
@@ -272,8 +283,8 @@ onMounted(async () => {
   width: 100%;
 }
 .m-azmenu .right-panel-item__header .right-chevron:before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -299,8 +310,8 @@ onMounted(async () => {
   text-align: center;
 }
 .m-azmenu .no-data:before {
-  content: '\e624';
-  font-family: 'iconfont' !important;
+  content: "\e624";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -349,8 +360,8 @@ onMounted(async () => {
   vertical-align: middle;
 }
 .m-azmenu .top .azmenu-search-wrap .m-icon-search:before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
+  content: "\e613";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -403,9 +414,13 @@ onMounted(async () => {
   display: block;
   text-align: center;
 }
-.m-azmenu .top .m-azmenu-nav .m-azmenu-nav-item .sprot-icon.m-virtual-icon:before {
-  content: '\e68a';
-  font-family: 'iconfont' !important;
+.m-azmenu
+  .top
+  .m-azmenu-nav
+  .m-azmenu-nav-item
+  .sprot-icon.m-virtual-icon:before {
+  content: "\e68a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;

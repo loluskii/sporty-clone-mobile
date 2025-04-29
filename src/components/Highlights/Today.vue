@@ -2,13 +2,18 @@
   <div style="position: relative">
     <div class="m-bet-content">
       <div v-if="Object.keys(todaysData).length" class="market-wrapper">
-        <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
+        <div
+          class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation"
+          style="overflow: hidden"
+        >
           <div class="m-tabs-nav" style="width:">
             <div
               v-for="(market, m) in marketsGroup"
               :key="m"
               class="m-tabs-tab"
-              :class="market.marketID === activeMarket.marketID ? 'm-tab-active' : ''"
+              :class="
+                market.marketID === activeMarket.marketID ? 'm-tab-active' : ''
+              "
               @click="selectMarket(market)"
             >
               {{ market.marketName }}
@@ -24,10 +29,15 @@
           class="x-table m-sports-table football"
         >
           <div class="x-table-row m-date-row">
-            <div class="x-table-cell m-date">{{ formatDate(index, 'DD/MM dddd') }}</div>
+            <div class="x-table-cell m-date">
+              {{ formatDate(index, "DD/MM dddd") }}
+            </div>
             <div class="x-table-cell market-title">
               <template
-                v-for="(market, o) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
+                v-for="(market, o) in _.sortBy(
+                  activeMarket.outcomes,
+                  'outcomeID',
+                )"
                 :key="o"
               >
                 <div>
@@ -46,8 +56,8 @@
       </template>
       <div v-else class="no-data">
         <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-          you.
+          Sorry, there are no games currently<br />available in this category.
+          Please try later.<br />Thank you.
         </div>
       </div>
       <div class="view-all">
@@ -58,42 +68,44 @@
 </template>
 
 <script setup>
-import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
-import { defineComponent, defineEmits, computed } from 'vue'
-import { formatDate } from '@/helpers'
-import _ from 'lodash'
-import { useRouter } from 'vue-router'
-import { slugify } from '../../helpers'
-import { useUtilstStore } from '../../stores'
+import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
+import { defineComponent, defineEmits, computed } from "vue";
+import { formatDate } from "@/helpers";
+import _ from "lodash";
+import { useRouter } from "vue-router";
+import { slugify } from "../../helpers";
+import { useUtilstStore } from "../../stores";
 
 const props = defineProps({
   todaysData: { type: Object },
   marketsGroup: Object,
-  activeMarket: Object
-})
+  activeMarket: Object,
+});
 
 defineComponent({
-  name: 'today-games'
-})
+  name: "today-games",
+});
 
-const emits = defineEmits(['select-market'])
-const router = useRouter()
-const utilsStore = useUtilstStore()
+const emits = defineEmits(["select-market"]);
+const router = useRouter();
+const utilsStore = useUtilstStore();
 
 const getSportbyId = computed(() => {
-  return utilsStore.sportsMenu.find((sport) => sport.sportID == props.activeMarket.sportID)
-})
+  return utilsStore.sportsMenu.find(
+    (sport) => sport.sportID == props.activeMarket.sportID,
+  );
+});
 
 function viewMore() {
   return router.push({
-    name: 'today-fixtures',
-    params: { sport: slugify(getSportbyId.value.sportName) }
-  })
+    name: "today-fixtures",
+    params: { sport: slugify(getSportbyId.value.sportName) },
+  });
 }
 
 const selectMarket = (market) => {
-  emits('select-market', market)
-}
+  emits("select-market", market);
+};
 </script>
 
 <style scoped>

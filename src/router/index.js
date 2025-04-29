@@ -1,322 +1,368 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore, useUtilstStore } from '../stores'
-import HomeView from '@/views/HomeView.vue'
-import AZView from '@/views/AZView.vue'
-import FixtureView from '@/views/Sport/FixtureView.vue'
-import SignInView from '@/views/SignInView.vue'
-import SignUpView from '@/views/SignUpView.vue'
-import BetHistoryView from '@/views/Account/BetHistoryView.vue'
-import OpenBetsView from '@/views/Account/OpenBetsView.vue'
-import BetDetailView from '@/views/Account/BetDetailView.vue'
-import MeView from '@/views/Account/MeView.vue'
-import ProfileView from '@/views/Account/ProfileView.vue'
-import FixtureDetail from '@/views/Sport/FixtureDetail.vue'
-import LiveFixtureDetail from '@/views/Sport/LiveFixtureDetail.vue'
-import TransactionView from '@/views/Account/TransactionView.vue'
-import SportsView from '@/views/SportsView.vue'
-import LiveView from '@/views/LiveView.vue'
-import LoadBetView from '@/views/LoadBetView.vue'
-import DepositView from '@/views/Account/DepositView.vue'
-import VerifyPaymentView from '@/views/Account/VerifyPaymentView.vue'
-import WithDrawalView from '@/views/Account/WithDrawalView.vue'
-import BonusView from '@/views/Account/BonusView.vue'
-import CMSPage from '@/views/CMS.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore, useUtilstStore } from "../stores";
+// Convert all static imports to dynamic imports
+import HomeView from "@/views/HomeView.vue"
+const AZView = () => import("@/views/AZView.vue");
+const FixtureView = () => import("@/views/Sport/FixtureView.vue");
+const SignInView = () => import("@/views/SignInView.vue");
+const SignUpView = () => import("@/views/SignUpView.vue");
+const BetHistoryView = () => import("@/views/Account/BetHistoryView.vue");
+const OpenBetsView = () => import("@/views/Account/OpenBetsView.vue");
+const BetDetailView = () => import("@/views/Account/BetDetailView.vue");
+const MeView = () => import("@/views/Account/MeView.vue");
+const ProfileView = () => import("@/views/Account/ProfileView.vue");
+const FixtureDetail = () => import("@/views/Sport/FixtureDetail.vue");
+const LiveFixtureDetail = () => import("@/views/Sport/LiveFixtureDetail.vue");
+const TransactionView = () => import("@/views/Account/TransactionView.vue");
+const SportsView = () => import("@/views/SportsView.vue");
+const LiveView = () => import("@/views/LiveView.vue");
+const LoadBetView = () => import("@/views/LoadBetView.vue");
+const DepositView = () => import("@/views/Account/DepositView.vue");
+const VerifyPaymentView = () => import("@/views/Account/VerifyPaymentView.vue");
+const WithDrawalView = () => import("@/views/Account/WithDrawalView.vue");
+const BonusView = () => import("@/views/Account/BonusView.vue");
+const CMSPage = () => import("@/views/CMS.vue");
 // import SupportView from '@/views/Account/SupportView.vue'
-import SearchView from '@/views/SearchView.vue'
-import GroupView from '@/views/Games/GroupView.vue'
-import Search from '../views/Games/SearchView.vue'
+const SearchView = () => import("@/views/SearchView.vue");
+const GroupView = () => import("@/views/Games/GroupView.vue");
+const Search = () => import("../views/Games/SearchView.vue");
 
-import GamesView from '@/views/Games/GamesView.vue'
-import PlayView from '@/views/Games/PlayView.vue'
-import CodeHubView from '@/views/CodeHubView.vue'
-import Promotions from '@/views/Promotions.vue'
-import JackpotView from '../views/Games/JackpotView.vue'
+const GamesView = () => import("@/views/Games/GamesView.vue");
+const PlayView = () => import("@/views/Games/PlayView.vue");
+const CodeHubView = () => import("@/views/CodeHubView.vue");
+const Promotions = () => import("@/views/Promotions.vue");
+const JackpotView = () => import("../views/Games/JackpotView.vue");
 
+// Add loading component
+const LoadingComponent = {
+  template: `
+    <div class="route-loading">
+      <div class="loading-spinner"></div>
+    </div>
+  `,
+};
+
+// Add route preloading for frequently accessed routes
+const preloadRoutes = ["home", "az_menu", "live", "casino-games"];
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  linkActiveClass: 'x-active',
+  linkActiveClass: "x-active",
   routes: [
     {
-      path: '/',
-      name: 'home',
+      path: "/",
+      name: "home",
       component: HomeView,
       meta: {
         showFooter: true,
         showMobileNavigation: true,
-        showBetslipCount: true
-      }
+        showBetslipCount: true,
+        preload: true, // Preload home page
+      },
     },
     {
-      path: '/search',
-      name: 'search',
-      component: SearchView
+      path: "/search",
+      name: "search",
+      component: SearchView,
     },
 
     // Auth Routes
     {
-      path: '/sign-in',
-      name: 'sign-in',
-      component: SignInView
+      path: "/sign-in",
+      name: "sign-in",
+      component: SignInView,
     },
     {
-      path: '/sign-up',
-      name: 'sign-up',
-      component: SignUpView
+      path: "/sign-up",
+      name: "sign-up",
+      component: SignUpView,
     },
 
     // Sports Routes
     {
-      path: '/Sports/AZ_Menu',
-      name: 'az_menu',
+      path: "/Sports/AZ_Menu",
+      name: "az_menu",
       component: AZView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Live',
-      name: 'live',
+      path: "/Live",
+      name: "live",
       component: LiveView,
-      meta: { showFooter: true, showBetslipCount: true }
+      meta: { showFooter: true, showBetslipCount: true },
     },
 
     // Fixtures - Ordered from most specific to general
     {
-      path: '/Sports/Prematch/:sport/:categories/:tournaments',
-      name: 'fixtures-by-tournaments',
+      path: "/Sports/Prematch/:sport/:categories/:tournaments",
+      name: "fixtures-by-tournaments",
       component: FixtureView,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
     {
-      path: '/Sports/Prematch/:sport/:category/:category_id',
-      name: 'fixtures-by-category',
+      path: "/Sports/Prematch/:sport/:category/:category_id",
+      name: "fixtures-by-category",
       component: FixtureView,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
     {
-      path: '/Sports/Prematch/:sport/:category',
-      name: 'fixtures-by-categories',
+      path: "/Sports/Prematch/:sport/:category",
+      name: "fixtures-by-categories",
       component: FixtureView,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
     {
-      path: '/Sports/Prematch/:sport/Today',
-      name: 'today-fixtures',
+      path: "/Sports/Prematch/:sport/Today",
+      name: "today-fixtures",
       component: FixtureView,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
     {
-      path: '/Sports/Prematch/:sport',
-      name: 'fixtures-by-sports',
+      path: "/Sports/Prematch/:sport",
+      name: "fixtures-by-sports",
       component: FixtureView,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
 
     {
-      path: '/Sports/:sport/Prematch/:tournament_name/:event_name/:event_id',
-      name: 'fixtures-detail',
+      path: "/Sports/:sport/Prematch/:tournament_name/:event_name/:event_id",
+      name: "fixtures-detail",
       component: FixtureDetail,
-      meta: { showBetslipCount: true }
+      meta: { showBetslipCount: true },
     },
     {
-      path: '/Sports/:sport/Live/:tournament_name/:event_name/:event_id',
-      name: 'live-fixtures-detail',
+      path: "/Sports/:sport/Live/:tournament_name/:event_name/:event_id",
+      name: "live-fixtures-detail",
       component: LiveFixtureDetail,
-      meta: { showFooter: true, showBetslipCount: true }
+      meta: { showFooter: true, showBetslipCount: true },
     },
     {
-      path: '/Sports',
-      name: 'sports',
-      component: SportsView
+      path: "/Sports",
+      name: "sports",
+      component: SportsView,
     },
 
     // Bet History
     {
-      path: '/Bets/OpenBets',
-      name: 'open-bets',
+      path: "/Bets/OpenBets",
+      name: "open-bets",
       component: OpenBetsView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Bets/BetHistory',
-      name: 'bet-history',
+      path: "/Bets/BetHistory",
+      name: "bet-history",
       component: BetHistoryView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Bets/BetHistory/:bet_id/Detail',
-      name: 'bet-detail',
+      path: "/Bets/BetHistory/:bet_id/Detail",
+      name: "bet-detail",
       component: BetDetailView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
 
     // User Account
     {
-      path: '/Account/Me',
-      name: 'account-me',
+      path: "/Account/Me",
+      name: "account-me",
       component: MeView,
-      meta: { showMobileNavigation: true, showFooter: true }
+      meta: { showMobileNavigation: true, showFooter: true },
     },
     {
-      path: '/Account/Me/Profile',
-      name: 'account-profile',
+      path: "/Account/Me/Profile",
+      name: "account-profile",
       component: ProfileView,
-      meta: { showFooter: true }
+      meta: { showFooter: true },
     },
     {
-      path: '/Account/Transactions',
-      name: 'account-transactions',
+      path: "/Account/Transactions",
+      name: "account-transactions",
       component: TransactionView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Account/Deposit',
-      name: 'account-deposit',
-      component: DepositView
+      path: "/Account/Deposit",
+      name: "account-deposit",
+      component: DepositView,
     },
     {
-      path: '/payment-verification/:method',
-      name: 'verify-deposit',
-      component: VerifyPaymentView
+      path: "/payment-verification/:method",
+      name: "verify-deposit",
+      component: VerifyPaymentView,
     },
     {
-      path: '/Account/Withdraw',
-      name: 'account-withdraw',
-      component: WithDrawalView
+      path: "/Account/Withdraw",
+      name: "account-withdraw",
+      component: WithDrawalView,
     },
     {
-      path: '/Account/Bonus',
-      name: 'account-bonus',
-      component: BonusView
+      path: "/Account/Bonus",
+      name: "account-bonus",
+      component: BonusView,
     },
 
     // Casino
     {
-      path: '/Games',
-      name: 'casino-games',
+      path: "/Games",
+      name: "casino-games",
       component: GamesView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/Search',
-      name: 'casino-search',
+      path: "/Games/Search",
+      name: "casino-search",
       component: Search,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/Providers',
-      name: 'casino-providers',
+      path: "/Games/Providers",
+      name: "casino-providers",
       component: GroupView,
       children: [
         {
-          path: ':provider',
-          name: 'games-by-provider',
-          component: GroupView
-        }
+          path: ":provider",
+          name: "games-by-provider",
+          component: GroupView,
+        },
       ],
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/BonusGames',
-      name: 'casino-bonus',
+      path: "/Games/BonusGames",
+      name: "casino-bonus",
       component: GroupView,
       children: [
         {
-          path: '',
-          name: 'bonus-games',
-          component: GroupView
-        }
+          path: "",
+          name: "bonus-games",
+          component: GroupView,
+        },
       ],
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/Jackpots',
-      name: 'casino-jackpots',
+      path: "/Games/Jackpots",
+      name: "casino-jackpots",
       component: JackpotView,
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/Category',
-      name: 'casino-category',
+      path: "/Games/Category",
+      name: "casino-category",
       component: GroupView,
       children: [
         {
-          path: ':category',
-          name: 'games-by-category',
-          component: GroupView
-        }
+          path: ":category",
+          name: "games-by-category",
+          component: GroupView,
+        },
       ],
-      meta: { showMobileNavigation: true }
+      meta: { showMobileNavigation: true },
     },
     {
-      path: '/Games/:game_name/:game_id/Play',
-      name: 'game-play',
-      component: PlayView
+      path: "/Games/:game_name/:game_id/Play",
+      name: "game-play",
+      component: PlayView,
     },
 
     // Load Bet
     {
-      path: '/LoadBet',
-      name: 'load-bet',
-      component: LoadBetView
+      path: "/LoadBet",
+      name: "load-bet",
+      component: LoadBetView,
     },
 
     // Code Hub
     {
-      path: '/CodeHub',
-      name: 'code-hub',
-      component: CodeHubView
+      path: "/CodeHub",
+      name: "code-hub",
+      component: CodeHubView,
     },
 
     // CMS Pages
     {
-      path: '/CMS/:page',
-      name: 'cms-page',
-      component: CMSPage
+      path: "/CMS/:page",
+      name: "cms-page",
+      component: CMSPage,
     },
 
     // Promotions
     {
-      path: '/Promotions',
-      name: 'promotions',
-      component: Promotions
+      path: "/Promotions",
+      name: "promotions",
+      component: Promotions,
     },
 
     // Catch-all route to redirect to home
     {
-      path: '/:pathMatch(.*)*',
-      redirect: '/'
-    }
-  ]
+      path: "/:pathMatch(.*)*",
+      redirect: "/",
+    },
+  ],
 });
 
-
-// Navigation guard to handle footer visibility
+// Add route preloading
 router.beforeEach((to, from, next) => {
-  const utilStore = useUtilstStore()
-  // Check if the meta field is set and decide whether to show the footer
-  const showFooter = to.meta.showFooter
-  const showMobileNavigation = to.meta.showMobileNavigation
-  const showBetslipCount = to.meta.showBetslipCount
+  // Show loading state
+  document.body.classList.add("route-loading");
 
-  utilStore.showBetslipCount = showBetslipCount ? showBetslipCount : false
-  utilStore.showMobileNavigation = showMobileNavigation ? showMobileNavigation : false
-  utilStore.showFooter = showFooter ? showFooter : false
+  // Preload next route's component
+  if (to.matched.length) {
+    const component = to.matched[0].components.default;
+    if (typeof component === "function") {
+      component();
+    }
+  }
+
+  // Preload frequently accessed routes
+  if (preloadRoutes.includes(to.name)) {
+    preloadRoutes.forEach((routeName) => {
+      const route = router.resolve({ name: routeName });
+      if (route.matched.length) {
+        const component = route.matched[0].components.default;
+        if (typeof component === "function") {
+          component();
+        }
+      }
+    });
+  }
+
+  const utilStore = useUtilstStore();
+  // Check if the meta field is set and decide whether to show the footer
+  const showFooter = to.meta.showFooter;
+  const showMobileNavigation = to.meta.showMobileNavigation;
+  const showBetslipCount = to.meta.showBetslipCount;
+
+  utilStore.showBetslipCount = showBetslipCount ? showBetslipCount : false;
+  utilStore.showMobileNavigation = showMobileNavigation
+    ? showMobileNavigation
+    : false;
+  utilStore.showFooter = showFooter ? showFooter : false;
 
   const publicPages = [
-    'account-withdraw',
-    'account-me',
-    'account-deposit',
-    'account-transactions',
-    'bet-detail'
-  ]
-  const authRequired = publicPages.includes(to.name)
-  const authStore = useAuthStore()
+    "account-withdraw",
+    "account-me",
+    "account-deposit",
+    "account-transactions",
+    "bet-detail",
+  ];
+  const authRequired = publicPages.includes(to.name);
+  const authStore = useAuthStore();
 
-  if (authStore.isAuthenticated && (to.name === 'sign-in' || to.name === 'sign-up')) {
+  if (
+    authStore.isAuthenticated &&
+    (to.name === "sign-in" || to.name === "sign-up")
+  ) {
     // authStore.returnUrl = to.fullPath;
-    router.push('/')
+    router.push("/");
   }
-  next()
-})
+  next();
+});
 
-export default router
+// Add afterEach to remove loading state
+router.afterEach(() => {
+  document.body.classList.remove("route-loading");
+});
+
+export default router;
