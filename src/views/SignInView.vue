@@ -21,9 +21,9 @@
                 class="x-input-wap-icon x-input-wap-icon--clickable x-input-wap-icon--show m-icon-delete"
               ></i>
               <input
-                type="tel"
+                type="number"
                 placeholder="Mobile Number"
-                maxlength="18"
+                maxlength="10"
                 class="x-input-wap fs-exclude"
                 v-model="phoneNumber"
               />
@@ -77,7 +77,8 @@
             <button
               @click.prevent="login"
               class="af-button login-btn af-button--primary"
-              :disabled="authStore.loading"
+              :class="authStore.loading || password === '' || phoneNumber === '' ? 'is-disabled' : ''"
+              :disabled="authStore.loading || password === '' || phoneNumber === ''"
             >
               <span v-if="!authStore.loading"> Login </span>
               <span v-else> Loading... </span>
@@ -128,12 +129,20 @@ function restartProcess() {
 }
 
 async function login() {
-  let payload = {
-    username: formattedPhoneNumber(phoneNumber.value),
-    password: password.value,
-    clientId: CLIENT_ID,
-  };
-  authStore.doLogin(payload);
+  if (!phoneNumber.value || String(phoneNumber.value).trim().length < 10) {
+    authStore.authError = "Please enter a valid phone number";
+    return;
+  }
+  try {
+    let payload = {
+      username: formattedPhoneNumber(String(phoneNumber.value).trim()),
+      password: password.value,
+      clientId: CLIENT_ID,
+    };
+    await authStore.doLogin(payload);
+  } catch (err) {
+    authStore.authError = err.message || "Login failed";
+  }
 }
 
 onMounted(() => {
