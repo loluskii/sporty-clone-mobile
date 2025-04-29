@@ -23,7 +23,7 @@
                 class="m-input-wap-icon m-input-wap-icon--clickable m-input-wap-icon--show m-icon-delete"
               ></i>
               <input
-                type="tel"
+                type="number"
                 v-model="formData.phone_no"
                 placeholder="Mobile Number"
                 maxlength="11"
@@ -53,10 +53,10 @@
               </p>
             </div>
             <button
-              :class="!formData.password || isLoading ? 'is-disabled' : ''"
+              :class="!formData.phone_no || !formData.password || isLoading ? 'is-disabled' : ''"
               class="af-button enter-mobile-btn af-button--primary"
               type="button"
-              @disabled="isLoading"
+              @disabled="!formData.phone_no || !formData.password || isLoading"
               @click.prevent="registerUser"
             >
               <span v-if="!isLoading"> Continue </span>
@@ -193,6 +193,11 @@ const startTimer = () => {
 };
 
 const registerUser = async () => {
+  if(String(formData.value.phone_no).trim( ).length < 10) {
+    registerError.value = true;
+    registerErrorMessage.value = "Please enter a valid phone number";
+    return;
+  }
   isLoading.value = true;
   let phoneNumber = formData.value.phone_no.replace(/^0/, "");
   const internationalNumber = `234${phoneNumber}`;
