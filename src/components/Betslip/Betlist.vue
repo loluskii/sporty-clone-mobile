@@ -48,7 +48,10 @@
                 </div>
               </div>
               <div class="operate-button">
-                <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span> <span> {{ usersStore.balance }}</span>
+                <span class="currency">{{
+                  SportsbookGlobalVariable.CurrencyCode
+                }}</span>
+                <span> {{ usersStore.balance }}</span>
               </div>
             </div>
             <template v-if="betslipSelections.length > 0">
@@ -212,7 +215,10 @@
                   <div class="about-to-pay">
                     <span>Confirm to Pay</span><span>&nbsp;</span>
                     <div>
-                      <div class="stake-num">{{ SportsbookGlobalVariable.CurrencyCode }} {{ totalStake }}</div>
+                      <div class="stake-num">
+                        {{ SportsbookGlobalVariable.CurrencyCode }}
+                        {{ totalStake }}
+                      </div>
                     </div>
                   </div>
                   <div class="blank-area"></div>
@@ -306,7 +312,7 @@ import VueToggles from "vue-toggles";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const { SportsbookGlobalVariable } = useUtilsStore();
 const show = ref(false);
 const placeBetStatus = ref(false);
 const isPlaceBetSuccessful = ref(false);

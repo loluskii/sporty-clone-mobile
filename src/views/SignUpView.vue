@@ -53,7 +53,11 @@
               </p>
             </div>
             <button
-              :class="!formData.phone_no || !formData.password || isLoading ? 'is-disabled' : ''"
+              :class="
+                !formData.phone_no || !formData.password || isLoading
+                  ? 'is-disabled'
+                  : ''
+              "
               class="af-button enter-mobile-btn af-button--primary"
               type="button"
               @disabled="!formData.phone_no || !formData.password || isLoading"
@@ -193,7 +197,7 @@ const startTimer = () => {
 };
 
 const registerUser = async () => {
-  if(String(formData.value.phone_no).trim( ).length < 10) {
+  if (String(formData.value.phone_no).trim().length < 10) {
     registerError.value = true;
     registerErrorMessage.value = "Please enter a valid phone number";
     return;

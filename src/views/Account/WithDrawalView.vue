@@ -141,8 +141,9 @@
                       class="m-input-wap-prepend m-input-wap-prepend--default"
                     >
                       <span class="amount-prepend"
-                        ><span>Amount</span>
-                        ({{ SportsbookGlobalVariable.CurrencyCode }})
+                        ><span>Amount</span> ({{
+                          SportsbookGlobalVariable.CurrencyCode
+                        }})
                       </span>
                     </div>
                     <i

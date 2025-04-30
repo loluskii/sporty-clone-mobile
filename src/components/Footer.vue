@@ -91,21 +91,21 @@
 import { useRoute } from "vue-router";
 import { useAuthStore, useUtilsStore } from "@/stores";
 import { defineComponent, ref, onMounted } from "vue";
-import { checkVersion } from '@/utils/version';
+import { checkVersion } from "@/utils/version";
 
 const route = useRoute();
 const authStore = useAuthStore();
 const utilsStore = useUtilsStore();
-const appVersion = ref('');
+const appVersion = ref("");
 
 onMounted(async () => {
   try {
-    const response = await fetch('/version.json');
+    const response = await fetch("/version.json");
     const data = await response.json();
     appVersion.value = `v${data.version} (${data.build})`;
   } catch (error) {
-    console.error('Error fetching version:', error);
-    appVersion.value = 'v1.0.0';
+    console.error("Error fetching version:", error);
+    appVersion.value = "v1.0.0";
   }
 });
 

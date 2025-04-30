@@ -37,8 +37,8 @@
                   item.type == "credit" && item.status
                     ? "+"
                     : item.type == "debit"
-                    ? "-"
-                    : ""
+                      ? "-"
+                      : ""
                 }}
                 {{ formatNumber(item.amount) }}
               </i>

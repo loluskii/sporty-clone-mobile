@@ -14,10 +14,10 @@
               activePeriodFilter
                 ? activePeriodFilter.name
                 : route.query.period === "today"
-                ? "Today"
-                : route.query.period
-                ? route.query.period
-                : "Daily"
+                  ? "Today"
+                  : route.query.period
+                    ? route.query.period
+                    : "Daily"
             }}
           </div>
           <div v-if="filterIsOpen && filterName === 'period'" class="m-list">

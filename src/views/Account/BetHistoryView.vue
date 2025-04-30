@@ -63,8 +63,8 @@
                             bet.statusCode == 1
                               ? 'win'
                               : bet.statusCode == 2
-                              ? 'lost'
-                              : 'pending'
+                                ? 'lost'
+                                : 'pending'
                           "
                         >
                           <span class="type"
@@ -83,8 +83,12 @@
                         </div>
 
                         <div class="title">
-                          <span data-op="history-stake-text" data-cms-key="total_stake_vcurrency"
-                            >Total Stake({{ SportsbookGlobalVariable.CurrencyCode }})</span
+                          <span
+                            data-op="history-stake-text"
+                            data-cms-key="total_stake_vcurrency"
+                            >Total Stake({{
+                              SportsbookGlobalVariable.CurrencyCode
+                            }})</span
                           >
                           <span
                             data-op="history-return-text"
@@ -208,7 +212,7 @@ const { isAuthenticated } = useAuthStore();
 const settledBets = ref([]);
 const isLoading = ref(false);
 const usersStore = useUsersStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const { SportsbookGlobalVariable } = useUtilsStore();
 
 const betStatus = [
   { name: "All", key: "" },

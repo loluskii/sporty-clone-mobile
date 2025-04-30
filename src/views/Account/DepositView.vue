@@ -54,7 +54,9 @@
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
-                  ><span data-cms-key="balance">Balance</span> ({{ SportsbookGlobalVariable.CurrencyCode }}) {{ balance }}
+                  ><span data-cms-key="balance">Balance</span> ({{
+                    SportsbookGlobalVariable.CurrencyCode
+                  }}) {{ balance }}
                 </span>
               </div>
             </div>
@@ -64,8 +66,9 @@
               >
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
                   <span class="amount-prepend"
-                    ><span data-cms-key="amount">Amount</span>
-                    ({{ SportsbookGlobalVariable.CurrencyCode }})
+                    ><span data-cms-key="amount">Amount</span> ({{
+                      SportsbookGlobalVariable.CurrencyCode
+                    }})
                   </span>
                 </div>
                 <i

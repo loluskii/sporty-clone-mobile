@@ -7,7 +7,8 @@
       <div class="m-openbet-header">
         <div v-if="isAuthenticated" class="is-login">
           <span class="balance"
-            ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span> <span>{{ usersStore.balance }}</span></span
+            ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span>
+            <span>{{ usersStore.balance }}</span></span
           >
         </div>
         <div v-else class="no-login">
@@ -50,7 +51,7 @@ import { defineProps, computed } from "vue";
 const route = useRoute();
 const { isAuthenticated } = useAuthStore();
 const usersStore = useUsersStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const { SportsbookGlobalVariable } = useUtilsStore();
 
 defineProps({
   active: String,

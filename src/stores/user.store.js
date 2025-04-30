@@ -114,11 +114,11 @@ export const useUsersStore = defineStore({
           "sportBonusBalance",
           "casinoBonusBalance",
           "virtualBonusBalance",
-          "trustBalance"
+          "trustBalance",
         ];
 
         const missingProperties = requiredProperties.filter(
-          prop => !(prop in this.currentUser)
+          (prop) => !(prop in this.currentUser),
         );
 
         if (missingProperties.length > 0) {

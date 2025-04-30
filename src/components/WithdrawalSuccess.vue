@@ -89,7 +89,7 @@ import { onMounted } from "vue";
 import { formatNumber, formatString } from "@/helpers";
 import { useUsersStore, useUtilsStore } from "@/stores";
 const userStore = useUsersStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const { SportsbookGlobalVariable } = useUtilsStore();
 
 defineProps({
   userData: Object,

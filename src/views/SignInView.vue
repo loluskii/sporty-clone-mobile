@@ -77,8 +77,14 @@
             <button
               @click.prevent="login"
               class="af-button login-btn af-button--primary"
-              :class="authStore.loading || password === '' || phoneNumber === '' ? 'is-disabled' : ''"
-              :disabled="authStore.loading || password === '' || phoneNumber === ''"
+              :class="
+                authStore.loading || password === '' || phoneNumber === ''
+                  ? 'is-disabled'
+                  : ''
+              "
+              :disabled="
+                authStore.loading || password === '' || phoneNumber === ''
+              "
             >
               <span v-if="!authStore.loading"> Login </span>
               <span v-else> Loading... </span>

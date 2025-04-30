@@ -12,7 +12,11 @@
             </span>
             <div class="wording-wrap">
               <div class="account">
-                {{ isAuthenticated ? userStore.currentUser?.username : "Login to view" }}
+                {{
+                  isAuthenticated
+                    ? userStore.currentUser?.username
+                    : "Login to view"
+                }}
               </div>
               <i class="m-icon-arrow1"></i>
             </div>
@@ -20,7 +24,8 @@
           <div class="balance-wrap">
             <div class="title">Total Balance</div>
             <div data-op="me_balance" class="value">
-              <span>{{ SportsbookGlobalVariable.CurrencyCode }} </span><span> {{ userStore.balance }}</span>
+              <span>{{ SportsbookGlobalVariable.CurrencyCode }} </span
+              ><span> {{ userStore.balance }}</span>
             </div>
           </div>
           <div class="w-d-wrap">
@@ -104,7 +109,7 @@ import { useAuthStore, useUsersStore } from "@/stores";
 // import { formatNumber } from '@/helpers'
 const router = useRouter();
 const { isAuthenticated } = useAuthStore();
-const  userStore = useUsersStore();
+const userStore = useUsersStore();
 
 function redirectToAccount() {
   if (currentUser) {

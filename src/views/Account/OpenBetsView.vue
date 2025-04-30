@@ -238,8 +238,8 @@
                               parseInt(event.matchStatus) === 3
                                 ? "FT"
                                 : event.eventTime
-                                ? `${event.eventTime}'`
-                                : ""
+                                  ? `${event.eventTime}'`
+                                  : ""
                             }}
                           </span>
                           <span
@@ -345,7 +345,10 @@
                     >
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
-                        <span class="money"> {{ SportsbookGlobalVariable.CurrencyCode }} {{ cashoutData.cashOutAmount.toFixed(2) }} </span>
+                        <span class="money">
+                          {{ SportsbookGlobalVariable.CurrencyCode }}
+                          {{ cashoutData.cashOutAmount.toFixed(2) }}
+                        </span>
                       </span>
                       <img
                         v-else
@@ -392,7 +395,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 const openBets = ref(null);
 const isLoading = ref(true);
 const { isAuthenticated } = useAuthStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const { SportsbookGlobalVariable } = useUtilsStore();
 const userStore = useUsersStore();
 const showCashoutModal = ref(false);
 const cashoutData = ref({});
@@ -405,8 +408,8 @@ const getMatchStatus = (event) => {
   return event.matchStatus == "1st half"
     ? "H1"
     : event.matchStatus == "2nd half"
-    ? "H2"
-    : event.matchStatus;
+      ? "H2"
+      : event.matchStatus;
 };
 
 async function getBetsData() {
