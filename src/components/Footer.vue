@@ -86,12 +86,12 @@
 </template>
 <script setup>
 import { useRoute } from "vue-router";
-import { useAuthStore, useUtilstStore } from "@/stores";
+import { useAuthStore, useUtilsStore } from "@/stores";
 import { defineComponent } from "vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 async function doLogout() {
   return authStore.logout();

@@ -33,14 +33,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from "vue";
-import { useCouponStore, useUtilstStore } from "@/stores";
+import { useCouponStore, useUtilsStore } from "@/stores";
 import SimulationHeader from "./SimulationHeader.vue";
 import SimulationEvent from "./SimulationEvent.vue";
 import SimulationControls from "./SimulationControls.vue";
 
 // Store and Props
 const couponStore = useCouponStore();
-const { SportsbookGlobalVariable } = useUtilstStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 const props = defineProps({
   simulationResults: {
     type: Object,

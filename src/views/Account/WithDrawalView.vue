@@ -142,7 +142,7 @@
                     >
                       <span class="amount-prepend"
                         ><span>Amount</span>
-                        (NGN)
+                        ({{ SportsbookGlobalVariable.CurrencyCode }})
                       </span>
                     </div>
                     <i
@@ -370,18 +370,14 @@ const isFormComplete = computed(() => {
 });
 
 const checkWithdrawableAmount = () => {
-  if (withdrawalAmount.value > currentUser.available_balance) {
+  if (withdrawalAmount.value > userStore.balance) {
     amountError.value = true;
-    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${currentUser.available_balance}`;
+    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${userStore.balance}`;
   } else {
     amountError.value = false;
     amountErrorMessage.value = "";
   }
 };
-
-const balance = computed(() => {
-  return currentUser ? currentUser.availableBalance : 0;
-});
 
 function selectBank(bank) {
   selectedBank.value = bank;
@@ -483,7 +479,7 @@ async function checkUserBankAssets() {
 }
 onMounted(async () => {
   emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
-  if (!currentUser) {
+  if (!userStore.currentUser) {
     return router.push({ name: "sign-in" });
   } else {
     Promise.all([checkUserBankAssets(), getBanks()]);

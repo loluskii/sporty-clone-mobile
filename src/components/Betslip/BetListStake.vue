@@ -152,7 +152,7 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore, useUtilstStore } from "../../stores";
+import { useCouponStore, useUsersStore, useUtilsStore } from "../../stores";
 import { formatNumber } from "../../helpers";
 import BetslipBonusBar from "./BetslipBonusBar.vue";
 import { computed, ref, onBeforeUnmount, onMounted } from "vue";
@@ -165,7 +165,7 @@ const props = defineProps({
   betType: String,
 });
 const couponStore = useCouponStore();
-const { SportsbookGlobalVariable } = useUtilstStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 const userStore = useUsersStore();
 const router = useRouter();
 const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);

@@ -69,7 +69,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import LoadingError from "@/components/Loaders/LoadingError.vue";
 import { useRoute } from "vue-router";
 import _ from "lodash";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 import ChooseBarPad from "@/components/ChooseBarPad.vue";
 import FixtureGroupingTournament from "@/components/FixtureGrouping/FixtureGroupingTournament.vue";
 import FixtureGroupingDefault from "@/components/FixtureGrouping/FixtureGroupingDefault.vue";
@@ -92,7 +92,7 @@ const isEmptyResponse = computed(() => {
   );
 });
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const route = useRoute();
 const fixturesList = ref(null);
 

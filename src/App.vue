@@ -2,7 +2,7 @@
 import AppFooter from "@/components/Footer.vue";
 import MobileFooter from "@/components/MobileFooter.vue";
 import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from "vue";
-import { useUtilstStore, useCouponStore } from "@/stores";
+import { useUtilsStore, useCouponStore } from "@/stores";
 import CasinoDialog from "@/components/CasinoDialog.vue";
 import CalendarBox from "@/components/CalendarBox.vue";
 import BookBetModal from "@/components/Betslip/BookBetModal.vue";

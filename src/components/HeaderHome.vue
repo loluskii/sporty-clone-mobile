@@ -24,12 +24,8 @@
                   @click="$router.push({ name: 'account-deposit' })"
                   >Deposit</span
                 >
-                <div
-                  class="avatar-box"
-                  @click="$router.push({ name: 'account-me' })"
-                >
-                  <span class="currency">NGN</span>
-                  <span> {{ usersStore.balance }}</span>
+                <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
+                  <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span> <span> {{ usersStore.balance }}</span>
                 </div>
               </span>
             </span>
@@ -54,9 +50,11 @@
 <script setup>
 import { useAuthStore, useUsersStore } from "@/stores";
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useUtilsStore } from "../stores";
 
 const { isAuthenticated } = useAuthStore();
 const usersStore = useUsersStore();
+const {SportsbookGlobalVariable} = useUtilsStore()
 const myHeader = ref();
 const headerHeight = ref("48px");
 // Create a ResizeObserver to dynamically track header height

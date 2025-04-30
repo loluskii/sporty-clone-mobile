@@ -149,11 +149,11 @@ import {
   register,
   verifyOTP,
 } from "../helpers";
-import { useAuthStore, useUtilstStore } from "../stores";
+import { useAuthStore, useUtilsStore } from "../stores";
 
 // Use ref for reactive data properties
 const authStore = useAuthStore();
-const { brandName } = useUtilstStore();
+const { brandName } = useUtilsStore();
 const formData = ref({
   phone_no: null,
   password: null,

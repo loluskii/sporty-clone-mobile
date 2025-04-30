@@ -37,14 +37,14 @@ import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import HeaderCasinoPlay from "../../components/HeaderCasinoPlay.vue";
 import leaveCasinoPopup from "../../components/Casino/leaveCasinoPopup.vue";
-import { useUtilstStore } from "../../stores";
+import { useUtilsStore } from "../../stores";
 
 const route = useRoute();
 const router = useRouter();
 const gameURL = ref("");
 const isLoading = ref(false);
 const { currentUser } = useUsersStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const showRecommendedGames = ref(false);
 const gamesList = ref([]);
 const confirmLeave = ref(null);

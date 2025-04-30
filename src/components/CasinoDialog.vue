@@ -67,7 +67,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import { slugify } from "@/helpers";
-import { useUtilstStore } from "../stores";
+import { useUtilsStore } from "../stores";
 
 const emits = defineEmits(["hide-dialogue"]);
 const props = defineProps({
@@ -76,8 +76,8 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
-const { SportsbookGlobalVariable } = useUtilstStore();
-const utilsStore = useUtilstStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
+const utilsStore = useUtilsStore();
 
 const modalText = computed(() => {
   return props.data.bonus.bonusType === "free_rounds" &&

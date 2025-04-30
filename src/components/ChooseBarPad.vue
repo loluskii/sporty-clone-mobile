@@ -183,7 +183,7 @@
 <script setup>
 import { ref, defineEmits, onMounted, computed, onUnmounted } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 import {
   getCategoriesBySport,
   getDateRange,
@@ -205,7 +205,7 @@ const periodFilters = [
   { name: "This Week", key: "week" },
 ];
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const filterIsOpen = ref(false);
 const filterName = ref("");
 const route = useRoute();

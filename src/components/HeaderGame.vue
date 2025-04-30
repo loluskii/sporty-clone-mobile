@@ -51,11 +51,11 @@
 
 <script setup>
 import { ref, defineComponent, defineProps, computed } from "vue";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 import { useRouter } from "vue-router";
 
 const sportsListDropdown = ref(false);
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 // const emit = defineEmits(['sport-change'])
 const router = useRouter();
 

@@ -28,14 +28,14 @@ import { computed } from "vue";
 import { slugify } from "@/helpers";
 import emitter from "../../plugins/emitter";
 import { useRouter, useRoute } from "vue-router";
-import { useUtilstStore } from "../../stores";
+import { useUtilsStore } from "../../stores";
 
 const props = defineProps(["game"]);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
 const router = useRouter();
 const route = useRoute();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;

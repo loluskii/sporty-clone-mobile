@@ -20,7 +20,7 @@
     <div class="success-form amount">
       <div class="form-label">
         <span data-cms-key="amount">Amount</span>
-        (NGN)
+        ({{ SportsbookGlobalVariable.CurrencyCode }})
       </div>
       <div data-op="withdraw-success-amount" class="form-value">
         {{ formatNumber(userData.amount) }}
@@ -87,8 +87,10 @@
 <script setup>
 import { onMounted } from "vue";
 import { formatNumber, formatString } from "@/helpers";
-import { useUsersStore } from "@/stores";
+import { useUsersStore, useUtilsStore } from "@/stores";
 const userStore = useUsersStore();
+const {SportsbookGlobalVariable} = useUtilsStore()
+
 defineProps({
   userData: Object,
 });

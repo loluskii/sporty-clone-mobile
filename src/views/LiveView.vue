@@ -122,7 +122,7 @@
 
 <script setup>
 import LiveFixture from "@/components/Live/LiveFixture.vue";
-import { useUtilstStore, useCouponStore } from "@/stores";
+import { useUtilsStore, useCouponStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useQuery } from "vue-query";
 import { getLiveHighlights } from "@/helpers";
@@ -140,7 +140,7 @@ import { useMqttService } from "@/composables/useMqtt";
 
 const activeSportID = ref(1);
 const isEmptyResponse = ref(false);
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const mqttService = useMqttService();
 const unsubscribeFunctions = ref([]);

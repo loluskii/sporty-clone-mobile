@@ -117,11 +117,11 @@ import { useRoute } from 'vue-router'
 import _ from 'lodash'
 import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
 import { getFixturesByTournamentId, formatDate } from '@/helpers'
-import { useUtilstStore } from '@/stores'
+import { useUtilsStore } from '@/stores'
 import { getFixturesByCategories, getSportHighlights, getToday2 } from '../../helpers'
 import $ from 'jquery'
 
-const utilsStore = useUtilstStore()
+const utilsStore = useUtilsStore()
 const route = useRoute()
 const fixturesList = ref([])
 

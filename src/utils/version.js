@@ -1,5 +1,5 @@
 import { useCouponStore } from '@/stores/coupon.store';
-import { useUtilstStore } from '@/stores';
+import { useUtilsStore } from '@/stores';
 
 const VERSION_KEY = 'app_version';
 const VERSION_FILE = '/version.json';
@@ -17,7 +17,7 @@ export const clearAppCache = () => {
 
   // Clear store states
   const couponStore = useCouponStore();
-  const utilsStore = useUtilstStore();
+  const utilsStore = useUtilsStore();
   
   couponStore.clearBetslip();
   // Add any other store resets here

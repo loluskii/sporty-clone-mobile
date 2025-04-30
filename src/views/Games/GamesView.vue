@@ -240,7 +240,7 @@ import {
   getJackpotWinners,
 } from "@/helpers";
 import router from "@/router";
-import { useAuthStore, useUsersStore, useUtilstStore } from "@/stores";
+import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "../../helpers";
 import emitter from "@/plugins/emitter";
@@ -260,7 +260,7 @@ const currentView = ref("grouped_category");
 const bonus = ref(null);
 const jackpots = ref([]);
 const route = useRoute();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const errorState = ref({
   categoriesError: false,
   gamesError: false,
