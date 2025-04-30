@@ -302,6 +302,7 @@ import BetSettings from "./BetSettings.vue";
 import Simulation from "./Simulation.vue";
 import BetslipModeToggle from "./BetslipModeToggle.vue";
 import { useUtilsStore } from "@/stores";
+import VueToggles from "vue-toggles";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();
