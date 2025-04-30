@@ -9,7 +9,8 @@
     "test:unit": "vitest",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "analyze": "vite-bundle-visualizer"
+    "analyze": "vite-bundle-visualizer",
+    "prebuild": "node scripts/update-version.js"
   },
   "dependencies": {
     "@vuepic/vue-datepicker": "^8.3.1",

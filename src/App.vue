@@ -21,6 +21,7 @@ import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
+import { checkVersion } from '@/utils/version';
 
 const utilsStore = useUtilstStore();
 const couponStore = useCouponStore();
@@ -211,6 +212,9 @@ onMounted(async () => {
   if (route.path !== "/") {
     isLoading.value = false;
   }
+
+  // Check version and clear cache if needed
+  await checkVersion();
 
   if (usersStore.currentUser) {
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
