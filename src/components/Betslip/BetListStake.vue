@@ -152,13 +152,13 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore, useUtilsStore } from "../../stores";
-import { formatNumber } from "../../helpers";
+import { useCouponStore, useUsersStore, useUtilsStore } from "@/stores";
+import { formatNumber } from "@/helpers";
 import BetslipBonusBar from "./BetslipBonusBar.vue";
 import { computed, ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
-import emitter from "../../plugins/emitter";
+import emitter from "@/plugins/emitter";
 // import placeBet2
 const props = defineProps({
   betSlipType: String,

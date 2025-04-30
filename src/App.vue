@@ -23,7 +23,7 @@ import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
 import { checkVersion } from '@/utils/version';
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const showBetslip = ref(false);
 const route = useRoute();

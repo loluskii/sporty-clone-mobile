@@ -142,12 +142,12 @@ import { gamesByTopCategory } from "@/helpers";
 import router from "@/router";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { getJackpots, slugify } from "../../helpers";
+import { getJackpots, slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 import HeaderOther from "../../components/HeaderOther.vue";
 import { useRoute } from "vue-router";
-import { useUtilsStore } from "../../stores";
+import { useUtilsStore } from "@/stores";
 
 const route = useRoute();
 const gamesList = ref([]);

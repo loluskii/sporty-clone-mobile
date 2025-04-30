@@ -109,9 +109,9 @@
 </template>
 
 <script setup>
-import { formatNumber, formatString } from '../../helpers'
-import emitter from '../../plugins/emitter'
-import { useUtilsStore } from '../../stores';
+import { formatNumber, formatString } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import { useUtilsStore } from '@/stores';
 const {SportsbookGlobalVariable} = useUtilsStore()
 
 const props = defineProps({

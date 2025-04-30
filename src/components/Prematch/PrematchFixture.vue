@@ -138,9 +138,9 @@ import {
 import { createID, isSelected, sortArr, slugify } from "@/helpers";
 import Odds from "@/components/Prematch/Odds.vue";
 import EmptyOdds from "@/components/EmptyOdds.vue";
-import { useCouponStore } from "../../stores";
-import emitter from "../../plugins/emitter";
-import { SIM_ALLOWED_MARKETS } from "../../helpers";
+import { useCouponStore } from "@/stores";
+import emitter from "@/plugins/emitter";
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
 import { useMqttService } from "@/composables/useMqtt";
 
 const couponStore = useCouponStore();

@@ -78,7 +78,7 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { useRouter } from "vue-router";
-import { useCouponStore, useUtilsStore } from "../../stores";
+import { useCouponStore, useUtilsStore } from "@/stores";
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
 import emitter from "@/plugins/emitter";
 

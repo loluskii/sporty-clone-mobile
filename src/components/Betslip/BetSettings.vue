@@ -133,7 +133,7 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore } from "../../stores";
+import { useCouponStore } from "@/stores";
 import { computed, ref } from "vue";
 
 const couponStore = useCouponStore();

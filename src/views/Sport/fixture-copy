@@ -118,7 +118,7 @@ import _ from 'lodash'
 import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
 import { getFixturesByTournamentId, formatDate } from '@/helpers'
 import { useUtilsStore } from '@/stores'
-import { getFixturesByCategories, getSportHighlights, getToday2 } from '../../helpers'
+import { getFixturesByCategories, getSportHighlights, getToday2 } from '@/helpers'
 import $ from 'jquery'
 
 const utilsStore = useUtilsStore()

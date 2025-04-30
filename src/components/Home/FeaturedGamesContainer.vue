@@ -70,7 +70,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 const emit = defineEmits(["set-active-category"]);
 import { slugify } from "@/helpers";
-import { useUtilsStore, useAuthStore } from "../../stores";
+import { useUtilsStore, useAuthStore } from "@/stores";
 
 const router = useRouter();
 const route = useRoute();

@@ -301,7 +301,7 @@ import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
 import Simulation from "./Simulation.vue";
 import BetslipModeToggle from "./BetslipModeToggle.vue";
-import { useUtilsStore } from "../../stores";
+import { useUtilsStore } from "@/stores";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();

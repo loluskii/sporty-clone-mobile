@@ -39,7 +39,7 @@
 import { ref, onMounted, computed } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import CategoryProvider from "./CategoryProvider.vue";
-import { useUsersStore, useUtilsStore } from "../../stores";
+import { useUsersStore, useUtilsStore } from "@/stores";
 import Game from "@/components/Casino/Game.vue";
 import { useRouter } from "vue-router";
 

@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// Only run in production
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Skipping version update in development mode');
+  process.exit(0);
+}
+
 const versionFile = path.join(__dirname, '../public/version.json');
 const packageJson = require('../package.json');
 

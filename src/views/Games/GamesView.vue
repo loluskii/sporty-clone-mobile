@@ -242,7 +242,7 @@ import {
 import router from "@/router";
 import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { getJackpots, slugify } from "../../helpers";
+import { getJackpots, slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 import { useRoute } from "vue-router";

@@ -317,10 +317,10 @@ import {
   fetchBankAssets,
 } from "@/helpers";
 import { ref, onMounted, computed } from "vue";
-import emitter from "../../plugins/emitter";
+import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
-import { useUsersStore } from "../../stores";
-import { CLIENT_ID } from "../../helpers";
+import { useUsersStore } from "@/stores";
+import { CLIENT_ID } from "@/helpers";
 const showBanks = ref(false);
 const showBanksAssets = ref(false);
 const { currentUser } = useUsersStore();

@@ -37,7 +37,7 @@ import { useUsersStore } from "@/stores";
 import emitter from "@/plugins/emitter";
 import HeaderCasinoPlay from "../../components/HeaderCasinoPlay.vue";
 import leaveCasinoPopup from "../../components/Casino/leaveCasinoPopup.vue";
-import { useUtilsStore } from "../../stores";
+import { useUtilsStore } from "@/stores";
 
 const route = useRoute();
 const router = useRouter();

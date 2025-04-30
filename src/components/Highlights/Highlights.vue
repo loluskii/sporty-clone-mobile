@@ -81,8 +81,8 @@ import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
 import { defineEmits } from "vue";
 import _ from "lodash";
 import { useRouter } from "vue-router";
-import { useUtilsStore } from "../../stores";
-import { slugify } from "../../helpers";
+import { useUtilsStore } from "@/stores";
+import { slugify } from "@/helpers";
 
 const props = defineProps({
   highlightsData: Object,

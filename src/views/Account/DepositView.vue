@@ -119,8 +119,8 @@ import HeaderOther from "../../components/HeaderOther.vue";
 import { useUsersStore, useUtilsStore } from "@/stores";
 import { getPaymentMethods, getDepositURL } from "@/helpers";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import emitter from "../../plugins/emitter";
-import { CLIENT_ID, checkFirstDeposit, formatNumber } from "../../helpers";
+import emitter from "@/plugins/emitter";
+import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 
 const activeTab = ref("");
 const depositMethods = ref([]);

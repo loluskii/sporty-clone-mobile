@@ -84,7 +84,7 @@ import { useAuthStore, useUsersStore } from "@/stores";
 import { useRouter } from "vue-router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import moment from "moment";
-import { CLIENT_ID } from "../../helpers";
+import { CLIENT_ID } from "@/helpers";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 

@@ -293,7 +293,7 @@ import {
 import ErrorDialogue from "@/components/ErrorDialogue.vue";
 import { useCouponStore } from "@/stores";
 import emitter from "@/plugins/emitter";
-import { SIM_ALLOWED_MARKETS } from "../../helpers";
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
 import { useMqttService } from "@/composables/useMqtt";
 
 const { subscribe } = useMqttService();

@@ -105,7 +105,7 @@
 </template>
 <script setup>
 import LiveHighlightsFixture from "@/components/Live/LiveHighlightsFixture.vue";
-import { useUtilsStore } from "../../stores/utils.store";
+import { useUtilsStore } from "@/stores/utils.store";
 import { useCouponStore } from "@/stores";
 import LoadingError from "@/components/Loaders/LoadingError.vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";

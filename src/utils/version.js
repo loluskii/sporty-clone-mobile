@@ -38,6 +38,11 @@ export const checkVersion = async () => {
     const data = await response.json();
     const currentVersion = localStorage.getItem(VERSION_KEY);
     
+    // In development, don't clear cache on version change
+    if (import.meta.env.DEV) {
+      return false;
+    }
+    
     if (!currentVersion || currentVersion !== data.version) {
       console.log(`New version detected: ${data.version}. Clearing cache...`);
       clearAppCache();
