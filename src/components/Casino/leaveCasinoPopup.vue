@@ -73,9 +73,9 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { useUsersStore } from "../../stores";
-import { slugify } from "../../helpers";
-import emitter from "../../plugins/emitter";
+import { useUsersStore } from "@/stores";
+import { slugify } from "@/helpers";
+import emitter from "@/plugins/emitter";
 import { computed } from "vue";
 
 const props = defineProps(["showPopup", "gamesList"]);

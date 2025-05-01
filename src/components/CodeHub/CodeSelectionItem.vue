@@ -39,7 +39,7 @@
   </div>
 </template>
 <script setup>
-import { formatDate } from "../../helpers";
+import { formatDate } from "@/helpers";
 
 const props = defineProps(["data"]);
 

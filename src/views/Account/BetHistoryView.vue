@@ -63,8 +63,8 @@
                             bet.statusCode == 1
                               ? 'win'
                               : bet.statusCode == 2
-                              ? 'lost'
-                              : 'pending'
+                                ? 'lost'
+                                : 'pending'
                           "
                         >
                           <span class="type"
@@ -86,7 +86,9 @@
                           <span
                             data-op="history-stake-text"
                             data-cms-key="total_stake_vcurrency"
-                            >Total Stake(NGN)</span
+                            >Total Stake({{
+                              SportsbookGlobalVariable.CurrencyCode
+                            }})</span
                           >
                           <span
                             data-op="history-return-text"
@@ -200,7 +202,7 @@ import BetHistoryMatchList from "@/components/BetHistoryMatchList.vue";
 import { getBets, formatNumber } from "@/helpers";
 import _ from "lodash";
 import moment from "moment";
-import { useAuthStore, useUsersStore } from "@/stores";
+import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 import { CLIENT_ID } from "@/helpers";
 import router from "@/router";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -210,6 +212,8 @@ const { isAuthenticated } = useAuthStore();
 const settledBets = ref([]);
 const isLoading = ref(false);
 const usersStore = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
+
 const betStatus = [
   { name: "All", key: "" },
   { name: "Settled", key: "settled" },

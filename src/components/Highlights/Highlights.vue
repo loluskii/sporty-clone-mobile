@@ -81,8 +81,8 @@ import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
 import { defineEmits } from "vue";
 import _ from "lodash";
 import { useRouter } from "vue-router";
-import { useUtilstStore } from "../../stores";
-import { slugify } from "../../helpers";
+import { useUtilsStore } from "@/stores";
+import { slugify } from "@/helpers";
 
 const props = defineProps({
   highlightsData: Object,
@@ -95,7 +95,7 @@ defineComponent({
 
 const emits = defineEmits(["select-market"]);
 const router = useRouter();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 const getSportbyId = computed(() => {
   return utilsStore.sportsMenu.find(

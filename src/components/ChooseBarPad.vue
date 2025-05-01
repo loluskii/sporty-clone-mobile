@@ -14,10 +14,10 @@
               activePeriodFilter
                 ? activePeriodFilter.name
                 : route.query.period === "today"
-                ? "Today"
-                : route.query.period
-                ? route.query.period
-                : "Daily"
+                  ? "Today"
+                  : route.query.period
+                    ? route.query.period
+                    : "Daily"
             }}
           </div>
           <div v-if="filterIsOpen && filterName === 'period'" class="m-list">
@@ -183,7 +183,7 @@
 <script setup>
 import { ref, defineEmits, onMounted, computed, onUnmounted } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 import {
   getCategoriesBySport,
   getDateRange,
@@ -205,7 +205,7 @@ const periodFilters = [
   { name: "This Week", key: "week" },
 ];
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const filterIsOpen = ref(false);
 const filterName = ref("");
 const route = useRoute();

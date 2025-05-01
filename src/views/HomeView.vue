@@ -28,11 +28,11 @@ import LiveContainer from "@/components/Home/LiveContainer.vue";
 import PopularSports from "@/components/Home/PopularSports.vue";
 import Highlights from "@/components/Home/HighlightsContainer.vue";
 import emitter from "@/plugins/emitter";
-import { useUsersStore, useUtilstStore } from "../stores";
+import { useUsersStore, useUtilsStore } from "../stores";
 import { onMounted } from "vue";
 
 const userStore = useUsersStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 onMounted(async () => {});
 </script>

@@ -109,7 +109,7 @@
   </div>
 </template>
 <script setup>
-import { useUtilstStore } from "../../stores/utils.store";
+import { useUtilsStore } from "@/stores/utils.store";
 import Highlights from "@/components/Highlights/Highlights.vue";
 import Today from "@/components/Highlights/Today.vue";
 import Countries from "@/components/Highlights/Countries.vue";
@@ -120,7 +120,7 @@ import { getHighlights2, getToday2, getCategoriesBySport } from "@/helpers";
 import { defineComponent, onMounted, ref, onUnmounted, computed } from "vue";
 import _ from "lodash";
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 const highlightsData = ref([]);
 const todaysData = ref([]);

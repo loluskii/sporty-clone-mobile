@@ -15,7 +15,7 @@
 <script setup>
 import { watch, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { awardBonus, verifyDeposit } from "../../helpers";
+import { awardBonus, verifyDeposit } from "@/helpers";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useUsersStore } from "@/stores";
 

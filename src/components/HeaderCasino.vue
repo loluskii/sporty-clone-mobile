@@ -16,9 +16,9 @@
 
 <script setup>
 import { defineProps } from "vue";
-import { useUtilstStore } from "../stores";
+import { useUtilsStore } from "../stores";
 
-const { brandName } = useUtilstStore;
+const { brandName } = useUtilsStore;
 defineProps({
   headerTitle: String,
 });

@@ -3,7 +3,7 @@ import moment from "moment";
 import { getSplitPropsData } from "@/helpers";
 // import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from "/branding-template";
-import { useUtilstStore } from "../stores/utils.store";
+import { useUtilsStore } from "../stores/utils.store";
 
 export const applyBranding = async () => {
   try {
@@ -14,7 +14,7 @@ export const applyBranding = async () => {
     defConfig = defBrandDetails;
     // }
     const config = defConfig;
-    const utilsStore = useUtilstStore();
+    const utilsStore = useUtilsStore();
     const loadFont = (url) => {
       const link = document.createElement("link");
       link.rel = "stylesheet";

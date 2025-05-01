@@ -2,7 +2,7 @@
 import AppFooter from "@/components/Footer.vue";
 import MobileFooter from "@/components/MobileFooter.vue";
 import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from "vue";
-import { useUtilstStore, useCouponStore } from "@/stores";
+import { useUtilsStore, useCouponStore } from "@/stores";
 import CasinoDialog from "@/components/CasinoDialog.vue";
 import CalendarBox from "@/components/CalendarBox.vue";
 import BookBetModal from "@/components/Betslip/BookBetModal.vue";
@@ -21,8 +21,9 @@ import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
+import { checkVersion } from "@/utils/version";
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const showBetslip = ref(false);
 const route = useRoute();
@@ -211,6 +212,9 @@ onMounted(async () => {
   if (route.path !== "/") {
     isLoading.value = false;
   }
+
+  // Check version and clear cache if needed
+  await checkVersion();
 
   if (usersStore.currentUser) {
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])

@@ -149,10 +149,10 @@ export const getCategoriesBySport = async (sportID, period) => {
   const periodParam = isTodayPeriod
     ? "period=today"
     : isTomorrowPeriod
-    ? "period=24hour"
-    : period
-    ? `start=${period?.startDate}&end=${period?.endDate}`
-    : "period=all";
+      ? "period=24hour"
+      : period
+        ? `start=${period?.startDate}&end=${period?.endDate}`
+        : "period=all";
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
@@ -175,10 +175,10 @@ export const getTournamentsByCategories = async (categoryId, period) => {
   const periodParam = isTodayPeriod
     ? "period=today"
     : isTomorrowPeriod
-    ? "period=24hour"
-    : period
-    ? `start=${period?.startDate}&end=${period?.endDate}`
-    : "period=all";
+      ? "period=24hour"
+      : period
+        ? `start=${period?.startDate}&end=${period?.endDate}`
+        : "period=all";
   return parseData(
     fetchWrapper.get(
       `${NEW_BASE_API}/sports/tournaments/${categoryId}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`,
@@ -270,10 +270,10 @@ export const getSportUpcoming = async (sid, period) => {
   const periodParam = isTodayPeriod
     ? "period=today"
     : isTomorrowPeriod
-    ? "period=tomorrow"
-    : period?.startDate !== undefined && period?.endDate !== undefined
-    ? `startDate=${period?.startDate}&endDate=${period?.endDate}`
-    : `period=${period}`;
+      ? "period=tomorrow"
+      : period?.startDate !== undefined && period?.endDate !== undefined
+        ? `startDate=${period?.startDate}&endDate=${period?.endDate}`
+        : `period=${period}`;
 
   return parseData(
     fetchWrapper.get(

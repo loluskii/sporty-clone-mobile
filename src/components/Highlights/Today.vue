@@ -73,8 +73,8 @@ import { defineComponent, defineEmits, computed } from "vue";
 import { formatDate } from "@/helpers";
 import _ from "lodash";
 import { useRouter } from "vue-router";
-import { slugify } from "../../helpers";
-import { useUtilstStore } from "../../stores";
+import { slugify } from "@/helpers";
+import { useUtilsStore } from "@/stores";
 
 const props = defineProps({
   todaysData: { type: Object },
@@ -88,7 +88,7 @@ defineComponent({
 
 const emits = defineEmits(["select-market"]);
 const router = useRouter();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 const getSportbyId = computed(() => {
   return utilsStore.sportsMenu.find(

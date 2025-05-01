@@ -271,7 +271,7 @@
   </div>
 </template>
 <script setup>
-import { useUtilstStore, useCouponStore } from "@/stores";
+import { useUtilsStore, useCouponStore } from "@/stores";
 import { computed } from "vue";
 import { formatTotalOdds } from "@/helpers";
 import { useRoute } from "vue-router";
@@ -280,7 +280,7 @@ const props = defineProps({
   openBetCount: Number,
 });
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const route = useRoute();
 

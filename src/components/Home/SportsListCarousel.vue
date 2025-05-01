@@ -161,15 +161,15 @@
   </div>
 </template>
 <script setup>
-import { useUtilstStore, useUsersStore } from "@/stores";
+import { useUtilsStore, useUsersStore } from "@/stores";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { slugify } from "@/helpers";
 import MD5 from "crypto-js/md5";
 import emitter from "@/plugins/emitter";
 
-// const { sports, sport_id } = useUtilstStore()
-const utilsStore = useUtilstStore();
+// const { sports, sport_id } = useUtilsStore()
+const utilsStore = useUtilsStore();
 const router = useRouter();
 const usersStore = useUsersStore();
 // const token = ref('111111')

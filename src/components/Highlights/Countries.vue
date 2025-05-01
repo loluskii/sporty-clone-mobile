@@ -60,9 +60,9 @@
 <script setup>
 import { defineComponent, defineProps, computed, ref } from "vue";
 import { slugify, getTournamentsByCategories } from "@/helpers";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const isLoading = ref(false);
 const tournamentsData = ref([]);
 const activeCategory = ref(null);

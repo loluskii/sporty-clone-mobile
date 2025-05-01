@@ -238,8 +238,8 @@
                               parseInt(event.matchStatus) === 3
                                 ? "FT"
                                 : event.eventTime
-                                ? `${event.eventTime}'`
-                                : ""
+                                  ? `${event.eventTime}'`
+                                  : ""
                             }}
                           </span>
                           <span
@@ -286,7 +286,7 @@
                       bet.cashOutAmount &&
                       bet.cashOutAmount > 0 &&
                       !bet.isBonusBet
-                        ? `Cashout SSP ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.cashOutAmount.toFixed(2)}`
                         : "Cashout Unavailable"
                     }}</span>
                     <img
@@ -346,7 +346,8 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          SSP {{ cashoutData.cashOutAmount.toFixed(2) }}
+                          {{ SportsbookGlobalVariable.CurrencyCode }}
+                          {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
                       <img
@@ -383,7 +384,7 @@ import {
   getNext7Days,
   getCodeHubItems,
 } from "@/helpers";
-import { useAuthStore } from "@/stores";
+import { useAuthStore, useUtilsStore } from "@/stores";
 import $ from "jquery";
 import { useUsersStore } from "@/stores";
 import { CLIENT_ID, performCashout } from "@/helpers";
@@ -394,6 +395,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 const openBets = ref(null);
 const isLoading = ref(true);
 const { isAuthenticated } = useAuthStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 const userStore = useUsersStore();
 const showCashoutModal = ref(false);
 const cashoutData = ref({});
@@ -406,8 +408,8 @@ const getMatchStatus = (event) => {
   return event.matchStatus == "1st half"
     ? "H1"
     : event.matchStatus == "2nd half"
-    ? "H2"
-    : event.matchStatus;
+      ? "H2"
+      : event.matchStatus;
 };
 
 async function getBetsData() {
