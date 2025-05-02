@@ -81,6 +81,7 @@ import {
   extractIdsFromURL,
   getDateRange,
 } from "@/helpers";
+import emitter from "@/plugins/emitter";
 
 const isEmptyResponse = computed(() => {
   const list = fixturesList.value;
@@ -396,6 +397,29 @@ onMounted(() => {
   const sentinel = document.querySelector("#scroll-sentinel");
   localStorage.removeItem("categoryIds");
   observeElement(sentinel);
+
+  // Add event listener for removing fixtures
+  emitter.on('remove-fixture', (matchID) => {
+    if (fixturesList.value) {
+      if (Array.isArray(fixturesList.value)) {
+        // For default grouping
+        fixturesList.value = fixturesList.value.filter(
+          fixture => String(fixture.matchID) !== String(matchID)
+        );
+      } else {
+        // For tournament grouping
+        Object.keys(fixturesList.value).forEach(tournament => {
+          fixturesList.value[tournament] = fixturesList.value[tournament].filter(
+            fixture => String(fixture.matchID) !== String(matchID)
+          );
+          // Remove empty tournament groups
+          if (fixturesList.value[tournament].length === 0) {
+            delete fixturesList.value[tournament];
+          }
+        });
+      }
+    }
+  });
 });
 
 onUnmounted(() => {
