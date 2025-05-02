@@ -173,7 +173,7 @@
           v-show="activeFeaturedTab == 'featuredMatches'"
           class="featuredMatch bg-white"
         >
-          <template v-if="!isLoading">
+          <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
                 class="m-snap-nav-wrap featuredMatchCategoryNav m-popular-list"
@@ -213,7 +213,6 @@
               style="overflow: auto"
             >
               <template v-for="tournament in sortedTournamentGames">
-                <!-- {{ tournament }} -->
                 <FeaturedMatchCard
                   v-for="(game, g) in tournament.fixtures"
                   ref="gamesList"
@@ -345,64 +344,78 @@ async function getCodes() {
 }
 
 function assignTournaments(tournament, games, tournamentID) {
-  if (games && games.fixtures && games.markets) {
-    const gamesList = games.fixtures.slice(0, 5);
-    featuredTournamentGames.value.push({
-      tournamentID: tournamentID,
-      fixtures: [...gamesList],
-      markets: [...games.markets],
-    });
-
-    // Set up MQTT subscriptions for each fixture
-    gamesList.forEach((fixture) => {
-      if (fixture.matchID) {
-        setupMqttSubscriptions(fixture.matchID);
-      }
-    });
-  } else {
+  if (!games?.fixtures?.length || !games?.markets?.length) {
+    // Early return if no valid data
     const index = featuredTournaments.value.findIndex(
-      (x) => x.tournament_id == tournament.id,
+      (x) => x.tournament_id === tournament.id
     );
-    featuredTournaments.value.splice(index, 1);
+    if (index !== -1) {
+      featuredTournaments.value.splice(index, 1);
+    }
+    return;
+  }
+
+  // Take only first 5 fixtures
+  const gamesList = games.fixtures.slice(0, 5);
+
+  // Create tournament games object
+  const tournamentGames = {
+    tournamentID,
+    fixtures: gamesList,
+    markets: games.markets
+  };
+
+  // Add to featured games
+  featuredTournamentGames.value.push(tournamentGames);
+
+  // Batch MQTT subscriptions
+  const matchIds = gamesList
+    .filter(fixture => fixture.matchID)
+    .map(fixture => fixture.matchID);
+
+  if (matchIds.length > 0) {
+    setupMqttSubscriptions(matchIds);
   }
 }
 
-function setupMqttSubscriptions(matchId) {
+function setupMqttSubscriptions(matchIds) {
   // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchId}`;
+  const subscriptionKey = `${componentId}-${matchIds.join(',')}`;
   if (unsubscribeFunctions.value[subscriptionKey]) {
     unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) =>
       unsubscribe(),
     );
   }
 
-  // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
-  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    handleOddsChange(matchId, data);
+  // Create subscriptions for each match ID
+  const subscriptions = matchIds.map(matchId => {
+    // Subscribe to odds changes
+    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      handleOddsChange(data);
+    });
+
+    // Subscribe to bet stop
+    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      handleBetStop(data);
+    });
+
+    return [unsubscribeOddsChange, unsubscribeBetStop];
   });
 
-  // Subscribe to bet stop
-  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
-  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    handleBetStop(matchId, data);
-  });
-
-  // Store unsubscribe functions with our component-specific key
-  unsubscribeFunctions.value[subscriptionKey] = [
-    unsubscribeOddsChange,
-    unsubscribeBetStop,
-  ];
+  // Flatten the array of subscription pairs
+  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat();
 }
 
-function handleOddsChange(matchId, data) {
+function handleOddsChange(data) {
   if (!data || !data.markets) return;
 
   // Find and update the fixture in featuredTournamentGames
   featuredTournamentGames.value = featuredTournamentGames.value.map(
     (tournament) => {
       const updatedFixtures = tournament.fixtures.map((fixture) => {
-        if (String(fixture.matchID) === String(matchId)) {
+        if (String(fixture.matchID) === String(data.matchID)) {
           // Update outcomes for the matching market
           const updatedOutcomes = fixture.outcomes.map((outcome) => {
             const market = data.markets.find((m) => m.id === outcome.marketID);
@@ -435,12 +448,12 @@ function handleOddsChange(matchId, data) {
   );
 }
 
-function handleBetStop(matchId, data) {
+function handleBetStop(data) {
   // Find and update the fixture in featuredTournamentGames
   featuredTournamentGames.value = featuredTournamentGames.value.map(
     (tournament) => {
       const updatedFixtures = tournament.fixtures.map((fixture) => {
-        if (String(fixture.matchID) === String(matchId)) {
+        if (String(fixture.matchID) === String(data.matchID)) {
           // Set all outcomes to inactive
           const updatedOutcomes = fixture.outcomes.map((outcome) => ({
             ...outcome,
@@ -474,38 +487,58 @@ async function getFeaturedGames() {
   isLoading.value = true;
   try {
     const res = await getTopBets();
-    if (res.data) {
-      // Create a Map to store unique tournaments by ID
-      const uniqueTournaments = new Map();
+    if (!res.data) throw Error;
 
-      // Filter out duplicates and store in Map
-      res.data.forEach((tournament) => {
-        if (!uniqueTournaments.has(tournament.tournamentID)) {
-          uniqueTournaments.set(tournament.tournamentID, tournament);
-        }
-      });
+    // Use Set for faster unique tournament filtering
+    const uniqueTournamentIds = new Set();
+    const uniqueTournaments = [];
 
-      // Convert Map back to array and sort
-      featuredTournaments.value = Array.from(uniqueTournaments.values()).sort(
-        (a, b) => a.tournamentID - b.tournamentID,
-      );
+    // Single pass to filter unique tournaments
+    for (const tournament of res.data) {
+      if (!uniqueTournamentIds.has(tournament.tournamentID)) {
+        uniqueTournamentIds.add(tournament.tournamentID);
+        uniqueTournaments.push(tournament);
+      }
+    }
 
-      // Set active tournament to first one if available
-      activeFeaturedTournament.value =
-        featuredTournaments.value[0]?.tournamentID;
+    // Sort tournaments and update featuredTournaments immediately
+    featuredTournaments.value = uniqueTournaments.sort(
+      (a, b) => a.tournamentID - b.tournamentID
+    );
 
-      // Process each unique tournament
+    // Set active tournament
+    activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+
+    // Process tournaments in parallel with concurrency limit
+    const CONCURRENCY_LIMIT = 3; // Process 3 tournaments at a time
+    const chunks = [];
+    for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
+      chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT));
+    }
+
+    // Process each chunk
+    for (const chunk of chunks) {
       await Promise.all(
-        featuredTournaments.value.map(async (tournament) => {
-          const games = await getFixturesByTournamentId(
-            tournament.tournamentID,
-            tournament.sportID,
-          );
-          assignTournaments(tournament, games, tournament.tournamentID);
-        }),
+        chunk.map(async (tournament) => {
+          try {
+            const games = await getFixturesByTournamentId(
+              tournament.tournamentID,
+              tournament.sportID
+            );
+            assignTournaments(tournament, games, tournament.tournamentID);
+          } catch (error) {
+            console.error(`Error processing tournament ${tournament.tournamentID}:`, error);
+            // Remove the tournament from featuredTournaments if it fails to load
+            const index = featuredTournaments.value.findIndex(t => t.tournamentID === tournament.tournamentID);
+            if (index !== -1) {
+              featuredTournaments.value.splice(index, 1);
+            }
+          }
+        })
       );
-      isLoading.value = false;
-    } else throw Error;
+    }
+
+    isLoading.value = false;
   } catch (error) {
     isLoading.value = false;
     console.error("Error fetching featured games:", error);
