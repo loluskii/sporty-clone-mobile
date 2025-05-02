@@ -138,12 +138,12 @@ import HeaderOther from "@/components/HeaderOther.vue";
 import _ from "lodash";
 import { useMqttService } from "@/composables/useMqtt";
 
-const activeSportID = ref(1);
 const isEmptyResponse = ref(false);
 const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const mqttService = useMqttService();
 const unsubscribeFunctions = ref([]);
+const activeSportID = ref(utilsStore.activeLiveSportID || 1);
 
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(
@@ -426,6 +426,21 @@ defineComponent({
     },
   },
 });
+
+// Add watcher for activeSportID to update store
+watch(activeSportID, (newValue) => {
+  utilsStore.activeLiveSportID = newValue;
+});
+
+// Add watcher for sportsListData to set activeSportID
+watch(sportsListData, (newSportsList) => {
+  if (newSportsList.length > 0) {
+    // Only set activeSportID if it's not already set or not in the list
+    if (!activeSportID.value || !newSportsList.some(sport => sport.sportID === activeSportID.value)) {
+      activeSportID.value = newSportsList[0].sportID;
+    }
+  }
+}, { immediate: true });
 </script>
 
 <style>
