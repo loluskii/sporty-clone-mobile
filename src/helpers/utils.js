@@ -269,6 +269,9 @@ export const formatTotalOdds = (number) => {
 };
 
 export const formattedPhoneNumber = (phoneNumber) => {
+  if(Number(phoneNumber)){
+    phoneNumber = String(phoneNumber)
+  }
   let pNumber = phoneNumber.replace(/^0/, "").toString();
 
   const first = pNumber.charAt(0);

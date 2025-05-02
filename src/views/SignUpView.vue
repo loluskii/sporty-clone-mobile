@@ -197,13 +197,13 @@ const startTimer = () => {
 };
 
 const registerUser = async () => {
-  if (String(formData.value.phone_no).trim().length < 10) {
+  if (String(formData.value.phone_no).trim().length < 9) {
     registerError.value = true;
     registerErrorMessage.value = "Please enter a valid phone number";
     return;
   }
   isLoading.value = true;
-  let phoneNumber = formData.value.phone_no.replace(/^0/, "");
+  let phoneNumber = String(formData.value.phone_no).trim().replace(/^0/, "");
   const internationalNumber = `234${phoneNumber}`;
   let payload = {
     clientID: CLIENT_ID,
