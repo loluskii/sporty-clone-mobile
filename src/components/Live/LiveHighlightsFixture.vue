@@ -1,7 +1,7 @@
 <template lang="">
   <div data-op="label-event-live" class="m-event-live x-live-row">
     <div class="m-event-meta">
-      <span class="m-event-time">{{ gameData.eventTime }}</span>
+      <span class="m-event-time">{{ displayTime }}</span>
       <span class="match-status">{{
         gameData.matchStatus == "1st half"
           ? "H1"
@@ -59,7 +59,7 @@
               v-if="specifierOpen"
               :class="'af-select-list-' + gameData.matchID"
               style="
-                width: 71px;
+                width: 67px;
                 opacity: 1;
                 position: absolute;
                 top: 37px;
@@ -68,6 +68,7 @@
             >
               <span
                 class="af-select-item"
+                :class="{'af-select-item-active': activeSpecifier === item.value}"
                 @click="setActiveSpecifier(item)"
                 v-for="(item, i) in getSpecifiers"
                 :key="i"
@@ -132,6 +133,8 @@ const props = defineProps({
 
 const activeSpecifier = ref();
 const specifierOpen = ref(false);
+const timer = ref(null);
+const displayTime = ref('00:00');
 
 const scores = ref({
   homeScore: props.gameData?.homeScore || 0,
@@ -145,6 +148,63 @@ const updatedOutcomes = ref({});
 
 // Keep track of the last update timestamp for each match
 const lastUpdateTimestamp = ref({});
+
+// Function to parse time string (MM:SS) to seconds
+const parseTimeToSeconds = (timeStr) => {
+  const [minutes, seconds] = timeStr.split(':').map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Function to format seconds to MM:SS
+const formatSecondsToTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Function to start the timer
+const startTimer = () => {
+  // Only start timer for football (sport ID 1)
+  if (String(props.gameData.sportID) !== '1') {
+    displayTime.value = props.gameData.eventTime;
+    return;
+  }
+
+  if (timer.value) clearInterval(timer.value);
+  
+  const initialTime = parseTimeToSeconds(props.gameData.eventTime);
+  let currentSeconds = initialTime;
+  
+  // Update display immediately
+  displayTime.value = formatSecondsToTime(currentSeconds);
+  
+  timer.value = setInterval(() => {
+    currentSeconds++;
+    
+    // Stop at key match times
+    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+      clearInterval(timer.value);
+      timer.value = null;
+    }
+    
+    displayTime.value = formatSecondsToTime(currentSeconds);
+  }, 1000);
+};
+
+// Watch for gameData changes to start timer
+watch(() => props.gameData, (newData) => {
+  if (newData && newData.eventTime) {
+    startTimer();
+  }
+}, { immediate: true });
+
+// Clean up timer on component unmount
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+});
 
 const getOdds = () => {
   if (props.activeMarket && props.gameData.activeMarkets > 0) {
@@ -328,6 +388,9 @@ function handleOddsChange(data) {
 
     setTimeout(() => {
       requestAnimationFrame(() => {
+        scores.value.homeScore = data.sport_event_status.home_score;
+        scores.value.awayScore = data.sport_event_status.away_score;
+
         const markets = (data.markets || []).map((m) => ({ ...m }));
 
         if (markets.length > 0) {
@@ -583,5 +646,17 @@ onMounted(() => {
 /* Live Fixture */
 .m-live-table .m-live-row {
   margin: 0 0.83333333rem;
+}
+
+.m-event-specifiers-order {
+  padding: 0;
+  text-align: center;
+  background-color: #50545F;
+  font-weight: bold;
+  color: #f2f3f5;
+}
+
+.af-select-item-active{
+  color: var(--brand-live-odds-text)
 }
 </style>
