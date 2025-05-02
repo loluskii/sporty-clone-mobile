@@ -151,6 +151,7 @@ const lastUpdateTimestamp = ref({});
 
 // Function to parse time string (MM:SS) to seconds
 const parseTimeToSeconds = (timeStr) => {
+  if (timeStr === "--:--") return null;
   const [minutes, seconds] = timeStr.split(':').map(Number);
   return minutes * 60 + seconds;
 };
@@ -173,6 +174,13 @@ const startTimer = () => {
   if (timer.value) clearInterval(timer.value);
   
   const initialTime = parseTimeToSeconds(props.gameData.eventTime);
+  
+  // Handle halftime
+  if (initialTime === null) {
+    displayTime.value = "--:--";
+    return;
+  }
+  
   let currentSeconds = initialTime;
   
   // Update display immediately
