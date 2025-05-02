@@ -241,7 +241,7 @@
 <script setup>
 import FeaturedMatchCard from "./FeaturedMatchCard.vue";
 import Codes from "./Codes.vue";
-import { ref, onMounted, computed, onBeforeUnmount } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from "vue";
 import {
   getTopBets,
   getFixturesByTournamentId,
@@ -254,13 +254,11 @@ import {
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import FeaturedGamesContainer from "./FeaturedGamesContainer.vue";
 import { useMqttService } from "@/composables/useMqtt";
+import { useQuery } from "vue-query";
 
 const { subscribe } = useMqttService();
 const unsubscribeFunctions = ref({}); // Store unsubscribe functions by match ID
 const componentId = `popular-sports-${Date.now()}`; // Unique ID for this component instance
-
-const isLoading = ref(false);
-const casinoIsLoading = ref(false);
 
 const featuredTournaments = ref([]);
 const featuredTournamentGames = ref([]);
@@ -483,74 +481,146 @@ onBeforeUnmount(() => {
   unsubscribeFunctions.value = {};
 });
 
+// Replace the existing data fetching with vue-query
+const {
+  data: topBetsData,
+  isLoading: isTopBetsLoading,
+} = useQuery("topBets", getTopBets, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000, // 1 minute
+  cacheTime: 300000, // 5 minutes
+  refetchInterval: 60000 * 10, // 10 minutes
+  retry: (failureCount, error) => {
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false;
+    }
+    return failureCount < 3;
+  },
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+});
+
+const {
+  data: casinoData,
+  isLoading: isCasinoLoading,
+} = useQuery("casinoGames", getTopGameCategories, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000,
+  cacheTime: 300000,
+});
+
+const {
+  data: codesData,
+  isLoading: isCodesLoading,
+} = useQuery("codes", () => {
+  const payload = {
+    from: getNext7Days()[0],
+    to: getNext7Days()[7],
+    betType: 0,
+  };
+  return getCodeHubItems(payload);
+}, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000,
+  cacheTime: 300000,
+});
+
+// Update computed properties
+const isLoading = computed(() => isTopBetsLoading.value);
+const casinoIsLoading = computed(() => isCasinoLoading.value);
+
+// Update the getFeaturedGames function
 async function getFeaturedGames() {
-  isLoading.value = true;
-  try {
-    const res = await getTopBets();
-    if (!res.data) throw Error;
+  if (!topBetsData.value?.data) return;
 
-    // Use Set for faster unique tournament filtering
-    const uniqueTournamentIds = new Set();
-    const uniqueTournaments = [];
+  // Use Set for faster unique tournament filtering
+  const uniqueTournamentIds = new Set();
+  const uniqueTournaments = [];
 
-    // Single pass to filter unique tournaments
-    for (const tournament of res.data) {
-      if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-        uniqueTournamentIds.add(tournament.tournamentID);
-        uniqueTournaments.push(tournament);
-      }
+  // Single pass to filter unique tournaments
+  for (const tournament of topBetsData.value.data) {
+    if (!uniqueTournamentIds.has(tournament.tournamentID)) {
+      uniqueTournamentIds.add(tournament.tournamentID);
+      uniqueTournaments.push(tournament);
     }
+  }
 
-    // Sort tournaments and update featuredTournaments immediately
-    featuredTournaments.value = uniqueTournaments.sort(
-      (a, b) => a.tournamentID - b.tournamentID
-    );
+  // Sort tournaments and update featuredTournaments immediately
+  featuredTournaments.value = uniqueTournaments.sort(
+    (a, b) => a.tournamentID - b.tournamentID
+  );
 
-    // Set active tournament
-    activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+  // Set active tournament
+  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
 
-    // Process tournaments in parallel with concurrency limit
-    const CONCURRENCY_LIMIT = 3; // Process 3 tournaments at a time
-    const chunks = [];
-    for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
-      chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT));
-    }
+  // Process tournaments in parallel with concurrency limit
+  const CONCURRENCY_LIMIT = 3;
+  const chunks = [];
+  for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
+    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT));
+  }
 
-    // Process each chunk
-    for (const chunk of chunks) {
-      await Promise.all(
-        chunk.map(async (tournament) => {
-          try {
-            const games = await getFixturesByTournamentId(
-              tournament.tournamentID,
-              tournament.sportID
-            );
-            assignTournaments(tournament, games, tournament.tournamentID);
-          } catch (error) {
-            console.error(`Error processing tournament ${tournament.tournamentID}:`, error);
-            // Remove the tournament from featuredTournaments if it fails to load
-            const index = featuredTournaments.value.findIndex(t => t.tournamentID === tournament.tournamentID);
-            if (index !== -1) {
-              featuredTournaments.value.splice(index, 1);
-            }
+  for (const chunk of chunks) {
+    await Promise.all(
+      chunk.map(async (tournament) => {
+        try {
+          const games = await getFixturesByTournamentId(
+            tournament.tournamentID,
+            tournament.sportID
+          );
+          assignTournaments(tournament, games, tournament.tournamentID);
+        } catch (error) {
+          console.error(`Error processing tournament ${tournament.tournamentID}:`, error);
+          const index = featuredTournaments.value.findIndex(t => t.tournamentID === tournament.tournamentID);
+          if (index !== -1) {
+            featuredTournaments.value.splice(index, 1);
           }
-        })
-      );
-    }
-
-    isLoading.value = false;
-  } catch (error) {
-    isLoading.value = false;
-    console.error("Error fetching featured games:", error);
+        }
+      })
+    );
   }
 }
 
-onMounted(async () => {
-  Promise.all([getFeaturedGames(), getCasinoGames(), getCodes()])
-    .then(() => {})
-    .catch((error) => {
-      console.error("An error occurred:", error);
-    });
+// Update onMounted to watch for data changes
+watch([topBetsData, casinoData, codesData], ([topBets, casino, codes]) => {
+  if (topBets) {
+    getFeaturedGames();
+  }
+  if (casino) {
+    featuredCasino.value = casino.data;
+    activeCasinoCategory.value = casino.data[0]?.id;
+  }
+  if (codes) {
+    codes.value = codes.data.data;
+  }
+}, { immediate: true });
+
+// Add these new functions
+const shouldRefresh = ref(false);
+
+onActivated(() => {
+  // Component is activated (shown again)
+  if (shouldRefresh.value) {
+    // Refresh data if needed
+    getFeaturedGames();
+    getCasinoGames();
+    getCodes();
+    shouldRefresh.value = false;
+  }
+});
+
+onDeactivated(() => {
+  // Component is deactivated (hidden)
+  // Clean up MQTT subscriptions
+  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+    subscriptions.forEach((unsubscribe) => unsubscribe());
+  });
+  unsubscribeFunctions.value = {};
 });
 </script>
 <style scoped>
