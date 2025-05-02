@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, onMounted } from "vue";
 import { formatDate } from "@/helpers";
 import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
 import { defineEmits } from "vue";
