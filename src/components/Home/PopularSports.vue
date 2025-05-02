@@ -587,16 +587,9 @@ async function getFeaturedGames() {
 }
 
 // Update onMounted to watch for data changes
-watch([topBetsData, casinoData, codesData], ([topBets, casino, codes]) => {
+watch([topBetsData], ([topBets]) => {
   if (topBets) {
     getFeaturedGames();
-  }
-  if (casino) {
-    featuredCasino.value = casino.data;
-    activeCasinoCategory.value = casino.data[0]?.id;
-  }
-  if (codes) {
-    codes.value = codes.data.data;
   }
 }, { immediate: true });
 

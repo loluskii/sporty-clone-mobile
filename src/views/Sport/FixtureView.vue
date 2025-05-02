@@ -700,21 +700,6 @@ defineComponent({
   color: var(--text-disable-type1-primary);
 }
 
-.m-event-specifiers-order .af-select-item {
-  color: #353a45;
-  color: var(--text-type1-primary);
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  font-weight: inherit;
-  font-size: inherit;
-  /* font-size: 0.83333333rem; */
-}
-.m-event-specifiers-order .af-select-item.active {
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-  color: #0d9737;
-}
-
 .af-select-item {
   display: inline-block;
   text-align: center;
