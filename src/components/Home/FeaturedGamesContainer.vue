@@ -70,11 +70,11 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 const emit = defineEmits(["set-active-category"]);
 import { slugify } from "@/helpers";
-import { useUtilstStore, useAuthStore } from "../../stores";
+import { useUtilsStore, useAuthStore } from "@/stores";
 
 const router = useRouter();
 const route = useRoute();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const authStore = useAuthStore();
 const props = defineProps({
   featuredCasinogames: Array,

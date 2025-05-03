@@ -110,7 +110,7 @@ import HeaderOther from "@/components/HeaderOther.vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useUtilstStore } from "../stores";
+import { useUtilsStore } from "../stores";
 import {
   getCategoriesBySport,
   getTournamentsByCategories,
@@ -118,7 +118,7 @@ import {
   unslugify,
 } from "../helpers";
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const route = useRoute();
 const router = useRouter();
 

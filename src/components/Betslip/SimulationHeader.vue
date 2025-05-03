@@ -22,9 +22,9 @@
 
 <script setup>
 import { computed } from "vue";
-import { useUtilstStore } from "@/stores";
+import { useUtilsStore } from "@/stores";
 
-const { SportsbookGlobalVariable } = useUtilstStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 
 const props = defineProps({
   timerEnded: {

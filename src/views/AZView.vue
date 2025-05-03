@@ -73,16 +73,16 @@
 
 <script setup>
 import { ref, onMounted, reactive } from "vue";
-import { useUtilstStore } from "../stores/utils.store";
+import { useUtilsStore } from "../stores/utils.store";
 import { getCategoriesBySport } from "../helpers";
-const { sportsMenu } = useUtilstStore();
+const { sportsMenu } = useUtilsStore();
 // import { useRouter } from 'vue-router'
 import AZTournmentSelect from "@/components/AZTournmentSelect.vue";
 import LoadingSpinner from "../components/Loaders/LoadingSpinner.vue";
 
 const countriesList = ref([]);
 const selectTournaments = ref(false);
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
 const page = ref();
 const isLoading = ref(true);

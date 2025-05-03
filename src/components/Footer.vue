@@ -82,16 +82,32 @@
         }}
       </button>
     </div>
+    <div class="version-info">
+      {{ appVersion }}
+    </div>
   </footer>
 </template>
 <script setup>
 import { useRoute } from "vue-router";
-import { useAuthStore, useUtilstStore } from "@/stores";
-import { defineComponent } from "vue";
+import { useAuthStore, useUtilsStore } from "@/stores";
+import { defineComponent, ref, onMounted } from "vue";
+import { checkVersion } from "@/utils/version";
 
 const route = useRoute();
 const authStore = useAuthStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
+const appVersion = ref("");
+
+onMounted(async () => {
+  try {
+    const response = await fetch("/version.json");
+    const data = await response.json();
+    appVersion.value = `v${data.version} (${data.build})`;
+  } catch (error) {
+    console.error("Error fetching version:", error);
+    appVersion.value = "v1.0.0";
+  }
+});
 
 async function doLogout() {
   return authStore.logout();
@@ -392,5 +408,13 @@ footer .btn button {
   margin: 0.83333333rem 0.83333333rem;
   -o-object-fit: contain;
   object-fit: contain;
+}
+
+.version-info {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-type2-tertiary);
+  padding: 0.5rem 0;
+  opacity: 0.7;
 }
 </style>

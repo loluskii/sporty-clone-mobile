@@ -48,8 +48,10 @@
                 </div>
               </div>
               <div class="operate-button">
-                <span class="currency">NGN</span>
-                <span> {{ balance.toFixed(2) }}</span>
+                <span class="currency">{{
+                  SportsbookGlobalVariable.CurrencyCode
+                }}</span>
+                <span> {{ usersStore.balance }}</span>
               </div>
             </div>
             <template v-if="betslipSelections.length > 0">
@@ -213,7 +215,10 @@
                   <div class="about-to-pay">
                     <span>Confirm to Pay</span><span>&nbsp;</span>
                     <div>
-                      <div class="stake-num">NGN {{ totalStake }}</div>
+                      <div class="stake-num">
+                        {{ SportsbookGlobalVariable.CurrencyCode }}
+                        {{ totalStake }}
+                      </div>
                     </div>
                   </div>
                   <div class="blank-area"></div>
@@ -302,9 +307,12 @@ import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
 import Simulation from "./Simulation.vue";
 import BetslipModeToggle from "./BetslipModeToggle.vue";
+import { useUtilsStore } from "@/stores";
+import VueToggles from "vue-toggles";
 
 const emit = defineEmits(["toggle-betslip", "update-betcount"]);
 const couponStore = useCouponStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 const show = ref(false);
 const placeBetStatus = ref(false);
 const isPlaceBetSuccessful = ref(false);
@@ -344,13 +352,6 @@ const betslipMode = computed(() => {
 
 const isSimulating = computed(() => {
   return couponStore.isSimulating;
-});
-
-const balance = computed(() => {
-  if (usersStore.currentUser) {
-    return usersStore.balance;
-  }
-  return 0;
 });
 
 const showBetHead = computed(() => {

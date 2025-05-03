@@ -6,8 +6,8 @@
         gameData.matchStatus == "1st half"
           ? "H1"
           : gameData.matchStatus == "2nd half"
-          ? "H2"
-          : gameData.matchStatus
+            ? "H2"
+            : gameData.matchStatus
       }}</span>
       <span class="m-league-name"
         >{{ gameData.categoryName }} - {{ gameData.tournament }}</span
@@ -116,7 +116,7 @@ import EmptyOdds from "@/components/EmptyOdds.vue";
 import { sortArr, createID, isSelected, slugify } from "@/helpers";
 import { useCouponStore } from "@/stores";
 import emitter from "@/plugins/emitter";
-import { SIM_ALLOWED_MARKETS } from "../../helpers";
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
 import { useMqttService } from "@/composables/useMqtt";
 
 const couponStore = useCouponStore();

@@ -93,8 +93,8 @@
 </template>
 
 <script setup>
-// import { getPlacedBetStatus } from '../../helpers/utils'
-import { formatDate } from "../../helpers";
+// import { getPlacedBetStatus } from '@/helpers/utils'
+import { formatDate } from "@/helpers";
 defineProps({
   selection: Object,
 });

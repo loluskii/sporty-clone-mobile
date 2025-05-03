@@ -94,7 +94,7 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore } from "../../stores";
+import { useCouponStore } from "@/stores";
 
 const couponStore = useCouponStore();
 </script>

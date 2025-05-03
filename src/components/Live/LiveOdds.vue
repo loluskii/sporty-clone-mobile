@@ -15,7 +15,7 @@
   </div>
 </template>
 <script setup>
-// import { formatOdd } from '../../helpers'
+// import { formatOdd } from '@/helpers'
 import { defineComponent, watch, ref } from "vue";
 
 const oddUp = ref(false);

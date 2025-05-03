@@ -7,8 +7,8 @@
       <div class="m-openbet-header">
         <div v-if="isAuthenticated" class="is-login">
           <span class="balance"
-            ><span>NGN </span>
-            <span>{{ balance.toLocaleString("en") }}</span></span
+            ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span>
+            <span>{{ usersStore.balance }}</span></span
           >
         </div>
         <div v-else class="no-login">
@@ -44,13 +44,14 @@
 </template>
 
 <script setup>
-import { useUsersStore, useAuthStore } from "../stores";
+import { useUsersStore, useAuthStore, useUtilsStore } from "../stores";
 import { useRoute } from "vue-router";
 import { defineProps, computed } from "vue";
 
 const route = useRoute();
 const { isAuthenticated } = useAuthStore();
-const { balance } = useUsersStore();
+const usersStore = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore();
 
 defineProps({
   active: String,

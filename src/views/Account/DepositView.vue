@@ -54,8 +54,9 @@
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
-                  ><span data-cms-key="balance">Balance</span> (NGN)
-                  {{ balance }}
+                  ><span data-cms-key="balance">Balance</span> ({{
+                    SportsbookGlobalVariable.CurrencyCode
+                  }}) {{ balance }}
                 </span>
               </div>
             </div>
@@ -65,8 +66,9 @@
               >
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
                   <span class="amount-prepend"
-                    ><span data-cms-key="amount">Amount</span>
-                    (NGN)
+                    ><span data-cms-key="amount">Amount</span> ({{
+                      SportsbookGlobalVariable.CurrencyCode
+                    }})
                   </span>
                 </div>
                 <i
@@ -117,11 +119,11 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import HeaderOther from "../../components/HeaderOther.vue";
-import { useUsersStore } from "@/stores";
+import { useUsersStore, useUtilsStore } from "@/stores";
 import { getPaymentMethods, getDepositURL } from "@/helpers";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import emitter from "../../plugins/emitter";
-import { CLIENT_ID, checkFirstDeposit, formatNumber } from "../../helpers";
+import emitter from "@/plugins/emitter";
+import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 
 const activeTab = ref("");
 const depositMethods = ref([]);

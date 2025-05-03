@@ -78,12 +78,12 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { useRouter } from "vue-router";
-import { useCouponStore, useUtilstStore } from "../../stores";
+import { useCouponStore, useUtilsStore } from "@/stores";
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
 import emitter from "@/plugins/emitter";
 
 const couponStore = useCouponStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const emit = defineEmits([
   "toggle-betslip",
   "on-selection-input",

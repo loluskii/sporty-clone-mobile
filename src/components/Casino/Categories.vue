@@ -39,7 +39,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { slugify } from "../../helpers";
+import { slugify } from "@/helpers";
 
 const props = defineProps(["categories"]);
 

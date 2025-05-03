@@ -122,8 +122,8 @@
 <script setup>
 import { formatDate } from "@/helpers";
 import { ref } from "vue";
-import emitter from "../../plugins/emitter";
-import { useCouponStore } from "../../stores";
+import emitter from "@/plugins/emitter";
+import { useCouponStore } from "@/stores";
 
 const props = defineProps(["codes"]);
 const addToBetslipLoading = ref(false);

@@ -56,7 +56,7 @@ import {
 } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "../../helpers";
+import { slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";

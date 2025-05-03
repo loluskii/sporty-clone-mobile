@@ -105,7 +105,7 @@
 </template>
 <script setup>
 import LiveHighlightsFixture from "@/components/Live/LiveHighlightsFixture.vue";
-import { useUtilstStore } from "../../stores/utils.store";
+import { useUtilsStore } from "@/stores/utils.store";
 import { useCouponStore } from "@/stores";
 import LoadingError from "@/components/Loaders/LoadingError.vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -124,7 +124,7 @@ import _ from "lodash";
 const activeSportID = ref(1);
 const isEmptyResponse = ref(false);
 const loadingError = ref(false);
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const totalFixtures = ref(1);
 

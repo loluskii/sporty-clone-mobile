@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore, useUtilstStore } from "../stores";
+import { useAuthStore, useUtilsStore } from "../stores";
 // Convert all static imports to dynamic imports
-import HomeView from "@/views/HomeView.vue"
+import HomeView from "@/views/HomeView.vue";
 const AZView = () => import("@/views/AZView.vue");
 const FixtureView = () => import("@/views/Sport/FixtureView.vue");
 const SignInView = () => import("@/views/SignInView.vue");
@@ -328,7 +328,7 @@ router.beforeEach((to, from, next) => {
     });
   }
 
-  const utilStore = useUtilstStore();
+  const utilStore = useUtilsStore();
   // Check if the meta field is set and decide whether to show the footer
   const showFooter = to.meta.showFooter;
   const showMobileNavigation = to.meta.showMobileNavigation;

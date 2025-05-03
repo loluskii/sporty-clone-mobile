@@ -85,7 +85,7 @@
 import CodeSelectionItem from "./CodeSelectionItem.vue";
 import { useCouponStore } from "@/stores";
 import { ref } from "vue";
-import emitter from "../../plugins/emitter";
+import emitter from "@/plugins/emitter";
 const props = defineProps(["code"]);
 
 const addToBetslipLoading = ref(false);
