@@ -56,7 +56,7 @@
                 <span class="balance-text balance-text--bank-transfer"
                   ><span data-cms-key="balance">Balance</span> ({{
                     SportsbookGlobalVariable.CurrencyCode
-                  }}) {{ balance }}
+                  }}) {{ usersStore.balance }}
                 </span>
               </div>
             </div>
@@ -128,16 +128,13 @@ import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 const activeTab = ref("");
 const depositMethods = ref([]);
 const { currentUser } = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore()
 const router = useRouter();
 const amount = ref("");
 const isLoading = ref(false);
 const availableBonus = ref(null);
 
 const usersStore = useUsersStore();
-
-const balance = computed(() => {
-  return parseFloat(usersStore.balance).toFixed(2);
-});
 
 const bonus = computed(() => {
   return usersStore.bonus;

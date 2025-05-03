@@ -106,10 +106,12 @@
 import { defineComponent, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore, useUsersStore } from "@/stores";
+import { useUtilsStore } from "../../stores";
 // import { formatNumber } from '@/helpers'
 const router = useRouter();
 const { isAuthenticated } = useAuthStore();
 const userStore = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 function redirectToAccount() {
   if (currentUser) {

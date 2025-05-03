@@ -122,14 +122,14 @@
                     <p class="balance-text">
                       <span data-cms-key="balance">Balance</span>
                       <span data-op="balance"
-                        >(NGN) {{ formatNumber(balance) }}</span
+                        >(NGN) {{ usersStore.balance }}</span
                       >
                     </p>
                     <div class="withdrawable-text-wrapper">
                       <i class="m-icon-help"></i>
                       <p>
                         <span>Withdrawable Balance </span>
-                        <span>NGN {{ formatNumber(balance) }}</span>
+                        <span>NGN {{ usersStore.balance }}</span>
                       </p>
                     </div>
                   </div>
@@ -320,11 +320,12 @@ import {
 import { ref, onMounted, computed } from "vue";
 import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
-import { useUsersStore } from "@/stores";
+import { useUsersStore, useUtilsStore } from "@/stores";
 import { CLIENT_ID } from "@/helpers";
 const showBanks = ref(false);
 const showBanksAssets = ref(false);
-const { currentUser } = useUsersStore();
+const usersStore = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore()
 const router = useRouter();
 
 const banksList = ref([]);
@@ -371,9 +372,9 @@ const isFormComplete = computed(() => {
 });
 
 const checkWithdrawableAmount = () => {
-  if (withdrawalAmount.value > userStore.balance) {
+  if (withdrawalAmount.value > usersStore.balance) {
     amountError.value = true;
-    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${userStore.balance}`;
+    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${usersStore.balance}`;
   } else {
     amountError.value = false;
     amountErrorMessage.value = "";
@@ -414,7 +415,7 @@ async function submit() {
       account_number: accountNumber.value,
       amount: withdrawalAmount.value,
       remaining_balance:
-        parseFloat(balance.value) - parseFloat(withdrawalAmount.value),
+        parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value),
     };
     emitter.emit("showDialogueMessage", data);
   } else {
@@ -427,7 +428,7 @@ async function submit() {
         account_number: accountNumber.value,
         amount: withdrawalAmount.value,
         remaining_balance:
-          parseFloat(balance.value) - parseFloat(withdrawalAmount.value),
+          parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value),
       };
       emitter.emit("showDialogueMessage", data);
     } else {
@@ -480,7 +481,7 @@ async function checkUserBankAssets() {
 }
 onMounted(async () => {
   emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
-  if (!userStore.currentUser) {
+  if (!usersStore.currentUser) {
     return router.push({ name: "sign-in" });
   } else {
     Promise.all([checkUserBankAssets(), getBanks()]);
