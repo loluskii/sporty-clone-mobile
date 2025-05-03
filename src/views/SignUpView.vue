@@ -337,17 +337,6 @@ onMounted(() => {
 </script>
 
 <style>
-.af-button.is-disabled,
-.af-button.is-disabled:focus,
-.af-button.is-disable:hover {
-  background-color: #dcdee5 !important;
-  background-image: none;
-  cursor: not-allowed;
-  border-color: #dcdee5 !important;
-  border-color: var(--disable-brand-secondary) !important;
-  color: #9ca0ab !important;
-  color: var(--text-disable-type1-primary) !important;
-}
 .register-and-login {
   -webkit-box-align: center;
   -webkit-align-items: center;
