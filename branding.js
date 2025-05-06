@@ -11,22 +11,22 @@ export const brandDetails = {
     secondaryBackground: '#353A45',
 
     primaryTextColor: '#353a45',
-    secondaryTextColor: '#0D9737',
+    secondaryTextColor: '#ebc600',
 
-    prematchOddBackgroundColor: '#ccccd9',
+    prematchOddBackgroundColor: '#e0e1ff',
     prematchOddTextColor: '#000245',
     activePrematchOddBackground: '#0D9737',
     activePrematchOddTextColor: '#fff',
 
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
-    liveOddTextColor: '#FFD700',
+    liveOddTextColor: '#ebc600',
     activeLiveOddBackground: '#32ce62',
     activeLiveOddTextColor: '#fff',
 
     liveContainerBackgroundColor: '#1B1E25',
 
-    activeTabColor: '#a62901',
-    highlightTextColor: '#a62901'
+    activeTabColor: '#d6b500',
+    highlightTextColor: '#d6b500'
   },
   fonts: {
     primaryFont: 'Avenir',
