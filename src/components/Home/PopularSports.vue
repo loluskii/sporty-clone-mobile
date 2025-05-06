@@ -794,7 +794,7 @@ onMounted(async () => {
   color: var(--c-prematch-sport-item-text);
 }
 .featured-nav-item .feature-nav-span.active {
-  color: #a62901;
+  color: var(--brand-active-tab-bg);
   font-weight: bold;
 }
 .featured-active {
