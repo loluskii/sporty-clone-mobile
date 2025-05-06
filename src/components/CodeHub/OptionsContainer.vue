@@ -146,7 +146,9 @@
 .code-hub-list-filter .select-container .select[data-v-51a6e872]:nth-child(1) {
   border-left-width: 0;
 }
-.code-hub-list-filter .select-container .select[data-v-51a6e872]:nth-last-child(1) {
+.code-hub-list-filter
+  .select-container
+  .select[data-v-51a6e872]:nth-last-child(1) {
   border-right-width: 0;
 }
 .code-hub-list-filter .select-container .select .text[data-v-51a6e872] {
@@ -171,7 +173,9 @@
   -webkit-transition: -webkit-transform 0.2s ease-in-out;
   transition: -webkit-transform 0.2s ease-in-out;
   transition: transform 0.2s ease-in-out;
-  transition: transform 0.2s ease-in-out, -webkit-transform 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    -webkit-transform 0.2s ease-in-out;
   color: #9ca0ab;
 }
 .code-hub-list-filter .select-container .select.active .icon[data-v-51a6e872] {

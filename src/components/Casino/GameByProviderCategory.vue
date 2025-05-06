@@ -11,7 +11,11 @@
   <div class="games-container" ref="myElement">
     <div class="games-grid mt-3">
       <div class="row mb-3 pb-5" style="overflow-x: hidden">
-        <div class="col-6 mb-3" v-for="(game, index) in displayedGames" :key="index">
+        <div
+          class="col-6 mb-3"
+          v-for="(game, index) in displayedGames"
+          :key="index"
+        >
           <Game :game="game" />
         </div>
       </div>
@@ -20,12 +24,12 @@
     <!-- Load More section with increased height to overlap games -->
     <div class="load-more-container" v-if="hasMoreGames">
       <div class="load-more-overlay"></div>
-      <button 
+      <button
         class="btn btn-primary load-more-btn"
         @click="loadMore"
         :disabled="isLoading"
       >
-        {{ isLoading ? 'Loading...' : 'Load More' }}
+        {{ isLoading ? "Loading..." : "Load More" }}
       </button>
     </div>
   </div>
@@ -35,8 +39,8 @@
 import { ref, onMounted, computed } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import CategoryProvider from "./CategoryProvider.vue";
-import { useUsersStore, useUtilstStore } from "../../stores";
-import Game from "@/components/Casino/Game.vue"
+import { useUsersStore, useUtilsStore } from "@/stores";
+import Game from "@/components/Casino/Game.vue";
 import { useRouter } from "vue-router";
 
 const props = defineProps(["games", "titleText", "type"]);
@@ -44,11 +48,11 @@ const props = defineProps(["games", "titleText", "type"]);
 const isLoading = ref(false);
 const myElement = ref(null);
 const currentView = ref("providers");
-const usersStore = useUsersStore()
-const router = useRouter()
-const {previousRoute} = useUtilstStore()
+const usersStore = useUsersStore();
+const router = useRouter();
+const { previousRoute } = useUtilsStore();
 
-const itemsPerLoad = 15;
+const itemsPerLoad = 35;
 const displayLimit = ref(itemsPerLoad);
 
 // Computed property for displayed games
@@ -57,12 +61,12 @@ const displayedGames = computed(() => {
 });
 
 const goBack = () => {
-  if(props.type === "provider"){
-    router.push({name: "casino-providers"})
-  }else{
-    router.push(previousRoute)
+  if (props.type === "provider") {
+    router.push({ name: "casino-providers" });
+  } else {
+    router.push(previousRoute);
   }
-}
+};
 
 // Check if more games are available
 const hasMoreGames = computed(() => {
@@ -73,7 +77,7 @@ const hasMoreGames = computed(() => {
 const loadMore = async () => {
   isLoading.value = true;
   // Simulate loading delay for better UX
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   displayLimit.value += itemsPerLoad;
   isLoading.value = false;
 };
@@ -82,11 +86,12 @@ const updateCSSVar = () => {
   // console.log(myElement.value);
   if (myElement.value) {
     const distanceFromTop =
-      myElement.value.getBoundingClientRect().top + document.documentElement.scrollTop;
+      myElement.value.getBoundingClientRect().top +
+      document.documentElement.scrollTop;
     // Assign the distance to a CSS variable
     document.documentElement.style.setProperty(
       "--distance-from-top",
-      `${distanceFromTop}px`
+      `${distanceFromTop}px`,
     );
   } else {
     console.log("sdfsdf");
@@ -235,7 +240,7 @@ onMounted(() => {
   right: 0;
   height: 150px; /* Increased height to overlap more of the games */
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   padding-bottom: 20px;
   z-index: 10;

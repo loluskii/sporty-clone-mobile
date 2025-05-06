@@ -31,10 +31,11 @@
         </div>
       </div>
       <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play
-        Responsibly. Betting is addictive and can be psychologically harmful. |
-        {{ utilsStore.brandName }} is licensed by the Oyo State Gaming Board, according to
-        the License No: OYSGB/SPB/232975 issued by the Oyo State Gaming Board.
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}.
+        Play Responsibly. Betting is addictive and can be psychologically
+        harmful. | {{ utilsStore.brandName }} is licensed by the Oyo State
+        Gaming Board, according to the License No: OYSGB/SPB/232975 issued by
+        the Oyo State Gaming Board.
       </p>
     </div>
     <div class="hr"></div>
@@ -42,33 +43,71 @@
       <h5
         class="underline"
         @click="
-          $router.push({ name: 'cms-page', params: { page: 'terms-and-conditions' } })
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'terms-and-conditions' },
+          })
         "
       >
         Terms &amp; Conditions
       </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'about-us' } })">About Us</h5>
+      <h5
+        class="underline"
+        @click="
+          $router.push({ name: 'cms-page', params: { page: 'about-us' } })
+        "
+      >
+        About Us
+      </h5>
       <h5 class="divider">|</h5>
-      <h5 class="underline" @click="$router.push({ name: 'cms-page', params: { page: 'responsible-gaming' } })">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'responsible-gaming' },
+          })
+        "
+      >
         Responsible Gaming
       </h5>
     </div>
     <div class="btn" @click="handleClick">
       <button>
-        {{ route.name == "account-me" && authStore.token ? "Logout" : "Back to Top" }}
+        {{
+          route.name == "account-me" && authStore.token
+            ? "Logout"
+            : "Back to Top"
+        }}
       </button>
+    </div>
+    <div class="version-info">
+      {{ appVersion }}
     </div>
   </footer>
 </template>
 <script setup>
 import { useRoute } from "vue-router";
-import { useAuthStore, useUtilstStore } from "@/stores";
-import { defineComponent } from "vue";
+import { useAuthStore, useUtilsStore } from "@/stores";
+import { defineComponent, ref, onMounted } from "vue";
+import { checkVersion } from "@/utils/version";
 
 const route = useRoute();
 const authStore = useAuthStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
+const appVersion = ref("");
+
+onMounted(async () => {
+  try {
+    const response = await fetch("/version.json");
+    const data = await response.json();
+    appVersion.value = `v${data.version} (${data.build})`;
+  } catch (error) {
+    console.error("Error fetching version:", error);
+    appVersion.value = "v1.0.0";
+  }
+});
 
 async function doLogout() {
   return authStore.logout();
@@ -369,5 +408,13 @@ footer .btn button {
   margin: 0.83333333rem 0.83333333rem;
   -o-object-fit: contain;
   object-fit: contain;
+}
+
+.version-info {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-type2-tertiary);
+  padding: 0.5rem 0;
+  opacity: 0.7;
 }
 </style>

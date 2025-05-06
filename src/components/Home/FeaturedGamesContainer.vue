@@ -1,7 +1,10 @@
 <template>
   <div class="featuredGame" style="position: relative">
     <div class="featuredGameCategoryBox">
-      <div class="m-snap-nav-wrap featuredGameCategoryNav" style="overflow: hidden">
+      <div
+        class="m-snap-nav-wrap featuredGameCategoryNav"
+        style="overflow: hidden"
+      >
         <ul class="m-snap-nav flex">
           <li
             v-for="(category, index) in featuredCasino"
@@ -23,7 +26,8 @@
             </div>
           </li>
         </ul>
-        <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+        <i class="controls left-controls"></i>
+        <i class="controls right-controls"></i>
       </div>
     </div>
     <template v-if="!casinoIsLoading && featuredCasinogames.length">
@@ -51,8 +55,8 @@
     <template v-else-if="!featuredCasinogames.length">
       <div class="no-data">
         <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-          you.
+          Sorry, there are no games currently<br />available in this category.
+          Please try later.<br />Thank you.
         </div>
       </div>
     </template>
@@ -61,45 +65,54 @@
 </template>
 
 <script setup>
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-const emit = defineEmits(['set-active-category'])
-import { slugify } from '@/helpers'
-import { useUtilstStore, useAuthStore } from '../../stores'
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+const emit = defineEmits(["set-active-category"]);
+import { slugify } from "@/helpers";
+import { useUtilsStore, useAuthStore } from "@/stores";
 
-const router = useRouter()
-const route = useRoute()
-const utilsStore = useUtilstStore()
-const authStore = useAuthStore()
+const router = useRouter();
+const route = useRoute();
+const utilsStore = useUtilsStore();
+const authStore = useAuthStore();
 const props = defineProps({
   featuredCasinogames: Array,
   featuredCasino: Array,
   activeCasinoCategory: Number,
-  casinoIsLoading: Boolean
-})
+  casinoIsLoading: Boolean,
+});
 
 const setActiveCategory = (category) => {
-  return emit('set-active-category', category)
-}
+  return emit("set-active-category", category);
+};
 
 const getImageSrc = (slug) => {
-  const imageUrl = new URL(`../../assets/images/casino/${slug.toLowerCase()}.png`, import.meta.url)
-  return imageUrl
-}
+  const imageUrl = new URL(
+    `../../assets/images/casino/${slug.toLowerCase()}.png`,
+    import.meta.url,
+  );
+  return imageUrl;
+};
 
 const getImagePath = (game) => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${game.title.replace(/\s/g, '').toLowerCase()}.png?alt=media`;
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`;
+  } catch (error) {
+    console.error('Error generating image path:', error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
+  }
 };
 
 async function redirectToGamePlay(game) {
-	if(!authStore.isAuthenticated) { return router.push('/sign-in') }
+  if (!authStore.isAuthenticated) {
+    return router.push("/sign-in");
+  }
   utilsStore.previousRoute = route.fullPath;
   return router.push({
-    name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.id }
-  })
+    name: "game-play",
+    params: { game_name: slugify(game.title), game_id: game.id },
+  });
 }
 </script>
 
@@ -135,7 +148,10 @@ async function redirectToGamePlay(game) {
 .featuredGame .featuredGameCategoryBox .featuredGameCategoryNav {
   width: 100%;
 }
-.featuredGame .featuredGameCategoryBox .featuredGameCategoryNav .featuredGameCategoryNavItem {
+.featuredGame
+  .featuredGameCategoryBox
+  .featuredGameCategoryNav
+  .featuredGameCategoryNavItem {
   padding: 0 0 0.4rem 0;
 }
 .featuredGame .cardsContainer {
@@ -317,7 +333,7 @@ async function redirectToGamePlay(game) {
   width: auto;
 }
 .featuredMatchCategory::after {
-  content: '';
+  content: "";
   display: none;
   bottom: 6px;
   height: 0;
@@ -335,7 +351,7 @@ async function redirectToGamePlay(game) {
   border-top: 8px solid transparent;
 }
 .featuredMatchCategory::before {
-  content: '';
+  content: "";
   display: none;
   bottom: 0px;
   height: 0;

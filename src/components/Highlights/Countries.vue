@@ -3,7 +3,11 @@
     <div class="m-countries-block">
       <div class="m-countries-block-title" data-cms-key="a_z">A-Z</div>
       <div class="m-country-list">
-        <div v-for="(country, index) in countriesData" :key="index" class="m-league">
+        <div
+          v-for="(country, index) in countriesData"
+          :key="index"
+          class="m-league"
+        >
           <div
             v-if="country.categoryName"
             class="m-league-title hide"
@@ -29,13 +33,17 @@
                           name: 'fixtures-by-tournaments',
                           params: {
                             sport: getActiveSport.sportName,
-                            categories: 'sr:category:' + activeCategory.categoryID,
-                            tournaments: 'sr:tournament:' + tournament.tournamentID
-                          }
+                            categories:
+                              'sr:category:' + activeCategory.categoryID,
+                            tournaments:
+                              'sr:tournament:' + tournament.tournamentID,
+                          },
                         })
                       "
                     >
-                      <div class="m-item-left">{{ tournament.tournamentName }}</div>
+                      <div class="m-item-left">
+                        {{ tournament.tournamentName }}
+                      </div>
                       <div class="m-item-right">{{ tournament.total }}</div>
                     </a>
                   </li>
@@ -50,48 +58,48 @@
 </template>
 
 <script setup>
-import { defineComponent, defineProps, computed, ref } from 'vue'
-import { slugify, getTournamentsByCategories } from '@/helpers'
-import { useUtilstStore } from '@/stores'
+import { defineComponent, defineProps, computed, ref } from "vue";
+import { slugify, getTournamentsByCategories } from "@/helpers";
+import { useUtilsStore } from "@/stores";
 
-const utilsStore = useUtilstStore()
-const isLoading = ref(false)
-const tournamentsData = ref([])
-const activeCategory = ref(null)
+const utilsStore = useUtilsStore();
+const isLoading = ref(false);
+const tournamentsData = ref([]);
+const activeCategory = ref(null);
 
 const getActiveSport = computed(() => {
-  const active = props.activeSportID
-  return utilsStore.sportsMenu.find((x) => x.sportID == active)
-})
+  const active = props.activeSportID;
+  return utilsStore.sportsMenu.find((x) => x.sportID == active);
+});
 
 async function showChild(index, country) {
-  isLoading.value = true
-  const childId = 'child_' + index
-  const childElement = document.getElementById(childId)
-  activeCategory.value = country
+  isLoading.value = true;
+  const childId = "child_" + index;
+  const childElement = document.getElementById(childId);
+  activeCategory.value = country;
   if (!country.isOpen) {
-    const res = await getTournamentsByCategories(country.categoryID)
-    country.tournamentsData = res.sports
-    country.isOpen = true
+    const res = await getTournamentsByCategories(country.categoryID);
+    country.tournamentsData = res.sports;
+    country.isOpen = true;
     if (childElement) {
-      childElement.classList.remove('d-none')
+      childElement.classList.remove("d-none");
     }
   } else {
-    country.isOpen = false
+    country.isOpen = false;
     if (childElement) {
-      childElement.classList.add('d-none')
+      childElement.classList.add("d-none");
     }
   }
 }
 
 const props = defineProps({
   countriesData: { type: Object },
-  activeSportID: 'integer'
-})
+  activeSportID: "integer",
+});
 
 defineComponent({
-  name: 'countries-list'
-})
+  name: "countries-list",
+});
 </script>
 
 <style>
@@ -122,11 +130,20 @@ defineComponent({
   border-bottom: 0;
 }
 
-.m-sports .m-countries-panel .m-countries-block .m-country-list .m-league:last-child {
+.m-sports
+  .m-countries-panel
+  .m-countries-block
+  .m-country-list
+  .m-league:last-child {
   border-bottom: 1px solid #f2f3f5;
 }
 
-.m-sports .m-countries-panel .m-countries-block .m-country-list .m-league .m-league-title {
+.m-sports
+  .m-countries-panel
+  .m-countries-block
+  .m-country-list
+  .m-league
+  .m-league-title {
   background-color: #ffffff;
   border-top: 1px solid #f2f3f5;
   -webkit-box-sizing: border-box;
@@ -152,8 +169,8 @@ defineComponent({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
-  padding-left: 0.83333333rem;
+  font-weight: bold;
+  /* padding-left: 0.83333333rem; */
 }
 .m-league .m-league-title .boost {
   -webkit-flex-shrink: 0;
@@ -167,8 +184,8 @@ defineComponent({
   display: inline-block;
 }
 .m-league .m-league-title .icon-triangle::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -1,27 +1,33 @@
 <template lang="">
-    <div class="head-top d-flex align-items-center">
-        <div class="categories-list">
-          <template v-for="(top, index) in topGameCategories" :key="index">
-            <div
-              class="category"
-              :class="activeTopCategory == top.id ? 'active' : ''"
-              @click="$router.push({
-                name: 'games-by-category',
-                params: { category: slugify(top.name) },
-                query: { category_id: top.id },
-            })"
-              v-if="top.slug !== 'all'"
-            >
-              <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
-              <span>{{ top.name }}</span>
-            </div>
-          </template>
+  <div class="head-top d-flex align-items-center">
+    <div class="categories-list">
+      <template v-for="(top, index) in topGameCategories" :key="index">
+        <div
+          class="category"
+          :class="activeTopCategory == top.id ? 'active' : ''"
+          @click="
+            $router.push({
+              name: 'games-by-category',
+              params: { category: slugify(top.name) },
+              query: { category_id: top.id },
+            })
+          "
+          v-if="top.slug !== 'all'"
+        >
+          <img
+            :src="getImageSrc(top.slug)"
+            class="img-fluid"
+            alt=""
+            srcset=""
+          />
+          <span>{{ top.name }}</span>
         </div>
-        <div class="game-search">
-          <span class="x-icon-search"></span>
-        </div>
+      </template>
     </div>
-    
+    <div class="game-search">
+      <span class="x-icon-search"></span>
+    </div>
+  </div>
 </template>
 <script setup>
 import { ref, onBeforeMount, computed } from "vue";
@@ -29,7 +35,7 @@ import { getTopGameCategories, slugify } from "@/helpers";
 import { useAuthStore, useUsersStore } from "@/stores";
 import { useRoute } from "vue-router";
 
-const route = useRoute()
+const route = useRoute();
 const topGameCategories = ref([]);
 const gamesList = ref([]);
 const scrollComponent = ref(null);
@@ -41,11 +47,14 @@ const currentView = ref("grouped_category");
 const providers = ref([]);
 
 const activeTopCategory = computed(() => {
-	return route.query?.category_id
-})
+  return route.query?.category_id;
+});
 
 const getImageSrc = (cat) => {
-  const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url);
+  const imageUrl = new URL(
+    `../../assets/images/casino/${cat}.png`,
+    import.meta.url,
+  );
   return imageUrl;
 };
 

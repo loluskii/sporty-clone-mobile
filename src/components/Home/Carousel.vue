@@ -1,6 +1,11 @@
 <template lang="">
   <!-- Home Carousel -->
-  <div id="carousel" data-html2canvas-ignore="" class="main-banner" v-if="images.length">
+  <div
+    id="carousel"
+    data-html2canvas-ignore=""
+    class="main-banner"
+    v-if="images.length"
+  >
     <div data-ride="carousel" class="carousel slide">
       <div role="listbox" class="carousel-inner">
         <div
@@ -18,46 +23,46 @@
   <!-- Home Carousel -->
 </template>
 <script setup>
-import { ref, defineComponent, onMounted, onBeforeUnmount } from 'vue'
-import { fetchBanners } from '@/helpers'
+import { ref, defineComponent, onMounted, onBeforeUnmount } from "vue";
+import { fetchBanners } from "@/helpers";
 
-const props = defineProps(["type"])
+const props = defineProps(["type"]);
 
-const currentIndex = ref(0)
-const intervalId = ref(null)
-const autoScrollDelay = ref(3000)
-const images = ref([])
+const currentIndex = ref(0);
+const intervalId = ref(null);
+const autoScrollDelay = ref(3000);
+const images = ref([]);
 function startAutoSlider() {
   intervalId.value = setInterval(() => {
-    nextSlide()
-  }, autoScrollDelay.value)
+    nextSlide();
+  }, autoScrollDelay.value);
 }
 function stopAutoSlider() {
-  clearInterval(intervalId.value)
+  clearInterval(intervalId.value);
 }
 function nextSlide() {
   if (currentIndex.value < images.value.length - 1) {
-    currentIndex.value++
+    currentIndex.value++;
   } else {
-    currentIndex.value = 0
+    currentIndex.value = 0;
   }
 }
 
 function goToSlide(image) {
   if (image.link) {
-    window.location.href = image.link
+    window.location.href = image.link;
   }
 }
 
 onMounted(async () => {
-  const res = await fetchBanners()
-  images.value = res.filter((b) => b.banner_type === props.type)
-  startAutoSlider()
-})
+  const res = await fetchBanners();
+  images.value = res.filter((b) => b.banner_type === props.type);
+  startAutoSlider();
+});
 
 onBeforeUnmount(() => {
-  stopAutoSlider()
-})
+  stopAutoSlider();
+});
 </script>
 <style scoped>
 .carousel {
@@ -73,7 +78,7 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.carousel .carousel-inner>.item {
+.carousel .carousel-inner > .item {
   display: none;
   position: relative;
   width: 100%;
@@ -82,61 +87,61 @@ onBeforeUnmount(() => {
   transition: 0.6s ease-in-out left;
 }
 
-.carousel .carousel-inner>.item a,
-.carousel .carousel-inner>.item a:hover,
-.carousel .carousel-inner>.item a:active {
+.carousel .carousel-inner > .item a,
+.carousel .carousel-inner > .item a:hover,
+.carousel .carousel-inner > .item a:active {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.carousel .carousel-inner>.item>img,
-.carousel .carousel-inner>.item>a>img {
+.carousel .carousel-inner > .item > img,
+.carousel .carousel-inner > .item > a > img {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.carousel .carousel-inner>.item>img[src=''],
-.carousel .carousel-inner>.item>a>img[src=''] {
+.carousel .carousel-inner > .item > img[src=""],
+.carousel .carousel-inner > .item > a > img[src=""] {
   visibility: hidden;
 }
 
-.carousel .carousel-inner>.active,
-.carousel .carousel-inner>.next,
-.carousel .carousel-inner>.prev {
+.carousel .carousel-inner > .active,
+.carousel .carousel-inner > .next,
+.carousel .carousel-inner > .prev {
   display: block;
 }
 
-.carousel .carousel-inner>.active {
+.carousel .carousel-inner > .active {
   left: 0;
 }
 
-.carousel .carousel-inner>.next,
-.carousel .carousel-inner>.prev {
+.carousel .carousel-inner > .next,
+.carousel .carousel-inner > .prev {
   position: absolute;
   top: 0;
   width: 100%;
 }
 
-.carousel .carousel-inner>.next {
+.carousel .carousel-inner > .next {
   left: 100%;
 }
 
-.carousel .carousel-inner>.prev {
+.carousel .carousel-inner > .prev {
   left: -100%;
 }
 
-.carousel .carousel-inner>.next.left,
-.carousel .carousel-inner>.prev.right {
+.carousel .carousel-inner > .next.left,
+.carousel .carousel-inner > .prev.right {
   left: 0;
 }
 
-.carousel .carousel-inner>.active.left {
+.carousel .carousel-inner > .active.left {
   left: -100%;
 }
 
-.carousel .carousel-inner>.active.right {
+.carousel .carousel-inner > .active.right {
   left: 100%;
 }
 
@@ -186,7 +191,7 @@ onBeforeUnmount(() => {
   height: 100%;
   width: 5%;
   font:
-    bold 50px/10 'Microsoft Yahei',
+    bold 50px/10 "Microsoft Yahei",
     sans-serif;
   text-align: center;
   color: #dcdee5;

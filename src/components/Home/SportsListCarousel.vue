@@ -89,11 +89,7 @@
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="playSmatVirtual"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/dice.png"
-              loading="eager"
-              height="20"
-            />
+            <img src="@/assets/images/dice.png" loading="eager" height="20" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
             >Dice</span
@@ -165,15 +161,15 @@
   </div>
 </template>
 <script setup>
-import { useUtilstStore, useUsersStore } from "@/stores";
+import { useUtilsStore, useUsersStore } from "@/stores";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { slugify } from "@/helpers";
 import MD5 from "crypto-js/md5";
 import emitter from "@/plugins/emitter";
 
-// const { sports, sport_id } = useUtilstStore()
-const utilsStore = useUtilstStore();
+// const { sports, sport_id } = useUtilsStore()
+const utilsStore = useUtilsStore();
 const router = useRouter();
 const usersStore = useUsersStore();
 // const token = ref('111111')
@@ -183,7 +179,7 @@ const usersStore = useUsersStore();
 const getImageSrc = (sportId) => {
   const imageUrl = new URL(
     `../../assets/images/sports/${sportId}.png`,
-    import.meta.url
+    import.meta.url,
   );
   return imageUrl;
 };
@@ -226,7 +222,7 @@ const hashStr = computed(() => {
   return MD5(
     `${token.value}10100${import.meta.env.VITE_SITE_URL}${mode.value}${
       group.value
-    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`
+    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`,
   ).toString();
 });
 
@@ -242,7 +238,7 @@ const goToLiveScore = () => {
   return window.open(
     `https://ls.sir.sportradar.com/bematrics`,
     "stats",
-    "width=1078,height=768"
+    "width=1078,height=768",
   );
 };
 
@@ -250,7 +246,7 @@ const goToStatistics = () => {
   return window.open(
     `https://s5.sir.sportradar.com/bematrics`,
     "stats",
-    "width=1078,height=768"
+    "width=1078,height=768",
   );
 };
 
@@ -273,11 +269,11 @@ async function playJetX() {
   }
 }
 
-function playSmatVirtual(){
+function playSmatVirtual() {
   if (usersStore.currentUser) {
     return router.push({
       name: "game-play",
-      params: { game_name: slugify("SmatVirtual"), game_id: 'smat_virtual' },
+      params: { game_name: slugify("SmatVirtual"), game_id: "smat_virtual" },
     });
   } else {
     return router.push("/sign-in");
@@ -379,13 +375,6 @@ onMounted(() => {
   font-weight: 500;
   height: 1.66666667rem;
   width: 1.66666667rem;
-}
-.home .m-sports-choose .m-sports-choose-item .sport-icon.m-world-cup {
-  background: url(//s.sporty.net/global/main/modules/main/mobile/index/img/worldCup.9895badabe.png)
-    no-repeat center;
-  background-size: 1.58333333rem 1.58333333rem;
-  height: 1.58333333rem;
-  margin: 0.41666667rem auto 0.25rem;
 }
 .home .m-sports-choose .m-sports-choose-item .sport-text {
   display: block;

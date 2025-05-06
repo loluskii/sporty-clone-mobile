@@ -5,7 +5,12 @@
   >
     <div class="es-dialog-head m-dialog-head">
       <h1><div>Confirm to Withdraw</div></h1>
-      <a hidefocus="true" data-action="close" class="es-dialog-close m-dialog-close"><em></em></a>
+      <a
+        hidefocus="true"
+        data-action="close"
+        class="es-dialog-close m-dialog-close"
+        ><em></em
+      ></a>
     </div>
     <div class="es-dialog-body m-dialog-body">
       <div class="es-dialog-main m-dialog-main" style="height: auto">
@@ -13,7 +18,11 @@
           <div class="f-con">
             <div class="f-main">
               <div class="f-line">
-                <div class="i-label" data-cms-key="remaining_amount" data-cms-page="page_withdraw">
+                <div
+                  class="i-label"
+                  data-cms-key="remaining_amount"
+                  data-cms-page="page_withdraw"
+                >
                   Remaining Amount
                 </div>
                 <p data-op="withdraw-confirm-remaining-amount" class="i-value">
@@ -21,7 +30,11 @@
                 </p>
               </div>
               <div class="f-line">
-                <div class="i-label" data-cms-key="bank_name" data-cms-page="page_payment">
+                <div
+                  class="i-label"
+                  data-cms-key="bank_name"
+                  data-cms-page="page_payment"
+                >
                   Bank Name
                 </div>
                 <div data-op="withdraw-confirm-bank-name" class="i-value">
@@ -29,40 +42,62 @@
                 </div>
               </div>
               <div class="f-line">
-                <div class="i-label" data-cms-key="account_number" data-cms-page="page_payment">
+                <div
+                  class="i-label"
+                  data-cms-key="account_number"
+                  data-cms-page="page_payment"
+                >
                   Account Number
                 </div>
-                <p data-op="withdraw-confirm-bank-account-number" class="i-value">
+                <p
+                  data-op="withdraw-confirm-bank-account-number"
+                  class="i-value"
+                >
                   {{ userData.account_number }}
                 </p>
               </div>
               <div class="f-line">
-                <div class="i-label" data-cms-key="account_name" data-cms-page="page_withdraw">
+                <div
+                  class="i-label"
+                  data-cms-key="account_name"
+                  data-cms-page="page_withdraw"
+                >
                   Account Name
                 </div>
                 <p data-op="withdraw-confirm-bank-account-name" class="i-value">
-                  {{ formatString(userData.account_name, 'post') }}
+                  {{ formatString(userData.account_name, "post") }}
                 </p>
               </div>
               <div class="payment-wrapper">
                 <div class="payment-container">
                   <div class="t-b item-label">
-                    <span data-cms-key="withdrawal_amount" data-cms-page="page_withdraw"
+                    <span
+                      data-cms-key="withdrawal_amount"
+                      data-cms-page="page_withdraw"
                       >Withdrawal Amount</span
                     >
-                    (NGN)
+                    ({{ SportsbookGlobalVariable.CurrencyCode }})
                   </div>
-                  <div data-op="partner-withdraw-confirm-amount" class="t-b item-content">
+                  <div
+                    data-op="partner-withdraw-confirm-amount"
+                    class="t-b item-content"
+                  >
                     {{ formatNumber(userData.amount) }}
                   </div>
                 </div>
               </div>
             </div>
             <div class="f-btn-wrapper">
-              <button @click.prevent="$emit('close-modal')" class="af-button af-button--info">
+              <button
+                @click.prevent="$emit('close-modal')"
+                class="af-button af-button--info"
+              >
                 <span><span>Cancel</span></span>
               </button>
-              <button @click.prevent="confirmWithdrawal" class="af-button af-button--primary">
+              <button
+                @click.prevent="confirmWithdrawal"
+                class="af-button af-button--primary"
+              >
                 <span> Confirm </span>
               </button>
             </div>
@@ -74,16 +109,19 @@
 </template>
 
 <script setup>
-import { formatNumber, formatString } from '../helpers'
-import emitter from '../plugins/emitter'
-const props = defineProps({
-  userData: Object
-})
+import { formatNumber, formatString } from "@/helpers";
+import emitter from "@/plugins/emitter";
+import { useUtilsStore } from "@/stores";
+const { SportsbookGlobalVariable } = useUtilsStore();
 
-const emits = defineEmits(['close-modal'])
+const props = defineProps({
+  userData: Object,
+});
+
+const emits = defineEmits(["close-modal"]);
 
 function confirmWithdrawal() {
-  emitter.emit('confirmWithdrawalAction', props.userData)
+  emitter.emit("confirmWithdrawalAction", props.userData);
 }
 </script>
 
@@ -195,8 +233,8 @@ function confirmWithdrawal() {
   display: flex;
 }
 .es-dialog.m-wd-pop-cfm .payment-wrapper .item-wrapper .m-icon-help::before {
-  content: '\e686';
-  font-family: 'iconfont' !important;
+  content: "\e686";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

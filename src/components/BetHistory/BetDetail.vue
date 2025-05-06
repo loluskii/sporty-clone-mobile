@@ -53,7 +53,9 @@
         <span>
           <span class="gray">Game ID: {{ selection.eventId }}</span>
           <span class="gray"> | </span>
-          <span class="gray">{{ formatDate(selection.eventDate, 'DD/MM HH:mm') }}</span></span
+          <span class="gray">{{
+            formatDate(selection.eventDate, "DD/MM HH:mm")
+          }}</span></span
         >
         <div class="ellips">{{ selection.eventName }}</div>
         <span class="score-wrapper"
@@ -61,7 +63,9 @@
             <span class="gray">FT Score: </span>
             <p>
               <span>
-                <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
+                <em>{{
+                  selection.score ? selection.score : "-- : --"
+                }}</em></span
               >
             </p>
           </div></span
@@ -89,11 +93,11 @@
 </template>
 
 <script setup>
-// import { getPlacedBetStatus } from '../../helpers/utils'
-import { formatDate } from '../../helpers'
+// import { getPlacedBetStatus } from '@/helpers/utils'
+import { formatDate } from "@/helpers";
 defineProps({
-  selection: Object
-})
+  selection: Object,
+});
 </script>
 
 <style>
@@ -157,7 +161,7 @@ defineProps({
   border-left-color: var(--brand-type3-secondary);
   border-top-color: #32ce62;
   border-top-color: var(--brand-type3-secondary);
-  content: '';
+  content: "";
   height: 0;
   position: absolute;
   right: -0.16666667rem;
@@ -178,8 +182,8 @@ defineProps({
   padding-right: 1.66666667rem;
 }
 .ticket-selection-list .tracker-comments-warp .tracker::before {
-  content: '\e64a';
-  font-family: 'iconfont' !important;
+  content: "\e64a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -200,8 +204,8 @@ defineProps({
   margin-right: 0.5rem;
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch .arrow::before {
-  content: '\e669';
-  font-family: 'iconfont' !important;
+  content: "\e669";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -220,7 +224,7 @@ defineProps({
   text-align: right;
 }
 .ticket-selection-list .gray.colon:after {
-  content: ':';
+  content: ":";
 }
 .ticket-selection-list .score em {
   font-weight: bold;
@@ -259,8 +263,8 @@ defineProps({
   color: var(--text-type1-secondary);
 }
 .ticket-selection-list .won::before {
-  content: '\e60b';
-  font-family: 'iconfont' !important;
+  content: "\e60b";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -283,8 +287,8 @@ defineProps({
   padding: 0.41666667rem;
 }
 .ticket-selection-list .pick-info .pick-right::before {
-  content: '\e611';
-  font-family: 'iconfont' !important;
+  content: "\e611";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -334,8 +338,8 @@ defineProps({
   text-align: center;
 }
 .ticket-selection-list .to-live .arrow::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

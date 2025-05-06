@@ -8,29 +8,42 @@
             <span data-cms-key="ticket_id_vid" data-cms-page="bet_history"
               >Ticket ID: {{ betDetail.betslipId }}</span
             >
-            <span>{{ formatDate(betDetail.created, 'DD/MM HH:mm') }}</span>
+            <span>{{ formatDate(betDetail.created, "DD/MM HH:mm") }}</span>
           </div>
           <div class="bar seperate">
             <span class="type"
               ><span data-cms-key="multiple" data-cms-page="bet_history">{{
-                betDetail.selections.length > 1 ? 'Multiple' : 'Single'
+                betDetail.selections.length > 1 ? "Multiple" : "Single"
               }}</span>
             </span>
 
             <span
               class="status"
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+              :style="`${
+                betDetail.statusCode === 1
+                  ? 'color: #00c100; font-weight: bold'
+                  : ''
+              }`"
               >{{ betDetail.statusDescription }}</span
             >
           </div>
 
           <div class="seperate stake-amount">
-            <span class="left" data-cms-key="total_return" data-cms-page="bet_history"
+            <span
+              class="left"
+              data-cms-key="total_return"
+              data-cms-page="bet_history"
               >Total Return</span
             >
             <span
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
-              >{{ betDetail.winnings ? formatNumber(betDetail.winnings) : '0.00' }}</span
+              :style="`${
+                betDetail.statusCode === 1
+                  ? 'color: #00c100; font-weight: bold'
+                  : ''
+              }`"
+              >{{
+                betDetail.winnings ? formatNumber(betDetail.winnings) : "0.00"
+              }}</span
             >
           </div>
 
@@ -95,7 +108,7 @@
             </div>
           </div>
           <div v-if="betDetail.statusCode == 1" class="m-share">
-             <img src="/winning.png" style="height: 100%; width: 100%" />
+            <img src="/winning.png" style="height: 100%; width: 100%" />
           </div>
         </div>
         <BetDetail
@@ -120,92 +133,92 @@
 </template>
 
 <script setup>
-import { defineComponent, watch, ref } from 'vue'
-import BetDetail from '../../components/BetHistory/BetDetail.vue'
-import HeaderOther from '../../components/HeaderOther.vue'
-import { useRoute, useRouter } from 'vue-router'
-import { formatDate, formatNumber, loadBetslipByCode } from '@/helpers'
-import { useCouponStore } from '@/stores'
-import emitter from '@/plugins/emitter'
+import { defineComponent, watch, ref } from "vue";
+import BetDetail from "../../components/BetHistory/BetDetail.vue";
+import HeaderOther from "../../components/HeaderOther.vue";
+import { useRoute, useRouter } from "vue-router";
+import { formatDate, formatNumber, loadBetslipByCode } from "@/helpers";
+import { useCouponStore } from "@/stores";
+import emitter from "@/plugins/emitter";
 
-const route = useRoute()
-const router = useRouter()
-const isLoading = ref(false)
-const betDetail = ref()
-const couponStore = useCouponStore()
-const isRebetLoading = ref(false)
+const route = useRoute();
+const router = useRouter();
+const isLoading = ref(false);
+const betDetail = ref();
+const couponStore = useCouponStore();
+const isRebetLoading = ref(false);
 
 watch(
   () => route.params.bet_id,
   async (bet_id) => {
-    await getBetDetails(bet_id)
+    await getBetDetails(bet_id);
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-)
+  { immediate: true }, // Trigger the watch callback immediately on component mount
+);
 
 async function getBetDetails() {
-  isLoading.value = true
-  const res = localStorage.getItem('betDetail')
-  betDetail.value = JSON.parse(res)
-  isLoading.value = false
+  isLoading.value = true;
+  const res = localStorage.getItem("betDetail");
+  betDetail.value = JSON.parse(res);
+  isLoading.value = false;
 }
 
 async function rebet() {
-  isRebetLoading.value = true
+  isRebetLoading.value = true;
   try {
-    const res = await loadBetslipByCode(betDetail.value.betslipId)
-    isRebetLoading.value = false
+    const res = await loadBetslipByCode(betDetail.value.betslipId);
+    isRebetLoading.value = false;
     if (res.success) {
       if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections
-        couponStore.coupon.totalOdds = res.data.totalOdd
-        couponStore.coupon.totalStake = res.data.stake
-        couponStore.coupon.stake = res.data.stake
-        couponStore.coupon.maxWin = res.data.possibleWin
-        couponStore.coupon.source = 'mobile'
+        couponStore.coupon.selections = res.data.selections;
+        couponStore.coupon.totalOdds = res.data.totalOdd;
+        couponStore.coupon.totalStake = res.data.stake;
+        couponStore.coupon.stake = res.data.stake;
+        couponStore.coupon.maxWin = res.data.possibleWin;
+        couponStore.coupon.source = "mobile";
         if (res.data.selections.length === 1) {
-          couponStore.coupon.bet_type = 'Single'
-          couponStore.coupon.betslip_type = 'Single'
+          couponStore.coupon.bet_type = "Single";
+          couponStore.coupon.betslip_type = "Single";
         } else {
-          couponStore.coupon.bet_type = 'Multiple'
-          couponStore.coupon.betslip_type = 'Multiple'
+          couponStore.coupon.bet_type = "Multiple";
+          couponStore.coupon.betslip_type = "Multiple";
         }
-        emitter.emit('openBetslip')
-        return router.push({ name: 'home' })
+        emitter.emit("openBetslip");
+        return router.push({ name: "home" });
       } else {
-        emitter.emit('showDialogueToaster', 'All selections have expired')
+        emitter.emit("showDialogueToaster", "All selections have expired");
       }
     } else {
-      throw Error
+      throw Error;
     }
   } catch (error) {
-    emitter.emit('showDialogueToaster', 'Invalid booking code. ')
+    emitter.emit("showDialogueToaster", "Invalid booking code. ");
   }
 }
 
 function copyCode() {
-  const textToCopy = betDetail.value.betslipId
-  const textarea = document.createElement('textarea')
-  textarea.value = textToCopy
-  document.body.appendChild(textarea)
-  textarea.select()
+  const textToCopy = betDetail.value.betslipId;
+  const textarea = document.createElement("textarea");
+  textarea.value = textToCopy;
+  document.body.appendChild(textarea);
+  textarea.select();
 
   try {
-    navigator.clipboard.writeText(textToCopy)
-    alert('Copied!')
+    navigator.clipboard.writeText(textToCopy);
+    alert("Copied!");
   } catch (err) {
-    console.error('Unable to copy to clipboard', err)
+    console.error("Unable to copy to clipboard", err);
   }
 }
 defineComponent({
-  components: { BetDetail, HeaderOther }
-})
+  components: { BetDetail, HeaderOther },
+});
 </script>
 
 <style>
 .rebetting::before {
-  content: '\e654';
-  font-family: 'iconfont' !important;
+  content: "\e654";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -280,8 +293,8 @@ defineComponent({
   padding: 0 1.33333333rem;
 }
 .m-ticket-detail .ticket-top .bar .cup::before {
-  content: '\e626';
-  font-family: 'iconfont' !important;
+  content: "\e626";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -330,8 +343,8 @@ defineComponent({
   font-size: 0.83333333rem;
 }
 .m-ticket-detail .ticket-top .flexibet-tip .tip::before {
-  content: '\e651';
-  font-family: 'iconfont' !important;
+  content: "\e651";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -361,8 +374,8 @@ defineComponent({
   transform: rotate(270deg);
 }
 .m-ticket-detail .ticket-top .cashout-title .fold::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -376,8 +389,8 @@ defineComponent({
   top: 0.16666667rem;
 }
 .m-ticket-detail .ticket-top .cashout-title .unfold::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -525,8 +538,8 @@ defineComponent({
   padding: 1.5rem 1rem;
 }
 .m-ticket-detail .bets-info .arrow::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -554,16 +567,16 @@ defineComponent({
 }
 
 .m-icon-copy::before {
-  content: '\e6d2';
-  font-family: 'iconfont' !important;
+  content: "\e6d2";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-icon-share::before {
-  content: '\e63d';
-  font-family: 'iconfont' !important;
+  content: "\e63d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

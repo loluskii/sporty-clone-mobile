@@ -41,7 +41,10 @@
         <a href="#" class="m-menu-item"> All {{ activeSport.sportName }} </a>
       </div>
 
-      <div class="m-countries-panel m-sports-countries" style="position: relative">
+      <div
+        class="m-countries-panel m-sports-countries"
+        style="position: relative"
+      >
         <div class="m-countries-block">
           <div class="m-countries-block-title" data-cms-key="a_z">A-Z</div>
           <div class="m-country-list">
@@ -73,11 +76,13 @@
                           navigateTo('fixtures-by-tournaments', {
                             sport: activeSport.sportName,
                             categories: `sr:category:${country.categoryID}`,
-                            tournaments: `sr:tournament:${tournament.tournamentID}`
+                            tournaments: `sr:tournament:${tournament.tournamentID}`,
                           })
                         "
                       >
-                        <div class="m-item-left">{{ tournament.tournamentName }}</div>
+                        <div class="m-item-left">
+                          {{ tournament.tournamentName }}
+                        </div>
                         <div class="m-item-right">{{ tournament.total }}</div>
                       </a>
                     </li>
@@ -87,8 +92,8 @@
             </template>
             <div v-else class="empty">
               <p style="white-space: pre-line">
-                Sorry, there are no games currently<br />available in this category. Please try
-                later.<br />Thank you.
+                Sorry, there are no games currently<br />available in this
+                category. Please try later.<br />Thank you.
               </p>
             </div>
           </div>
@@ -101,98 +106,106 @@
 </template>
 
 <script setup>
-import HeaderOther from '@/components/HeaderOther.vue'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { computed, ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useUtilstStore } from '../stores'
-import { getCategoriesBySport, getTournamentsByCategories, slugify, unslugify } from '../helpers'
+import HeaderOther from "@/components/HeaderOther.vue";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { computed, ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUtilsStore } from "../stores";
+import {
+  getCategoriesBySport,
+  getTournamentsByCategories,
+  slugify,
+  unslugify,
+} from "../helpers";
 
-const utilsStore = useUtilstStore()
-const route = useRoute()
-const router = useRouter()
+const utilsStore = useUtilsStore();
+const route = useRoute();
+const router = useRouter();
 
 const activeSport = ref({
-  sportName: 'Soccer',
-  sportID: 1
-})
+  sportName: "Soccer",
+  sportID: 1,
+});
 
-const countriesData = ref([])
-const sportsMenu = computed(() => utilsStore.sportsMenu)
-const isLoading = ref(false)
-const isTournamentsLoading = ref(false)
+const countriesData = ref([]);
+const sportsMenu = computed(() => utilsStore.sportsMenu);
+const isLoading = ref(false);
+const isTournamentsLoading = ref(false);
 
 // const getActiveSport = computed(() => {
 //   return sportsMenu.value.find((sport) => sport.sportID === activeSport.value.sportID)
 // })
 
 const getImageSrc = (sportID) => {
-  return new URL(`../assets/images/sports/${sportID}.png`, import.meta.url).href
-}
+  return new URL(`../assets/images/sports/${sportID}.png`, import.meta.url)
+    .href;
+};
 
 const showChild = async (index, country) => {
-  const childElement = document.getElementById(`child_${index}`)
+  const childElement = document.getElementById(`child_${index}`);
   if (!country.isOpen) {
-    if (isTournamentsLoading.value) return
-    isTournamentsLoading.value = true
-    const res = await getTournamentsByCategories(country.categoryID)
-    isTournamentsLoading.value = false
-    country.tournamentsData = res.sports
-    country.isOpen = true
-    childElement?.classList.remove('d-none')
+    if (isTournamentsLoading.value) return;
+    isTournamentsLoading.value = true;
+    const res = await getTournamentsByCategories(country.categoryID);
+    isTournamentsLoading.value = false;
+    country.tournamentsData = res.sports;
+    country.isOpen = true;
+    childElement?.classList.remove("d-none");
   } else {
-    country.isOpen = false
-    childElement?.classList.add('d-none')
+    country.isOpen = false;
+    childElement?.classList.add("d-none");
   }
-}
+};
 
 const getCountriesList = async () => {
-  isLoading.value = true
-  const sports = await getCategoriesBySport(activeSport.value.sportID)
-  countriesData.value = sports.sports || []
-  isLoading.value = false
-}
+  isLoading.value = true;
+  const sports = await getCategoriesBySport(activeSport.value.sportID);
+  countriesData.value = sports.sports || [];
+  isLoading.value = false;
+};
 
 const setActiveSport = async (sport) => {
-  activeSport.value = sport
-  router.replace({ query: { sport: slugify(sport.sportName) } })
-  await getCountriesList()
+  activeSport.value = sport;
+  router.replace({ query: { sport: slugify(sport.sportName) } });
+  await getCountriesList();
   document.getElementById(`sports_list_${sport.sportID}`)?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'nearest',
-    inline: 'center'
-  })
-}
+    behavior: "smooth",
+    block: "nearest",
+    inline: "center",
+  });
+};
 
 const navigateTo = (routeName, query = {}) => {
   router.push({
     name: routeName,
     params: {
       sport: slugify(activeSport.value.sportName),
-      ...query
-    }
-  })
-}
+      ...query,
+    },
+  });
+};
 
 const getSportCategories = async () => {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    const sports = await getCategoriesBySport(activeSport.value.sportID)
-    countriesData.value = sports.sports || []
+    const sports = await getCategoriesBySport(activeSport.value.sportID);
+    countriesData.value = sports.sports || [];
     if (route.query.sport) {
       setActiveSport(
-        sportsMenu.value.find((sport) => sport.sportName === unslugify(route.query.sport))
-      )
+        sportsMenu.value.find(
+          (sport) => sport.sportName === unslugify(route.query.sport),
+        ),
+      );
     }
   } catch (error) {
-    console.error('Error fetching sport categories:', error)
-    countriesData.value = []
+    console.error("Error fetching sport categories:", error);
+    countriesData.value = [];
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
-onMounted(getSportCategories)
+onMounted(getSportCategories);
 </script>
 
 <style>
@@ -255,7 +268,7 @@ onMounted(getSportCategories)
 }
 .m-sports-menu .m-top-menu:after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;

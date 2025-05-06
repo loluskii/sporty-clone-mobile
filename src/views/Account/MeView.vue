@@ -12,7 +12,11 @@
             </span>
             <div class="wording-wrap">
               <div class="account">
-                {{ isAuthenticated ? currentUser?.username : 'Login to view' }}
+                {{
+                  isAuthenticated
+                    ? userStore.currentUser?.username
+                    : "Login to view"
+                }}
               </div>
               <i class="m-icon-arrow1"></i>
             </div>
@@ -20,14 +24,23 @@
           <div class="balance-wrap">
             <div class="title">Total Balance</div>
             <div data-op="me_balance" class="value">
-              <span>NGN </span><span> {{ balance.toLocaleString('en') }}</span>
+              <span>{{ SportsbookGlobalVariable.CurrencyCode }} </span
+              ><span> {{ userStore.balance }}</span>
             </div>
           </div>
           <div class="w-d-wrap">
-            <div class="deposit" @click="$router.push({ name: 'account-deposit' })">
-              <img src="@/assets/images/wallet.png" class="w-d-wrap-img" /><span>Deposit</span>
+            <div
+              class="deposit"
+              @click="$router.push({ name: 'account-deposit' })"
+            >
+              <img src="@/assets/images/wallet.png" class="w-d-wrap-img" /><span
+                >Deposit</span
+              >
             </div>
-            <div class="withdraw" @click="$router.push({ name: 'account-withdraw' })">
+            <div
+              class="withdraw"
+              @click="$router.push({ name: 'account-withdraw' })"
+            >
               <span>Withdraw</span>
             </div>
           </div>
@@ -35,7 +48,10 @@
       </div>
       <div class="body">
         <div class="transaction-wrap">
-          <div @click="$router.push({ name: 'open-bets' })" class="transaction-wrap-item history">
+          <div
+            @click="$router.push({ name: 'open-bets' })"
+            class="transaction-wrap-item history"
+          >
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/bet_history.76d3fd43f4.svg"
               class="transaction-wrap-item-img"
@@ -50,7 +66,10 @@
               class="transaction-wrap-item-img"
             /><span>Transactions</span>
           </div>
-          <div class="transaction-wrap-item gift" @click="$router.push({ name: 'account-bonus' })">
+          <div
+            class="transaction-wrap-item gift"
+            @click="$router.push({ name: 'account-bonus' })"
+          >
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/gift.0c7224b2a3.svg"
               class="transaction-wrap-item-img"
@@ -84,28 +103,26 @@
 </template>
 
 <script setup>
-import { defineComponent, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore, useUsersStore } from '../../stores'
-// import { formatNumber } from '../../helpers'
-const router = useRouter()
-const { isAuthenticated } = useAuthStore()
-const { currentUser } = useUsersStore()
-
-const balance = computed(() => {
-  return currentUser ? currentUser.availableBalance : 0
-})
+import { defineComponent, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore, useUsersStore } from "@/stores";
+import { useUtilsStore } from "../../stores";
+// import { formatNumber } from '@/helpers'
+const router = useRouter();
+const { isAuthenticated } = useAuthStore();
+const userStore = useUsersStore();
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 function redirectToAccount() {
   if (currentUser) {
-    router.push({ name: 'account-profile' })
+    router.push({ name: "account-profile" });
   } else {
-    router.push({ name: 'sign-in' })
+    router.push({ name: "sign-in" });
   }
 }
 defineComponent({
-  name: 'me-view'
-})
+  name: "me-view",
+});
 </script>
 
 <style>
@@ -191,15 +208,25 @@ defineComponent({
   color: #9ca0ab;
   color: var(--text-type2-tertiary);
 }
-.me-main .header-container .header .account-wrap .wording-wrap .m-icon-arrow1::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+.me-main
+  .header-container
+  .header
+  .account-wrap
+  .wording-wrap
+  .m-icon-arrow1::before {
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.me-main .header-container .header .account-wrap .wording-wrap .m-icon-arrow1:before {
+.me-main
+  .header-container
+  .header
+  .account-wrap
+  .wording-wrap
+  .m-icon-arrow1:before {
   font-size: 1rem;
   line-height: 1rem;
 }

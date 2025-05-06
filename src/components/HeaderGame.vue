@@ -1,7 +1,14 @@
 <template>
-  <div class="m-nav-secondary m-topnav withHome" style="position: fixed; top: 0rem; z-index: 1001">
+  <div
+    class="m-nav-secondary m-topnav withHome"
+    style="position: fixed; top: 0rem; z-index: 1001"
+  >
     <div class="m-nav-left">
-      <span data-op="nav-sec-back" @click="$router.go(-1)" class="m-icon m-icon--back"></span>
+      <span
+        data-op="nav-sec-back"
+        @click="$router.go(-1)"
+        class="m-icon m-icon--back"
+      ></span>
       <div class="trans-select">
         <div tabindex="0" class="sport-select af-select">
           <div data-op="label-odds-option" class="af-select-title">
@@ -43,47 +50,50 @@
 </template>
 
 <script setup>
-import { ref, defineComponent, defineProps, computed } from 'vue'
-import { useUtilstStore } from '@/stores'
-import { useRouter } from 'vue-router'
+import { ref, defineComponent, defineProps, computed } from "vue";
+import { useUtilsStore } from "@/stores";
+import { useRouter } from "vue-router";
 
-const sportsListDropdown = ref(false)
-const utilsStore = useUtilstStore()
+const sportsListDropdown = ref(false);
+const utilsStore = useUtilsStore();
 // const emit = defineEmits(['sport-change'])
-const router = useRouter()
+const router = useRouter();
 
 const sportsList = computed(() => {
-  return utilsStore.sportsMenu
-})
+  return utilsStore.sportsMenu;
+});
 
 const activeSport = computed(() => {
-  return utilsStore.sportID
-})
+  return utilsStore.sportID;
+});
 
 const getActiveSport = computed(() => {
-  const active = utilsStore.sportID
-  return utilsStore.sportsMenu.find((x) => x.sportID == active)
-})
+  const active = utilsStore.sportID;
+  return utilsStore.sportsMenu.find((x) => x.sportID == active);
+});
 
 const toggleSportsDropdown = () => {
-  sportsListDropdown.value = !sportsListDropdown.value
-}
+  sportsListDropdown.value = !sportsListDropdown.value;
+};
 
 function setActiveSport(id) {
-  utilsStore.sportID = id
-  toggleSportsDropdown()
+  utilsStore.sportID = id;
+  toggleSportsDropdown();
   // emit('sport-change')
-  router.push({ name: 'fixtures-by-sports', params: { sport: getActiveSport.value.sportName } })
+  router.push({
+    name: "fixtures-by-sports",
+    params: { sport: getActiveSport.value.sportName },
+  });
 }
 
 defineProps({
   SportsName: Object,
-  hasDropdown: Boolean
-})
+  hasDropdown: Boolean,
+});
 
 defineComponent({
-  name: 'header-game'
-})
+  name: "header-game",
+});
 </script>
 
 <style scoped>
@@ -148,16 +158,16 @@ defineComponent({
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon--back::before {
-  content: '\e620';
-  font-family: 'iconfont' !important;
+  content: "\e620";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -201,7 +211,7 @@ defineComponent({
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: '';
+  content: "";
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -234,8 +244,8 @@ defineComponent({
   padding: 0.41666667rem 0.83333333rem;
 }
 .m-nav-secondary .m-nav-right .m-icon-search::before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
+  content: "\e613";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -257,8 +267,8 @@ defineComponent({
   padding: 0 1.5rem 0 1.33333333rem;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: '\e6cb';
-  font-family: 'iconfont' !important;
+  content: "\e6cb";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

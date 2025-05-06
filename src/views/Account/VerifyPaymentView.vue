@@ -13,16 +13,16 @@
 </template>
 
 <script setup>
-import { watch, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { awardBonus, verifyDeposit } from '../../helpers'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { useUsersStore } from '@/stores'
+import { watch, ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { awardBonus, verifyDeposit } from "@/helpers";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { useUsersStore } from "@/stores";
 
-const route = useRoute()
-const router = useRouter()
-const isPaymentSuccess = ref(false)
-const isPaymentFail = ref(false)
+const route = useRoute();
+const router = useRouter();
+const isPaymentSuccess = ref(false);
+const isPaymentFail = ref(false);
 const isLoading = ref(true);
 const usersStore = useUsersStore();
 
@@ -30,51 +30,50 @@ watch(
   () => [route.params.method],
   async ([method]) => {
     let ref;
-    if (method === 'paystack') {
+    if (method === "paystack") {
       ref = route.query.trxref;
     }
-    if (method === 'monnify') {
+    if (method === "monnify") {
       ref = route.query.paymentReference;
     }
 
-    if (method === 'flutterwave') {
+    if (method === "flutterwave") {
       ref = route.query.tx_ref;
     }
 
-    if (method === 'korapay') {
+    if (method === "korapay") {
       ref = route.query.reference;
     }
 
-    await verifyPaymentRef(method, ref)
+    await verifyPaymentRef(method, ref);
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 
 const bonus = computed(() => {
-  return usersStore.bonus
-})
+  return usersStore.bonus;
+});
 
 async function verifyPaymentRef(method, ref) {
   console.log(method, ref);
-  isLoading.value = true
+  isLoading.value = true;
   const res = await verifyDeposit(method, ref);
-  isLoading.value = false
+  isLoading.value = false;
   if (res.success) {
-    isPaymentSuccess.value = true
-    if (bonus.value){
-      await awardBonus(bonus.value)
-      .then(res => {
+    isPaymentSuccess.value = true;
+    if (bonus.value) {
+      await awardBonus(bonus.value).then((res) => {
         usersStore.setActiveBonus(null);
-      })
+      });
     }
-    router.push({ name: 'account-transactions' })
+    router.push({ name: "account-transactions" });
   } else {
-    isPaymentFail.value = true
+    isPaymentFail.value = true;
   }
 }
 
 function goHome() {
-  return router.push({ name: 'home' })
+  return router.push({ name: "home" });
 }
 </script>
 

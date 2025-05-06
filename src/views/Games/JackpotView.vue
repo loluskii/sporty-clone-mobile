@@ -23,7 +23,11 @@
               v-for="(j, index) in jackpots"
               :key="index"
             >
-              <img src="https://placehold.co/175" class="card-img-top" alt="..." />
+              <img
+                src="https://placehold.co/175"
+                class="card-img-top"
+                alt="..."
+              />
               <div class="card-body d-flex flex-column p-2">
                 <div
                   class="text-truncate fw-bold"
@@ -39,7 +43,10 @@
         <div v-if="currentView === 'single'" class="grouped-games-section">
           <div class="group">
             <div class="title-bg d-flex align-items-center mb-3">
-              <span @click="currentView = 'list'" class="m-icon m-icon--back mr-3"></span>
+              <span
+                @click="currentView = 'list'"
+                class="m-icon m-icon--back mr-3"
+              ></span>
 
               <h3 class="h4 text-white fw-bold text-capitalize">
                 {{ activeJackpot.name }}
@@ -67,18 +74,24 @@
                 </tr>
               </tbody>
             </table>
-            <h3 class="h4 text-white fw-bold text-capitalize my-3">
-              Games
-            </h3>
-            <div class="row mb-3 pb-3" v-if="jackpotGames.length" ref="scrollComponent">
-              <div class="col-6" v-for="(game, index) in jackpotGames" :key="index">
+            <h3 class="h4 text-white fw-bold text-capitalize my-3">Games</h3>
+            <div
+              class="row mb-3 pb-3"
+              v-if="jackpotGames.length"
+              ref="scrollComponent"
+            >
+              <div
+                class="col-6"
+                v-for="(game, index) in jackpotGames"
+                :key="index"
+              >
                 <Game :game="game" />
               </div>
             </div>
             <div v-else-if="!jackpotGames.length" class="no-data">
               <div style="white-space: pre-line">
-                Sorry, there are no games currently<br />available in this category.
-                Please try later.<br />Thank you.
+                Sorry, there are no games currently<br />available in this
+                category. Please try later.<br />Thank you.
               </div>
             </div>
             <LoadingSpinner v-else></LoadingSpinner>
@@ -92,8 +105,13 @@
       <div class="games-grid mt-3">
         <div class="grouped-games-section">
           <div v-for="x in 4" :key="x" class="group">
-            <div class="header d-flex justify-content-between align-items-center">
-              <h1 class="fw-normal placeholder h4 p-2 rounded" style="width: 50px"></h1>
+            <div
+              class="header d-flex justify-content-between align-items-center"
+            >
+              <h1
+                class="fw-normal placeholder h4 p-2 rounded"
+                style="width: 50px"
+              ></h1>
               <span
                 style="width: 50px"
                 class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
@@ -124,14 +142,14 @@ import { gamesByTopCategory } from "@/helpers";
 import router from "@/router";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { getJackpots, slugify } from "../../helpers";
+import { getJackpots, slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import Game from "@/components/Casino/Game.vue";
 import HeaderOther from "../../components/HeaderOther.vue";
 import { useRoute } from "vue-router";
-import { useUtilstStore } from "../../stores";
+import { useUtilsStore } from "@/stores";
 
-const route = useRoute()
+const route = useRoute();
 const gamesList = ref([]);
 const jackpotGames = ref([]);
 const jackpots = ref([]);
@@ -139,16 +157,18 @@ const activeJackpot = ref({});
 const currentView = ref("list");
 const isLoading = ref(false);
 const authStore = useAuthStore();
-const utilsStore = useUtilstStore()
+const utilsStore = useUtilsStore();
 // const jId = ref(rout e.query?.jId)
 
 const getJK = async () => {
   const res = await getJackpots();
   jackpots.value = res.data.jackpots;
-  if(route.query?.jId){
-    let jackpot = res.data.jackpots.find((j) => j.mainJackpotID == route.query?.jId)
-    if(jackpot){
-        showJackpot(jackpot)
+  if (route.query?.jId) {
+    let jackpot = res.data.jackpots.find(
+      (j) => j.mainJackpotID == route.query?.jId,
+    );
+    if (jackpot) {
+      showJackpot(jackpot);
     }
   }
 };
@@ -156,7 +176,9 @@ const getJK = async () => {
 const getAllGames = async () => {
   try {
     const gamesResponse = await gamesByTopCategory();
-    gamesList.value = gamesResponse.data.sort((a, b) => b.priority - a.priority);
+    gamesList.value = gamesResponse.data.sort(
+      (a, b) => b.priority - a.priority,
+    );
   } catch (error) {
     gamesList.value = [];
   }

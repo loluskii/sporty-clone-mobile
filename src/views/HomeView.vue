@@ -1,10 +1,25 @@
 <template lang="">
-  <div> <HeaderHome></HeaderHome> <div></div> <div class="home"> <!-- Banner Carousel -->
-  <!-- <Carousel></Carousel> --> <!-- Banner Carousel --> <!-- SportsList Carousel -->
-  <SportsListCarousel></SportsListCarousel> <!-- SportsList Carousel --> <!-- Popular
-  Sports --> <KeepAlive> <PopularSports></PopularSports> </KeepAlive> <!-- Popular Sports
-  --> <LiveContainer></LiveContainer> <!-- Highlights --> <Highlights></Highlights> <!--
-  Highlights --> </div> </div>
+  <div>
+    <HeaderHome></HeaderHome>
+    <div></div>
+    <div class="home">
+      <!-- Banner Carousel -->
+      <Carousel :type="'sport'"></Carousel>
+      <!-- Banner Carousel -->
+      <!-- SportsList Carousel -->
+      <SportsListCarousel></SportsListCarousel>
+      <!-- SportsList Carousel -->
+      <!-- Popular Sports -->
+      <KeepAlive>
+        <PopularSports></PopularSports>
+      </KeepAlive>
+      <!-- Popular Sports -->
+      <LiveContainer></LiveContainer>
+      <!-- Highlights -->
+      <Highlights></Highlights>
+      <!-- Highlights -->
+    </div>
+  </div>
 </template>
 <script setup>
 import HeaderHome from "@/components/HeaderHome.vue";
@@ -14,15 +29,13 @@ import LiveContainer from "@/components/Home/LiveContainer.vue";
 import PopularSports from "@/components/Home/PopularSports.vue";
 import Highlights from "@/components/Home/HighlightsContainer.vue";
 import emitter from "@/plugins/emitter";
-import { useUsersStore, useUtilstStore } from "../stores";
+import { useUsersStore, useUtilsStore } from "../stores";
 import { onMounted } from "vue";
 
 const userStore = useUsersStore();
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 
-onMounted(async () => {
-
-});
+onMounted(async () => {});
 </script>
 
 <style>
@@ -30,6 +43,7 @@ onMounted(async () => {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
+
 .m-sports .m-sports-title {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -55,11 +69,13 @@ onMounted(async () => {
   padding: 0.83333333rem;
   width: 100%;
 }
+
 .m-sports .m-sports-title.fixed {
   position: fixed;
   top: 3.66666667rem;
   z-index: 220;
 }
+
 .m-sports .m-sports-title .m-title-sport {
   border-right: solid 0.5px;
   border-right-color: #9ca0ab;
@@ -71,6 +87,7 @@ onMounted(async () => {
 .m-sports .m-sports-title .m-title-sport.filter {
   border-right: none;
 }
+
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item {
   color: #353a45;
   color: var(--c-prematch-sport-item-text);
@@ -79,11 +96,13 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
 }
+
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
   color: #0d9737;
   color: var(--brand-quaternary);
   font-weight: bold;
 }
+
 .m-sports .m-sports-title .filter-control {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -109,6 +128,7 @@ onMounted(async () => {
   margin-left: 1rem;
   padding: 0 0.33333333rem 0 0.33333333rem;
 }
+
 .m-sports .m-sports-title .filter-control .m-icon-close {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -120,6 +140,7 @@ onMounted(async () => {
   display: flex;
   padding: 0 0.41666667rem;
 }
+
 .m-sports .m-sports-title .filter-control .m-icon-close::before {
   content: "\e69a";
   font-family: "iconfont" !important;
@@ -128,21 +149,26 @@ onMounted(async () => {
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-sports .m-sports-title .filter-control .m-icon-close:before {
   font-size: 0.83333333rem;
 }
+
 .m-sports .m-sports-title .filter-control svg.filterSvgIcon {
   height: 1.66666667rem;
   width: 1.66666667rem;
 }
+
 .m-sports .m-sports-title .filter-control svg.filterSvgIcon path {
   fill: #353a45;
   fill: var(--text-type1-primary);
 }
+
 .m-sports .m-sports-title .filter-control svg.filterSvgIcon circle {
   stroke: #353a45;
   fill: var(--text-type1-primary);
 }
+
 .m-sports .m-sports-title .filter-control.active {
   background: #d6ebdc;
   background: var(--brand-background-secondary);
@@ -152,6 +178,7 @@ onMounted(async () => {
   padding: 0 0.5rem 0 0;
   width: auto;
 }
+
 .m-sports .m-sports-title .filter-control.active .m-icon-clear {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -163,6 +190,7 @@ onMounted(async () => {
   display: flex;
   padding: 0 0.66666667rem 0 0.75rem;
 }
+
 .m-sports .m-sports-title .filter-control.active .m-icon-clear::before {
   content: "\e602";
   font-family: "iconfont" !important;
@@ -171,10 +199,12 @@ onMounted(async () => {
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-sports .m-sports-title .filter-control.active .m-icon-clear:before {
   color: rgba(9, 107, 39, 0.3);
   font-size: 1.066rem;
 }
+
 .m-sports .m-sports-title .filter-control.active .range {
   border-right: solid 0.08333333rem rgba(9, 107, 39, 0.2);
   font-weight: bold;
@@ -183,12 +213,15 @@ onMounted(async () => {
   margin-right: 0.66666667rem;
   padding: 0 0.66666667rem 0 0.33333333rem;
 }
+
 .m-sports .m-sports-title .filter-control.active svg.filterSvgIcon g path {
   fill: #096b27;
 }
+
 .m-sports .m-sports-title .filter-control.active svg.filterSvgIcon g circle {
   stroke: #096b27;
 }
+
 .m-sports .m-overlay {
   background: rgba(0, 0, 0, 0.5);
   height: 100%;
@@ -197,6 +230,7 @@ onMounted(async () => {
   width: 100%;
   z-index: 220;
 }
+
 .m-sports .m-filter-pop.m-filter {
   border-top: 1px solid;
   border-top-color: #eaecef;
@@ -205,11 +239,13 @@ onMounted(async () => {
   top: 7.58333333rem;
   z-index: 221;
 }
+
 .m-sports .view-all {
   border-top: 1px solid #f2f3f5;
   border-color: #f2f3f5;
   border-color: var(--brand-border-type1);
 }
+
 .m-sports .view-all a,
 .m-sports .view-all a:hover,
 .m-sports .view-all a:visited,
@@ -218,19 +254,23 @@ onMounted(async () => {
   color: var(--brand-primary);
   text-decoration: none;
 }
+
 .m-sports .m-pre-opts {
   position: relative;
   width: 100%;
 }
+
 .m-sports .m-pre-opts .m-bet-content .m-league .m-league-conent {
   margin-top: 0.33333333rem;
 }
+
 .m-sports .m-pre-opts.m-tabs {
   position: relative;
   width: 100%;
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
+
 .m-sports .m-pre-opts.m-tabs .m-tabs-nav {
   border-bottom: 1px solid #f2f3f5;
   border-color: #f2f3f5;
@@ -240,6 +280,7 @@ onMounted(async () => {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
+
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab {
   color: #353a45;
   color: var(--c-prematch-tab-name-text);
@@ -252,23 +293,28 @@ onMounted(async () => {
   padding: 0 1.33333333rem;
   width: calc(100vw / 3);
 }
+
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab.m-tabs-tab-active {
   color: #1b1e25;
   color: var(--c-prematch-tab-name-active);
   border-bottom: 0.23333333rem solid #001041;
   font-weight: bold;
 }
+
 .m-sports .m-pre-opts.m-tabs .m-tabs-tabpane .m-date-row {
   margin-bottom: -1px;
 }
+
 .m-sports .m-pre-opts.m-tabs .m-tabs-ink-bar {
   background-color: transparent;
   bottom: 0;
   height: 0.23333333rem;
 }
+
 .m-sports .m-pre-opts.nav-fixed {
   padding-top: 11.91666667rem;
 }
+
 .m-sports .m-pre-opts.nav-fixed > .m-tabs-nav {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
@@ -282,6 +328,7 @@ onMounted(async () => {
   width: 70%;
   z-index: 219;
 }
+
 .m-sports .m-pre-opts.nav-fixed > .m-tabs-nav:before {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
@@ -296,6 +343,7 @@ onMounted(async () => {
   width: 100vw;
   z-index: -1;
 }
+
 .m-sports .m-pre-opts.nav-fixed.nav-up > .m-tabs-nav {
   position: fixed;
   top: 7.58333333rem;
@@ -310,11 +358,13 @@ onMounted(async () => {
   line-height: 2rem;
   padding: 0 0.83333333rem;
 }
+
 .m-sports-table .m-date-row .m-date {
   color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1rem;
 }
+
 .m-sports-table .m-date-row .market-title {
   display: -webkit-box;
   display: -webkit-flex;
@@ -326,6 +376,7 @@ onMounted(async () => {
   flex: 0 1 auto;
   width: 55%;
 }
+
 .m-sports-table .m-date-row .market-title > div {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
@@ -336,13 +387,16 @@ onMounted(async () => {
   font-size: 0.83333333rem;
   text-align: center;
 }
+
 .m-sports-table .m-sports-row {
   margin: 0 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads {
   display: block;
   margin: 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads img {
   display: block;
   width: 100%;

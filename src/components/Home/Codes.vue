@@ -1,51 +1,28 @@
 <template>
-  <div
-    class="featured-code-container"
-    role="tabpanel"
-    aria-labe="Featured Code"
-    data-op="featured-code-tabpanel"
-  >
+  <div class="featured-code-container" role="tabpanel" aria-labe="Featured Code" data-op="featured-code-tabpanel">
     <div class="HorizonSwipe" id="featuredCodeCardBox">
-      <div
-        v-for="(code, index) in codes"
-        :key="index"
-        class="featured-code-card-container"
-        :data-hs-id="code.betslipId"
-        :data-hs-index="index"
-      >
-        <div
-          role="table"
-          aria-label="booking code card for 1C92348"
-          data-op="booking-code-card-1C92348"
-          class="booking-code-list-item featured-code-card-style"
-        >
+      <div v-for="(code, index) in codes" :key="index" class="featured-code-card-container" :data-hs-id="code.betslipId"
+        :data-hs-index="index">
+        <div role="table" aria-label="booking code card for 1C92348" data-op="booking-code-card-1C92348"
+          class="booking-code-list-item featured-code-card-style">
           <div role="row" class="header">
-            <div
-              role="rowheader"
-              aria-label="booking code 1C92348"
-              data-op="booking-code-1C92348-heading"
-              class="code flex-1"
-            >
+            <div role="rowheader" aria-label="booking code 1C92348" data-op="booking-code-1C92348-heading"
+              class="code flex-1">
               {{ code.betslipId }}
             </div>
             <div class="folds text-center flex-1">
-              <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
+              <span class="label">Folds:</span
+              ><span>{{ code.totalSelections }}</span>
             </div>
             <div class="odds text-right flex-1">
               <span class="label">Odds:</span><span>{{ code.total_odd }}</span>
             </div>
           </div>
           <div role="row" class="content">
-            <div
-              tabindex="-1"
-              class="semi-transparent-linear-gradient-scrolling-animation-container"
-            ></div>
+            <div tabindex="-1" class="semi-transparent-linear-gradient-scrolling-animation-container"></div>
             <div class="scroll-level">
-              <div
-                v-for="selection in code.selections"
-                class="code-selection-item d-flex code-selection-item"
-                :key="selection.id"
-              >
+              <div v-for="selection in code.selections" class="code-selection-item d-flex code-selection-item"
+                :key="selection.id">
                 <div class="content-container">
                   <div class="top d-flex">
                     <div class="outcome text-700">
@@ -60,11 +37,10 @@
                   <div class="bottom d-flex">
                     <span class="home-team text-size-10">{{
                       selection.eventName.split("vs.")[0]
-                    }}</span
-                    ><span class="vs color-secondary text-size-10">vs</span
-                    ><span class="away-team text-size-10">{{
-                      selection.eventName.split("vs.")[1]
-                    }}</span>
+                    }}</span><span class="vs color-secondary text-size-10">vs</span><span
+                      class="away-team text-size-10">{{
+                        selection.eventName.split("vs.")[1]
+                      }}</span>
                     <div class="time color-secondary text-size-10 ml-auto">
                       {{ formatDate(selection.eventDate, "ddd, Do hh:mma") }}
                     </div>
@@ -94,12 +70,15 @@
                   
                 </div>
               </div>
-              <span v-else class="loading-button-click-area share-button-click-area mr-auto"
-                ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
+              <span
+                v-else
+                class="loading-button-click-area share-button-click-area mr-auto"
+                ><div class="mr-8 icon-font-base" style="font-size: 12px">
+                  
+                </div>
                 <span>Share</span></span
               >
             </div>
-            
 
             <div
               data-op="add-to-betslip"
@@ -117,11 +96,21 @@
                   
                 </div>
               </div>
-              <span v-else class="loading-button-click-area"
-                ><span data-cms-key="add_to_betslip" data-cms-page="page_code_hub"
-                  >Add to Betslip</span
-                ></span
-              >
+              <span v-else class="loading-button-click-area share-button-click-area mr-auto">
+                <div class="mr-8 icon-font-base" style="font-size: 12px"></div>
+                <span>Share</span>
+              </span>
+
+              <div data-op="add-to-betslip" role="button" tabindex="0"
+                class="button loading-button-container add-to-betslip-button" @click="addToBetslip(code)">
+                <div v-if="addToBetslipLoading" class="loading-icon-container">
+                  <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px">
+                    
+                  </div>
+                </div>
+                <span v-else class="loading-button-click-area"><span data-cms-key="add_to_betslip"
+                    data-cms-page="page_code_hub">Add to Betslip</span></span>
+              </div>
             </div>
           </div>
         </div>
@@ -133,8 +122,8 @@
 <script setup>
 import { formatDate } from "@/helpers";
 import { ref } from "vue";
-import emitter from "../../plugins/emitter";
-import { useCouponStore } from "../../stores";
+import emitter from "@/plugins/emitter";
+import { useCouponStore } from "@/stores";
 
 const props = defineProps(["codes"]);
 const addToBetslipLoading = ref(false);
@@ -143,7 +132,10 @@ const couponStore = useCouponStore();
 
 function getImageURL(name) {
   if (name == "Championship") {
-    return new URL("../../assets/images/EFL_Championship_Logo.png", import.meta.url);
+    return new URL(
+      "../../assets/images/EFL_Championship_Logo.png",
+      import.meta.url,
+    );
   } else if (name == "Bundesliga") {
     return new URL("../../assets/images/Bundesliga.png", import.meta.url);
   } else {
@@ -217,14 +209,14 @@ function shareCode(data) {
   padding: 0 1rem;
 }
 .featured-code-container #featuredCodeCardBox {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    height: 100%;
-    margin-top: 0.33333333rem;
-    padding-bottom: 0.33333333rem;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
-    scroll-behavior: smooth;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100%;
+  margin-top: 0.33333333rem;
+  padding-bottom: 0.33333333rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Enable scroll snapping along the horizontal axis */
+  scroll-behavior: smooth;
 }
 .featured-code-container #featuredCodeCardBox > * {
   margin-right: 0.66666667rem;
@@ -240,12 +232,15 @@ function shareCode(data) {
 .featured-code-card-container {
   background-color: #ffffff;
   background-color: var(--c-featured-match-card-bg);
-  -webkit-box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1),
+  -webkit-box-shadow:
+    0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1), 2px 2px 4px 0px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0px 2px 4px 2px rgba(0, 0, 0, 0.1),
+    2px 2px 4px 0px rgba(0, 0, 0, 0.1);
   width: 88%;
   scroll-snap-align: center; /* Snap the cards to the center */
-    flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 .featured-code-card-container .featured-code-card-style {
   height: 100%;

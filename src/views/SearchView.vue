@@ -6,7 +6,9 @@
       </div>
       <form id="search" class="m-l-right">
         <div class="m-input-wap-wrapper">
-          <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+          <i
+            class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
+          ></i>
 
           <input
             role=""
@@ -153,7 +155,10 @@ const liveSports = computed(() => {
   if (results.value.fixtures) {
     const arr = [];
     results.value.fixtures.forEach((fixture) => {
-      if (fixture?.matchStatus !== "Not started" && fixture?.matchStatus !== "Ended") {
+      if (
+        fixture?.matchStatus !== "Not started" &&
+        fixture?.matchStatus !== "Ended"
+      ) {
         const sport = arr.find((item) => item.sportName === fixture.sportName);
         if (sport) {
           sport.fixtures.push(fixture);

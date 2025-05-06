@@ -3,8 +3,12 @@
     <div data-op="label-prematch" class="m-event-sport m-sports-row">
       <div class="m-event-meta">
         <div>
-          <span class="m-time" style="margin-right: 5px">{{ eventData.eventTime }}</span>
-          <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span>
+          <span class="m-time" style="margin-right: 5px">{{
+            eventData.eventTime
+          }}</span>
+          <span class="m-game-id" style="margin-right: 5px"
+            >ID {{ eventData.gameID }}</span
+          >
           <span class="m-league-name"
             >{{ eventData.tournament }} - {{ eventData.categoryName }}</span
           >
@@ -27,8 +31,8 @@
                 sport: slugify(eventData.sportName),
                 tournament_name: slugify(eventData.tournament),
                 event_name: slugify(eventData.name),
-                event_id: eventData.matchID
-              }
+                event_id: eventData.matchID,
+              },
             })
           "
         >
@@ -36,7 +40,10 @@
           <div class="team">{{ eventData.awayTeam }}</div>
         </div>
         <div class="x-table-cell m-market-cell">
-          <div class="m-market m-event-market-default market-id-1" style="position: relative">
+          <div
+            class="m-market m-event-market-default market-id-1"
+            style="position: relative"
+          >
             <template v-if="eventData.outcomes && eventData.activeMarkets > 0">
               <template v-if="outcomes.length">
                 <div
@@ -45,7 +52,9 @@
                   @click="toggleList"
                 >
                   <div tabindex="0" class="grid-specifier-select">
-                    <div class="grid-specifier-select-label">{{ activeSpecifier }}</div>
+                    <div class="grid-specifier-select-label">
+                      {{ activeSpecifier }}
+                    </div>
                     <div class="grid-specifier-select-icon">
                       <em class="icon">^</em>
                     </div>
@@ -56,7 +65,13 @@
                   class="af-select-list m-event-specifiers-order"
                   v-if="specifierOpen"
                   :class="'af-select-list-' + eventData.matchID"
-                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0"
+                  style="
+                    width: 62px;
+                    opacity: 1;
+                    position: absolute;
+                    top: 34px;
+                    left: 0;
+                  "
                 >
                   <span
                     class="af-select-item"
@@ -78,9 +93,9 @@
                         eventData.matchID,
                         odd.outcomeName,
                         odd.oddID,
-                        eventData.name
+                        eventData.name,
                       ),
-                      couponStore.coupon
+                      couponStore.coupon,
                     )
                       ? 'm-outcome--checked'
                       : ''
@@ -94,7 +109,10 @@
                 >
                   <span data-op="prematch-lock" class="m-icon-lock"></span>
                 </div>
-                <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index"></EmptyOdds>
+                <EmptyOdds
+                  v-for="(odd, index) in activeMarket.outcomes"
+                  :key="index"
+                ></EmptyOdds>
               </template>
             </template>
             <EmptyOdds v-else></EmptyOdds>
@@ -109,135 +127,364 @@
   <!---->
 </template>
 <script setup>
-import { defineComponent, computed, watch, ref } from 'vue'
-import { createID, isSelected, sortArr, slugify } from '@/helpers'
-import Odds from '@/components/Prematch/Odds.vue'
-import EmptyOdds from '@/components/EmptyOdds.vue'
-import { useCouponStore } from '../../stores'
-import emitter from '../../plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '../../helpers'
+import {
+  defineComponent,
+  computed,
+  watch,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
+import { createID, isSelected, sortArr, slugify } from "@/helpers";
+import Odds from "@/components/Prematch/Odds.vue";
+import EmptyOdds from "@/components/EmptyOdds.vue";
+import { useCouponStore } from "@/stores";
+import emitter from "@/plugins/emitter";
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
+import { useMqttService } from "@/composables/useMqtt";
 
-const couponStore = useCouponStore()
+const couponStore = useCouponStore();
+
+const { subscribe } = useMqttService();
 
 const props = defineProps({
   eventData: Object,
-  activeMarket: Object
-})
+  activeMarket: Object,
+});
 
-const activeSpecifier = ref()
-const specifierOpen = ref(false)
+const activeSpecifier = ref();
+const specifierOpen = ref(false);
 
-const outcomes = ref([])
+const outcomes = ref([]);
+// Create a local copy of eventData outcomes that we can update
+const localOutcomes = ref([]);
+
+// Keep track of updated odds
+const updatedOutcomes = ref({});
+
+// Add the updatePending ref
+const updatePending = ref(false);
 
 const getSpecifiers = computed(() => {
-  if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-    const result = []
+  if (
+    props.activeMarket &&
+    props.activeMarket.specifier &&
+    props.activeMarket.specifier !== ""
+  ) {
+    const result = [];
 
-    const outcomes = props.eventData.outcomes
-    if (outcomes.length > 0) {
+    // Always use props.eventData.outcomes as the base data
+    const outcomes = props.eventData.outcomes;
+    if (outcomes && outcomes.length > 0) {
       const filtered = outcomes.filter(
-        (item) => item.marketID === parseInt(props.activeMarket.marketID)
-      )
+        (item) => item.marketID === parseInt(props.activeMarket.marketID),
+      );
 
-      let uniqueFiltered = uniqueOutcomes(filtered)
+      let uniqueFiltered = uniqueOutcomes(filtered);
 
       uniqueFiltered.forEach((outcome) => {
-        let specifier = outcome.specifier
-        let found = result.find((item) => item.specifier === specifier)
+        let specifier = outcome.specifier;
+        let found = result.find((item) => item.specifier === specifier);
         if (!found)
           // check if specifier has been listed
-          result.push({ specifier, value: specifier.split('=')[1] }) //push value to array
-      })
+          result.push({ specifier, value: specifier.split("=")[1] }); //push value to array
+      });
     }
-    return result.sort((a, b) => a.value - b.value)
+    return result.sort((a, b) => a.value - b.value);
   } else {
-    return []
+    return [];
   }
-})
+});
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
     (market, index, self) =>
       index ===
-      self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
-  )
-  return x
-}
+      self.findIndex(
+        (o) =>
+          o.marketID === market.marketID && o.specifier === market.specifier,
+      ),
+  );
+  return x;
+};
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
     (outcome, index, self) =>
       index ===
-      self.findIndex((o) => o.outcomeID === outcome.outcomeID && o.specifier === outcome.specifier)
-  )
-  return x
-}
+      self.findIndex(
+        (o) =>
+          o.outcomeID === outcome.outcomeID &&
+          o.specifier === outcome.specifier,
+      ),
+  );
+  return x;
+};
 
 const setActiveSpecifier = (spec) => {
   if (props.eventData.outcomes) {
-    const odds = props.eventData.outcomes
-    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+    const odds = props.eventData.outcomes;
+    let filtered = odds.filter(
+      (item) => item.marketID === parseInt(props.activeMarket.marketID),
+    );
     if (filtered) {
-      let uniqueFiltered = uniqueOutcomes(filtered)
-      uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
-      outcomes.value = uniqueFiltered
-      activeSpecifier.value = spec.value
-      toggleList()
+      let uniqueFiltered = uniqueOutcomes(filtered);
+      uniqueFiltered = uniqueFiltered.filter(
+        (item) => item.specifier === spec.specifier,
+      );
+
+      // Apply any updates we've received from MQTT
+      uniqueFiltered = uniqueFiltered.map((outcome) => {
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`;
+        if (updatedOutcomes.value[key]) {
+          return {
+            ...outcome,
+            odds: updatedOutcomes.value[key].odds,
+            active: updatedOutcomes.value[key].active,
+          };
+        }
+        return outcome;
+      });
+
+      outcomes.value = uniqueFiltered;
+      activeSpecifier.value = spec.value;
+      toggleList();
     }
-    // filtered = filtered.filter((item) => item.specifier === spec.specifier)
   }
-}
+};
 
 const toggleList = () => {
-  specifierOpen.value = !specifierOpen.value
-}
+  specifierOpen.value = !specifierOpen.value;
+};
 
 function showFixtureAnalysis(id) {
   return window.open(
     `https://s5.sir.sportradar.com/betradar/en/match/${id}`,
-    'stats',
-    'width=1078,height=768'
-  )
+    "stats",
+    "width=1078,height=768",
+  );
 }
 
 const getOdds = () => {
   // Find and return the odds based on marketID and outcomeID
   if (props.activeMarket && props.eventData.activeMarkets > 0) {
     if (props.eventData.outcomes) {
-      const odds = props.eventData.outcomes
-      let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
-      let uniqueFiltered = uniqueOutcomes(filtered)
-      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = uniqueFiltered[0]?.specifier
+      // Always start with the original data from props
+      const odds = props.eventData.outcomes;
+      let filtered = odds.filter(
+        (item) => item.marketID === parseInt(props.activeMarket.marketID),
+      );
+      let uniqueFiltered = uniqueOutcomes(filtered);
+
+      // Apply any updates we've received from MQTT
+      uniqueFiltered = uniqueFiltered.map((outcome) => {
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`;
+        if (updatedOutcomes.value[key]) {
+          return {
+            ...outcome,
+            odds: updatedOutcomes.value[key].odds,
+            active: updatedOutcomes.value[key].active,
+          };
+        }
+        return outcome;
+      });
+
+      if (props.activeMarket.specifier && props.activeMarket.specifier !== "") {
+        let defaultSpecifier = uniqueFiltered[0]?.specifier;
         if (defaultSpecifier) {
-          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
-          activeSpecifier.value = defaultSpecifier.split('=')[1]
+          uniqueFiltered = uniqueFiltered.filter(
+            (item) => item.specifier === defaultSpecifier,
+          );
+          activeSpecifier.value = defaultSpecifier.split("=")[1];
         }
       }
       if (uniqueFiltered.length) {
         // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
-        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+        outcomes.value = sortArr(uniqueFiltered, "outcomeID");
       } else {
-        outcomes.value = []
+        outcomes.value = [];
       }
     }
   }
-}
+};
 
 watch(
   () => props.activeMarket,
   () => {
-    getOdds()
+    getOdds();
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
+
+onMounted(() => {
+  // console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.eventData.matchID)
+
+  // Initialize outcomes from props
+  localOutcomes.value = props.eventData.outcomes || [];
+  outcomes.value = props.eventData.outcomes || [];
+  getOdds();
+
+  // Subscribe to prematch odds changes for this specific match
+  const matchId = props.eventData.matchID;
+
+  if (matchId) {
+    // Create a unique component ID to help with debugging
+    const componentId = `prematch-fixture-${matchId}-${Date.now()}`;
+
+    // Subscribe to bet stop first (higher priority)
+    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
+      handleBetStop(data);
+    });
+
+    // Then subscribe to odds changes
+    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
+      handleOddsChange(data);
+    });
+
+    // Store unsubscribe functions for cleanup
+    onBeforeUnmount(() => {
+      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
+      unsubscribeBetStop();
+      unsubscribeOddsChange();
+    });
+  }
+});
+
+// Add a watch for eventData to check betslip when props change
+watch(
+  () => props.eventData,
+  () => {
+    // checkBetslipOnRefresh()
+  },
+  { deep: true },
+);
+
+// Function to handle odds changes
+function handleOddsChange(data) {
+  if (!data || !data.markets) return;
+
+  const matchId = props.eventData.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return;
+  }
+
+  if (!updatePending.value) {
+    updatePending.value = true;
+
+    requestAnimationFrame(() => {
+      const markets = data.markets || [];
+
+      if (markets.length > 0) {
+        const updatedOutcomesCopy = { ...updatedOutcomes.value };
+
+        markets.forEach((market) => {
+          if (market.outcomes) {
+            market.outcomes.forEach((outcome) => {
+              const key = `${market.id}-${outcome.id}-${
+                market.specifiers || ""
+              }`;
+              updatedOutcomesCopy[key] = {
+                odds: outcome.odds,
+                active: outcome.active ? 1 : 0,
+                timestamp: Date.now(),
+              };
+            });
+          }
+        });
+
+        updatedOutcomes.value = updatedOutcomesCopy;
+
+        if (outcomes.value.length > 0) {
+          outcomes.value = outcomes.value.map((outcome) => {
+            const market = markets.find(
+              (m) =>
+                m.id === outcome.marketID &&
+                (m.specifiers || "") === (outcome.specifier || ""),
+            );
+
+            if (market && market.outcomes) {
+              const newOutcome = market.outcomes.find(
+                (o) => String(o.id) === String(outcome.outcomeID),
+              );
+
+              if (newOutcome) {
+                return {
+                  ...outcome,
+                  odds: newOutcome.odds,
+                  active: newOutcome.active ? 1 : 0,
+                };
+              }
+            }
+
+            return outcome;
+          });
+        }
+      }
+
+      updatePending.value = false;
+    });
+  }
+}
+
+// Function to handle bet stop
+function handleBetStop(data) {
+  const matchId = props.eventData.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    return;
+  }
+
+  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+
+  outcomes.value = outcomes.value.map((outcome) => ({
+    ...outcome,
+    odds: 0,
+    active: 0,
+  }));
+
+  outcomes.value.forEach((outcome) => {
+    const key = `${outcome.marketID}-${outcome.outcomeID}-${
+      outcome.specifier || ""
+    }`;
+    updatedOutcomes.value[key] = {
+      odds: 0,
+      active: 0,
+      timestamp: Date.now(),
+    };
+  });
+
+  const matchTime = new Date(props.eventData.startTime);
+  const currentTime = new Date();
+
+  if (matchTime < currentTime) {
+    // console.log('Match time has passed, removing fixture:', props.eventData.matchID)
+    emitter.emit("remove-fixture", props.eventData.matchID);
+  }
+}
 
 function addToBetslip(event, odd) {
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
-  let marketId = parseInt(odd.marketID)
-  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
-    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+  const id = createID(
+    event.gameID,
+    event.matchID,
+    odd.outcomeName,
+    odd.oddID,
+    event.name,
+  );
+  let marketId = parseInt(odd.marketID);
+  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
+    emitter.emit(
+      "showErrorMessage",
+      "This market is not supported in simulation mode. Exit Simulation mode to add to betslip",
+    );
     return;
   }
   const data = {
@@ -249,21 +496,23 @@ function addToBetslip(event, odd) {
     odds: odd.odds,
     odd_id: odd.oddID,
     odd_name: odd.outcomeName,
-    type: 'prematch',
+    type: "prematch",
     event_id: event.gameID,
-    specifier: odd.specifier
-  }
+    specifier: odd.specifier,
+  };
 
   // return couponStore.addToCoupon(data)
 
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  const existsInBetslip = isSelected(id, couponStore.coupon);
+  return existsInBetslip
+    ? couponStore.removeSelection(id)
+    : couponStore.addToCoupon(data);
 }
 
 defineComponent({
-  name: 'PrematchFixture',
-  components: { Odds, EmptyOdds }
-})
+  name: "PrematchFixture",
+  components: { Odds, EmptyOdds },
+});
 </script>
 <style scoped>
 .m-event-sport {

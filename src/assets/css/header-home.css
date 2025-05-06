@@ -87,8 +87,8 @@
 }
 
 .mobile-navbar .x-icon-search::before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
+  content: "\e613";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -203,19 +203,39 @@
   text-align: center;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit .avatar-box .user-img {
+.mobile-navbar
+  .mobile-navbar-right
+  .x-login-yes
+  .x-btn-deposit
+  .avatar-box
+  .user-img {
   margin: 0;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit .avatar-box .currency {
+.mobile-navbar
+  .mobile-navbar-right
+  .x-login-yes
+  .x-btn-deposit
+  .avatar-box
+  .currency {
   margin-right: 0.16666667rem;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit .avatar-box .hidden {
+.mobile-navbar
+  .mobile-navbar-right
+  .x-login-yes
+  .x-btn-deposit
+  .avatar-box
+  .hidden {
   letter-spacing: 0.16666667rem;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit .avatar-box .avatar-container {
+.mobile-navbar
+  .mobile-navbar-right
+  .x-login-yes
+  .x-btn-deposit
+  .avatar-box
+  .avatar-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -252,7 +272,7 @@
   overflow: hidden;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-not>div {
+.mobile-navbar .mobile-navbar-right .x-login-not > div {
   border: 1px solid #ffffff;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
@@ -266,7 +286,7 @@
 }
 
 @media screen and (max-width: 320px) {
-  .mobile-navbar .mobile-navbar-right .x-login-not>div {
+  .mobile-navbar .mobile-navbar-right .x-login-not > div {
     padding: 0 0.33333333rem;
   }
 }
@@ -286,7 +306,6 @@
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login {
   margin-left: 8px;
-
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {
@@ -313,8 +332,8 @@
 }
 
 .mobile-navbar .history-tip::before {
-  content: '\e62d';
-  font-family: 'iconfont' !important;
+  content: "\e62d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

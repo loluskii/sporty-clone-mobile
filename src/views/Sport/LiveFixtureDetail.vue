@@ -6,32 +6,34 @@
         <LoadingSpinner v-show="isLoading"></LoadingSpinner>
       </template>
       <template v-else>
-        <div class="tracker-content" id="sr-widget" style="padding: 20px 0"></div>
+        <div
+          class="tracker-content"
+          id="sr-widget"
+          style="padding: 20px 0"
+        ></div>
         <div class="m-match-tracker-icons-above-wrapper" style="height: auto">
           <div v-if="!isLiveTrackerShowing" class="m-event-title">
             <div class="change-match-overly" style="display: none"></div>
             <div>
               <div class="m-event-league">
                 <div class="m-event-title-time">
-                  <p class="category-league">
-                    {{ eventDetail.categoryName }} - {{ eventDetail.tournament }}
-                  </p>
+                  <p class="category-league">{{ eventDetail.tournament }}</p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? 'Finished' : eventDetail.eventTime }}</span>
+                  <span>{{ matchHasEnded ? "Finished" : eventTime }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
                 <div class="home-team-name">
                   <span class="team">{{ eventDetail.competitor1 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ eventDetail.homeScore }}</em>
+                    ><em class="setScore">{{ scores.home }}</em>
                   </span>
                 </div>
                 <div class="away-team-name">
                   <span class="team">{{ eventDetail.competitor2 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ eventDetail.awayScore }}</em>
+                    ><em class="setScore">{{ scores.away }}</em>
                   </span>
                 </div>
               </div>
@@ -44,13 +46,19 @@
                 :class="{ active: isLiveTrackerShowing }"
                 @click="openWidget('lmtPlus')"
               ></span>
-              <span class="match-statistics" @click="openWidget('Statistics')"></span>
+              <span
+                class="match-statistics"
+                @click="openWidget('Statistics')"
+              ></span>
             </div>
           </div>
         </div>
 
         <div class="live-match event-detail">
-          <div v-if="!matchHasEnded && !isLoading" class="m-sport-market">
+          <div
+            v-if="(!matchHasEnded && !isLoading) || !noMarkets"
+            class="m-sport-market"
+          >
             <div
               v-for="(marketGroup, index) in groupedMarkets"
               :key="index"
@@ -64,14 +72,22 @@
                 <div class="m-table market-content">
                   <div
                     class="m-table-row"
-                    v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
+                    v-for="(market, m) in getChunks(
+                      marketGroup.markets[0].outcomes,
+                    )"
                     :key="m"
                   >
                     <template
-                      v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
+                      v-if="
+                        marketGroup.specifier !== undefined &&
+                        marketGroup.specifier === ''
+                      "
                     >
                       <template
-                        v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
+                        v-for="(selection, odd) in sortByKey(
+                          market,
+                          'outcomeID',
+                        )"
                         :key="odd"
                       >
                         <div
@@ -83,27 +99,30 @@
                                 eventDetail.matchID,
                                 selection.outcomeName,
                                 selection.oddID,
-                                eventDetail.name
+                                eventDetail.name,
                               ),
-                              couponStore.coupon
+                              couponStore.coupon,
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds < 1
+                            'm-outcome--disabled': selection.odds <= 1,
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             selection.displayName ?? selection.outcomeName
                           }}</em>
-                          <em :class="{ 'm-icon-lock': selection.odds < 1 }">{{
-                            selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                          <em :class="{ 'm-icon-lock': selection.odds <= 1 }">{{
+                            selection.odds > 1 ? selection.odds.toFixed(2) : ""
                           }}</em>
                         </div>
                       </template>
                     </template>
                     <template v-else>
-                      <div class="m-table" v-if="isTotalOrHandicap(marketGroup)">
+                      <div
+                        class="m-table"
+                        v-if="isTotalOrHandicap(marketGroup)"
+                      >
                         <!-- <div class="m-table-row">
                           <div
                             class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
@@ -127,7 +146,9 @@
                           </div>
                         </div> -->
                         <div
-                          v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)"
+                          v-for="(mg, idx) in uniqueMarkets(
+                            marketGroup.markets,
+                          )"
                           class="m-table-row"
                           :key="idx"
                         >
@@ -135,13 +156,18 @@
                           <div
                             class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
                             :class="{
-                              'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
-                              'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4
+                              'm-outcome-three':
+                                uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                              'm-outcome-four':
+                                uniqueOutcomes(mg.outcomes).length + 1 === 4,
                             }"
                           >
                             <em>{{ getSpecifierValue(mg.specifier) }}</em>
                           </div>
-                          <template v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)" :key="o">
+                          <template
+                            v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)"
+                            :key="o"
+                          >
                             <div
                               class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
                               @click="addToBetslip(mg, outcome)"
@@ -152,24 +178,34 @@
                                     eventDetail.matchID,
                                     outcome.outcomeName,
                                     outcome.oddID,
-                                    eventDetail.name
+                                    eventDetail.name,
                                   ),
-                                  couponStore.coupon
+                                  couponStore.coupon,
                                 ),
-                                'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
-                                'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
-                                'm-outcome--disabled': outcome.odds < 1
+                                'm-outcome-three':
+                                  uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                                'm-outcome-four':
+                                  uniqueOutcomes(mg.outcomes).length + 1 === 4,
+                                'm-outcome--disabled': outcome.odds <= 1,
                               }"
                             >
-                              <em :class="{ 'm-icon-lock': outcome.odds < 1 }">{{
-                                outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
-                              }}</em>
+                              <em
+                                :class="{ 'm-icon-lock': outcome.odds <= 1 }"
+                                >{{
+                                  outcome.odds > 1
+                                    ? outcome.odds.toFixed(2)
+                                    : ""
+                                }}</em
+                              >
                             </div>
                           </template>
                         </div>
                       </div>
                       <template
-                        v-for="(selection, odd) in _.sortBy(market, 'outcomeID')"
+                        v-for="(selection, odd) in _.sortBy(
+                          market,
+                          'outcomeID',
+                        )"
                         :key="odd"
                         v-else
                       >
@@ -182,22 +218,27 @@
                                 eventDetail.matchID,
                                 selection.outcomeName,
                                 selection.oddID,
-                                eventDetail.name
+                                eventDetail.name,
                               ),
-                              couponStore.coupon
+                              couponStore.coupon,
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': selection.odds <= 1,
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             getMarketCode(selection.outcomeName)
                           }}</em>
-                          <em :class="selection.odds <= 1 ? 'm-icon-lock' : ''">{{
-                            selection.odds <= 1 ? '' : selection.odds.toFixed(2)
-                          }}</em>
+                          <em
+                            :class="selection.odds <= 1 ? 'm-icon-lock' : ''"
+                            >{{
+                              selection.odds <= 1
+                                ? ""
+                                : selection.odds.toFixed(2)
+                            }}</em
+                          >
                         </div>
                       </template>
                     </template>
@@ -206,10 +247,14 @@
               </div>
             </div>
           </div>
-          <div v-else class="m-sport-market-no-data" style="padding: 5rem 2.33333333rem 10rem">
+          <div
+            v-else
+            class="m-sport-market-no-data"
+            style="padding: 5rem 2.33333333rem 10rem"
+          >
             <div style="white-space: pre-line">
-              Sorry, this game is no longer available. Betting has closed. Please choose other
-              games.
+              Sorry, this game is no longer available. Betting has closed.
+              Please choose other games.
             </div>
           </div>
         </div>
@@ -219,154 +264,204 @@
 </template>
 
 <script setup>
-import HeaderOther from '@/components/HeaderOther.vue'
-import { defineComponent, watch, ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import _ from 'lodash'
-import { useCouponStore } from '@/stores'
-import emitter from '@/plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
+import HeaderOther from "@/components/HeaderOther.vue";
+import {
+  defineComponent,
+  watch,
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  reactive,
+} from "vue";
+import { useRoute } from "vue-router";
+import { getFixtureMarkets, chunks, createID, isSelected } from "@/helpers";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import _ from "lodash";
+import { useCouponStore } from "@/stores";
+import emitter from "@/plugins/emitter";
+import { SIM_ALLOWED_MARKETS } from "@/helpers";
+import { useMqttService } from "@/composables/useMqtt";
 
-const eventMarkets = ref()
-const eventDetail = ref()
-const groupedMarkets = ref([])
-const isLoading = ref(false)
-const route = useRoute()
+const eventMarkets = ref();
+const eventDetail = ref();
+const scores = reactive({
+  home: 0,
+  away: 0,
+});
+const eventTime = ref("0:00");
+const groupedMarkets = ref([]);
+const isLoading = ref(false);
+const route = useRoute();
+const refetchInterval = ref(null);
+const REFETCH_INTERVAL_MS = 60000; // 60 seconds
+
 // const errorMessage = ref()
-const couponStore = useCouponStore()
-const homeTeam = ref()
-const awayTeam = ref()
-const isLiveTrackerShowing = ref(false)
+const couponStore = useCouponStore();
+const homeTeam = ref();
+const awayTeam = ref();
+const isLiveTrackerShowing = ref(false);
+const { subscribe } = useMqttService();
+const updatedOutcomes = ref({});
+const updatePending = ref(false);
+const unsubscribeFunctions = ref([]);
 
 watch(
   () => route.params.event_id,
   async (provider_id) => {
-    await getEventDetail(provider_id)
+    await getEventDetail(provider_id);
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-)
+  { immediate: true }, // Trigger the watch callback immediately on component mount
+);
 
 const matchHasEnded = computed(() => {
-  return eventDetail.value.statusCode === 3
-})
+  return eventDetail.value.statusCode === 3;
+});
+
+const noMarkets = computed(() => {
+  return eventMarkets.value.length === 0;
+});
 
 function isTotalOrHandicap(market) {
   return (
     (market.specifier.includes("total") &&
-      uniqueOutcomes(market.markets[0].outcomes).length === 2) ||
+      market.markets[0].outcomes.length === 2) ||
     market.specifier.includes("hcp")
   );
 }
 
 const getMarketCode = (name) => {
-  const homeTeamRegex = new RegExp(homeTeam.value, 'gi')
-  const awayTeamRegex = new RegExp(awayTeam.value, 'gi')
-  const drawRegex = /draw/gi
-  const orRegex = /or/gi
+  const homeTeamRegex = new RegExp(homeTeam.value, "gi");
+  const awayTeamRegex = new RegExp(awayTeam.value, "gi");
+  const drawRegex = /draw/gi;
+  const orRegex = /or/gi;
 
   // Replace home team name with '1'
-  name = name.replace(homeTeamRegex, '1')
+  name = name.replace(homeTeamRegex, "1");
 
   // Replace away team name with '2'
-  name = name.replace(awayTeamRegex, '2')
+  name = name.replace(awayTeamRegex, "2");
 
   // Replace 'draw' with 'X'
-  name = name.replace(drawRegex, 'X')
+  name = name.replace(drawRegex, "X");
 
   // Replace 'or' with '/'
-  name = name.replace(orRegex, '/')
+  name = name.replace(orRegex, "/");
 
-  return name.trim()
-}
+  return name.trim();
+};
 
 async function getEventDetail(id) {
-  isLoading.value = true
+  isLoading.value = true;
   try {
+    // console.log(`🔍 Fetching event details for ID: ${id}`) // Add fetch start log
     const res = await getFixtureMarkets(id)
     isLoading.value = false
     if (Object.keys(res).length && res.markets) {
-      eventDetail.value = res
-      eventMarkets.value = res.markets
-      groupedMarkets.value = groupByMarketID(res.markets)
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
+      eventDetail.value = res;
+      eventMarkets.value = res.statusCode === 3 ? [] : res.markets;
+      groupedMarkets.value =
+        res.statusCode === 3 ? [] : groupByMarketID(res.markets);
+      homeTeam.value = res.competitor1;
+      awayTeam.value = res.competitor2;
+      scores.home = res.homeScore;
+      scores.away = res.awayScore;
+      eventTime.value = res.eventTime;
+
+      // Set up MQTT subscriptions after we have the event details
+      if (res.matchID) {
+        // console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
+        setupMqttSubscriptions(res.matchID)
+        setupPeriodicRefetch(res.matchID)
+      } else {
+        console.warn(`⚠️ No matchID found in event details response`); // Add warning if no matchID
+      }
+    } else {
+      console.warn(`⚠️ Invalid event details response:`, res); // Add warning for invalid response
     }
   } catch (error) {
-    eventDetail.value = null
-    // errorMessage.value = res.message
-    console.log('match is live')
-    isLoading.value = false
+    console.error(`❌ Error fetching event details:`, error); // Add error log
+    eventDetail.value = null;
+    isLoading.value = false;
   }
 }
 
 function sortByKey(array, key, ascending = true) {
   return array.slice().sort((a, b) => {
-    const valA = parseInt(a[key], 10)
-    const valB = parseInt(b[key], 10)
+    const valA = parseInt(a[key], 10);
+    const valB = parseInt(b[key], 10);
 
     if (isNaN(valA) || isNaN(valB)) {
       // Handle cases where parsing fails
-      return 0
+      return 0;
     }
 
-    return ascending ? valA - valB : valB - valA
-  })
+    return ascending ? valA - valB : valB - valA;
+  });
 }
 
 const getChunks = (outcomes) => {
-  let x = uniqueOutcomes(outcomes)
-  return chunks(x)
-}
+  let x = uniqueOutcomes(outcomes);
+  return chunks(x);
+};
 
 const uniqueMarkets = (markets) => {
-  console.log(markets)
+  // console.log(markets)
   let x = markets.filter(
-    (market, index, self) => index === self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
-  )
-  return x
-}
+    (market, index, self) =>
+      index ===
+      self.findIndex(
+        (o) =>
+          o.marketID === market.marketID && o.specifier === market.specifier,
+      ),
+  );
+  return x;
+};
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
-    (outcome, index, self) => index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
-  )
-  return x
-}
+    (outcome, index, self) =>
+      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID),
+  );
+  return x;
+};
 
 function groupByMarketID(data) {
-  const groupedMarkets = {}
+  const groupedMarkets = {};
   data.forEach((marketGroup) => {
-    const { marketID, marketName, specifier } = marketGroup
+    const { marketID, marketName, specifier } = marketGroup;
     if (!groupedMarkets[marketID]) {
       groupedMarkets[marketID] = {
         marketID,
         marketName,
         specifier,
-        markets: [marketGroup]
-      }
+        markets: [marketGroup],
+      };
     } else {
-      groupedMarkets[marketID].markets.push(marketGroup)
+      groupedMarkets[marketID].markets.push(marketGroup);
     }
-  })
-  return Object.values(groupedMarkets)
+  });
+  return Object.values(groupedMarkets);
 }
 
 function addToBetslip(market, outcome) {
-  if (outcome.odds <= 1) return
-  let marketId = parseInt(market.marketID)
-  if(couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)){
-    emitter.emit('showErrorMessage', 'This market is not supported in simulation mode. Exit Simulation mode to add to betslip')
+  if (outcome.odds <= 1) return;
+  let marketId = parseInt(market.marketID);
+  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
+    emitter.emit(
+      "showErrorMessage",
+      "This market is not supported in simulation mode. Exit Simulation mode to add to betslip",
+    );
     return;
   }
+
   const id = createID(
     eventDetail.value.gameID,
     eventDetail.value.matchID,
     outcome.outcomeName,
     outcome.oddID,
-    eventDetail.value.name
-  )
+    eventDetail.value.name,
+  );
   const data = {
     fixture: eventDetail.value,
     market_name: market.marketName,
@@ -376,81 +471,273 @@ function addToBetslip(market, outcome) {
     odds: outcome.odds,
     odd_id: outcome.oddID,
     odd_name: outcome.outcomeName,
-    type: 'live',
+    type: "live",
     event_id: eventDetail.value.gameID,
-    specifier: market.specifier
-  }
+    specifier: market.specifier,
+  };
   // return couponStore.addToCoupon(data)
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  const existsInBetslip = isSelected(id, couponStore.coupon);
+  return existsInBetslip
+    ? couponStore.removeSelection(id)
+    : couponStore.addToCoupon(data);
 }
 
 const openWidget = (widgetName) => {
-  isLiveTrackerShowing.value = !isLiveTrackerShowing.value
-  const statWrapper = document.getElementById('sr-widget')
+  isLiveTrackerShowing.value = !isLiveTrackerShowing.value;
+  const statWrapper = document.getElementById("sr-widget");
   // statWrapper.parentElement.classList.toggle("brClosed");
 
-  if (statWrapper.innerHTML === '') {
+  if (statWrapper.innerHTML === "") {
     statWrapper.innerHTML = `<div class="m-loading-wrap">
       <div class="m-loading light">
         <div class="loading"></div>
       </div>
-    </div>`
+    </div>`;
 
-    window.SIR('addWidget', '#sr-widget', `match.${widgetName}`, {
-      matchId: eventDetail.value.matchID
-    })
+    window.SIR("addWidget", "#sr-widget", `match.${widgetName}`, {
+      matchId: eventDetail.value.matchID,
+    });
   } else {
-    statWrapper.innerHTML = ''
-    window.SIR('removeWidget', '#sr-widget', `match.${widgetName}`)
+    statWrapper.innerHTML = "";
+    window.SIR("removeWidget", "#sr-widget", `match.${widgetName}`);
   }
-}
+};
 
 function getSpecifierValue(specifier) {
   // Check if the specifier includes 'total=', 'hcp=', 'nr=' or 'variant=' and contains a numeric value after the '='
-  if (!specifier.includes('|') && /total=|hcp=|nr=|variant=/.test(specifier)) {
-    const value = specifier.split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2)
+  if (!specifier.includes("|") && /total=|hcp=|nr=|variant=/.test(specifier)) {
+    const value = specifier.split("=").pop();
+    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2);
   }
 
   // Check if specifier contains 'total' and includes '|'
-  if (specifier.includes('|') && specifier.includes('total')) {
-    const value = specifier.split('|')[0].split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.split('=')[1]
+  if (specifier.includes("|") && specifier.includes("total")) {
+    const value = specifier.split("|")[0].split("=").pop();
+    return !isNaN(parseFloat(value)) ? value : specifier.split("=")[1];
   }
 
   // Handle combined specifier
-  const specs = specifier.split('|')
+  const specs = specifier.split("|");
   if (specs.length > 1) {
-    const combo2 = specs[1].split('=').pop()
-    return combo2
+    const combo2 = specs[1].split("=").pop();
+    return combo2;
   }
 
   // Default case
-  return specifier.split('=')[0]
+  return specifier.split("=")[0];
 }
 
 defineComponent({
-  name: 'fixture-detail'
-})
+  name: "fixture-detail",
+});
 
 onMounted(() => {
-  let script = document.createElement('script')
+  let script = document.createElement("script");
   script.text =
-    '(function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h))})(window,document,"script","https://widgets.sir.sportradar.com/9a7545262c211f21e8cdaf98d9b86856/widgetloader","SIR", {language: "en"});'
+    '(function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h))})(window,document,"script","https://widgets.sir.sportradar.com/9a7545262c211f21e8cdaf98d9b86856/widgetloader","SIR", {language: "en"});';
   // script.type = 'text/javascript';
-  script.id = 'sr-tracker'
+  script.id = "sr-tracker";
   // script.src = 'https://widgets.sir.sportradar.com/sportradar/widgetloader';
 
-  document.body.appendChild(script)
-})
+  document.body.appendChild(script);
+});
+
+function setupMqttSubscriptions(matchId) {
+  // console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`) // Add initial setup log
+
+  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`;
+
+  // Subscribe to odds changes
+  const oddsChangeTopic = `feeds/live/odds_change/${matchId}`
+  // console.log(`📊 Subscribing to odds changes on topic: ${oddsChangeTopic}`) // Add subscription log
+  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+    // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`, data)
+    handleOddsChange(data)
+  })
+
+  // Subscribe to bet stop
+  const betStopTopic = `feeds/live/bet_stop/${matchId}`
+  // console.log(`⚠️ Subscribing to bet stops on topic: ${betStopTopic}`) // Add subscription log
+  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+    // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`, data)
+    handleBetStop(data)
+  })
+
+  // Store unsubscribe functions in ref
+  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop]
+  // console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`) // Add completion log
+}
+
+function handleOddsChange(data) {
+  if (!data || !data.markets) return;
+
+  const matchId = eventDetail.value.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return;
+  }
+
+  if (data.score !== undefined || data.status !== undefined || data.match_status !== undefined) {
+    // console.log(`📊 Match Update:`, data)
+
+    scores.home = data.sport_event_status.home_score;
+    scores.away = data.sport_event_status.away_score;
+  }
+
+  // Handle odds updates
+  if (!data.markets) return;
+
+  if (!updatePending.value) {
+    updatePending.value = true;
+
+    requestAnimationFrame(() => {
+      const markets = data.markets || [];
+
+      if (markets.length > 0) {
+        const updatedOutcomesCopy = { ...updatedOutcomes.value };
+
+        markets.forEach((market) => {
+          if (market.outcomes) {
+            market.outcomes.forEach((outcome) => {
+              const key = `${market.id}-${outcome.id}-${
+                market.specifiers || ""
+              }`;
+              updatedOutcomesCopy[key] = {
+                odds: outcome.odds,
+                active: outcome.active ? 1 : 0,
+                timestamp: Date.now(),
+              };
+            });
+          }
+        });
+
+        updatedOutcomes.value = updatedOutcomesCopy;
+
+        if (eventMarkets.value.length > 0) {
+          eventMarkets.value = eventMarkets.value.map((market) => {
+            const updatedMarket = markets.find(
+              (m) =>
+                m.id === market.marketID &&
+                (m.specifiers || "") === (market.specifier || ""),
+            );
+
+            if (updatedMarket && updatedMarket.outcomes) {
+              market.outcomes = market.outcomes.map((outcome) => {
+                const newOutcome = updatedMarket.outcomes.find(
+                  (o) => String(o.id) === String(outcome.outcomeID),
+                );
+
+                if (newOutcome) {
+                  return {
+                    ...outcome,
+                    odds: newOutcome.odds,
+                    active: newOutcome.active ? 1 : 0,
+                  };
+                }
+                return outcome;
+              });
+            }
+            return market;
+          });
+
+          // Update grouped markets
+          groupedMarkets.value = groupByMarketID(eventMarkets.value);
+        }
+      }
+
+      updatePending.value = false;
+    });
+  }
+}
+
+function handleBetStop(data) {
+  const matchId = eventDetail.value.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
+    return
+  }
+
+  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
+
+  // Suspend all markets
+  if (eventMarkets.value.length > 0) {
+    eventMarkets.value = eventMarkets.value.map((market) => ({
+      ...market,
+      outcomes: market.outcomes.map((outcome) => ({
+        ...outcome,
+        odds: 0,
+        active: 0,
+      })),
+    }));
+
+    // Update grouped markets
+    groupedMarkets.value = groupByMarketID(eventMarkets.value);
+  }
+
+  // Check if match has ended
+  if (eventDetail.value.statusCode === 3) {
+    // console.log('Match has ended, showing unavailable message')
+    matchHasEnded.value = true
+  }
+}
+
+function setupPeriodicRefetch(matchId) {
+  // Clear any existing interval
+  if (refetchInterval.value) {
+    clearInterval(refetchInterval.value);
+  }
+
+  // Set up new interval
+  refetchInterval.value = setInterval(async () => {
+    if (!matchHasEnded.value) {
+      // console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
+      try {
+        const res = await getFixtureMarkets(matchId);
+        if (Object.keys(res).length && res.markets) {
+          eventMarkets.value = res.statusCode === 3 ? [] : res.markets
+          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(res.markets)
+          scores.home = res.homeScore
+          scores.away = res.awayScore
+          eventTime.value = res.eventTime
+          // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
+        }
+      } catch (error) {
+        console.error(`❌ Error during periodic refetch:`, error);
+      }
+    } else {
+      // console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`)
+      clearInterval(refetchInterval.value)
+    }
+  }, REFETCH_INTERVAL_MS);
+
+  // console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
+}
+
 onUnmounted(() => {
-  document.getElementById('sr-tracker').remove()
-})
+  // Clean up MQTT subscriptions
+  if (unsubscribeFunctions.value.length > 0) {
+    // console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
+    unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
+    unsubscribeFunctions.value = []
+  }
+
+  // Clean up refetch interval
+  if (refetchInterval.value) {
+    // console.log(`🧹 Component: Cleaning up periodic refetch interval`)
+    clearInterval(refetchInterval.value)
+    refetchInterval.value = null
+  }
+
+  // Clean up SR tracker script
+  document.getElementById("sr-tracker")?.remove();
+});
 </script>
 
 <style>
-@import url('@/assets/css/theme.css');
+@import url("@/assets/css/theme.css");
 .liveMatch-eventView-loading {
   min-height: 15rem;
 }
@@ -515,40 +802,55 @@ onUnmounted(() => {
   color: #dcdee5;
   color: var(--disable-brand-secondary);
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span:last-child {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span:last-child {
   margin-right: 0px;
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span::before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span::before {
   display: inline-block;
   vertical-align: top;
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.live-stream::before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.live-stream::before {
   background: url(//s.sporty.net/global/main/modules/common-wap/assets/img/stv.b89a6457ad.png);
   background-position: top left;
   background-size: 100% 100%;
-  content: '';
+  content: "";
   height: 1.41666667rem;
   margin-top: 0.1rem;
   padding-right: 0.41666667rem;
   width: 1.06666667rem;
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
-  content: '\e64f';
-  font-family: 'iconfont' !important;
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.match-tracker::before {
+  content: "\e64f";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.match-tracker::before {
   color: #ffb404;
 }
 .m-event-detail-wrap
   .m-event-tracker
   .event-tracker-button-wrapper
   > span.match-statistics::before {
-  content: '\e64a';
-  font-family: 'iconfont' !important;
+  content: "\e64a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -560,10 +862,16 @@ onUnmounted(() => {
   > span.match-statistics::before {
   color: #03bdff;
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.active {
   background-color: var(--brand-secondary);
 }
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active:before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.active:before {
   color: #353a45;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
@@ -634,7 +942,10 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.m-event-detail-wrap .m-event-title .m-event-title-time .category-league.disabled {
+.m-event-detail-wrap
+  .m-event-title
+  .m-event-title-time
+  .category-league.disabled {
   color: #9ca0ab;
   text-decoration: none;
 }
@@ -740,7 +1051,10 @@ onUnmounted(() => {
 .m-event-detail-wrap .live-match.event-detail .m-group {
   border-bottom-color: #1b1e25;
 }
-.m-event-detail-wrap .live-match.event-detail .m-detail-market-default .m-market-title {
+.m-event-detail-wrap
+  .live-match.event-detail
+  .m-detail-market-default
+  .m-market-title {
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
 }
@@ -884,8 +1198,8 @@ onUnmounted(() => {
   text-align: center;
 }
 .event-detail .m-sport-market-no-data::before {
-  content: '\e624';
-  font-family: 'iconfont' !important;
+  content: "\e624";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

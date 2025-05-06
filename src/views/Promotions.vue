@@ -5,7 +5,11 @@
       <div v-if="promotions" class="row">
         <div v-for="promo in promotions" :key="promo.id" class="col-12">
           <div class="card mb-3">
-            <img class="card-img-top" :src="promo.imageUrl" alt="Card image cap" />
+            <img
+              class="card-img-top"
+              :src="promo.imageUrl"
+              alt="Card image cap"
+            />
             <div class="card-body p-2">
               <h5 class="card-title">{{ promo.title }}</h5>
               <!-- <p>{{ promo.content.slice(0,100) }}...</p> -->
@@ -32,17 +36,31 @@
           </div>
         </div>
       </div>
-      <div v-else class="d-flex flex-column align-items-center justify-content-center py-5">
+      <div
+        v-else
+        class="d-flex flex-column align-items-center justify-content-center py-5"
+      >
         <p class="h4">No Promotions Availble.</p>
         <p class="text-muted">Kindly check back soon</p>
       </div>
     </div>
     <div v-if="pageMode === 'single-mode'" class="m-main-info p-3">
-        <img :src="selectedPromotion.imageUrl" class="img-fluid" alt="" />
-        <br />
-        <div class="mt-3" v-html="selectedPromotion.content"></div>
-        <button class="btn btn-block text-white mt-3" style="background-color: var(--brand-secondary)" @click.prevent="goToLink(selectedPromotion.targetUrl)">Play Now</button>
-        <button class="btn btn-block border mt-3" @click="pageMode = 'general-mode'">Go Back</button>
+      <img :src="selectedPromotion.imageUrl" class="img-fluid" alt="" />
+      <br />
+      <div class="mt-3" v-html="selectedPromotion.content"></div>
+      <button
+        class="btn btn-block text-white mt-3"
+        style="background-color: var(--brand-secondary)"
+        @click.prevent="goToLink(selectedPromotion.targetUrl)"
+      >
+        Play Now
+      </button>
+      <button
+        class="btn btn-block border mt-3"
+        @click="pageMode = 'general-mode'"
+      >
+        Go Back
+      </button>
     </div>
   </div>
 </template>
@@ -63,11 +81,11 @@ const couponStore = useCouponStore();
 const router = useRouter();
 const errorMesssage = ref("");
 const promotions = ref([]);
-const selectedPromotion = ref({})
+const selectedPromotion = ref({});
 
 function goToPromotion(promo) {
   pageTitle.value = promo.title;
-  selectedPromotion.value = promo
+  selectedPromotion.value = promo;
   pageMode.value = "single-mode";
 }
 
@@ -75,7 +93,7 @@ function goToLink(link) {
   if (!link.startsWith("http") || !link.startsWith("https")) {
     link = `https://${link}`; // Ensure it has the correct format
   }
-  return window.location.href = link;
+  return (window.location.href = link);
 }
 
 onMounted(async () => {

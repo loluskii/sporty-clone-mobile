@@ -6,16 +6,18 @@
         <div tabindex="0" class="m-choose-time" @click="toggleFilter('period')">
           <div
             class="m-title"
-            :class="{ used: route.name === 'today-fixtures' || route.query.period }"
+            :class="{
+              used: route.name === 'today-fixtures' || route.query.period,
+            }"
           >
             {{
               activePeriodFilter
                 ? activePeriodFilter.name
-                : route.query.period === 'today'
-                ? 'Today'
-                : route.query.period
-                ? route.query.period
-                : 'Daily'
+                : route.query.period === "today"
+                  ? "Today"
+                  : route.query.period
+                    ? route.query.period
+                    : "Daily"
             }}
           </div>
           <div v-if="filterIsOpen && filterName === 'period'" class="m-list">
@@ -33,8 +35,9 @@
                   @click="setPeriod(period.name, period.key)"
                   :class="{
                     checked:
-                      (period.key === 'today' && route.name === 'today-fixtures') ||
-                      period.key === route.query.period
+                      (period.key === 'today' &&
+                        route.name === 'today-fixtures') ||
+                      period.key === route.query.period,
                   }"
                 >
                   {{ period.name }}
@@ -47,7 +50,7 @@
               <li
                 @click="customDate"
                 :class="{
-                  checked: route.query.period === 'custom'
+                  checked: route.query.period === 'custom',
                 }"
               >
                 <span>Custom date</span>
@@ -56,7 +59,11 @@
           </div>
         </div>
         <div tabindex="0" class="m-choose-league">
-          <div class="m-title" :class="{ used: isLeagueActive }" @click="toggleFilter('league')">
+          <div
+            class="m-title"
+            :class="{ used: isLeagueActive }"
+            @click="toggleFilter('league')"
+          >
             Leagues
           </div>
           <div
@@ -69,20 +76,31 @@
               <div class="m-regions-list">
                 <div class="m-scroll-wrap">
                   <ul class="m-category" v-if="categoryList">
-                    <template v-for="(league, index) in categoryList" :key="index">
+                    <template
+                      v-for="(league, index) in categoryList"
+                      :key="index"
+                    >
                       <li
                         v-show="league.categoryName !== undefined"
                         class="tournament"
                         :class="{
-                          checked: activeCategory && activeCategory.categoryID == league.categoryID
+                          checked:
+                            activeCategory &&
+                            activeCategory.categoryID == league.categoryID,
                         }"
                         @click="setActiveCategory(league)"
                       >
-                        <span class="category-name">{{ league.categoryName }} </span
+                        <span class="category-name"
+                          >{{ league.categoryName }} </span
                         ><span class="select-tournamet-size">
-                          <em v-if="getSelectedTournamentCountByCategory(league) > 0">{{
-                            getSelectedTournamentCountByCategory(league)
-                          }}</em> </span
+                          <em
+                            v-if="
+                              getSelectedTournamentCountByCategory(league) > 0
+                            "
+                            >{{
+                              getSelectedTournamentCountByCategory(league)
+                            }}</em
+                          > </span
                         ><span class="event-size">{{ league.total }}</span>
                       </li>
                     </template>
@@ -91,9 +109,17 @@
                 <div class="m-scroll-wrap">
                   <ul class="m-tournament">
                     <LoadingSpinner v-if="isTournamentsLoading" />
-                    <template v-else v-for="(t, index) in tournamentsList" :key="index">
+                    <template
+                      v-else
+                      v-for="(t, index) in tournamentsList"
+                      :key="index"
+                    >
                       <li class="tournament" @click="selectTournament(t)">
-                        <div role="checkbox" tabindex="0" class="af-checkbox checkbox">
+                        <div
+                          role="checkbox"
+                          tabindex="0"
+                          class="af-checkbox checkbox"
+                        >
                           <label
                             ><input
                               type="checkbox"
@@ -105,12 +131,16 @@
                               class="check-stroke-wrapper sportybet"
                               style="width: 16px; height: 16px"
                               ><svg viewBox="-1.5 -1.5 15 14">
-                                <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                                <polyline
+                                  points="1 6.29411765 4.5 10 11 1"
+                                ></polyline>
                               </svg>
                             </span>
                           </label>
                         </div>
-                        <span class="tournament-name">{{ t.tournamentName }}</span
+                        <span class="tournament-name">{{
+                          t.tournamentName
+                        }}</span
                         ><span class="event-size">{{ t.total }}</span>
                       </li>
                     </template>
@@ -120,7 +150,9 @@
             </div>
             <div class="m-regions-opt">
               <span class="m-regions-reset" @click="resetSelection">Reset</span>
-              <span class="m-regions-apply" @click="viewFixturesByTournaments">View</span>
+              <span class="m-regions-apply" @click="viewFixturesByTournaments"
+                >View</span
+              >
             </div>
             <!---->
           </div>
@@ -149,207 +181,233 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted, computed, onUnmounted } from 'vue'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { useUtilstStore } from '@/stores'
+import { ref, defineEmits, onMounted, computed, onUnmounted } from "vue";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { useUtilsStore } from "@/stores";
 import {
   getCategoriesBySport,
   getDateRange,
   getTournamentsByCategories,
   extractIdsFromURL,
-  slugify
-} from '@/helpers'
-import { useRoute, useRouter } from 'vue-router'
-import $ from 'jquery'
-import emitter from '@/plugins/emitter.js'
+  slugify,
+} from "@/helpers";
+import { useRoute, useRouter } from "vue-router";
+import $ from "jquery";
+import emitter from "@/plugins/emitter.js";
 
 const props = defineProps({
-  activeSport: Object
-})
+  activeSport: Object,
+});
 const periodFilters = [
-  { name: 'Today', key: 'today' },
-  { name: 'Tomorrow', key: 'tomorrow' },
-  { name: 'Today & Tomorrow', key: 'today_tomorrow' },
-  { name: 'This Week', key: 'week' }
-]
+  { name: "Today", key: "today" },
+  { name: "Tomorrow", key: "tomorrow" },
+  { name: "Today & Tomorrow", key: "today_tomorrow" },
+  { name: "This Week", key: "week" },
+];
 
-const utilsStore = useUtilstStore()
-const filterIsOpen = ref(false)
-const filterName = ref('')
-const route = useRoute()
-const router = useRouter()
+const utilsStore = useUtilsStore();
+const filterIsOpen = ref(false);
+const filterName = ref("");
+const route = useRoute();
+const router = useRouter();
 
-const categoryList = ref([])
-const tournamentsList = ref([])
-const activeCategory = ref(null)
+const categoryList = ref([]);
+const tournamentsList = ref([]);
+const activeCategory = ref(null);
 
-const isCategoriesLoading = ref(false)
-const isTournamentsLoading = ref(false)
+const isCategoriesLoading = ref(false);
+const isTournamentsLoading = ref(false);
 
-const selectedTournaments = ref([])
+const selectedTournaments = ref([]);
 
 const activePeriodFilter = computed(() => {
-  if (route.name === 'today-fixtures' || route.query.period === 'today') {
-    return { name: 'Today', key: 'today' }
+  if (route.name === "today-fixtures" || route.query.period === "today") {
+    return { name: "Today", key: "today" };
   }
-  if (route.name === 'fixtures-by-sports' && route.query.startDate && route.query.endDate) {
-    return { name: 'Custom Date', key: 'custom' }
+  if (
+    route.name === "fixtures-by-sports" &&
+    route.query.startDate &&
+    route.query.endDate
+  ) {
+    return { name: "Custom Date", key: "custom" };
   }
-  return periodFilters.find((x) => x.key === route.query.period)
-})
+  return periodFilters.find((x) => x.key === route.query.period);
+});
 
 const isLeagueActive = computed(() => {
-  return route.name === 'fixtures-by-tournaments'
-})
+  return route.name === "fixtures-by-tournaments";
+});
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
-}
+  return utilsStore.sportsMenu.find((x) => x.sportName == name);
+};
 
 const getActiveSport = computed(() => {
-  return getSportbyName(route.params.sport)
-})
+  return getSportbyName(route.params.sport);
+});
 
 const setPeriod = (name, key) => {
-  return route.name !== 'today-fixtures' || name !== 'today'
-    ? router.push({ name: 'fixtures-by-sports', query: { ...route.query, period: key } })
-    : router.push({ name: 'today-fixtures' })
-}
+  return route.name !== "today-fixtures" || name !== "today"
+    ? router.push({
+        name: "fixtures-by-sports",
+        query: { ...route.query, period: key },
+      })
+    : router.push({ name: "today-fixtures" });
+};
 
 function toggleFilter(name) {
   if (filterIsOpen.value) {
-    filterIsOpen.value = false
-    filterName.value = name
-    document.getElementById('m-choose-bar').classList.remove('m-choose-bar-show')
-    $('body').removeClass('no-scroll')
+    filterIsOpen.value = false;
+    filterName.value = name;
+    document
+      .getElementById("m-choose-bar")
+      .classList.remove("m-choose-bar-show");
+    $("body").removeClass("no-scroll");
   } else {
-    filterIsOpen.value = true
-    filterName.value = name
-    document.getElementById('m-choose-bar').classList.add('m-choose-bar-show')
-    $('body').addClass('no-scroll')
+    filterIsOpen.value = true;
+    filterName.value = name;
+    document.getElementById("m-choose-bar").classList.add("m-choose-bar-show");
+    $("body").addClass("no-scroll");
     if (
-      (name === 'league' && categoryList.value.length === 0) ||
-      (name === 'league' && activePeriodFilter.value?.key)
+      (name === "league" && categoryList.value.length === 0) ||
+      (name === "league" && activePeriodFilter.value?.key)
     ) {
-      isCategoriesLoading.value = true
-      let dates = getDateRange(activePeriodFilter.value?.key)
+      isCategoriesLoading.value = true;
+      let dates = getDateRange(activePeriodFilter.value?.key);
       getCategoriesBySport(getActiveSport.value.sportID, dates).then((res) => {
-        isCategoriesLoading.value = false
-        categoryList.value = res.sports
-        if (route.name === 'fixtures-by-tournaments') {
-          const cids = extractIdsFromURL(route.params.categories, 'category')
-          const tids = extractIdsFromURL(route.params.tournaments, 'tournament')
-          activeCategory.value = categoryList.value.find((x) => x.categoryID == cids[0].categoryID)
+        isCategoriesLoading.value = false;
+        categoryList.value = res.sports;
+        if (route.name === "fixtures-by-tournaments") {
+          const cids = extractIdsFromURL(route.params.categories, "category");
+          const tids = extractIdsFromURL(
+            route.params.tournaments,
+            "tournament",
+          );
+          activeCategory.value = categoryList.value.find(
+            (x) => x.categoryID == cids[0].categoryID,
+          );
           if (!activeCategory.value) {
-            activeCategory.value = categoryList.value[0]
+            activeCategory.value = categoryList.value[0];
           }
-          selectedTournaments.value = tids
+          selectedTournaments.value = tids;
           // console.log(activeCategory.value)
-          setActiveCategory(activeCategory.value)
+          setActiveCategory(activeCategory.value);
         }
-      })
+      });
     }
   }
 }
 
 function selectTournament(tournament) {
   if (selectedTournaments.value.length >= 10) {
-    emitter.emit('showDialogueToaster', 'The selected tournaments cannot be greater than 10!')
-    return
+    emitter.emit(
+      "showDialogueToaster",
+      "The selected tournaments cannot be greater than 10!",
+    );
+    return;
   }
 
   const index = selectedTournaments.value.findIndex(
-    (x) => x.tournamentID === tournament.tournamentID
-  )
+    (x) => x.tournamentID === tournament.tournamentID,
+  );
   if (index !== -1) {
-    selectedTournaments.value.splice(index, 1)
+    selectedTournaments.value.splice(index, 1);
   } else {
     let t = {
       ...tournament,
       categoryID: activeCategory.value.categoryID,
-      categoryName: activeCategory.value.categoryName
-    }
-    selectedTournaments.value.push(t)
+      categoryName: activeCategory.value.categoryName,
+    };
+    selectedTournaments.value.push(t);
   }
 }
 
 function getSelectedTournamentCountByCategory(category) {
-  return selectedTournaments.value.filter((x) => x.categoryID === category.categoryID).length
+  return selectedTournaments.value.filter(
+    (x) => x.categoryID === category.categoryID,
+  ).length;
 }
 
 function tournamentIsSelected(tournament) {
-  return selectedTournaments.value.find((x) => x.tournamentID == tournament.tournamentID)
+  return selectedTournaments.value.find(
+    (x) => x.tournamentID == tournament.tournamentID,
+  );
 }
 
 const setActiveCategory = async (category) => {
-  isTournamentsLoading.value = true
-  activeCategory.value = category
-  let dates = getDateRange(activePeriodFilter.value?.key)
-  const res = await getTournamentsByCategories(category.categoryID, dates)
-  isTournamentsLoading.value = false
-  tournamentsList.value = res.sports
-}
+  isTournamentsLoading.value = true;
+  activeCategory.value = category;
+  let dates = getDateRange(activePeriodFilter.value?.key);
+  const res = await getTournamentsByCategories(category.categoryID, dates);
+  isTournamentsLoading.value = false;
+  tournamentsList.value = res.sports;
+};
 
 function resetSelection() {
-  toggleFilter()
-  selectedTournaments.value = []
-  return router.push({ name: 'today-fixtures' })
+  toggleFilter();
+  selectedTournaments.value = [];
+  return router.push({ name: "today-fixtures" });
 }
 
 function viewFixturesByTournaments() {
-  toggleFilter('league')
-  let selected = selectedTournaments.value.filter((x) => x.categoryID !== undefined)
-  const categoryIDs = [...new Set(selected.map((item) => item.categoryID))]
-  const tournamentIDs = selected.map((item) => item.tournamentID)
+  toggleFilter("league");
+  let selected = selectedTournaments.value.filter(
+    (x) => x.categoryID !== undefined,
+  );
+  const categoryIDs = [...new Set(selected.map((item) => item.categoryID))];
+  const tournamentIDs = selected.map((item) => item.tournamentID);
 
-  const categories = categoryIDs.map((id) => `sr:category:${id}`).join('_')
-  const tournaments = tournamentIDs.map((id) => `sr:tournament:${id}`).join('_')
+  const categories = categoryIDs.map((id) => `sr:category:${id}`).join("_");
+  const tournaments = tournamentIDs
+    .map((id) => `sr:tournament:${id}`)
+    .join("_");
 
-  let periodValue = route.name === 'today-fixtures' ? 'today' : route.query.period
+  let periodValue =
+    route.name === "today-fixtures" ? "today" : route.query.period;
   if (periodValue) {
     return router.push({
-      name: 'fixtures-by-tournaments',
+      name: "fixtures-by-tournaments",
       params: {
         sport: props.activeSport.sportName,
         categories: categories,
-        tournaments: tournaments
+        tournaments: tournaments,
         // sort: 'sort:league'
       },
-      query: { period: periodValue }
-    })
+      query: { period: periodValue },
+    });
   } else {
     // Combine the strings
     return router.push({
-      name: 'fixtures-by-tournaments',
+      name: "fixtures-by-tournaments",
       params: {
         sport: props.activeSport.sportName,
         categories: categories,
-        tournaments: tournaments
+        tournaments: tournaments,
         // sort: 'sort:league'
-      }
-    })
+      },
+    });
   }
 }
 
 const customDate = () => {
   // toggleFilter('')
-  emitter.emit('showCustomDatePicker')
-}
+  emitter.emit("showCustomDatePicker");
+};
 
 const getCustomRangeData = (data) => {
-  emitter.emit('showCustomDatePicker')
+  emitter.emit("showCustomDatePicker");
   return router.push({
-    name: 'fixtures-by-sports',
+    name: "fixtures-by-sports",
     params: { sport: slugify(props.activeSport.sportName) },
-    query: { period: 'custom', startDate: data.start, endDate: data.end }
-  })
-}
+    query: { period: "custom", startDate: data.start, endDate: data.end },
+  });
+};
 
 onMounted(() => {
-  emitter.on('dateRangeSet', getCustomRangeData)
-})
+  emitter.on("dateRangeSet", getCustomRangeData);
+});
 
-onUnmounted(() => {})
+onUnmounted(() => {});
 </script>
 
 <style>
@@ -454,8 +512,8 @@ onUnmounted(() => {})
 .m-choose-league .m-title::before,
 .m-choose-odds .m-title::before,
 .m-choose-time .m-title::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -475,8 +533,8 @@ onUnmounted(() => {})
 .m-choose-league .m-title.active::before,
 .m-choose-odds .m-title.active::before,
 .m-choose-time .m-title.active::before {
-  content: '\e62d';
-  font-family: 'iconfont' !important;
+  content: "\e62d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -530,8 +588,8 @@ onUnmounted(() => {})
   right: 1.33333333rem;
 }
 .m-list li:not(.tournament).checked::before::before {
-  content: '\e611';
-  font-family: 'iconfont' !important;
+  content: "\e611";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -592,8 +650,8 @@ onUnmounted(() => {})
 .m-choose-league .m-title::before,
 .m-choose-odds .m-title::before,
 .m-choose-time .m-title::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
+  content: "\e6a3";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -613,8 +671,8 @@ onUnmounted(() => {})
 .m-choose-league .m-title.active::before,
 .m-choose-odds .m-title.active::before,
 .m-choose-time .m-title.active::before {
-  content: '\e62d';
-  font-family: 'iconfont' !important;
+  content: "\e62d";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -650,7 +708,7 @@ onUnmounted(() => {})
 }
 .m-choose-league .m-list .m-regions-list:after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;
@@ -667,7 +725,7 @@ onUnmounted(() => {})
 }
 .m-choose-league .m-list .m-regions-list .m-scroll-wrap:after {
   clear: both;
-  content: '.';
+  content: ".";
   display: block;
   height: 0;
   visibility: hidden;
@@ -690,14 +748,24 @@ onUnmounted(() => {})
   line-height: 3rem;
 }
 .m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category li:active,
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-tournament li:active {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-tournament
+  li:active {
   background-color: #f2f3f5;
 }
 .m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category {
   border-right: 1px solid #eaecef;
   border-color: #eaecef;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category li.tournament {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-category
+  li.tournament {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   font-size: 0;
@@ -705,14 +773,26 @@ onUnmounted(() => {})
   white-space: nowrap;
   word-break: break-all;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category li.tournament > span {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-category
+  li.tournament
+  > span {
   display: inline-block;
   font-size: 1.066rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category li.tournament .category-name {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-category
+  li.tournament
+  .category-name {
   width: 65%;
 }
 .m-choose-league
@@ -746,7 +826,13 @@ onUnmounted(() => {})
   /* min-width: 1.5rem; */
   vertical-align: middle;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-category li.tournament .event-size {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-category
+  li.tournament
+  .event-size {
   text-align: right;
   width: 20%;
 }
@@ -778,13 +864,24 @@ onUnmounted(() => {})
   .event-size {
   color: #353a45;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-tournament li.tournament {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-tournament
+  li.tournament {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   font-size: 0;
   padding-left: 0.83333333rem;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-tournament li.tournament > span {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-tournament
+  li.tournament
+  > span {
   display: inline-block;
   font-size: 1.066rem;
   overflow: hidden;
@@ -800,7 +897,13 @@ onUnmounted(() => {})
   .tournament-name {
   width: 70%;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-tournament li.tournament .checkbox {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-tournament
+  li.tournament
+  .checkbox {
   margin-right: 10px;
 }
 .m-choose-league
@@ -824,7 +927,13 @@ onUnmounted(() => {})
   border: 1px solid #eaecef;
   border-color: #eaecef;
 }
-.m-choose-league .m-list .m-regions-list .m-scroll-wrap .m-tournament li.tournament .event-size {
+.m-choose-league
+  .m-list
+  .m-regions-list
+  .m-scroll-wrap
+  .m-tournament
+  li.tournament
+  .event-size {
   text-align: right;
   width: 15%;
 }

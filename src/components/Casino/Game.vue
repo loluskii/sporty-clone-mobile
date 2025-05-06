@@ -26,25 +26,28 @@
 import { useAuthStore, useUsersStore } from "@/stores";
 import { computed } from "vue";
 import { slugify } from "@/helpers";
-import emitter from "../../plugins/emitter";
+import emitter from "@/plugins/emitter";
 import { useRouter, useRoute } from "vue-router";
-import { useUtilstStore } from "../../stores";
+import { useUtilsStore } from "@/stores";
 
 const props = defineProps(["game"]);
 const authStore = useAuthStore();
 const userStore = useUsersStore();
-const router = useRouter()
+const router = useRouter();
 const route = useRoute();
-const utilsStore = useUtilstStore()
+const utilsStore = useUtilsStore();
 
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
 });
+
 const getImagePath = () => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${props.game.title
-    .replace(/\s/g, "")
-    .toLowerCase()}.png?alt=media`;
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(props.game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`;
+  } catch (error) {
+    console.error('Error generating image path:', error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(props.game.title)}`;
+  }
 };
 
 const handleImageError = (event) => {
@@ -57,13 +60,22 @@ const handleImageError = (event) => {
 async function redirectToGamePlay() {
   utilsStore.previousRoute = route.fullPath;
   if (userStore.currentUser) {
-    
-    if (activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(props.game.gameId)) {
-      emitter.emit("showCasinoDialog", { bonus: activeBonus.value, game: props.game });
+    if (
+      activeBonus.value &&
+      activeBonus.value.gameId &&
+      activeBonus.value.gameId.includes(props.game.gameId)
+    ) {
+      emitter.emit("showCasinoDialog", {
+        bonus: activeBonus.value,
+        game: props.game,
+      });
     } else {
       return router.push({
         name: "game-play",
-        params: { game_name: slugify(props.game.title), game_id: props.game.id },
+        params: {
+          game_name: slugify(props.game.title),
+          game_id: props.game.id,
+        },
       });
     }
   } else {

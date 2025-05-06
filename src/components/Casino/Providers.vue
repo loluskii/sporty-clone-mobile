@@ -38,7 +38,7 @@ import { ref, onBeforeMount, watch, computed } from "vue";
 import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "../../helpers";
+import { slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";
@@ -60,13 +60,12 @@ watch(
         break;
     }
   },
-  { immediate: true } // Trigger the watch callback immediately on component mount
+  { immediate: true }, // Trigger the watch callback immediately on component mount
 );
 
 function handleProvidersView() {
   viewMode.value = "providers";
 }
-
 </script>
 
 <style scoped>

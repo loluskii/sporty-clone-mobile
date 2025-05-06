@@ -11,20 +11,25 @@
           :class="details?.firstName ? '' : 'with-arrow'"
           @click="showInput('First Name', 'text', details?.firstName, false)"
         >
-          <em>First Name</em><span>{{ details?.firstName ? details?.firstName : 'Not Set' }}</span>
+          <em>First Name</em
+          ><span>{{
+            details?.firstName ? details?.firstName : "Not Set"
+          }}</span>
         </li>
         <li
           class="lock"
           :class="details?.lastName ? '' : 'with-arrow'"
           @click="showInput('Last Name', 'text', details?.lastName, false)"
         >
-          <em>Last Name</em><span>{{ details?.lastName ? details?.lastName : 'Not Set' }}</span>
+          <em>Last Name</em
+          ><span>{{ details?.lastName ? details?.lastName : "Not Set" }}</span>
         </li>
         <li
           :class="currentUser.email ? '' : 'with-arrow'"
           @click="showInput('Email', 'email', currentUser.email, false)"
         >
-          <em>Email</em><span>{{ currentUser.email ? currentUser.email : 'Not Set' }}</span>
+          <em>Email</em
+          ><span>{{ currentUser.email ? currentUser.email : "Not Set" }}</span>
         </li>
         <li class="lock">
           <em>Phone Number</em><span>+234 {{ details?.username }}</span>
@@ -36,7 +41,9 @@
         >
           <em>Address</em
           ><span
-            ><span>{{ details?.address ? details?.address : 'Not Set' }}</span></span
+            ><span>{{
+              details?.address ? details?.address : "Not Set"
+            }}</span></span
           >
         </li>
         <li
@@ -46,12 +53,14 @@
         >
           <em>City</em
           ><span
-            ><span>{{ details?.city ? details?.city : 'Not Set' }}</span></span
+            ><span>{{ details?.city ? details?.city : "Not Set" }}</span></span
           >
         </li>
         <li
           class="with-arrow"
-          @click="showInput('Update Password', 'password', null, null, 'password')"
+          @click="
+            showInput('Update Password', 'password', null, null, 'password')
+          "
         >
           <em data-cms-key="birthday">Change your password</em><span></span>
         </li>
@@ -79,7 +88,11 @@
               type="password"
               placeholder="Old Password"
               class="m-input fs-exclude"
-              style="width: calc(100% - 2rem); padding: 0rem 0.75rem; margin-bottom: 15px"
+              style="
+                width: calc(100% - 2rem);
+                padding: 0rem 0.75rem;
+                margin-bottom: 15px;
+              "
               v-model="oldPassword"
             />
             <input
@@ -93,7 +106,10 @@
         </div>
         <!---->
         <div class="m-btn-wrapper">
-          <button class="af-button af-button--success" @click.prevent="saveUpdate">
+          <button
+            class="af-button af-button--success"
+            @click.prevent="saveUpdate"
+          >
             <span> {{ buttonText }} </span>
           </button>
         </div>
@@ -103,116 +119,116 @@
 </template>
 
 <script setup>
-import HeaderOther from '@/components/HeaderOther.vue'
-import { useUsersStore } from '@/stores'
-import { ref, computed } from 'vue'
-import HeaderProfile from '../../components/HeaderProfile.vue'
-import { updateProfile, CLIENT_ID, updatePassword } from '@/helpers'
+import HeaderOther from "@/components/HeaderOther.vue";
+import { useUsersStore } from "@/stores";
+import { ref, computed } from "vue";
+import HeaderProfile from "../../components/HeaderProfile.vue";
+import { updateProfile, CLIENT_ID, updatePassword } from "@/helpers";
 
-const usersStore = useUsersStore()
+const usersStore = useUsersStore();
 
 const currentUser = computed(() => {
-  return usersStore.currentUser
-})
+  return usersStore.currentUser;
+});
 
 const details = computed(() => {
-  return usersStore.currentUser
-})
+  return usersStore.currentUser;
+});
 
-const inputTitle = ref('')
-const textType = ref('text')
-const inputValue = ref('')
-const showInputFieldView = ref(false)
-const isPasswordUpdate = ref(false)
+const inputTitle = ref("");
+const textType = ref("text");
+const inputValue = ref("");
+const showInputFieldView = ref(false);
+const isPasswordUpdate = ref(false);
 
-const oldPassword = ref('')
-const newPassword = ref('')
+const oldPassword = ref("");
+const newPassword = ref("");
 
-const buttonText = ref('Save')
+const buttonText = ref("Save");
 
 function showInput(title, text_type, value_exists, editable, inputType = null) {
-  if (!editable && value_exists) return
-  console.log(inputType)
-  showInputFieldView.value = true
-  inputTitle.value = title
+  if (!editable && value_exists) return;
+  console.log(inputType);
+  showInputFieldView.value = true;
+  inputTitle.value = title;
   if (!value_exists && value_exists !== null) {
-    textType.value = text_type
+    textType.value = text_type;
   } else if (value_exists !== null && editable) {
-    textType.value = text_type
-  } else if (inputType && inputType === 'password') {
-    isPasswordUpdate.value = true
+    textType.value = text_type;
+  } else if (inputType && inputType === "password") {
+    isPasswordUpdate.value = true;
   }
 }
 
 function handleBackToProfile() {
-  showInputFieldView.value = false
+  showInputFieldView.value = false;
 }
 
 async function saveUpdate() {
-  let url
+  let url;
   let payload = {
     userID: currentUser.value.id,
     roleId: currentUser.value.roleId,
-    email: currentUser.value.email ?? '',
-    firstName: details.value?.firstName ?? '',
-    lastName: details.value?.lastName ?? '',
-    phone: details.value?.phone ?? '',
-    address: details.value?.address ?? '',
-    city: details.value?.city ?? '',
-    gender: details.value?.gender ?? ''
+    email: currentUser.value.email ?? "",
+    firstName: details.value?.firstName ?? "",
+    lastName: details.value?.lastName ?? "",
+    phone: details.value?.phone ?? "",
+    address: details.value?.address ?? "",
+    city: details.value?.city ?? "",
+    gender: details.value?.gender ?? "",
     // date_of_birth: details.value?.date_of_birth ?? ''
-  }
+  };
   switch (inputTitle.value) {
-    case 'First Name':
-      payload.firstName = inputValue.value
-      break
-    case 'Last Name':
-      payload.lastName = inputValue.value
-      break
-    case 'Email':
-      payload.email = inputValue.value
-      break
-    case 'Address':
-      payload.address = inputValue.value
-      break
-    case 'City':
-      payload.city = inputValue.value
-      break
-    case 'Gender':
-      payload.gender = inputValue.value
-      break
-    case 'Date of Birth':
-      payload.date_of_birth = inputValue.value
-      break
-    case 'Update Password':
+    case "First Name":
+      payload.firstName = inputValue.value;
+      break;
+    case "Last Name":
+      payload.lastName = inputValue.value;
+      break;
+    case "Email":
+      payload.email = inputValue.value;
+      break;
+    case "Address":
+      payload.address = inputValue.value;
+      break;
+    case "City":
+      payload.city = inputValue.value;
+      break;
+    case "Gender":
+      payload.gender = inputValue.value;
+      break;
+    case "Date of Birth":
+      payload.date_of_birth = inputValue.value;
+      break;
+    case "Update Password":
       payload = {
         clientId: CLIENT_ID,
         oldPassword: oldPassword.value,
-        password: newPassword.value
-      }
-      break
+        password: newPassword.value,
+      };
+      break;
     default:
-      break
+      break;
   }
-  let res
+  let res;
   if (isPasswordUpdate.value) {
-    if (oldPassword.value === '' || newPassword.value === '') return
-    buttonText.value = 'Saving...'
-    res = await updatePassword(payload)
+    if (oldPassword.value === "" || newPassword.value === "") return;
+    buttonText.value = "Saving...";
+    res = await updatePassword(payload);
   } else {
-    buttonText.value = 'Saving...'
-    res = await updateProfile(payload)
+    buttonText.value = "Saving...";
+    res = await updateProfile(payload);
   }
-  buttonText.value = 'Save'
+  buttonText.value = "Save";
   if (res.success) {
-    await usersStore.loadCurrentUser()
-    alert('Update Successful!')
-    showInputFieldView.value = false
-    inputTitle.value = ''
-    inputValue.value = ''
-    textType.value = 'text'
+    await usersStore.loadCurrentUser();
+    alert("Update Successful!");
+    showInputFieldView.value = false;
+    inputTitle.value = "";
+    inputValue.value = "";
+    textType.value = "text";
   } else {
-    alert(`Error: ${res.message}`)
+    alert(`Error: ${res.message}`);
   }
 }
 </script>
@@ -271,8 +287,8 @@ async function saveUpdate() {
   color: #9ca0ab !important;
 }
 .m-uc-wrapper .m-ac-info-wrap li.with-arrow::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
+  content: "\e608";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -358,8 +374,8 @@ async function saveUpdate() {
   width: 1.66666667rem;
 }
 .m-uc-wrapper .m-input-wrapper .m-input-icon::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -390,7 +406,10 @@ async function saveUpdate() {
   color: #0d9737;
   color: var(--brand-secondary);
 }
-.m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover + .m-input {
+.m-uc-wrapper
+  .m-input-wrapper
+  .m-input-icon.m-input-icon--clickable:hover
+  + .m-input {
   border-color: #0d9737;
   border-color: var(--brand-secondary);
 }
@@ -462,7 +481,10 @@ async function saveUpdate() {
 .m-uc-wrapper .m-input-group--prepend .m-input-icon + .m-input {
   padding-right: 0.83333333rem;
 }
-.m-uc-wrapper .m-input-group--prepend .m-input-icon.m-input-icon--show + .m-input {
+.m-uc-wrapper
+  .m-input-group--prepend
+  .m-input-icon.m-input-icon--show
+  + .m-input {
   padding-right: 2.33333333rem;
 }
 .m-uc-wrapper .m-input-group--prepend .m-input {
@@ -539,8 +561,8 @@ async function saveUpdate() {
   font-size: 1.33333333rem;
 }
 .m-ac-form-wrap .password-nav .m-icon-close::before {
-  content: '\e69a';
-  font-family: 'iconfont' !important;
+  content: "\e69a";
+  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -555,184 +577,5 @@ async function saveUpdate() {
   font-size: 0.83333333rem;
   line-height: 1.33333333rem;
   margin-top: 0.66666667rem;
-}
-.af-button {
-  width: 100%;
-}
-
-.af-button {
-  -webkit-appearance: none;
-  background: #fff;
-  border: 1px solid #c4c4c4;
-  border-radius: 4px;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  cursor: pointer;
-  display: inline-block;
-  font-size: 14px;
-  line-height: 1;
-  margin: 0;
-  outline: 0;
-  padding: 10px 15px;
-  text-align: center;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  white-space: nowrap;
-  color: #ffffff;
-  color: var(--brand-tertiary);
-}
-.af-button.is-disabled,
-.af-button.is-disabled:focus,
-.af-button.is-disable:hover {
-  background-color: #dcdee5 !important;
-  background-color: var(--disable-brand-secondary) !important;
-  background-image: none;
-  cursor: not-allowed;
-  border-color: #dcdee5 !important;
-  border-color: var(--disable-brand-secondary) !important;
-  color: #9ca0ab !important;
-  color: var(--text-disable-type1-primary) !important;
-}
-.af-button.is-disabled.af-button--text {
-  background-color: transparent;
-}
-.af-button.is-disabled.is-plain,
-.af-button.is-disabled.is-plain:focus,
-.af-button.is-disabled.is-plain:hover {
-  background-color: transparent !important;
-  border-color: #dcdee5 !important;
-  border-color: var(--disable-brand-secondary) !important;
-  color: #dcdee5 !important;
-  color: var(--disable-brand-secondary) !important;
-}
-.af-button.is-plain:active {
-  background-color: #fff;
-  border-color: #1d90e6;
-  color: #1d90e6;
-  outline: 0;
-}
-.af-button.is-loading {
-  pointer-events: none;
-  position: relative;
-}
-.af-button.is-loading:before {
-  background-color: rgba(255, 255, 255, 0.35);
-  border-radius: inherit;
-  bottom: -1px;
-  color: black;
-  content: '';
-  left: -1px;
-  pointer-events: none;
-  position: absolute;
-  right: -1px;
-  top: -1px;
-}
-.af-button [class*='af-icon-'] + span,
-.af-button [class^='af-icon-'] {
-  display: inline-block;
-  font-family: element-icons !important;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 1;
-  margin-left: 5px;
-  text-transform: none;
-  vertical-align: baseline;
-}
-@-webkit-keyframes loading-rotate {
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes loading-rotate {
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-.af-button .af-icon-loading:before {
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-  content: '\e648';
-  font-size: 1.066rem;
-}
-.af-button .af-icon-loading {
-  -webkit-animation: loading-rotate 2s linear infinite;
-  animation: loading-rotate 2s linear infinite;
-}
-.af-button .af-icon-edit:before {
-  content: '\e61c';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.af-button .af-icon-share:before {
-  content: '\e63d';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.af-button .af-icon-upload:before {
-  content: '\e601';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.af-button .af-icon-search:before {
-  content: '\e613';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.af-button .af-icon-delete:before {
-  content: '\e677';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.af-button .af-icon--right {
-  margin-left: 5px;
-}
-.af-button .af-icon--left {
-  margin-right: 5px;
-}
-.af-button--primary {
-  background-color: #226262;
-  background-color: var(--brand-secondary);
-  color: #ffffff;
-  /* color: var(--brand-tertiary); */
-}
-.af-button--primary:focus,
-.af-button--primary:hover:not(.is-disabled) {
-  background-color: #0a7e2e;
-  border-color: #0a7e2e;
-  color: #ffffff;
-  color: var(--brand-tertiary);
-}
-
-.af-button--success {
-  background-color: #0d9737;
-  background-color: var(--brand-secondary);
-  color: #ffffff;
-}
-.af-button--success:active {
-  outline: 0;
 }
 </style>

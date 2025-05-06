@@ -2,7 +2,7 @@
 import AppFooter from "@/components/Footer.vue";
 import MobileFooter from "@/components/MobileFooter.vue";
 import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from "vue";
-import { useUtilstStore, useCouponStore } from "@/stores";
+import { useUtilsStore, useCouponStore } from "@/stores";
 import CasinoDialog from "@/components/CasinoDialog.vue";
 import CalendarBox from "@/components/CalendarBox.vue";
 import BookBetModal from "@/components/Betslip/BookBetModal.vue";
@@ -14,16 +14,16 @@ import {
   getBets,
   applyBranding,
   CLIENT_ID,
+  validateBetslipSelections,
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
-// import { $mqtt } from 'vue-paho-mqtt';
-import mqtt from "mqtt";
+import { checkVersion } from "@/utils/version";
 
-const utilsStore = useUtilstStore();
+const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
 const showBetslip = ref(false);
 const route = useRoute();
@@ -42,7 +42,7 @@ const dateRange = ref(null);
 const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
-const casinoGameData = ref(null)
+const casinoGameData = ref(null);
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -69,7 +69,7 @@ function handleError(error) {
   dialogueType.value = "error";
 }
 
-function handleBetslipConfirmation(data){
+function handleBetslipConfirmation(data) {
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "betslip";
@@ -86,86 +86,6 @@ function showToaster(data) {
   dialogueMessage.value = data;
   dialogueType.value = "toaster";
 }
-
-function initMqtt() {
-  try {
-    if (mqttClient.value !== false) {
-      mqttClient.value.end();
-    }
-
-    var n = 10;
-
-    // connection option
-    const options = {
-      clean: true, // retain session
-      connectTimeout: 4000, // Timeout period
-      // Authentication information
-      clientId:
-        import.meta.env.VITE_MQTT_CLIENTID +
-        "-" +
-        Math.floor(Math.random() * (9 * Math.pow(10, n))) +
-        Math.pow(10, n),
-      username: import.meta.env.VITE_MQTT_USERNAME,
-      password: import.meta.env.VITE_MQTT_PASSWORD,
-    };
-
-    const subscriptions = [`feeds/live/odds_change/+`, `feeds/live/bet_stop/+`];
-
-    mqttClient.value = mqtt.connect(import.meta.env.VITE_MQTT_URI, options);
-
-    if (mqttClient.value.on) {
-      mqttClient.value.on("connect", () => {
-        // this.connecting = false;
-        // console.log("MQTT Connection succeeded!");
-      });
-      // this.mqttClient.on("reconnect", this.handleOnReConnect);
-      mqttClient.value.on("error", (error) => {
-        // console.log("MQTT Connection failed", error);
-      });
-      mqttClient.value.subscribe(subscriptions, (error, res) => {
-        if (error) {
-          // console.log('Subscribe to odd change error', error)
-          return;
-        }
-        // console.log('Subscribe to topics res', res)
-      });
-      mqttClient.value.on("message", (topic, message) => {
-        // message is string
-        const payload = JSON.parse(message);
-        // split the topic to get the type of message
-        const topicArr = topic.split("/");
-
-        // console.log(`Received message from topic ${topicArr[2]}`);
-
-        switch (topicArr[2]) {
-          case "odds_change":
-            emitter.emit(`odds-change-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'odds_change')
-            break;
-          case "bet_stop":
-            emitter.emit(`bet-stop-${payload.match_id}`, payload);
-            // updateBetslip(payload, 'bet_stop')
-            break;
-          default:
-            break;
-        }
-      });
-    }
-  } catch (e) {
-    mqttClient.value = false;
-    console.log("mqtt.connect error", e);
-  }
-}
-watch(
-  () => route.query.shareCode,
-  async (code) => {
-    // get booking code
-    if (code) {
-      await loadBet(code);
-    }
-  },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-);
 
 async function loadBet(code) {
   try {
@@ -212,9 +132,9 @@ async function getBetsData() {
 }
 
 function showCasinoDialog(data = null) {
-  if(route.name === 'home' || (data.bonus && data.game)){
+  if (route.name === "home" || (data.bonus && data.game)) {
     casinoDailogShown.value = true;
-    casinoGameData.value = data
+    casinoGameData.value = data;
   }
 }
 
@@ -232,60 +152,71 @@ function handleCustomDatePicker(data) {
   emitter.emit("dateRangeSet", data);
 }
 
-function updateBetslip(eventMessage, event_type) {
-  const matchIdFromEvent = eventMessage.match_id;
-  // Find the selection with the matching match_id in the betslip
-  const selection = couponStore.coupon.selections.find(
-    (sel) => sel.matchId === matchIdFromEvent
-  );
+async function validateSelections() {
+  if (!couponStore.coupon.selections.length) return;
 
-  // If a matching selection is found
-  if (selection) {
-    // Handle bet_stop event
-    if (event_type === "bet_stop") {
-      selection.suspended = true;
-    }
+  const selections = couponStore.coupon.selections.map((event) => ({
+    matchId: parseInt(event.matchId),
+    marketId: event.marketId.toString(),
+    outcomeId: event.outcomeId,
+    specifier: event.specifier,
+  }));
+  const res = await validateBetslipSelections({ events: selections });
 
-    // Handle odds_change event
-    if (event_type === "odds_change") {
-      couponStore.coupon.acceptChanges = false;
-      selection.suspended = false;
-      selection.changed = true;
+  if (res.success) {
+    // Convert response object to array of validated selections
+    const validatedSelections = Object.values(res.data);
 
-      const market = eventMessage.markets.find(
-        (m) => m.id === selection.marketId && m.specifiers === selection.specifier
+    // Update each selection with the new odds and active status
+    validatedSelections.forEach((validatedSelection) => {
+      const selection = couponStore.coupon.selections.find(
+        (sel) =>
+          String(sel.matchId) === String(validatedSelection.matchId) &&
+          String(sel.marketId) === validatedSelection.marketId &&
+          String(sel.outcomeId) === validatedSelection.outcomeId,
       );
 
-      if (market && market.outcomes) {
-        let newOutcome = market.outcomes.find(
-          (m) => m.id === selection.outcomeId && m.specifier === selection.specifier
-        );
+      if (selection) {
+        selection.odds = validatedSelection.odds;
+        selection.suspended = !validatedSelection.active;
+        selection.unavailable = !validatedSelection.active;
+        selection.changed = true;
 
-        selection.odds = newOutcome.odds;
-        selection.suspended = !newOutcome.active;
-        couponStore.updateWinnings({
-          stake: couponStore.coupon.totalStake,
-          id: selection.selectionId,
-        });
-      } else {
-        selection.suspended = true;
-        selection.unavailable = true;
-        selection.odds = 0;
+        // Reset the changed flag after 5 seconds
+        setTimeout(() => {
+          selection.changed = false;
+        }, 5000);
       }
-    }
+    });
+
+    // Recalculate winnings after updating all selections
+    couponStore.updateWinnings({
+      stake: couponStore.coupon.totalStake,
+      id: "all",
+    });
   }
 }
 
-onMounted(async () => {
-  // connect to mqtt
-  initMqtt();
+watch(
+  () => route.query.shareCode,
+  async (code) => {
+    // get booking code
+    if (code) {
+      await loadBet(code);
+    }
+  },
+  { immediate: true }, // Trigger the watch callback immediately on component mount
+);
 
+onMounted(async () => {
   if (route.path !== "/") {
     isLoading.value = false;
   }
 
+  // Check version and clear cache if needed
+  await checkVersion();
+
   if (usersStore.currentUser) {
-    // await usersStore.loadCurrentUser()
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
         console.log(res[2]);
@@ -298,7 +229,12 @@ onMounted(async () => {
       });
   }
 
-  Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu()])
+  Promise.all([
+    fetchBonusList(),
+    fetchGlobalVars(),
+    getSportsMenu(),
+    validateSelections(),
+  ])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
       couponStore.SportsbookGlobalVariable = res[1].data.data;
@@ -322,10 +258,6 @@ onMounted(async () => {
   emitter.on("showBookBetModal", toggleBookBetModal);
 });
 
-onBeforeUnmount(() => {
-  if (mqttClient.value !== false) mqttClient.value.end();
-});
-
 defineComponent({
   name: "app",
   components: { AppFooter, MobileFooter },
@@ -335,7 +267,7 @@ defineComponent({
 <template>
   <div class="page-content page-content--ng">
     <!-- Main content -->
-    <div class="x-main x-layout-main" v-show="!isLoading">
+    <div class="x-main x-layout-main">
       <div class="x-main-mid x-has-bottom-nav">
         <RouterView />
         <AppFooter v-show="utilsStore.showFooter"></AppFooter>
@@ -403,24 +335,29 @@ defineComponent({
 </template>
 <style>
 @import url("./assets/css/loading.css");
+
 html,
 body {
   width: 100%;
 }
+
 .no-scroll {
   overflow: hidden !important;
 }
+
 .loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #fafafa; /* semi-transparent white */
+  background-color: #fafafa;
+  /* semi-transparent white */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999; /* ensure overlay is on top */
+  z-index: 999;
+  /* ensure overlay is on top */
 }
 
 .loading-spinner {
@@ -429,7 +366,8 @@ body {
 }
 
 .scaling-image {
-  transition: transform 0.5s ease; /* Add a transition effect on the transform property */
+  transition: transform 0.5s ease;
+  /* Add a transition effect on the transform property */
 }
 
 .x-layout-main {
@@ -457,9 +395,11 @@ body {
   0% {
     width: 0;
   }
+
   50% {
     width: 100px;
   }
+
   100% {
     width: 0;
   }
@@ -470,13 +410,16 @@ body {
   -webkit-transition: opacity 0.3s;
   transition: opacity 0.3s;
 }
+
 .x-layout-main .fade-enter,
 .x-layout-main .fade-leave-to {
   opacity: 0;
 }
+
 .x-layout-main > * {
   min-height: 100%;
 }
+
 .x-layout-main .x-main-left,
 .x-layout-main .x-main-right {
   background-color: rgba(0, 0, 0, 0.7);
@@ -485,12 +428,15 @@ body {
   width: 100%;
   z-index: 800;
 }
+
 .x-layout-main .x-main-left {
   top: 0px;
 }
+
 .x-layout-main .x-main-right {
   bottom: 0px;
 }
+
 .x-layout-main .x-main-mid {
   height: 100%;
   left: 0px;
@@ -499,13 +445,16 @@ body {
   width: 100%;
   z-index: 2;
 }
+
 .x-layout-main .x-main-mid.has-bg-color {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
 }
+
 .x-layout-main .x-main-mid.x-has-bottom-nav .x-footer {
   padding-bottom: 5rem;
 }
+
 .x-layout-main .refresh-page {
   margin-top: 64px;
 }
@@ -514,6 +463,7 @@ body {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -527,7 +477,10 @@ body {
   transition: transform 0.1s ease;
 }
 
-.move-enter, .move-leave-to /* .fade-leave-active in <2.1.8 */ {
+.move-enter,
+.move-leave-to
+
+/* .fade-leave-active in <2.1.8 */ {
   transform: translateX(0);
 }
 </style>
