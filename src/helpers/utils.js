@@ -269,7 +269,7 @@ export const formatTotalOdds = (number) => {
 };
 
 export const formattedPhoneNumber = (phoneNumber) => {
-  let pNumber = phoneNumber.replace(/^0/, "").toString();
+  let pNumber = String(phoneNumber).replace(/^0/, "").toString();
 
   const first = pNumber.charAt(0);
   if (first === "0") {
