@@ -203,7 +203,7 @@ const registerUser = async () => {
     return;
   }
   isLoading.value = true;
-  let phoneNumber = formData.value.phone_no.replace(/^0/, "");
+  let phoneNumber = String(formData.value.phone_no).replace(/^0/, "");
   const internationalNumber = `234${phoneNumber}`;
   let payload = {
     clientID: CLIENT_ID,
