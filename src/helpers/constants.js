@@ -9,7 +9,7 @@ export const APP_KEY = import.meta.env.VITE_APP_KEY;
 export const SIM_ALLOWED_MARKETS = [
   1, 10, 18, 19, 20, 21, 26, 29, 35, 37, 45, 47, 60, 63, 75, 81, 98, 548,
 ];
-export const SIM_ENABLED = true;
+export const SIM_ENABLED = false;
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage,
