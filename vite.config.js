@@ -1,35 +1,19 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
-import { splitVendorChunkPlugin } from 'vite'
+// import mkcert from 'vite-plugin-mkcert'
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    splitVendorChunkPlugin(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+import { defineConfig, loadEnv } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+
+// https://vitejs.dev/config/
+export default ({ mode }) => {
+  process.env = { ...loadEnv(mode, process.cwd()), ...process.env }
+  return defineConfig({
+    plugins: [vue(), vueJsx()],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
     }
-  },
-  build: {
-    target: 'es2015',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'ui-vendor': ['vue3-marquee', 'vue3-otp-input', '@vuepic/vue-datepicker'],
-        },
-      },
-    },
-    chunkSizeWarningLimit: 1000,
-  }
-})
+  })
+}
