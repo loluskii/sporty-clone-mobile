@@ -119,6 +119,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getHighlights2, getToday2, getCategoriesBySport } from "@/helpers";
 import { defineComponent, onMounted, ref, onUnmounted, computed } from "vue";
 import _ from "lodash";
+import emitter from "@/plugins/emitter";
 
 const utilsStore = useUtilsStore();
 
@@ -283,6 +284,31 @@ const handleScroll = () => {
 onMounted(async () => {
   window.addEventListener("scroll", handleScroll);
   await getHomeData();
+
+  // Add event listener for removing fixtures
+  emitter.on('remove-fixture', (matchID) => {
+    // Remove from highlights data
+    Object.keys(highlightsData.value).forEach(date => {
+      highlightsData.value[date] = highlightsData.value[date].filter(
+        fixture => String(fixture.matchID) !== String(matchID)
+      );
+      // Remove empty date groups
+      if (highlightsData.value[date].length === 0) {
+        delete highlightsData.value[date];
+      }
+    });
+
+    // Remove from today's data
+    Object.keys(todaysData.value).forEach(date => {
+      todaysData.value[date] = todaysData.value[date].filter(
+        fixture => String(fixture.matchID) !== String(matchID)
+      );
+      // Remove empty date groups
+      if (todaysData.value[date].length === 0) {
+        delete todaysData.value[date];
+      }
+    });
+  });
 });
 
 onUnmounted(() => {

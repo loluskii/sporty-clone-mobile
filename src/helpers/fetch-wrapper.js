@@ -1,4 +1,7 @@
+import CryptoJS from 'crypto-js'
 import { useAuthStore } from "@/stores";
+import { CLIENT_ID, APP_KEY } from './constants';
+import moment from 'moment';
 
 export const fetchWrapper = {
   get: request("GET"),
@@ -8,6 +11,45 @@ export const fetchWrapper = {
   patch: request("PATCH"),
   public_get: publicRequest("GET"),
 };
+
+function aesEncrypt() {
+  try {
+    // Get the current timestamp as a string: this will be the encryption data
+    const timestamp = moment().unix().toString();
+
+    // console.log('timestamp is', timestamp);
+    // Generate a random IV (128-bit)
+    const iv = CryptoJS.lib.WordArray.random(16);
+
+    const hexKey = generateApiKey();
+    // Convert the hex key to a WordArray
+    const key = CryptoJS.enc.Hex.parse(hexKey);
+
+    // Encrypt the timestamp using AES with the key and IV
+    const encrypted = CryptoJS.AES.encrypt(timestamp, key, {
+      iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+
+    // Combine IV and ciphertext in hex format
+    const ivHex = iv.toString(CryptoJS.enc.Hex);
+    const ciphertextHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+
+    const signature = ivHex + ciphertextHex;
+    // console.log('signature',signature);
+    return signature;
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('Encryption failed');
+  }
+}
+
+function generateApiKey() {
+  const key = CryptoJS.enc.Hex.stringify((CryptoJS.SHA256(`${CLIENT_ID}:${APP_KEY}`)))
+  // console.log('api key', key);
+  return key;
+}
 
 function request(method) {
   return (url, body, { credentials } = {}) => {
@@ -41,13 +83,18 @@ function publicRequest(method) {
 }
 
 function authHeader() {
+  const headers = {
+    'SBE-Client-ID': CLIENT_ID,
+    'SBE-API-KEY': generateApiKey(),
+    'SBE-API-SIGNATURE': aesEncrypt()
+  }
   // return auth header with jwt if user is logged in and request is to the api url
   const { isAuthenticated, token } = useAuthStore();
   if (isAuthenticated) {
     // if it's not authenticated also (i.e. token is null), a 401 is fine
-    return { Authorization: `Bearer ${token}` };
+    return {...headers, Authorization: `Bearer ${token}` };
   } else {
-    return {};
+    return headers;
   }
 }
 
