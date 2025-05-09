@@ -17,7 +17,7 @@ function aesEncrypt() {
     // Get the current timestamp as a string: this will be the encryption data
     const timestamp = moment().unix().toString();
 
-    console.log('timestamp is', timestamp);
+    // console.log('timestamp is', timestamp);
     // Generate a random IV (128-bit)
     const iv = CryptoJS.lib.WordArray.random(16);
 
@@ -37,7 +37,7 @@ function aesEncrypt() {
     const ciphertextHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
 
     const signature = ivHex + ciphertextHex;
-    console.log('signature',signature);
+    // console.log('signature',signature);
     return signature;
   } catch (error) {
     console.error('Encryption failed:', error);
@@ -47,7 +47,7 @@ function aesEncrypt() {
 
 function generateApiKey() {
   const key = CryptoJS.enc.Hex.stringify((CryptoJS.SHA256(`${CLIENT_ID}:${APP_KEY}`)))
-  console.log('api key', key);
+  // console.log('api key', key);
   return key;
 }
 
