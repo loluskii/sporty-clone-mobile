@@ -20,7 +20,7 @@
                   <p class="category-league">{{ eventDetail.tournament }}</p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? "Finished" : eventTime }}</span>
+                  <span>{{ matchHasEnded ? "Finished" : displayTime }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
@@ -290,6 +290,8 @@ const scores = reactive({
   away: 0,
 });
 const eventTime = ref("0:00");
+const displayTime = ref("00:00");
+const timer = ref(null);
 const groupedMarkets = ref([]);
 const isLoading = ref(false);
 const route = useRoute();
@@ -756,6 +758,71 @@ onUnmounted(() => {
 
   // Clean up SR tracker script
   document.getElementById("sr-tracker")?.remove();
+});
+
+// Function to parse time string (MM:SS) to seconds
+const parseTimeToSeconds = (timeStr) => {
+  if (timeStr === "--:--") return null;
+  const [minutes, seconds] = timeStr.split(':').map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Function to format seconds to MM:SS
+const formatSecondsToTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Function to start the timer
+const startTimer = () => {
+  // Only start timer for football (sport ID 1)
+  if (String(eventDetail.value?.sportID) !== '1') {
+    displayTime.value = eventTime.value;
+    return;
+  }
+
+  if (timer.value) clearInterval(timer.value);
+  
+  const initialTime = parseTimeToSeconds(eventTime.value);
+  
+  // Handle halftime
+  if (initialTime === null) {
+    displayTime.value = "HT";
+    return;
+  }
+  
+  let currentSeconds = initialTime;
+  
+  // Update display immediately
+  displayTime.value = formatSecondsToTime(currentSeconds);
+  
+  timer.value = setInterval(() => {
+    currentSeconds++;
+    
+    // Stop at key match times
+    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+      clearInterval(timer.value);
+      timer.value = null;
+    }
+    
+    displayTime.value = formatSecondsToTime(currentSeconds);
+  }, 1000);
+};
+
+// Watch for eventTime changes to start timer
+watch(() => eventTime.value, (newTime) => {
+  if (newTime) {
+    startTimer();
+  }
+}, { immediate: true });
+
+// Clean up timer on component unmount
+onUnmounted(() => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
 });
 </script>
 

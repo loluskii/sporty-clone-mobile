@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, onMounted } from "vue";
 import { formatDate } from "@/helpers";
 import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
 import { defineEmits } from "vue";
@@ -83,6 +83,8 @@ import _ from "lodash";
 import { useRouter } from "vue-router";
 import { useUtilsStore } from "@/stores";
 import { slugify } from "@/helpers";
+import emitter from "@/plugins/emitter";
+
 
 const props = defineProps({
   highlightsData: Object,
@@ -115,12 +117,12 @@ const selectMarket = (market) => {
 };
 
 // In the parent component that renders the list of fixtures
-// onMounted(() => {
-//   emitter.on('remove-fixture', (matchID) => {
-//     // Filter out the fixture with the given matchID
-//     fixtures.value = fixtures.value.filter(fixture => fixture.matchID !== matchID);
-//   });
-// });
+onMounted(() => {
+  emitter.on('remove-fixture', (matchID) => {
+    // Filter out the fixture with the given matchID
+    fixtures.value = fixtures.value.filter(fixture => fixture.matchID !== matchID);
+  });
+});
 
 // onBeforeUnmount(() => {
 //   emitter.off('remove-fixture');

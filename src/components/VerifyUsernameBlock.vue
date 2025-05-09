@@ -23,26 +23,27 @@
           </div>
           <div
             class="verifyInputs m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
+            :class="userError ? 'm-input-wap-wrapper--error' : ''"
           >
             <div class="m-input-wap-prepend m-input-wap-prepend--default">
-              <div>+234</div>
+              <div>{{ SportsbookGlobalVariable.DialCode  }}</div>
             </div>
             <i
               class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
             ></i>
             <input
-              type="tel"
+              type="number"
               name=""
               placeholder="Mobile Number"
-              maxlength="18"
+              maxlength="10"
               class="m-input-wap fs-exclude"
               v-model="phoneNumber"
             />
           </div>
-          <div class="error-message"></div>
+          <div class="error-message">{{ userErrorMessage }}</div>
           <button
             class="af-button find-account-btn af-button--primary"
-            :class="phoneNumber == '' || isLoading ? 'is-disabled' : ''"
+            :class="submitDisabled ? 'is-disabled' : ''"
             @click.prevent="findAccount"
           >
             <span v-if="!isLoading"> Continue </span>
@@ -142,26 +143,33 @@ import {
   formattedPhoneNumber,
 } from "../helpers";
 import emitter from "../plugins/emitter";
+import { useUtilsStore } from "../stores";
 const emit = defineEmits(["restart"]);
 
 const isLoading = ref(false);
+const {SportsbookGlobalVariable} = useUtilsStore()
 const phoneNumber = ref("");
 const activeStep = ref(1);
-
 const password = ref("");
-
-const router = useRouter();
-
+const userError = ref(false)
+const userErrorMessage = ref('')
 const OTP = ref("");
 const otpError = ref(false);
 const otpErrorMessage = ref("");
 
+const submitDisabled = computed(() => {
+  return String(phoneNumber.value).trim().length < 1 || isLoading.value
+})
+
 async function findAccount() {
+  if(submitDisabled.value) return;
+
   isLoading.value = true;
   const phone = formattedPhoneNumber(phoneNumber.value);
 
   try {
     const res = await verifyUsername({ username: phone, clientId: CLIENT_ID });
+    isLoading.value = false;
 
     if (res.responseMessage === "SUCCESSFUL") {
       let payload = {
@@ -170,14 +178,15 @@ async function findAccount() {
       };
       const otp = await sendOTP(payload);
 
-      isLoading.value = false;
-
       if (otp.status) {
         activeStep.value = 2;
       } else {
         isLoading.value = false;
         otpErrorMessage.value = otp.data.message;
       }
+    }else{
+      userError.value = true
+      userErrorMessage.value = res.responseMessage
     }
   } catch (err) {
     isLoading.value = false;
@@ -432,6 +441,11 @@ function restartProcess() {}
   border: none;
   height: 3.95833333rem;
   font-size: 1.066rem;
+  color: white;
+}
+
+#findAccount .find-account-container .find-account-btn.is-disabled {
+    background-color: #9ca0ab;
 }
 #findAccount .find-account-container .af-icon-loading:before {
   content: "\e648";

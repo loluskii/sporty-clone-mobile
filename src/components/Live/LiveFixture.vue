@@ -1,7 +1,7 @@
 <template lang="">
   <div data-op="label-event-live" class="m-event-live x-live-row">
     <div class="m-event-meta">
-      <span class="m-event-time">{{ gameData.eventTime }}</span>
+      <span class="m-event-time">{{ displayTime }}</span>
       <span class="match-status">{{
         gameData.matchStatus == "1st half"
           ? "H1"
@@ -57,7 +57,7 @@
               v-if="specifierOpen"
               :class="'af-select-list-' + gameData.matchID"
               style="
-                width: 71px;
+                width: 67px;
                 opacity: 1;
                 position: absolute;
                 top: 37px;
@@ -132,6 +132,8 @@ const scores = ref({
   awayScore: props.gameData?.awayScore || 0,
 });
 const outcomes = ref([]);
+const timer = ref(null);
+const displayTime = ref('00:00');
 
 // Keep track of updated outcomes
 const updatedOutcomes = ref({});
@@ -140,6 +142,71 @@ const activeSpecifier = ref();
 const specifierOpen = ref(false);
 
 const updatePending = ref(false);
+
+// Function to parse time string (MM:SS) to seconds
+const parseTimeToSeconds = (timeStr) => {
+  if (timeStr === "--:--") return null;
+  const [minutes, seconds] = timeStr.split(':').map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Function to format seconds to MM:SS
+const formatSecondsToTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Function to start the timer
+const startTimer = () => {
+  // Only start timer for football (sport ID 1)
+  if (String(props.gameData.sportID) !== '1') {
+    displayTime.value = props.gameData.eventTime;
+    return;
+  }
+
+  if (timer.value) clearInterval(timer.value);
+  
+  const initialTime = parseTimeToSeconds(props.gameData.eventTime);
+  
+  // Handle halftime
+  if (initialTime === null) {
+    displayTime.value = "--:--";
+    return;
+  }
+  
+  let currentSeconds = initialTime;
+  
+  // Update display immediately
+  displayTime.value = formatSecondsToTime(currentSeconds);
+  
+  timer.value = setInterval(() => {
+    currentSeconds++;
+    
+    // Stop at key match times
+    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+      clearInterval(timer.value);
+      timer.value = null;
+    }
+    
+    displayTime.value = formatSecondsToTime(currentSeconds);
+  }, 1000);
+};
+
+// Watch for gameData changes to start timer
+watch(() => props.gameData, (newData) => {
+  if (newData && newData.eventTime) {
+    startTimer();
+  }
+}, { immediate: true });
+
+// Clean up timer on component unmount
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+});
 
 const getOdds = () => {
   if (props.activeMarket && props.gameData.activeMarkets > 0) {
@@ -254,7 +321,11 @@ function handleOddsChange(data) {
   if (!updatePending.value) {
     updatePending.value = true;
 
+    
     requestAnimationFrame(() => {
+      scores.value.homeScore = data.sport_event_status.home_score;
+      scores.value.awayScore = data.sport_event_status.away_score;
+      
       const markets = data.markets || [];
 
       if (markets.length > 0) {
@@ -465,5 +536,10 @@ function setActiveSpecifier(item) {
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
   min-width: 1%;
+}
+
+.m-event-specifiers-order {
+  padding: 0;
+  text-align: center;
 }
 </style>

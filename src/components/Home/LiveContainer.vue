@@ -118,6 +118,7 @@ import {
   computed,
   watch,
   onUnmounted,
+  onActivated,
 } from "vue";
 import _ from "lodash";
 
@@ -281,6 +282,26 @@ watch(activeSportMarkets, (newValue) => {
     utilsStore.activeLiveMarkets = newValue[0];
   } else {
     utilsStore.activeLiveMarkets = [];
+  }
+});
+
+// Add a watcher for sportsListData to set activeSportID
+watch(sportsListData, (newSportsList) => {
+  if (newSportsList.length > 0) {
+    // Only set activeSportID if it's not already set or not in the list
+    if (!activeSportID.value || !newSportsList.some(sport => sport.sportID === activeSportID.value)) {
+      activeSportID.value = newSportsList[0].sportID;
+    }
+  }
+}, { immediate: true });
+
+// Add onActivated to ensure activeSportID is set when component is reactivated
+onActivated(() => {
+  if (sportsListData.value.length > 0) {
+    // Only set activeSportID if it's not already set or not in the list
+    if (!activeSportID.value || !sportsListData.value.some(sport => sport.sportID === activeSportID.value)) {
+      activeSportID.value = sportsListData.value[0].sportID;
+    }
   }
 });
 
