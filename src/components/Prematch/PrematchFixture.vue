@@ -732,34 +732,7 @@ defineComponent({
   display: block;
   width: 100%;
 }
-.m-event-specifiers-order {
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-  border: 0 !important;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  max-height: 12.5rem;
-  overflow-y: auto;
-  padding: 0.83333333rem 0.5rem;
-}
-.m-event-specifiers-order > span {
-  display: block;
-  line-height: 2.33333333rem;
-}
-.m-event-specifiers-order .af-select-item {
-  color: #353a45;
-  color: var(--text-type1-primary);
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  font-weight: inherit;
-  font-size: inherit;
-  /* font-size: 0.83333333rem; */
-}
-.m-event-specifiers-order .af-select-item.active {
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-  color: #0d9737;
-}
+
 
 .af-select-item {
   display: inline-block;

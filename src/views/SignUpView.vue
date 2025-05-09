@@ -178,7 +178,7 @@ let timer;
 
 // Define methods using the Composition API
 const clear = () => {
-  formData.value.phone_no = "";
+  formData.value.phone_no = null;
 };
 
 const startTimer = () => {
@@ -197,13 +197,13 @@ const startTimer = () => {
 };
 
 const registerUser = async () => {
-  if (String(formData.value.phone_no).trim().length < 10) {
+  if (String(formData.value.phone_no).trim().length < 9) {
     registerError.value = true;
     registerErrorMessage.value = "Please enter a valid phone number";
     return;
   }
   isLoading.value = true;
-  let phoneNumber = String(formData.value.phone_no).replace(/^0/, "");
+  let phoneNumber = String(formData.value.phone_no).trim().replace(/^0/, "");
   const internationalNumber = `234${phoneNumber}`;
   let payload = {
     clientID: CLIENT_ID,
@@ -226,7 +226,7 @@ const registerUser = async () => {
 
 const resendOtp = async () => {
   if (!isDisabled.value && remainingTime.value === 0) {
-    let phoneNumber = formData.value.phone_no.replace(/^0/, "");
+    let phoneNumber = String(formData.value.phone_no).replace(/^0/, "");
     const internationalNumber = `234${phoneNumber}`;
     let payload = {
       clientID: CLIENT_ID,
@@ -303,8 +303,8 @@ const doRegistration = async () => {
 
 const restartProcess = () => {
   activeStep.value = 1;
-  formData.value.phone_no = "";
-  formData.value.password = "";
+  formData.value.phone_no = null;
+  formData.value.password = null;
   registerError.value = false;
   registerErrorMessage.value = "";
 };

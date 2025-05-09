@@ -105,8 +105,7 @@
 <script setup>
 import { defineComponent, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore, useUsersStore } from "@/stores";
-import { useUtilsStore } from "../../stores";
+import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 // import { formatNumber } from '@/helpers'
 const router = useRouter();
 const { isAuthenticated } = useAuthStore();

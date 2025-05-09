@@ -173,7 +173,7 @@
           v-show="activeFeaturedTab == 'featuredMatches'"
           class="featuredMatch bg-white"
         >
-          <template v-if="!isLoading">
+          <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
                 class="m-snap-nav-wrap featuredMatchCategoryNav m-popular-list"
@@ -213,7 +213,6 @@
               style="overflow: auto"
             >
               <template v-for="tournament in sortedTournamentGames">
-                <!-- {{ tournament }} -->
                 <FeaturedMatchCard
                   v-for="(game, g) in tournament.fixtures"
                   ref="gamesList"
@@ -242,7 +241,7 @@
 <script setup>
 import FeaturedMatchCard from "./FeaturedMatchCard.vue";
 import Codes from "./Codes.vue";
-import { ref, onMounted, computed, onBeforeUnmount } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from "vue";
 import {
   getTopBets,
   getFixturesByTournamentId,
@@ -255,13 +254,11 @@ import {
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import FeaturedGamesContainer from "./FeaturedGamesContainer.vue";
 import { useMqttService } from "@/composables/useMqtt";
+import { useQuery } from "vue-query";
 
 const { subscribe } = useMqttService();
 const unsubscribeFunctions = ref({}); // Store unsubscribe functions by match ID
 const componentId = `popular-sports-${Date.now()}`; // Unique ID for this component instance
-
-const isLoading = ref(false);
-const casinoIsLoading = ref(false);
 
 const featuredTournaments = ref([]);
 const featuredTournamentGames = ref([]);
@@ -345,64 +342,78 @@ async function getCodes() {
 }
 
 function assignTournaments(tournament, games, tournamentID) {
-  if (games && games.fixtures && games.markets) {
-    const gamesList = games.fixtures.slice(0, 5);
-    featuredTournamentGames.value.push({
-      tournamentID: tournamentID,
-      fixtures: [...gamesList],
-      markets: [...games.markets],
-    });
-
-    // Set up MQTT subscriptions for each fixture
-    gamesList.forEach((fixture) => {
-      if (fixture.matchID) {
-        setupMqttSubscriptions(fixture.matchID);
-      }
-    });
-  } else {
+  if (!games?.fixtures?.length || !games?.markets?.length) {
+    // Early return if no valid data
     const index = featuredTournaments.value.findIndex(
-      (x) => x.tournament_id == tournament.id,
+      (x) => x.tournament_id === tournament.id
     );
-    featuredTournaments.value.splice(index, 1);
+    if (index !== -1) {
+      featuredTournaments.value.splice(index, 1);
+    }
+    return;
+  }
+
+  // Take only first 5 fixtures
+  const gamesList = games.fixtures.slice(0, 5);
+
+  // Create tournament games object
+  const tournamentGames = {
+    tournamentID,
+    fixtures: gamesList,
+    markets: games.markets
+  };
+
+  // Add to featured games
+  featuredTournamentGames.value.push(tournamentGames);
+
+  // Batch MQTT subscriptions
+  const matchIds = gamesList
+    .filter(fixture => fixture.matchID)
+    .map(fixture => fixture.matchID);
+
+  if (matchIds.length > 0) {
+    setupMqttSubscriptions(matchIds);
   }
 }
 
-function setupMqttSubscriptions(matchId) {
+function setupMqttSubscriptions(matchIds) {
   // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchId}`;
+  const subscriptionKey = `${componentId}-${matchIds.join(',')}`;
   if (unsubscribeFunctions.value[subscriptionKey]) {
     unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) =>
       unsubscribe(),
     );
   }
 
-  // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
-  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    handleOddsChange(matchId, data);
+  // Create subscriptions for each match ID
+  const subscriptions = matchIds.map(matchId => {
+    // Subscribe to odds changes
+    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
+    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+      handleOddsChange(data);
+    });
+
+    // Subscribe to bet stop
+    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
+    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+      handleBetStop(data);
+    });
+
+    return [unsubscribeOddsChange, unsubscribeBetStop];
   });
 
-  // Subscribe to bet stop
-  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
-  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    handleBetStop(matchId, data);
-  });
-
-  // Store unsubscribe functions with our component-specific key
-  unsubscribeFunctions.value[subscriptionKey] = [
-    unsubscribeOddsChange,
-    unsubscribeBetStop,
-  ];
+  // Flatten the array of subscription pairs
+  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat();
 }
 
-function handleOddsChange(matchId, data) {
+function handleOddsChange(data) {
   if (!data || !data.markets) return;
 
   // Find and update the fixture in featuredTournamentGames
   featuredTournamentGames.value = featuredTournamentGames.value.map(
     (tournament) => {
       const updatedFixtures = tournament.fixtures.map((fixture) => {
-        if (String(fixture.matchID) === String(matchId)) {
+        if (String(fixture.matchID) === String(data.matchID)) {
           // Update outcomes for the matching market
           const updatedOutcomes = fixture.outcomes.map((outcome) => {
             const market = data.markets.find((m) => m.id === outcome.marketID);
@@ -435,12 +446,12 @@ function handleOddsChange(matchId, data) {
   );
 }
 
-function handleBetStop(matchId, data) {
+function handleBetStop(data) {
   // Find and update the fixture in featuredTournamentGames
   featuredTournamentGames.value = featuredTournamentGames.value.map(
     (tournament) => {
       const updatedFixtures = tournament.fixtures.map((fixture) => {
-        if (String(fixture.matchID) === String(matchId)) {
+        if (String(fixture.matchID) === String(data.matchID)) {
           // Set all outcomes to inactive
           const updatedOutcomes = fixture.outcomes.map((outcome) => ({
             ...outcome,
@@ -470,54 +481,139 @@ onBeforeUnmount(() => {
   unsubscribeFunctions.value = {};
 });
 
+// Replace the existing data fetching with vue-query
+const {
+  data: topBetsData,
+  isLoading: isTopBetsLoading,
+} = useQuery("topBets", getTopBets, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000, // 1 minute
+  cacheTime: 300000, // 5 minutes
+  refetchInterval: 60000 * 10, // 10 minutes
+  retry: (failureCount, error) => {
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false;
+    }
+    return failureCount < 3;
+  },
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+});
+
+const {
+  data: casinoData,
+  isLoading: isCasinoLoading,
+} = useQuery("casinoGames", getTopGameCategories, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000,
+  cacheTime: 300000,
+});
+
+const {
+  data: codesData,
+  isLoading: isCodesLoading,
+} = useQuery("codes", () => {
+  const payload = {
+    from: getNext7Days()[0],
+    to: getNext7Days()[7],
+    betType: 0,
+  };
+  return getCodeHubItems(payload);
+}, {
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000,
+  cacheTime: 300000,
+});
+
+// Update computed properties
+const isLoading = computed(() => isTopBetsLoading.value);
+const casinoIsLoading = computed(() => isCasinoLoading.value);
+
+// Update the getFeaturedGames function
 async function getFeaturedGames() {
-  isLoading.value = true;
-  try {
-    const res = await getTopBets();
-    if (res.data) {
-      // Create a Map to store unique tournaments by ID
-      const uniqueTournaments = new Map();
+  if (!topBetsData.value?.data) return;
 
-      // Filter out duplicates and store in Map
-      res.data.forEach((tournament) => {
-        if (!uniqueTournaments.has(tournament.tournamentID)) {
-          uniqueTournaments.set(tournament.tournamentID, tournament);
-        }
-      });
+  // Use Set for faster unique tournament filtering
+  const uniqueTournamentIds = new Set();
+  const uniqueTournaments = [];
 
-      // Convert Map back to array and sort
-      featuredTournaments.value = Array.from(uniqueTournaments.values()).sort(
-        (a, b) => a.tournamentID - b.tournamentID,
-      );
+  // Single pass to filter unique tournaments
+  for (const tournament of topBetsData.value.data) {
+    if (!uniqueTournamentIds.has(tournament.tournamentID)) {
+      uniqueTournamentIds.add(tournament.tournamentID);
+      uniqueTournaments.push(tournament);
+    }
+  }
 
-      // Set active tournament to first one if available
-      activeFeaturedTournament.value =
-        featuredTournaments.value[0]?.tournamentID;
+  // Sort tournaments and update featuredTournaments immediately
+  featuredTournaments.value = uniqueTournaments.sort(
+    (a, b) => a.tournamentID - b.tournamentID
+  );
 
-      // Process each unique tournament
-      await Promise.all(
-        featuredTournaments.value.map(async (tournament) => {
+  // Set active tournament
+  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+
+  // Process tournaments in parallel with concurrency limit
+  const CONCURRENCY_LIMIT = 3;
+  const chunks = [];
+  for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
+    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT));
+  }
+
+  for (const chunk of chunks) {
+    await Promise.all(
+      chunk.map(async (tournament) => {
+        try {
           const games = await getFixturesByTournamentId(
             tournament.tournamentID,
-            tournament.sportID,
+            tournament.sportID
           );
           assignTournaments(tournament, games, tournament.tournamentID);
-        }),
-      );
-      isLoading.value = false;
-    } else throw Error;
-  } catch (error) {
-    isLoading.value = false;
-    console.error("Error fetching featured games:", error);
+        } catch (error) {
+          console.error(`Error processing tournament ${tournament.tournamentID}:`, error);
+          const index = featuredTournaments.value.findIndex(t => t.tournamentID === tournament.tournamentID);
+          if (index !== -1) {
+            featuredTournaments.value.splice(index, 1);
+          }
+        }
+      })
+    );
   }
 }
 
-onMounted(async () => {
-  Promise.all([getFeaturedGames(), getCasinoGames(), getCodes()])
-    .then(() => {})
-    .catch((error) => {
-      console.error("An error occurred:", error);
-    });
+// Update onMounted to watch for data changes
+watch([topBetsData], ([topBets]) => {
+  if (topBets) {
+    getFeaturedGames();
+  }
+}, { immediate: true });
+
+// Add these new functions
+const shouldRefresh = ref(false);
+
+onActivated(() => {
+  // Component is activated (shown again)
+  if (shouldRefresh.value) {
+    // Refresh data if needed
+    getFeaturedGames();
+    getCasinoGames();
+    getCodes();
+    shouldRefresh.value = false;
+  }
+});
+
+onDeactivated(() => {
+  // Component is deactivated (hidden)
+  // Clean up MQTT subscriptions
+  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+    subscriptions.forEach((unsubscribe) => unsubscribe());
+  });
+  unsubscribeFunctions.value = {};
 });
 </script>
 <style scoped>
