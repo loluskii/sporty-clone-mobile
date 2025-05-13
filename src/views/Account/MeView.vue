@@ -14,7 +14,7 @@
               <div class="account">
                 {{
                   isAuthenticated
-                    ? userStore.currentUser?.username
+                    ? userStore.userStore.currentUser?.username
                     : "Login to view"
                 }}
               </div>
@@ -113,7 +113,7 @@ const userStore = useUsersStore();
 const { SportsbookGlobalVariable } = useUtilsStore()
 
 function redirectToAccount() {
-  if (currentUser) {
+  if (userStore.currentUser) {
     router.push({ name: "account-profile" });
   } else {
     router.push({ name: "sign-in" });
