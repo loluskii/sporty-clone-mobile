@@ -14,7 +14,7 @@
               <div class="account">
                 {{
                   isAuthenticated
-                    ? userStore.userStore.currentUser?.username
+                    ? userStore.currentUser?.username
                     : "Login to view"
                 }}
               </div>
