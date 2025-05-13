@@ -75,7 +75,7 @@
           <div class="desc">
             <!-- <span>{{ market.displayName }}</span> -->
           </div>
-          <div class="odds">{{ market.odds.toFixed(2) }}</div>
+          <div class="odds">{{ parseFloat(market.odds).toFixed(2) }}</div>
         </div>
       </div>
       <!-- {{ getMatchOdds(matchDetails.outcomes) }} -->
