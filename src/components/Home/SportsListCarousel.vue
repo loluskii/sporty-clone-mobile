@@ -262,7 +262,7 @@ async function playAviator() {
   if (usersStore.currentUser) {
     return router.push({
       name: "game-play",
-      params: { game_name: slugify("Aviator"), game_id: 2158 },
+      params: { game_name: slugify("Aviator"), game_id: 1583 },
     });
   } else {
     return router.push("/sign-in");
