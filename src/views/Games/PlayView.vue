@@ -121,10 +121,12 @@ async function getRecommendedGames() {
 }
 
 const exitGame = () => {
-  if (utilsStore.previousRoute.includes("Play")) {
+  if (utilsStore.previousRoute && utilsStore.previousRoute.includes("Play")) {
     return router.push("/Games");
+  }else if(utilsStore.previousRoute && !utilsStore.previousRoute.includes("Play")){
+    return router.push(utilsStore.previousRoute);
   }
-  return router.push(utilsStore.previousRoute);
+  return router.push('/')
 };
 
 onMounted(async () => {
