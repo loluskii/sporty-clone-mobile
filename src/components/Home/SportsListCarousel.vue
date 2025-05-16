@@ -72,17 +72,17 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" @click.prevent="playJetX"
+        <a href="#" @click.prevent="playAviator"
           ><div class="sport-icon">
             <img
-              src="@/assets/images/jet.png"
+              src="@/assets/images/aviator.png"
               loading="eager"
-              width="20"
-              height="20"
+              width="24"
+              height="24"
             />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >JetX</span
+            >Aviator</span
           >
         </a>
       </li>
@@ -258,11 +258,11 @@ function openVirtual() {
   }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`;
 }
 
-async function playJetX() {
+async function playAviator() {
   if (usersStore.currentUser) {
     return router.push({
       name: "game-play",
-      params: { game_name: slugify("JetX"), game_id: 122 },
+      params: { game_name: slugify("Aviator"), game_id: 2158 },
     });
   } else {
     return router.push("/sign-in");
