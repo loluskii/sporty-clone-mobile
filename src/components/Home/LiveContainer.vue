@@ -119,8 +119,10 @@ import {
   watch,
   onUnmounted,
   onActivated,
+  onBeforeUnmount,
 } from "vue";
 import _ from "lodash";
+import emitter  from "@/plugins/emitter";
 
 const activeSportID = ref(1);
 const isEmptyResponse = ref(false);
@@ -332,6 +334,34 @@ defineComponent({
       refetch();
     },
   },
+});
+
+onMounted(() => {
+  // Listen for match-ended events
+  emitter.on('match-ended', (matchId) => {
+    if (completeLiveData.value?.fixtures) {
+      // Create a new array without the ended match
+      const updatedFixtures = completeLiveData.value.fixtures.filter(
+        fixture => String(fixture.matchID) !== String(matchId)
+      );
+      
+      // Update the data through Vue Query's refetch
+      refetch().then(() => {
+        // After refetch, update the fixtures if needed
+        if (completeLiveData.value) {
+          completeLiveData.value = {
+            ...completeLiveData.value,
+            fixtures: updatedFixtures
+          };
+        }
+      });
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  // Remove event listener
+  emitter.off('match-ended');
 });
 </script>
 

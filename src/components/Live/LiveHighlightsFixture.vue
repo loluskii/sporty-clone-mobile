@@ -33,8 +33,8 @@
         <div class="team">{{ gameData.awayTeam }}</div>
       </div>
       <div class="x-table-cell score">
-        <div class="set-score">{{ gameData.homeScore }}</div>
-        <div class="set-score">{{ gameData.awayScore }}</div>
+        <div class="set-score">{{ scores.homeScore }}</div>
+        <div class="set-score">{{ scores.awayScore }}</div>
       </div>
 
       <div class="x-table-cell m-market-cell">
@@ -134,7 +134,8 @@ const props = defineProps({
 const activeSpecifier = ref();
 const specifierOpen = ref(false);
 const timer = ref(null);
-const displayTime = ref('00:00');
+const displayTime = ref(props.gameData.eventTime || '00:00');
+const isClockStopped = ref(false)
 
 const scores = ref({
   homeScore: props.gameData?.homeScore || 0,
@@ -149,70 +150,71 @@ const updatedOutcomes = ref({});
 // Keep track of the last update timestamp for each match
 const lastUpdateTimestamp = ref({});
 
-// Function to parse time string (MM:SS) to seconds
+// Time handling functions
 const parseTimeToSeconds = (timeStr) => {
   if (timeStr === "--:--") return null;
   const [minutes, seconds] = timeStr.split(':').map(Number);
   return minutes * 60 + seconds;
 };
 
-// Function to format seconds to MM:SS
 const formatSecondsToTime = (seconds) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Function to start the timer
-const startTimer = () => {
-  // Only start timer for football (sport ID 1)
-  if (String(props.gameData.sportID) !== '1') {
-    displayTime.value = props.gameData.eventTime;
-    return;
+const stopTimer = () => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
   }
+};
 
-  if (timer.value) clearInterval(timer.value);
+const startTimer = () => {
+  stopTimer();
   
-  const initialTime = parseTimeToSeconds(props.gameData.eventTime);
-  
-  // Handle halftime
-  if (initialTime === null) {
-    displayTime.value = "--:--";
-    return;
-  }
+  const initialTime = parseTimeToSeconds(displayTime.value);
+  if (initialTime === null || initialTime === 45*60 || initialTime === 90*60) return;
   
   let currentSeconds = initialTime;
-  
-  // Update display immediately
   displayTime.value = formatSecondsToTime(currentSeconds);
+
   
   timer.value = setInterval(() => {
     currentSeconds++;
     
     // Stop at key match times
     if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
-      clearInterval(timer.value);
-      timer.value = null;
+      stopTimer();
+      return;
     }
     
     displayTime.value = formatSecondsToTime(currentSeconds);
   }, 1000);
 };
 
-// Watch for gameData changes to start timer
-watch(() => props.gameData, (newData) => {
-  if (newData && newData.eventTime) {
-    startTimer();
-  }
-}, { immediate: true });
+// Function to handle fixture status updates
+function handleFixtureStatus(data) {
+  requestAnimationFrame(() => {
+    // Check if match has ended
+    if (data.status_code === 100) {
+      // Emit event to parent to remove this fixture
+      emitter.emit('match-ended', props.gameData.matchID);
+      return;
+    }
 
-// Clean up timer on component unmount
-onBeforeUnmount(() => {
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-});
+    // Update scores
+    scores.value.homeScore = data.home_score;
+    scores.value.awayScore = data.away_score;
+    
+    // Update time and status
+    displayTime.value = data.event_time;
+    props.gameData.matchStatus = data.match_status;
+    
+    // Restart timer with new time
+    startTimer();
+  });
+}
 
 const getOdds = () => {
   if (props.activeMarket && props.gameData.activeMarkets > 0) {
@@ -377,56 +379,43 @@ function addToBetslip(event, odd) {
 
 function handleOddsChange(data) {
   if (!data || !data.markets) return;
-
+  
   const matchId = props.gameData.matchID;
-  const dataMatchId = data.event_id || data.match_id;
+  if (String(data.event_id) !== String(matchId)) return;
 
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(
-      "📊 MQTT: Ignoring odds change for match ID",
-      dataMatchId,
-      "our match ID is",
-      matchId,
-    );
-    return;
+  if (data.sport_event_status?.clock?.stopped !== undefined) {
+    isClockStopped.value = data.sport_event_status.clock.stopped;
+    if (isClockStopped.value) {
+      stopTimer();
+    } else {
+      startTimer();
+    }
   }
+  // Use requestAnimationFrame for smooth UI updates
+  requestAnimationFrame(() => {
+    // Update scores
+    scores.value.homeScore = data.sport_event_status.home_score;
+    scores.value.awayScore = data.sport_event_status.away_score;
 
-  if (!updatePending.value) {
-    updatePending.value = true;
 
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        scores.value.homeScore = data.sport_event_status.home_score;
-        scores.value.awayScore = data.sport_event_status.away_score;
-
-        const markets = (data.markets || []).map((m) => ({ ...m }));
-
-        if (markets.length > 0) {
-          const updatedOutcomesCopy = { ...updatedOutcomes.value };
-
-          markets.forEach((market) => {
-            if (market.outcomes) {
-              market.outcomes.forEach((outcome) => {
-                const key = `${market.id}-${outcome.id}-${
-                  market.specifiers || ""
-                }`;
-                updatedOutcomesCopy[key] = {
-                  odds: outcome.odds,
-                  active: outcome.active ? 1 : 0,
-                  timestamp: Date.now(),
-                };
-              });
-            }
-          });
-
-          updatedOutcomes.value = updatedOutcomesCopy;
-          getOdds();
-        }
-
-        updatePending.value = false;
+    // Batch odds updates
+    if (data.markets?.length > 0) {
+      const updatedOutcomesCopy = { ...updatedOutcomes.value };
+      
+      data.markets.forEach(market => {
+        market.outcomes?.forEach(outcome => {
+          const key = `${market.id}-${outcome.id}-${market.specifiers || ""}`;
+          updatedOutcomesCopy[key] = {
+            odds: outcome.odds,
+            active: outcome.active ? 1 : 0,
+          };
+        });
       });
-    }, 0);
-  }
+
+      updatedOutcomes.value = updatedOutcomesCopy;
+      getOdds();
+    }
+  });
 }
 
 function handleBetStop(data) {
@@ -470,90 +459,6 @@ function handleBetStop(data) {
   }, 0);
 }
 
-// Watch for changes to props.gameData.outcomes
-// watch(
-//   () => props.gameData.outcomes,
-//   (newOutcomes) => {
-//     if (newOutcomes && newOutcomes.length > 0) {
-//       // Don't call getOdds() here as it might create a cycle
-//       // Just update the betslip if needed
-
-//       // Check if any betslip selections need to be updated
-//       const matchId = props.gameData.matchID;
-//       const selections = couponStore.coupon.selections.filter(
-//         (sel) => String(sel.matchId) === String(matchId)
-//       );
-
-//       if (selections.length > 0) {
-//         console.log(`🔄 Props: Found ${selections.length} selections in betslip for match ID ${matchId}`);
-//         let updatedAnySelection = false;
-
-//         // Process each matching selection
-//         selections.forEach(selection => {
-//           // Find the updated odds for this selection
-//           const marketId = parseInt(selection.marketId);
-//           const outcomeId = selection.outcomeId;
-//           const specifier = selection.specifier;
-
-//           // Find the outcome in the gameData
-//           const outcome = newOutcomes.find(
-//             (o) => o.marketID === marketId &&
-//                   String(o.outcomeID) === String(outcomeId) &&
-//                   (o.specifier || '') === specifier
-//           );
-
-//           if (outcome) {
-//             if (outcome.active === 0) {
-//               // If outcome is not active, suspend the selection
-//               console.log(`🔄 Props: Outcome not active, suspending selection for match ID ${matchId}`);
-//               selection.suspended = true;
-//               selection.unavailable = true;
-//               updatedAnySelection = true;
-//             } else {
-//               // If outcome is active, make sure it's not suspended
-//               if (selection.suspended || selection.unavailable) {
-//                 console.log(`🔄 Props: Reactivating previously suspended selection for match ID ${matchId}`);
-//                 selection.suspended = false;
-//                 selection.unavailable = false;
-//                 updatedAnySelection = true;
-//               }
-
-//               // Update odds if they've changed
-//               if (outcome.odds !== selection.odds) {
-//                 console.log(`🔄 Props: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
-//                 selection.odds = outcome.odds;
-//                 selection.changed = true;
-//                 updatedAnySelection = true;
-
-//                 // Reset the changed flag after 5 seconds
-//                 setTimeout(() => {
-//                   selection.changed = false;
-
-//                   // Force a reactivity update
-//                   couponStore.updateWinnings({
-//                     stake: couponStore.coupon.totalStake,
-//                     id: "all",
-//                   });
-//                 }, 5000);
-//               }
-//             }
-//           }
-//         });
-
-//         // Only update winnings if we actually changed any selections
-//         if (updatedAnySelection) {
-//           // Force a reactivity update
-//           couponStore.updateWinnings({
-//             stake: couponStore.coupon.totalStake,
-//             id: "all",
-//           });
-//         }
-//       }
-//     }
-//   },
-//   { deep: true }
-// )
-
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
     (outcome, index, self) =>
@@ -565,6 +470,12 @@ const uniqueOutcomes = (outcomes) => {
   );
   return x;
 };
+
+watch(() => displayTime.value, (newTime) => {
+  if (newTime) {
+    startTimer();
+  }
+}, { immediate: true });
 
 watch(
   [() => props.activeMarket, () => props.gameData.outcomes],
@@ -578,9 +489,7 @@ watch(
 );
 
 onMounted(() => {
-  console.log(
-    `🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`,
-  );
+  console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
   // Initialize scores from props
   scores.value = {
@@ -591,38 +500,35 @@ onMounted(() => {
   outcomes.value = props.gameData.outcomes || [];
   getOdds();
 
-  // Subscribe to live odds changes for this specific match
   const matchId = props.gameData.matchID;
 
   if (matchId) {
-    // Create a unique component ID to help with debugging
     const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`;
 
-    // Use the correct topic paths with the proper prefix
-    const oddsChangeTopic = `feeds/live/odds_change/${matchId}`;
-    const betStopTopic = `feeds/live/bet_stop/${matchId}`;
+    const topics = {
+      oddsChange: `feeds/live/odds_change/${matchId}`,
+      betStop: `feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `feeds/live/fixture_status/${matchId}`
+    };
 
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      console.log(
-        `📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`,
-      );
-      handleOddsChange(data);
+    const handlers = {
+      oddsChange: handleOddsChange,
+      betStop: handleBetStop,
+      fixtureStatus: handleFixtureStatus
+    };
+
+    const unsubscribers = Object.entries(topics).map(([key, topic]) => {
+      console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
+      return subscribe(topic, (data) => {
+        console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
+        handlers[key](data);
+      });
     });
 
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      console.log(
-        `📊 MQTT: Received message on topic ${betStopTopic} for component ${componentId}`,
-      );
-      handleBetStop(data);
-    });
-
-    // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      console.log(
-        `🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`,
-      );
-      unsubscribeOddsChange();
-      unsubscribeBetStop();
+      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+      stopTimer();
     });
   }
 });

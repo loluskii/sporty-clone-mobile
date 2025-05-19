@@ -17,23 +17,23 @@
             <div>
               <div class="m-event-league">
                 <div class="m-event-title-time">
-                  <p class="category-league">{{ eventDetail.tournament }}</p>
+                  <p class="category-league"><span v-if="eventDetail?.categoryName !== '' ">{{eventDetail.categoryName}}</span> - {{ eventDetail.tournament }}</p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? "Finished" : displayTime }}</span>
+                  <span>{{ matchHasEnded ? "Finished" : eventTime }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
                 <div class="home-team-name">
                   <span class="team">{{ eventDetail.competitor1 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ scores.home }}</em>
+                    ><em class="setScore">{{ scores.homeScore }}</em>
                   </span>
                 </div>
                 <div class="away-team-name">
                   <span class="team">{{ eventDetail.competitor2 }}</span>
                   <span class="score"
-                    ><em class="setScore">{{ scores.away }}</em>
+                    ><em class="setScore">{{ scores.awayScore }}</em>
                   </span>
                 </div>
               </div>
@@ -248,6 +248,16 @@
             </div>
           </div>
           <div
+            v-else-if="noMarkets"
+            class="m-sport-market-no-data"
+            style="padding: 5rem 2.33333333rem 10rem"
+          >
+            <div style="white-space: pre-line">
+              Sorry, there are no available markets for this event.
+              Please choose other games.
+            </div>
+          </div>
+          <div
             v-else
             class="m-sport-market-no-data"
             style="padding: 5rem 2.33333333rem 10rem"
@@ -286,11 +296,10 @@ import { useMqttService } from "@/composables/useMqtt";
 const eventMarkets = ref();
 const eventDetail = ref();
 const scores = reactive({
-  home: 0,
-  away: 0,
+  homeScore: 0,
+  awayScore: 0,
 });
-const eventTime = ref("0:00");
-const displayTime = ref("00:00");
+const eventTime = ref('00:00');
 const timer = ref(null);
 const groupedMarkets = ref([]);
 const isLoading = ref(false);
@@ -298,7 +307,6 @@ const route = useRoute();
 const refetchInterval = ref(null);
 const REFETCH_INTERVAL_MS = 60000; // 60 seconds
 
-// const errorMessage = ref()
 const couponStore = useCouponStore();
 const homeTeam = ref();
 const awayTeam = ref();
@@ -307,22 +315,298 @@ const { subscribe } = useMqttService();
 const updatedOutcomes = ref({});
 const updatePending = ref(false);
 const unsubscribeFunctions = ref([]);
+const isClockStopped = ref(false);
 
-watch(
-  () => route.params.event_id,
-  async (provider_id) => {
-    await getEventDetail(provider_id);
-  },
-  { immediate: true }, // Trigger the watch callback immediately on component mount
-);
-
+// Computed properties
 const matchHasEnded = computed(() => {
-  return eventDetail.value.statusCode === 3;
+  return eventDetail.value?.statusCode === 3;
 });
 
 const noMarkets = computed(() => {
-  return eventMarkets.value.length === 0;
+  return eventMarkets.value?.length === 0;
 });
+
+// Time handling functions
+const parseTimeToSeconds = (timeStr) => {
+  if (timeStr === "--:--") return null;
+  const [minutes, seconds] = timeStr.split(':').map(Number);
+  return minutes * 60 + seconds;
+};
+
+const formatSecondsToTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+const stopTimer = () => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+};
+
+const startTimer = () => {
+  stopTimer();
+  
+  const initialTime = parseTimeToSeconds(eventTime.value);
+  if (initialTime === null || initialTime === 45*60 || initialTime === 90*60) return;
+  
+  let currentSeconds = initialTime;
+  eventTime.value = formatSecondsToTime(currentSeconds);
+  
+  timer.value = setInterval(() => {
+    currentSeconds++;
+    
+    // Stop at key match times (45:00 and 90:00)
+    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+      stopTimer();
+      return;
+    }
+    
+    eventTime.value = formatSecondsToTime(currentSeconds);
+  }, 1000);
+};
+
+// MQTT handlers
+function handleFixtureStatus(data) {
+  // Handle match end
+  if (data.status_code === 100) {
+    stopTimer();
+    // Clean up intervals
+    if (refetchInterval.value) {
+      console.log(`🧹 Component: Cleaning up periodic refetch interval`);
+      clearInterval(refetchInterval.value);
+      refetchInterval.value = null;
+    }
+
+    if (timer.value) {
+      clearInterval(timer.value);
+      timer.value = null;
+    }
+
+    eventMarkets.value = []
+    groupedMarkets.value = []
+    return;
+  }
+  requestAnimationFrame(() => {
+    // Update scores
+    scores.homeScore = data.home_score;
+    scores.awayScore = data.away_score;
+    
+    // Update event time and status
+    eventTime.value = data.event_time;
+    if (eventDetail.value) {
+      eventDetail.value.matchStatus = data.match_status;
+    }
+  });
+}
+
+function handleBetStop(data) {
+  const matchId = eventDetail.value?.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
+    return;
+  }
+
+  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
+
+  if (eventMarkets.value?.length > 0) {
+    eventMarkets.value = eventMarkets.value.map((market) => ({
+      ...market,
+      outcomes: market.outcomes.map((outcome) => ({
+        ...outcome,
+        odds: 0,
+        active: 0,
+      })),
+    }));
+
+    groupedMarkets.value = groupByMarketID(eventMarkets.value);
+  }
+
+  if (eventDetail.value?.statusCode === 3) {
+    console.log("Match has ended, showing unavailable message");
+  }
+}
+
+function handleOddsChange(data) {
+  if (!data || !data.markets) return;
+
+  const matchId = eventDetail.value?.matchID;
+  const dataMatchId = data.event_id || data.match_id;
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) return;
+
+  // Handle clock status
+  if (data.sport_event_status?.clock?.stopped !== undefined) {
+    isClockStopped.value = data.sport_event_status.clock.stopped;
+    if (isClockStopped.value) {
+      stopTimer();
+    } else {
+      startTimer();
+    }
+  }
+
+  if (!updatePending.value) {
+    updatePending.value = true;
+
+    requestAnimationFrame(() => {
+      const markets = data.markets || [];
+      if (markets.length > 0) {
+        const updatedOutcomesCopy = { ...updatedOutcomes.value };
+
+        markets.forEach((market) => {
+          if (market.outcomes) {
+            market.outcomes.forEach((outcome) => {
+              const key = `${market.id}-${outcome.id}-${market.specifiers || ""}`;
+              updatedOutcomesCopy[key] = {
+                odds: outcome.odds,
+                active: outcome.active ? 1 : 0,
+                timestamp: Date.now(),
+              };
+            });
+          }
+        });
+
+        updatedOutcomes.value = updatedOutcomesCopy;
+
+        if (eventMarkets.value?.length > 0) {
+          eventMarkets.value = eventMarkets.value.map((market) => {
+            const updatedMarket = markets.find(
+              (m) => m.id === market.marketID && (m.specifiers || "") === (market.specifier || "")
+            );
+
+            if (updatedMarket?.outcomes) {
+              market.outcomes = market.outcomes.map((outcome) => {
+                const newOutcome = updatedMarket.outcomes.find(
+                  (o) => String(o.id) === String(outcome.outcomeID)
+                );
+
+                return newOutcome ? {
+                  ...outcome,
+                  odds: newOutcome.odds,
+                  active: newOutcome.active ? 1 : 0,
+                } : outcome;
+              });
+            }
+            return market;
+          });
+
+          groupedMarkets.value = groupByMarketID(eventMarkets.value);
+        }
+      }
+
+      updatePending.value = false;
+    });
+  }
+}
+
+// MQTT setup
+function setupMqttSubscriptions(matchId) {
+  console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`);
+
+  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`;
+
+  const topics = {
+    oddsChange: `feeds/live/odds_change/${matchId}`,
+    betStop: `feeds/live/bet_stop/${matchId}`,
+    fixtureStatus: `feeds/live/fixture_status/${matchId}`
+  };
+
+  const handlers = {
+    oddsChange: handleOddsChange,
+    betStop: handleBetStop,
+    fixtureStatus: handleFixtureStatus
+  };
+
+  const unsubscribers = Object.entries(topics).map(([key, topic]) => {
+    console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
+    return subscribe(topic, (data) => {
+      console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
+      handlers[key](data);
+    });
+  });
+
+  unsubscribeFunctions.value = unsubscribers;
+  console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`);
+}
+
+// Periodic refetch setup
+function setupPeriodicRefetch(matchId) {
+  if (refetchInterval.value) {
+    clearInterval(refetchInterval.value);
+  }
+
+  refetchInterval.value = setInterval(async () => {
+    if (!matchHasEnded.value) {
+      console.log(`🔄 Periodic refetch for match ID: ${matchId}`);
+      try {
+        const res = await getFixtureMarkets(matchId);
+        if (Object.keys(res).length && res.markets) {
+          // Filter out suspended markets
+          eventMarkets.value = res.statusCode === 3 ? [] : res.markets.filter(market => market.statusName !== 'Suspended');
+          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value);
+          scores.homeScore = res.homeScore;
+          scores.awayScore = res.awayScore;
+          eventTime.value = res.eventTime;
+          console.log(`✅ Successfully refetched markets for match ID: ${matchId}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error during periodic refetch:`, error);
+      }
+    } else {
+      console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`);
+      clearInterval(refetchInterval.value);
+    }
+  }, REFETCH_INTERVAL_MS);
+
+  console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS / 1000} seconds for match ID: ${matchId}`);
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  let script = document.createElement("script");
+  script.text = '(function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h))})(window,document,"script","https://widgets.sir.sportradar.com/9a7545262c211f21e8cdaf98d9b86856/widgetloader","SIR", {language: "en"});';
+  script.id = "sr-tracker";
+  document.body.appendChild(script);
+});
+
+onUnmounted(() => {
+  // Clean up MQTT subscriptions
+  if (unsubscribeFunctions.value.length > 0) {
+    console.log(`🧹 Component: Cleaning up MQTT subscriptions`);
+    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe());
+    unsubscribeFunctions.value = [];
+  }
+
+  // Clean up intervals
+  if (refetchInterval.value) {
+    console.log(`🧹 Component: Cleaning up periodic refetch interval`);
+    clearInterval(refetchInterval.value);
+    refetchInterval.value = null;
+  }
+
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+
+  // Clean up SR tracker script
+  document.getElementById("sr-tracker")?.remove();
+});
+
+// Watchers
+watch(() => route.params.event_id, async (provider_id) => {
+  await getEventDetail(provider_id);
+}, { immediate: true });
+
+watch(() => eventTime.value, (newTime) => {
+  if (newTime) {
+    startTimer();
+  }
+}, { immediate: true });
 
 function isTotalOrHandicap(market) {
   return (
@@ -356,35 +640,40 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true;
   try {
-    console.log(`🔍 Fetching event details for ID: ${id}`); // Add fetch start log
+    console.log(`🔍 Fetching event details for ID: ${id}`);
     const res = await getFixtureMarkets(id);
     isLoading.value = false;
-    if (Object.keys(res).length && res.markets) {
+    if (Object.keys(res).length && res.markets && res.statusCode === 1) {
       eventDetail.value = res;
-      eventMarkets.value = res.statusCode === 3 ? [] : res.markets;
-      groupedMarkets.value =
-        res.statusCode === 3 ? [] : groupByMarketID(res.markets);
+      // Filter out suspended markets
+      eventMarkets.value = res.statusCode === 3 ? [] : res.markets.filter(market => market.statusName !== 'Suspended');
+      groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value);
       homeTeam.value = res.competitor1;
       awayTeam.value = res.competitor2;
-      scores.home = res.homeScore;
-      scores.away = res.awayScore;
+      scores.homeScore = res.homeScore;
+      scores.awayScore = res.awayScore;
       eventTime.value = res.eventTime;
 
-      // Set up MQTT subscriptions after we have the event details
       if (res.matchID) {
-        console.log(
-          `📡 Event details received, setting up MQTT for match ID: ${res.matchID}`,
-        ); // Add pre-setup log
+        console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`);
         setupMqttSubscriptions(res.matchID);
         setupPeriodicRefetch(res.matchID);
       } else {
-        console.warn(`⚠️ No matchID found in event details response`); // Add warning if no matchID
+        console.warn(`⚠️ No matchID found in event details response`);
       }
     } else {
-      console.warn(`⚠️ Invalid event details response:`, res); // Add warning for invalid response
+      eventDetail.value = res;
+      // Filter out suspended markets
+      eventMarkets.value = [] 
+      groupedMarkets.value = []
+      homeTeam.value = res.competitor1;
+      awayTeam.value = res.competitor2;
+      scores.homeScore = res.homeScore;
+      scores.awayScore = res.awayScore;
+      eventTime.value = res.eventTime;
     }
   } catch (error) {
-    console.error(`❌ Error fetching event details:`, error); // Add error log
+    console.error(`❌ Error fetching event details:`, error);
     eventDetail.value = null;
     isLoading.value = false;
   }
@@ -533,296 +822,6 @@ function getSpecifierValue(specifier) {
 
 defineComponent({
   name: "fixture-detail",
-});
-
-onMounted(() => {
-  let script = document.createElement("script");
-  script.text =
-    '(function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h))})(window,document,"script","https://widgets.sir.sportradar.com/9a7545262c211f21e8cdaf98d9b86856/widgetloader","SIR", {language: "en"});';
-  // script.type = 'text/javascript';
-  script.id = "sr-tracker";
-  // script.src = 'https://widgets.sir.sportradar.com/sportradar/widgetloader';
-
-  document.body.appendChild(script);
-});
-
-function setupMqttSubscriptions(matchId) {
-  console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`); // Add initial setup log
-
-  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`;
-
-  // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/live/odds_change/${matchId}`;
-  console.log(`📊 Subscribing to odds changes on topic: ${oddsChangeTopic}`); // Add subscription log
-  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    console.log(
-      `📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`,
-      data,
-    );
-    handleOddsChange(data);
-  });
-
-  // Subscribe to bet stop
-  const betStopTopic = `feeds/live/bet_stop/${matchId}`;
-  console.log(`⚠️ Subscribing to bet stops on topic: ${betStopTopic}`); // Add subscription log
-  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    console.log(
-      `⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`,
-      data,
-    );
-    handleBetStop(data);
-  });
-
-  // Store unsubscribe functions in ref
-  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop];
-  console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`); // Add completion log
-}
-
-function handleOddsChange(data) {
-  if (!data || !data.markets) return;
-
-  const matchId = eventDetail.value.matchID;
-  const dataMatchId = data.event_id || data.match_id;
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    return;
-  }
-
-  if (
-    data.score !== undefined ||
-    data.status !== undefined ||
-    data.match_status !== undefined
-  ) {
-    console.log(`📊 Match Update:`, data);
-
-    scores.home = data.sport_event_status.home_score;
-    scores.away = data.sport_event_status.away_score;
-  }
-
-  // Handle odds updates
-  if (!data.markets) return;
-
-  if (!updatePending.value) {
-    updatePending.value = true;
-
-    requestAnimationFrame(() => {
-      const markets = data.markets || [];
-
-      if (markets.length > 0) {
-        const updatedOutcomesCopy = { ...updatedOutcomes.value };
-
-        markets.forEach((market) => {
-          if (market.outcomes) {
-            market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${
-                market.specifiers || ""
-              }`;
-              updatedOutcomesCopy[key] = {
-                odds: outcome.odds,
-                active: outcome.active ? 1 : 0,
-                timestamp: Date.now(),
-              };
-            });
-          }
-        });
-
-        updatedOutcomes.value = updatedOutcomesCopy;
-
-        if (eventMarkets.value.length > 0) {
-          eventMarkets.value = eventMarkets.value.map((market) => {
-            const updatedMarket = markets.find(
-              (m) =>
-                m.id === market.marketID &&
-                (m.specifiers || "") === (market.specifier || ""),
-            );
-
-            if (updatedMarket && updatedMarket.outcomes) {
-              market.outcomes = market.outcomes.map((outcome) => {
-                const newOutcome = updatedMarket.outcomes.find(
-                  (o) => String(o.id) === String(outcome.outcomeID),
-                );
-
-                if (newOutcome) {
-                  return {
-                    ...outcome,
-                    odds: newOutcome.odds,
-                    active: newOutcome.active ? 1 : 0,
-                  };
-                }
-                return outcome;
-              });
-            }
-            return market;
-          });
-
-          // Update grouped markets
-          groupedMarkets.value = groupByMarketID(eventMarkets.value);
-        }
-      }
-
-      updatePending.value = false;
-    });
-  }
-}
-
-function handleBetStop(data) {
-  const matchId = eventDetail.value.matchID;
-  const dataMatchId = data.event_id || data.match_id;
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(
-      `📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`,
-    );
-    return;
-  }
-
-  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
-
-  // Suspend all markets
-  if (eventMarkets.value.length > 0) {
-    eventMarkets.value = eventMarkets.value.map((market) => ({
-      ...market,
-      outcomes: market.outcomes.map((outcome) => ({
-        ...outcome,
-        odds: 0,
-        active: 0,
-      })),
-    }));
-
-    // Update grouped markets
-    groupedMarkets.value = groupByMarketID(eventMarkets.value);
-  }
-
-  // Check if match has ended
-  if (eventDetail.value.statusCode === 3) {
-    console.log("Match has ended, showing unavailable message");
-    matchHasEnded.value = true;
-  }
-}
-
-function setupPeriodicRefetch(matchId) {
-  // Clear any existing interval
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value);
-  }
-
-  // Set up new interval
-  refetchInterval.value = setInterval(async () => {
-    if (!matchHasEnded.value) {
-      console.log(`🔄 Periodic refetch for match ID: ${matchId}`);
-      try {
-        const res = await getFixtureMarkets(matchId);
-        if (Object.keys(res).length && res.markets) {
-          eventMarkets.value = res.statusCode === 3 ? [] : res.markets;
-          groupedMarkets.value =
-            res.statusCode === 3 ? [] : groupByMarketID(res.markets);
-          scores.home = res.homeScore;
-          scores.away = res.awayScore;
-          eventTime.value = res.eventTime;
-          console.log(
-            `✅ Successfully refetched markets for match ID: ${matchId}`,
-          );
-        }
-      } catch (error) {
-        console.error(`❌ Error during periodic refetch:`, error);
-      }
-    } else {
-      console.log(
-        `⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`,
-      );
-      clearInterval(refetchInterval.value);
-    }
-  }, REFETCH_INTERVAL_MS);
-
-  console.log(
-    `⏱️ Set up periodic refetch every ${
-      REFETCH_INTERVAL_MS / 1000
-    } seconds for match ID: ${matchId}`,
-  );
-}
-
-onUnmounted(() => {
-  // Clean up MQTT subscriptions
-  if (unsubscribeFunctions.value.length > 0) {
-    console.log(`🧹 Component: Cleaning up MQTT subscriptions`);
-    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe());
-    unsubscribeFunctions.value = [];
-  }
-
-  // Clean up refetch interval
-  if (refetchInterval.value) {
-    console.log(`🧹 Component: Cleaning up periodic refetch interval`);
-    clearInterval(refetchInterval.value);
-    refetchInterval.value = null;
-  }
-
-  // Clean up SR tracker script
-  document.getElementById("sr-tracker")?.remove();
-});
-
-// Function to parse time string (MM:SS) to seconds
-const parseTimeToSeconds = (timeStr) => {
-  if (timeStr === "--:--") return null;
-  const [minutes, seconds] = timeStr.split(':').map(Number);
-  return minutes * 60 + seconds;
-};
-
-// Function to format seconds to MM:SS
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
-
-// Function to start the timer
-const startTimer = () => {
-  // Only start timer for football (sport ID 1)
-  if (String(eventDetail.value?.sportID) !== '1') {
-    displayTime.value = eventTime.value;
-    return;
-  }
-
-  if (timer.value) clearInterval(timer.value);
-  
-  const initialTime = parseTimeToSeconds(eventTime.value);
-  
-  // Handle halftime
-  if (initialTime === null) {
-    displayTime.value = "HT";
-    return;
-  }
-  
-  let currentSeconds = initialTime;
-  
-  // Update display immediately
-  displayTime.value = formatSecondsToTime(currentSeconds);
-  
-  timer.value = setInterval(() => {
-    currentSeconds++;
-    
-    // Stop at key match times
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
-      clearInterval(timer.value);
-      timer.value = null;
-    }
-    
-    displayTime.value = formatSecondsToTime(currentSeconds);
-  }, 1000);
-};
-
-// Watch for eventTime changes to start timer
-watch(() => eventTime.value, (newTime) => {
-  if (newTime) {
-    startTimer();
-  }
-}, { immediate: true });
-
-// Clean up timer on component unmount
-onUnmounted(() => {
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
 });
 </script>
 

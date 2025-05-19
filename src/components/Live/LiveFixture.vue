@@ -133,7 +133,7 @@ const scores = ref({
 });
 const outcomes = ref([]);
 const timer = ref(null);
-const displayTime = ref('00:00');
+const displayTime = ref(props.gameData.eventTime || '00:00');
 
 // Keep track of updated outcomes
 const updatedOutcomes = ref({});
@@ -143,50 +143,44 @@ const specifierOpen = ref(false);
 
 const updatePending = ref(false);
 
-// Function to parse time string (MM:SS) to seconds
+// Time handling functions
 const parseTimeToSeconds = (timeStr) => {
   if (timeStr === "--:--") return null;
   const [minutes, seconds] = timeStr.split(':').map(Number);
   return minutes * 60 + seconds;
 };
 
-// Function to format seconds to MM:SS
 const formatSecondsToTime = (seconds) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Function to start the timer
-const startTimer = () => {
-  // Only start timer for football (sport ID 1)
-  if (String(props.gameData.sportID) !== '1') {
-    displayTime.value = props.gameData.eventTime;
-    return;
+const stopTimer = () => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
   }
+};
 
-  if (timer.value) clearInterval(timer.value);
+
+const startTimer = () => {
+  stopTimer();
   
-  const initialTime = parseTimeToSeconds(props.gameData.eventTime);
-  
-  // Handle halftime
-  if (initialTime === null) {
-    displayTime.value = "--:--";
-    return;
-  }
+  const initialTime = parseTimeToSeconds(displayTime.value);
+  if (initialTime === null || initialTime === 45*60 || initialTime === 90*60) return;
   
   let currentSeconds = initialTime;
-  
-  // Update display immediately
   displayTime.value = formatSecondsToTime(currentSeconds);
+
   
   timer.value = setInterval(() => {
     currentSeconds++;
     
     // Stop at key match times
     if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
-      clearInterval(timer.value);
-      timer.value = null;
+      stopTimer();
+      return;
     }
     
     displayTime.value = formatSecondsToTime(currentSeconds);
@@ -194,19 +188,11 @@ const startTimer = () => {
 };
 
 // Watch for gameData changes to start timer
-watch(() => props.gameData, (newData) => {
-  if (newData && newData.eventTime) {
+watch(() => displayTime.value, (newTime) => {
+  if (newTime) {
     startTimer();
   }
 }, { immediate: true });
-
-// Clean up timer on component unmount
-onBeforeUnmount(() => {
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-});
 
 const getOdds = () => {
   if (props.activeMarket && props.gameData.activeMarkets > 0) {
@@ -402,35 +388,34 @@ function handleBetStop(data) {
     odds: 0,
     active: 0,
   }));
+}
 
-  // // Update betslip selections for this match
-  // const selections = couponStore.coupon.selections.filter(
-  //   (sel) => String(sel.matchId) === String(matchId)
-  // );
+// Function to handle fixture status updates
+function handleFixtureStatus(data) {
 
-  // if (selections.length > 0) {
-  //   console.log(`⚠️ BET STOP: Suspending ${selections.length} selections in betslip for match ID ${matchId}`);
+  // Handle match end
+  if (data.status_code === 100) {
+    stopTimer();
+    emitter.emit('match-ended', props.gameData.matchID);
+    return;
+  }
 
-  //   // Process each matching selection
-  //   selections.forEach(selection => {
-  //     // Suspend the selection
-  //     selection.suspended = true;
-  //     selection.unavailable = true;
-  //     selection.odds = 0;
-  //   });
-
-  //   // Force a reactivity update
-  //   couponStore.updateWinnings({
-  //     stake: couponStore.coupon.totalStake,
-  //     id: "all",
-  //   });
-  // }
+  requestAnimationFrame(() => {
+    // Update scores
+    scores.value.homeScore = data.home_score;
+    scores.value.awayScore = data.away_score;
+    
+    // Update time and status
+    displayTime.value = data.event_time;
+    props.gameData.matchStatus = data.match_status;
+    
+    // Restart timer with new time
+    startTimer();
+  });
 }
 
 onMounted(() => {
-  console.log(
-    `🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`,
-  );
+  console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
   scores.value = {
     homeScore: props.gameData.homeScore,
@@ -445,28 +430,30 @@ onMounted(() => {
   if (matchId) {
     const componentId = `live-fixture-${matchId}-${Date.now()}`;
 
-    const betStopTopic = `feeds/live/bet_stop/${matchId}`;
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      console.log(
-        `⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`,
-      );
-      handleBetStop(data);
-    });
+    const topics = {
+      oddsChange: `feeds/live/odds_change/${matchId}`,
+      betStop: `feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `feeds/live/fixture_status/${matchId}`
+    };
 
-    const oddsChangeTopic = `feeds/live/odds_change/${matchId}`;
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      console.log(
-        `📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`,
-      );
-      handleOddsChange(data);
+    const handlers = {
+      oddsChange: handleOddsChange,
+      betStop: handleBetStop,
+      fixtureStatus: handleFixtureStatus
+    };
+
+    const unsubscribers = Object.entries(topics).map(([key, topic]) => {
+      console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
+      return subscribe(topic, (data) => {
+        console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
+        handlers[key](data);
+      });
     });
 
     onBeforeUnmount(() => {
-      console.log(
-        `🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`,
-      );
-      unsubscribeBetStop();
-      unsubscribeOddsChange();
+      console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+      stopTimer();
     });
   }
 });
