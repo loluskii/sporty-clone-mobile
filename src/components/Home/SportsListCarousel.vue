@@ -87,16 +87,6 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" @click.prevent="playSmatVirtual"
-          ><div class="sport-icon">
-            <img src="@/assets/images/dice.png" loading="eager" height="20" />
-          </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Dice</span
-          >
-        </a>
-      </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
             <img

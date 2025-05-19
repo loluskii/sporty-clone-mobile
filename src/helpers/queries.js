@@ -130,7 +130,7 @@ export const getCodeHubItems = async (data) => {
 export const getSportsMenu = async () => {
   return parseData(
     fetchWrapper.get(
-      `https://sports.api.sportsbookengine.com/api/v2/sports/menu?timeoffset=${sign}${offsetHours}`,
+      `${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`,
     ),
   );
 };
