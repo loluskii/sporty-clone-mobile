@@ -41,7 +41,7 @@
         </div>
         <div v-else class="button-row">
           <div
-            v-if="props.data.bonus.type === 'casino'"
+            v-if="props.data.bonus.type === 'casino' && props.data.bonus.gameId !== undefined"
             class="real-money-btn"
             @click="goToCasino"
           >
