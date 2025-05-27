@@ -187,7 +187,10 @@ async function beginDeposit() {
 
   const res = await getDepositURL(payload);
   if (res.success) {
-    window.location.href = res.data.link;
+    if(res.data.link === 'ACCEPTED'){
+      return window.location.href = '/'
+    }
+    return window.location.href = res.data.link
   } else {
     emitter.emit("showErrorMessage", res);
     console.error(res);
