@@ -22,6 +22,8 @@ import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
 import { checkVersion } from "@/utils/version";
+import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
+
 
 const utilsStore = useUtilsStore();
 const couponStore = useCouponStore();
@@ -43,6 +45,10 @@ const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
 const casinoGameData = ref(null);
+const depositWithdrawalShown = ref(false)
+const depositWithdrawalData = ref(null)
+const depositWithdrawalType = ref('')
+
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -85,6 +91,13 @@ function showToaster(data) {
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "toaster";
+}
+
+function showDepositWithdrawal(data) {
+  document.getElementById('body').classList.add('no-scroll')
+  depositWithdrawalShown.value = true
+  depositWithdrawalData.value = data
+  depositWithdrawalType.value = data.type
 }
 
 async function loadBet(code) {
@@ -150,6 +163,13 @@ function toggleBookBetModal(data) {
 function handleCustomDatePicker(data) {
   // console.log(data)
   emitter.emit("dateRangeSet", data);
+}
+
+function hideModal() {
+  depositWithdrawalShown.value = false
+  depositWithdrawalData.value = null
+  depositWithdrawalType.value = ''
+  document.getElementById('body').classList.remove('no-scroll')
 }
 
 async function validateSelections() {
@@ -256,6 +276,7 @@ onMounted(async () => {
   emitter.on("showCasinoDialog", showCasinoDialog);
   emitter.on("showCustomDatePicker", toggleDatePicker);
   emitter.on("showBookBetModal", toggleBookBetModal);
+  emitter.on('showDepositWithdrawalModal', showDepositWithdrawal);
 });
 
 defineComponent({
@@ -314,6 +335,15 @@ defineComponent({
       @hide="toggleDatePicker"
       @set-date="handleCustomDatePicker"
     />
+    <template
+      v-if="route.name === 'account-deposit' || route.name === 'account-withdraw'"
+    >
+      <DepositWithdrawalCode
+        v-if="depositWithdrawalShown"
+        :data="depositWithdrawalData"
+        @hide-modal="hideModal"
+      />
+    </template>
     <div
       class="dialog-mask"
       v-if="bookBetModalShown"

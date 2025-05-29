@@ -96,7 +96,7 @@
             </button>
             <button
               class="af-button deposit-submit af-button--primary"
-              :class="amount == '' || isLoading ? ' is-disabled' : ''"
+              :class="amount == '' || isDepositing ? ' is-disabled' : ''"
               @click.prevent="beginDeposit"
             >
               <span><span> Top Up Now </span></span>
@@ -133,6 +133,7 @@ const router = useRouter();
 const amount = ref("");
 const isLoading = ref(false);
 const availableBonus = ref(null);
+const isDepositing = ref(false)
 
 const usersStore = useUsersStore();
 
@@ -178,7 +179,9 @@ function activateBonus() {
 }
 
 async function beginDeposit() {
-  isLoading.value = true;
+  if(isDepositing.value) return;
+
+  isDepositing.value = true;
   let payload = {
     amount: amount.value,
     paymentMethod: activeTab.value,
@@ -186,11 +189,16 @@ async function beginDeposit() {
   };
 
   const res = await getDepositURL(payload);
+  isDepositing.value = false;
   if (res.success) {
     if(res.data.link === 'ACCEPTED'){
       return window.location.href = '/'
+    }else if(activeTab.value === 'sbengine'){
+      return emitter.emit('showDepositWithdrawalModal', { type: 'Deposit', code: res.data.transactionRef })
+    }else if(!res.data.link.includes('http')){
+      return emitter.emit("showErrorMessage", res.message);
     }
-    return window.location.href = res.data.link
+    // return window.location.href = res.data.link
   } else {
     emitter.emit("showErrorMessage", res);
     console.error(res);
