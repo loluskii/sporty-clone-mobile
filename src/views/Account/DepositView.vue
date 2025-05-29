@@ -128,6 +128,7 @@ import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 const activeTab = ref("");
 const depositMethods = ref([]);
 const { currentUser } = useUsersStore();
+const {SportsbookGlobalVariable} = useUtilsStore()
 const router = useRouter();
 const amount = ref("");
 const isLoading = ref(false);
