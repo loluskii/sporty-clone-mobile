@@ -1313,4 +1313,49 @@ onMounted(() => {});
 .m-flexibet-confirm .m-0 {
   margin: 0;
 }
+
+.m-error-info {
+  padding: 0.25rem 1.33333333rem;
+}
+.m-error-info > p {
+  color: #e41827;
+  color: var(--warning-primary);
+  font-size: 0.83333333rem;
+  text-align: right;
+}
+.m-error-info .m-deposit-link-wrapper {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+  -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+}
+.m-error-info .m-deposit-link-wrapper .m-deposit-link {
+  color: #0D9737;
+  font-size: 12px;
+  line-height: 16px;
+  margin-right: 4px;
+}
+.m-error-info .m-deposit-link-wrapper .arrow-right {
+  color: #0D9737;
+}
+.m-error-info .m-deposit-link-wrapper .arrow-right::before {
+  content: '\e608';
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+.m-error-info .m-deposit-link-wrapper .arrow-right::before {
+  font-size: 12px;
+}
+
 </style>
