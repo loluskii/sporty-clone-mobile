@@ -198,7 +198,7 @@ async function beginDeposit() {
     }else if(!res.data.link.includes('http')){
       return emitter.emit("showErrorMessage", res.message);
     }
-    // return window.location.href = res.data.link
+    return window.location.href = res.data.link
   } else {
     emitter.emit("showErrorMessage", res);
     console.error(res);
