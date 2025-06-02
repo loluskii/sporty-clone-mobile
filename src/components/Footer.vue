@@ -91,7 +91,6 @@
 import { useRoute } from "vue-router";
 import { useAuthStore, useUtilsStore } from "@/stores";
 import { defineComponent, ref, onMounted } from "vue";
-import { checkVersion } from "@/utils/version";
 
 const route = useRoute();
 const authStore = useAuthStore();

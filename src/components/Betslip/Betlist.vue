@@ -1338,13 +1338,13 @@ onMounted(() => {});
           justify-content: flex-end;
 }
 .m-error-info .m-deposit-link-wrapper .m-deposit-link {
-  color: #0D9737;
+  color: var(--brand-secondary);
   font-size: 12px;
   line-height: 16px;
   margin-right: 4px;
 }
 .m-error-info .m-deposit-link-wrapper .arrow-right {
-  color: #0D9737;
+  color: var(--brand-secondary);
 }
 .m-error-info .m-deposit-link-wrapper .arrow-right::before {
   content: '\e608';
