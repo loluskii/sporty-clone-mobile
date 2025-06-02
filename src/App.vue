@@ -268,7 +268,21 @@ defineComponent({
 <template>
   <HandleCache ref="cacheBuster">
     <template v-slot="{ isLoading, isLatestVersionAvailable }">
-      <h1 v-if="isLoading">Loading...</h1>
+      <template v-if="isLoading">
+        <transition name="move">
+          <div class="loading-overlay">
+            <div class="loading-spinner">
+              <img
+                src="@/assets/images/logo.png"
+                class="scaling-image"
+                style="height: 60px; margin-bottom: 20px"
+                alt="logo"
+              />
+              <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
+            </div>
+          </div>
+        </transition>
+      </template>
       <template v-else-if="isLatestVersionAvailable">
         <div class="page-content page-content--ng">
           <!-- Main content -->
