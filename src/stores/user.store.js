@@ -123,7 +123,10 @@ export const useUsersStore = defineStore({
 
         if (missingProperties.length > 0) {
           console.warn("Missing user properties:", missingProperties);
-          // Don't throw error, just log warning
+          // Initialize missing properties to 0
+          missingProperties.forEach(prop => {
+            this.currentUser[prop] = 0;
+          });
         }
       } catch (error) {
         console.error("Error loading user:", error);

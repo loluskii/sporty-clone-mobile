@@ -10,11 +10,13 @@
       <SportsListCarousel></SportsListCarousel>
       <!-- SportsList Carousel -->
       <!-- Popular Sports -->
-      <KeepAlive>
+      <keep-alive>
         <PopularSports></PopularSports>
-      </KeepAlive>
+      </keep-alive>
       <!-- Popular Sports -->
-      <LiveContainer></LiveContainer>
+      <keep-alive>
+        <LiveContainer></LiveContainer>
+      </keep-alive>
       <!-- Highlights -->
       <Highlights></Highlights>
       <!-- Highlights -->

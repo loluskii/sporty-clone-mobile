@@ -134,7 +134,7 @@ const totalFixtures = ref(1);
 const {
   data: completeLiveData,
   isLoading,
-  refetch,
+  refetch: refetchLiveData,
 } = useQuery("liveData", getLiveHighlights, {
   // Prevent automatic refetching which can cause recursive updates
   refetchOnWindowFocus: false,
@@ -331,7 +331,7 @@ defineComponent({
   methods: {
     // Manually trigger a refetch without making a new network request
     handleManualRefetch() {
-      refetch();
+      refetchLiveData();
     },
   },
 });
@@ -346,7 +346,7 @@ onMounted(() => {
       );
       
       // Update the data through Vue Query's refetch
-      refetch().then(() => {
+      refetchLiveData().then(() => {
         // After refetch, update the fixtures if needed
         if (completeLiveData.value) {
           completeLiveData.value = {
