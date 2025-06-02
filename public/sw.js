@@ -1,4 +1,7 @@
-const CACHE_NAME = 'sporty-clone-v1';
+// Use a timestamp for cache versioning
+const CACHE_VERSION = '1.0.0';
+const CACHE_NAME = `sporty-clone-${CACHE_VERSION}`;
+
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -22,15 +25,6 @@ const CACHEABLE_EXTENSIONS = [
   '.woff2',
   '.ttf',
   '.eot'
-];
-
-// Paths to exclude from caching
-const EXCLUDED_PATHS = [
-  '/src/',
-  '.vue',
-  '.js',
-  '.ts',
-  '.json'
 ];
 
 // Install event - cache static assets
@@ -63,17 +57,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   const pathname = url.pathname;
-  
-  // First check if this is a source file that should be excluded
-  const isSourceFile = EXCLUDED_PATHS.some(path => 
-    pathname.includes(path) || 
-    pathname.endsWith(path)
-  );
-
-  if (isSourceFile) {
-    // For source files, always fetch from network
-    return fetch(event.request);
-  }
 
   // Handle image and CSS requests
   if (event.request.url.match(/\.(png|jpg|jpeg|gif|css)$/)) {
@@ -107,28 +90,4 @@ self.addEventListener('fetch', (event) => {
         })
     );
   }
-});
-
-// Helper function to fetch and cache
-async function fetchAndCache(request) {
-  try {
-    const response = await fetch(request);
-    
-    // Don't cache if not a valid response
-    if (!response || response.status !== 200 || response.type !== 'basic') {
-      return response;
-    }
-
-    // Clone the response
-    const responseToCache = response.clone();
-
-    // Cache the new response
-    const cache = await caches.open(CACHE_NAME);
-    await cache.put(request, responseToCache);
-
-    return response;
-  } catch (error) {
-    console.error('Fetch failed:', error);
-    throw error;
-  }
-} 
+}); 
