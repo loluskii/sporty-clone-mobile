@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import HeaderOther from "../../components/HeaderOther.vue";
 import { useUsersStore, useUtilsStore } from "@/stores";
@@ -183,23 +183,67 @@ function activateBonus() {
 
 async function beginDeposit() {
   isLoading.value = true;
-  let payload = {
-    amount: amount.value,
-    paymentMethod: activeTab.value,
-    clientId: CLIENT_ID,
-  };
+  try {
+    const payload = {
+      amount: amount.value,
+      paymentMethod: activeTab.value,
+      clientId: CLIENT_ID,
+    };
 
-  const res = await getDepositURL(payload);
-  if (res.success) {
-    window.location.href = res.data.link;
-  } else {
-    emitter.emit("showErrorMessage", res);
-    console.error(res);
+    const res = await getDepositURL(payload);
+    if (res.success) {
+      if (activeTab.value === 'fidelity') {
+        try {
+          const payazaConfig = JSON.parse(Object.values(res.data)[0]);
+          const payazaCheckout = PayazaCheckout.setup({
+            ...payazaConfig,
+            merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
+            onClose: function () {
+              console.log("Payment window closed");
+              isLoading.value = false;
+            },
+            callback: function (response) {
+              console.log("Payment response:", response);
+              if (response.status === 'success') {
+                emitter.emit('showSuccessMessage', 'Payment successful!');
+                router.push({ name: 'account' });
+              } else {
+                emitter.emit('showErrorMessage', response.message || 'Payment failed. Please try again.');
+              }
+              isLoading.value = false;
+            }
+          });
+
+          payazaCheckout.showPopup();
+        } catch (error) {
+          console.error("Error parsing Payaza config:", error);
+          emitter.emit("showErrorMessage", "Failed to initialize payment. Please try again.");
+          isLoading.value = false;
+        }
+      } else if (activeTab.value === 'sbengine') {
+        emitter.emit('showDepositWithdrawalModal', {
+          type: 'Deposit',
+          code: res.data.transactionRef
+        });
+      } else {
+        if (res.data.link === 'ACCEPTED') {
+          window.location.href = '/';
+        }  else if (!res.data.link.includes('http')) {
+          emitter.emit("showErrorMessage", res.message);
+        } else {
+          window.location.href = res.data.link;
+        }
+        isLoading.value = false;
+      }
+    } else {
+      emitter.emit("showErrorMessage", res.message || "Failed to initiate deposit. Please try again.");
+      isLoading.value = false;
+    }
+  } catch (error) {
+    console.error("Error initiating deposit:", error);
+    emitter.emit("showErrorMessage", "An error occurred. Please try again.");
+    isLoading.value = false;
   }
-  // if(currentUser.email){
-  // }else{
-  //   emitter.emit('showErrorMessage', 'Please complete your profile first!')
-  // }
 }
 
 onMounted(async () => {
@@ -210,6 +254,29 @@ onMounted(async () => {
 
   await getPayments();
   await checkForBonus();
+
+  // Load Payaza script
+  let script = document.createElement("script");
+  script.text = `
+    (function(a,b,c,d,e,f,g,h,i){
+      a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},
+      i.l=1*new Date,
+      i.o=f,
+      g=b.createElement(c),
+      h=b.getElementsByTagName(c)[0],
+      g.async=1,
+      g.src=d,
+      g.setAttribute("n",e),
+      h.parentNode.insertBefore(g,h))
+    })(window,document,"script","https://checkout.fidelity.payaza.africa/js/v1/bundle.js","PayazaCheckout");
+  `;
+  script.id = "payaza-checkout";
+  document.body.appendChild(script);
+});
+
+onUnmounted(() => {
+  // Clean up Payaza script
+  document.getElementById("payaza-checkout")?.remove();
 });
 </script>
 
