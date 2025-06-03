@@ -218,11 +218,13 @@ async function beginDeposit() {
           isLoading.value = false;
         }
       } else if (activeTab.value === 'sbengine') {
+        isDepositing.value = false
         emitter.emit('showDepositWithdrawalModal', {
           type: 'Deposit',
           code: res.data.transactionRef
         });
       } else {
+        isDepositing.value = false
         if (res.data.link === 'ACCEPTED') {
           window.location.href = '/';
         }  else if (!res.data.link.includes('http')) {
@@ -230,17 +232,16 @@ async function beginDeposit() {
         } else {
           window.location.href = res.data.link;
         }
-        isLoading.value = false;
       }
     } else {
       emitter.emit("showErrorMessage", res.message || "Failed to initiate deposit. Please try again.");
-      isLoading.value = false;
+      isDepositing.value = false
     }
-    isDepositing.value = false
+    
   } catch (error) {
     console.error("Error initiating deposit:", error);
     emitter.emit("showErrorMessage", "An error occurred. Please try again.");
-    isLoading.value = false;
+    isDepositing.value = false
   }
 }
 
