@@ -140,7 +140,7 @@
           </template>
 
           <!-- Providers Section -->
-          <div class="group">
+          <div class="group d-none">
             <div class="header d-flex justify-content-between align-items-center">
               <h1 class="h5 text-white fw-normal">Top Providers</h1>
               <span
