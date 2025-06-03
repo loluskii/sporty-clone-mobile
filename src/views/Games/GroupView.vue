@@ -14,7 +14,7 @@
         <div class="title-bg d-flex align-items-center">
           <span @click="goBack" class="m-icon m-icon--back mr-3"></span>
           <h3 class="h4 text-white fw-bold mb-0 text-capitalize">
-            {{ titleText }}
+            {{ viewHeaderTitle }}
           </h3>
         </div>
         <div class="games-containers" ref="myElement">
@@ -86,7 +86,7 @@ import {
   gamesByTopCategory,
   getProviders,
   getTopGameCategories,
-  getGames,
+  getCasinoBonusGames,
 } from "@/helpers";
 import { useAuthStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
@@ -97,6 +97,7 @@ import { useRouter, useRoute } from "vue-router";
 import Categories from "../../components/Casino/Categories.vue";
 import HeaderCasino from "../../components/HeaderCasino.vue";
 import GameCard from "@/components/Casino/GameCard.vue";
+import { useUsersStore } from "../../stores";
 
 const myElement = ref();
 const isLoading = ref(true);
@@ -111,6 +112,7 @@ const gamesList = ref([]);
 const categoryName = ref(null);
 const displayLimit = ref(50);
 const isLoadingMore = ref(false);
+const {currentUser} = useUsersStore()
 
 const activeSport = computed(() => {
   return utilsStore.activeSport;
@@ -157,6 +159,7 @@ watch(
         handleGamesByProviderView(providerName, gameProviderId);
         break;
       case "casino-bonus":
+      case "bonus-games":
         handleBonusGames(gameIds);
         break;
       case "casino-jackpots":
@@ -216,22 +219,20 @@ async function handleGamesByProviderView(name, id) {
   await handleGamesView(name, id, getGamesByProviders, "provider");
 }
 
-async function handleFilteredGamesView(title, gameIds) {
-  console.log(gameIds);
+async function handleFilteredGamesView(title) {
   viewMode.value = "games-list-view";
   viewHeaderTitle.value = title;
   categoryName.value = title;
-  const res = await getGames();
-  const gameIdSet = new Set(gameIds.split(","));
-  gamesList.value = res.data
-    ? res.data.filter((game) => gameIdSet.has(game.gameId))
-    : [];
+  const res = await getCasinoBonusGames(currentUser.id);
+  gamesList.value = Object.values(res.data);
+    // ? res.data.filter((game) => gameIdSet.has(game.gameId))
+    // : [];
   viewType.value = "category";
   isLoading.value = false;
 }
 
-async function handleBonusGames(gameIds) {
-  await handleFilteredGamesView("Bonus Games", gameIds);
+async function handleBonusGames() {
+  await handleFilteredGamesView("Bonus Games");
 }
 
 async function handleCasinoJackpots(gameIds) {
@@ -261,6 +262,7 @@ const loadMore = async () => {
 
 onMounted(() => {
   $("body").removeClass("no-scroll");
+  console.log('dfdf')
 });
 </script>
 

@@ -118,8 +118,7 @@ const setBalanceType = (type) => {
 const goToCasino = () => {
   emits("hide-dialogue");
   return router.push({
-    name: "casino-bonus",
-    query: { gameIds: props.data.bonus.gameId.join(",") },
+    name: "casino-bonus"
   });
 };
 

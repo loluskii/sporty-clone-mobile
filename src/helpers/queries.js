@@ -405,6 +405,10 @@ export const getGames = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/get-games`));
 };
 
+export const getCasinoBonusGames = async (userId) => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/bonus-games?clientId=${import.meta.env.VITE_CLIENT_ID}&userId=${userId}`));
+};
+
 export const getGamesBySearch = async (gameName) => {
   return parseData(
     fetchWrapper.get(
