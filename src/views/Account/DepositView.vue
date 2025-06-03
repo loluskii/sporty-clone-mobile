@@ -22,7 +22,7 @@
           style="transform: translateX(0%) translateZ(0px)"
         >
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
-            <img
+            <!-- <img
               src="@/assets/images/monnify.svg"
               v-show="activeTab == 'monnify'"
               alt=""
@@ -49,8 +49,8 @@
               alt=""
               style="height: 30px"
               srcset=""
-            />
-            <br /><br />
+            /> -->
+            <!-- <br /><br /> -->
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
@@ -196,8 +196,8 @@ async function beginDeposit() {
             ...payazaConfig,
             merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
             onClose: function () {
-              console.log("Payment window closed");
-              isLoading.value = false;
+              emitter.emit('showErrorMessage', 'Payment cancelled!');
+              isDepositing.value = false;
             },
             callback: function (response) {
               console.log("Payment response:", response);
@@ -236,6 +236,7 @@ async function beginDeposit() {
       emitter.emit("showErrorMessage", res.message || "Failed to initiate deposit. Please try again.");
       isLoading.value = false;
     }
+    isDepositing.value = false
   } catch (error) {
     console.error("Error initiating deposit:", error);
     emitter.emit("showErrorMessage", "An error occurred. Please try again.");
