@@ -84,8 +84,13 @@
                 class="col-6"
                 v-for="(game, index) in jackpotGames"
                 :key="index"
+                @click="redirectToGamePlay(game)"
               >
-                <Game :game="game" />
+                <GameCard
+                  :image="getImagePath(game)"
+                  :title="game.title"
+                  :type="game.type"
+                />
               </div>
             </div>
             <div v-else-if="!jackpotGames.length" class="no-data">
@@ -148,6 +153,7 @@ import Game from "@/components/Casino/Game.vue";
 import HeaderOther from "../../components/HeaderOther.vue";
 import { useRoute } from "vue-router";
 import { useUtilsStore } from "@/stores";
+import GameCard from "@/components/Casino/GameCard.vue";
 
 const route = useRoute();
 const gamesList = ref([]);
@@ -192,6 +198,35 @@ const showJackpot = (j) => {
   jackpotGames.value = gamesList.value
     ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.gameId))
     : [];
+};
+
+const getImagePath = (game) => {
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
+      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+    )}.png?alt=media`;
+  } catch (error) {
+    console.error("Error generating image path:", error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(
+      game.title,
+    )}`;
+  }
+};
+
+const redirectToGamePlay = async (game) => {
+  try {
+    if (!authStore.currentUser) {
+      authStore.returnUrl = "/Games";
+      return router.push({ name: "sign-in" });
+    }
+
+    await router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } catch (error) {
+    console.error("Error redirecting to game:", error);
+  }
 };
 
 onBeforeMount(async () => {
