@@ -10,12 +10,46 @@
         <Providers v-if="viewType === 'provider'" :providers="providers" />
         <Categories v-else :categories="categories" />
       </template>
-      <GameByProviderCategory
-        v-if="viewMode === 'games-list-view'"
-        :games="gamesList"
-        :titleText="categoryName"
-        :type="viewType"
-      />
+      <template v-if="viewMode === 'games-list-view'">
+        <div class="title-bg d-flex align-items-center">
+          <span @click="goBack" class="m-icon m-icon--back mr-3"></span>
+          <h3 class="h4 text-white fw-bold mb-0 text-capitalize">
+            {{ titleText }}
+          </h3>
+        </div>
+        <div class="games-containers" ref="myElement">
+          <div class="games-grid mt-3">
+            <div class="row row-cols-2 g-3 mb-3 pb-5">
+              <div
+                class="col h-100"
+                v-for="(game, index) in displayedGames"
+                :key="index"
+                @click="redirectToGamePlay(game)"
+              >
+                <div class="h-100">
+                  <GameCard
+                    :image="getImagePath(game)"
+                    :title="game.title"
+                    :type="game.type"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Load More section -->
+            <div class="load-more-container" v-if="hasMoreGames">
+              <div class="load-more-overlay"></div>
+              <button
+                class="btn btn-primary load-more-btn"
+                @click="loadMore"
+                :disabled="isLoadingMore"
+              >
+                {{ isLoadingMore ? "Loading..." : "Load More" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     <div
@@ -62,6 +96,7 @@ import $ from "jquery";
 import { useRouter, useRoute } from "vue-router";
 import Categories from "../../components/Casino/Categories.vue";
 import HeaderCasino from "../../components/HeaderCasino.vue";
+import GameCard from "@/components/Casino/GameCard.vue";
 
 const myElement = ref();
 const isLoading = ref(true);
@@ -74,11 +109,19 @@ const providers = ref([]);
 const categories = ref([]);
 const gamesList = ref([]);
 const categoryName = ref(null);
-
-// const filterQuery = ref()
+const displayLimit = ref(50);
+const isLoadingMore = ref(false);
 
 const activeSport = computed(() => {
   return utilsStore.activeSport;
+});
+
+const displayedGames = computed(() => {
+  return gamesList.value.slice(0, displayLimit.value);
+});
+
+const hasMoreGames = computed(() => {
+  return displayLimit.value < gamesList.value.length;
 });
 
 watch(
@@ -195,6 +238,27 @@ async function handleCasinoJackpots(gameIds) {
   await handleFilteredGamesView("Jackpot Games", gameIds);
 }
 
+const getImagePath = (game) => {
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
+      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+    )}.png?alt=media`;
+  } catch (error) {
+    console.error("Error generating image path:", error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(
+      game.title,
+    )}`;
+  }
+};
+
+const loadMore = async () => {
+  isLoadingMore.value = true;
+  // Simulate loading delay for better UX
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  displayLimit.value += 50;
+  isLoadingMore.value = false;
+};
+
 onMounted(() => {
   $("body").removeClass("no-scroll");
 });
@@ -254,7 +318,7 @@ onMounted(() => {
 .games-container {
   height: 100%;
   width: 100%;
-  padding: 15px 15px 60px 15px;
+  padding: 0 15px;
 }
 
 .head-top {
@@ -270,9 +334,30 @@ onMounted(() => {
 .games-grid {
   height: 100%;
   max-height: calc(100vh - (var(--distance-from-top) + 50px));
-  overflow: scroll !important;
+  overflow-y: auto;
   width: 100%;
-  padding: 0 15px;
+  padding-bottom: 100px; /* Add space for the load more section */
+}
+
+.games-grid .row {
+  margin: 0 -8px;
+}
+
+.games-grid .col {
+  padding: 0 8px;
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.games-grid .col > div {
+  width: 100%;
+}
+
+.title-bg {
+  padding: 15px;
+  margin-bottom: 0;
+  background-color: #121212;
+  border-bottom: 1px solid #333;
 }
 
 .game-group .group {
@@ -389,5 +474,57 @@ onMounted(() => {
   height: 30px;
   width: 100%;
   object-fit: cover;
+}
+
+.load-more-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: 20px;
+  z-index: 10;
+}
+
+.load-more-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.9) 70%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  pointer-events: none;
+}
+
+.load-more-btn {
+  position: relative;
+  z-index: 2;
+  min-width: 120px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  background-color: #2563eb;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.load-more-btn:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+  transform: none;
 }
 </style>

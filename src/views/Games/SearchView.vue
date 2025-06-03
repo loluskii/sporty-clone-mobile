@@ -52,12 +52,30 @@
             <div class="row mb-3 pb-3" ref="scrollComponent">
               <div
                 class="col-6"
-                v-for="(game, index) in searchResult"
+                v-for="(game, index) in displayedGames"
                 :key="index"
+                @click="redirectToGamePlay(game)"
               >
-                <Game :game="game" />
+                <GameCard
+                  :image="getImagePath(game)"
+                  :title="game.title"
+                  :type="game.type"
+                />
               </div>
             </div>
+
+            <!-- Load More section -->
+            <div class="load-more-container" v-if="hasMoreGames">
+              <div class="load-more-overlay"></div>
+              <button
+                class="btn btn-primary load-more-btn"
+                @click="loadMore"
+                :disabled="isLoadingMore"
+              >
+                {{ isLoadingMore ? "Loading..." : "Load More" }}
+              </button>
+            </div>
+
             <div class="divider mx-3 col-12">
               <hr />
             </div>
@@ -84,7 +102,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import $ from "jquery";
-import Game from "@/components/Casino/Game.vue";
+import GameCard from "@/components/Casino/GameCard.vue";
 
 const topGameCategories = ref([]);
 const gamesList = ref([]);
@@ -97,6 +115,16 @@ const isSearching = ref(false);
 const searchQuery = ref("");
 const myElement = ref(null);
 const searchResult = ref([]);
+const displayLimit = ref(12);
+const isLoadingMore = ref(false);
+
+const displayedGames = computed(() => {
+  return searchResult.value.slice(0, displayLimit.value);
+});
+
+const hasMoreGames = computed(() => {
+  return displayLimit.value < searchResult.value.length;
+});
 
 async function getCategories() {
   const response = await getTopGameCategories();
@@ -175,6 +203,43 @@ watch(isSearchMode, async (newVal) => {
     updateCSSVar();
   }
 });
+
+const getImagePath = (game) => {
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
+      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+    )}.png?alt=media`;
+  } catch (error) {
+    console.error("Error generating image path:", error);
+    return `https://placehold.co/150x175?text=${encodeURIComponent(
+      game.title,
+    )}`;
+  }
+};
+
+const redirectToGamePlay = async (game) => {
+  try {
+    if (!authStore.currentUser) {
+      authStore.returnUrl = "/Games";
+      return router.push({ name: "sign-in" });
+    }
+
+    await router.push({
+      name: "game-play",
+      params: { game_name: slugify(game.title), game_id: game.id },
+    });
+  } catch (error) {
+    console.error("Error redirecting to game:", error);
+  }
+};
+
+const loadMore = async () => {
+  isLoadingMore.value = true;
+  // Simulate loading delay for better UX
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  displayLimit.value += 12;
+  isLoadingMore.value = false;
+};
 </script>
 
 <style scoped>
@@ -313,5 +378,61 @@ watch(isSearchMode, async (newVal) => {
   width: 100%;
   height: 105px;
   object-fit: cover;
+}
+
+.load-more-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: 20px;
+  z-index: 10;
+}
+
+.load-more-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.9) 70%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  pointer-events: none;
+}
+
+.load-more-btn {
+  position: relative;
+  z-index: 2;
+  min-width: 120px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  background-color: #2563eb;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.load-more-btn:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.scroll-search-area {
+  padding-bottom: 100px; /* Add space for the load more section */
 }
 </style>

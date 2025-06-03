@@ -17,7 +17,7 @@
               class="x-icon-search"
               @click="$router.push({ name: 'search' })"
             ></span>
-            <span v-if="isAuthenticated" class="x-login-yes">
+            <span v-if="authStore.isAuthenticated" class="x-login-yes">
               <span class="x-btn-deposit">
                 <span
                   class="x-btn-text"
@@ -58,7 +58,7 @@ import { useAuthStore, useUsersStore } from "@/stores";
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useUtilsStore } from "../stores";
 
-const { isAuthenticated } = useAuthStore();
+const authStore = useAuthStore();
 const usersStore = useUsersStore();
 const { SportsbookGlobalVariable } = useUtilsStore();
 const myHeader = ref();
@@ -77,7 +77,7 @@ onMounted(() => {
   }
 
   // Load user data if authenticated
-  if (isAuthenticated) {
+  if (authStore.isAuthenticated) {
     usersStore.loadCurrentUser();
   }
 });

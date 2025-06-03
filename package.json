@@ -1,11 +1,11 @@
 {
   "name": "sportybetmobile2",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
-    "prebuild": "node scripts/update-version.js",
+    "generate-version-build": "node generate-version-build",
+    "build": "npm run generate-version-build && vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
