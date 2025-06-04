@@ -195,15 +195,15 @@ async function beginDeposit() {
           const payazaCheckout = PayazaCheckout.setup({
             ...payazaConfig,
             merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
-            onClose: function () {
-              emitter.emit('showErrorMessage', 'Payment cancelled!');
-              isDepositing.value = false;
-            },
+            // onClose: function () {
+            //   emitter.emit('showErrorMessage', 'Payment cancelled!');
+            //   isDepositing.value = false;
+            // },
             callback: function (response) {
               console.log("Payment response:", response);
-              if (response.status === 'success') {
-                emitter.emit('showSuccessMessage', 'Payment successful!');
-                router.push({ name: 'account' });
+              if (response.type === 'success') {
+                // emitter.emit('showSuccessMessage', 'Payment successful!');
+                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${response.data.payaza_reference}`
               } else {
                 emitter.emit('showErrorMessage', response.message || 'Payment failed. Please try again.');
               }

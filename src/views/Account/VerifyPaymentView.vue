@@ -45,6 +45,10 @@ watch(
       ref = route.query.reference;
     }
 
+    if (method === "fidelity") {
+      ref = route.query.txnRef;
+    }
+
     await verifyPaymentRef(method, ref);
   },
   { immediate: true },
@@ -55,19 +59,24 @@ const bonus = computed(() => {
 });
 
 async function verifyPaymentRef(method, ref) {
-  console.log(method, ref);
-  isLoading.value = true;
-  const res = await verifyDeposit(method, ref);
-  isLoading.value = false;
-  if (res.success) {
-    isPaymentSuccess.value = true;
-    if (bonus.value) {
-      await awardBonus(bonus.value).then((res) => {
-        usersStore.setActiveBonus(null);
-      });
+  try{
+    isLoading.value = true;
+    const res = await verifyDeposit(method, ref);
+    isLoading.value = false;
+    if (res.success) {
+      isPaymentSuccess.value = true;
+      if (bonus.value) {
+        await awardBonus(bonus.value).then((res) => {
+          usersStore.setActiveBonus(null);
+        });
+      }
+      router.push({ name: "account-transactions" });
+    } else {
+      isPaymentFail.value = true;
     }
-    router.push({ name: "account-transactions" });
-  } else {
+    isLoading.value = false;
+  }catch(error){
+    isLoading.value = false;
     isPaymentFail.value = true;
   }
 }
