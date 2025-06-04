@@ -1,14 +1,37 @@
 <template>
   <div id="withdraw">
-    <template v-if="!withdrawalSuccess">
-      <HeaderOther :header-title="'Withdraw'"></HeaderOther>
+    <HeaderOther :header-title="'Withdraw'"></HeaderOther>
+    <template v-if="!withdrawalSuccess && !transferSuccess && !cashWithdrawalSuccess">
       <div>
         <div class="m-tabs m-tabs-no-animation">
+          <div class="wrapper-parent">
+            <div class="tabs--wrapper" style="overflow: hidden">
+              <div
+                class="m-tabs-nav flex-nav"
+                style="
+                  transform: translate(0px, 0px);
+                  transition-duration: 0s;
+                  transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                  width: 100%;
+                "
+              >
+                <div
+                  v-for="method in withdrawalMethods"
+                  :key="method.key"
+                  class="m-tabs-tab"
+                  :class="{ 'm-tabs-tab-active': activeMethod === method.key }"
+                  @click="activeMethod = method.key"
+                >
+                  {{ method.name }}
+                </div>
+              </div>
+            </div>
+          </div>
           <div
             class="m-tabs-content"
             style="transform: translateX(0%) translateZ(0px)"
           >
-            <div>
+            <div v-if="activeMethod === 'bank'" class="bank-section">
               <form data-op="withdraw-bank-form">
                 <div class="withdraw-bank">
                   <div @click="toggleShowBanks" class="withdraw-bank-static">
@@ -294,15 +317,141 @@
                 </div>
               </div>
             </div>
+            <div v-else-if="activeMethod === 'transfer'" class="transfer-section">
+              <div style="padding: 1.3rem">
+                <div class="balance-container mb-3">
+                  <p class="balance-text">
+                    <span data-cms-key="balance">Balance</span>
+                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                  </p>
+                  <div class="withdrawable-text-wrapper">
+                    <i class="m-icon-help"></i>
+                    <p>
+                      <span>Withdrawable Balance </span>
+                      <span>SSP {{ userStore.balance }}</span>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="withdraw-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend mb-3"
+                  :class="transferError ? 'm-input-wap-wrapper--error' : ''"
+                >
+                  <input
+                    type="number"
+                    v-model="transferReceiver"
+                    name=""
+                    placeholder="Username"
+                    class="m-input-wap"
+                  />
+                </div>
+                <div
+                  class="withdraw-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend mb-3"
+                  :class="transferError ? 'm-input-wap-wrapper--error' : ''"
+                >
+                  <div class="m-input-wap-prepend m-input-wap-prepend--default">
+                    <span class="amount-prepend"
+                      ><span>Amount</span>
+                      (SSP)
+                    </span>
+                  </div>
+                  <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+                  <input
+                    type="number"
+                    v-model="transferAmount"
+                    name=""
+                    placeholder="min. 1"
+                    class="m-input-wap"
+                  />
+                </div>
+                <div
+                  class="withdraw-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend mb-3"
+                  :class="transferError ? 'm-input-wap-wrapper--error' : ''"
+                >
+                  <input
+                    type="password"
+                    v-model="transferPin"
+                    name=""
+                    placeholder="Withdrawal PIN"
+                    class="m-input-wap"
+                  />
+                </div>
+                <div class="error-msg">{{ transferErrorMessage }}</div>
+                <button
+                  class="af-button withdraw-submit af-button--primary"
+                  :class="buttonLoader ? 'is-disabled' : ''"
+                  @click.prevent="submitTransferRequest"
+                  :disabled="buttonLoader"
+                >
+                  <span
+                    ><span> {{ buttonLoader ? 'Processing...' : 'Continue' }} </span></span
+                  >
+                </button>
+              </div>
+            </div>
+            <div v-else-if="activeMethod === 'shop'" class="transfer-section">
+              <div style="padding: 1.3rem">
+                <div class="balance-container mb-3">
+                  <p class="balance-text">
+                    <span data-cms-key="balance">Balance</span>
+                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                  </p>
+                  <div class="withdrawable-text-wrapper">
+                    <i class="m-icon-help"></i>
+                    <p>
+                      <span>Withdrawable Balance </span>
+                      <span>SSP {{ userStore.balance }}</span>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="withdraw-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend mb-3"
+                  :class="cashRequestError ? 'm-input-wap-wrapper--error' : ''"
+                >
+                  <div class="m-input-wap-prepend m-input-wap-prepend--default">
+                    <span class="amount-prepend"
+                      ><span>Amount</span>
+                      (SSP)
+                    </span>
+                  </div>
+                  <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+                  <input
+                    type="number"
+                    v-model="cashWithdrawalAmount"
+                    name=""
+                    placeholder="min. 1"
+                    class="m-input-wap text-right"
+                  />
+                </div>
+                <div class="error-msg">{{ cashRequestErrorMessage }}</div>
+                <button
+                  class="af-button withdraw-submit af-button--primary"
+                  :class="buttonLoader ? 'is-disabled' : ''"
+                  @click.prevent="submitCashRequest"
+                  :disabled="buttonLoader"
+                >
+                  <span
+                    ><span> {{ buttonLoader ? 'Processing...' : 'Continue' }} </span></span
+                  >
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <div id="withdraw-banner-container"><img src="" /></div>
       </div>
     </template>
     <WithdrawalSuccess
-      v-else
+      v-if="withdrawalSuccess"
       :user-data="withdrawalSuccessData"
     ></WithdrawalSuccess>
+    <TransferSuccess
+      v-if="transferSuccess"
+      :user-data="{ amount: transferAmount, receiver: transferReceiver }"
+    ></TransferSuccess>
+    <CashWithdrawalSuccess
+      v-if="cashWithdrawalSuccess"
+      :user-data="cashWithdrawalSuccessData"
+    ></CashWithdrawalSuccess>
   </div>
 </template>
 
@@ -317,6 +466,8 @@ import {
   withdrawalRequest,
   fetchBankAssets,
 } from "@/helpers";
+import TransferSuccess from '@/components/Withdrawal/TransferSuccess.vue'
+import CashWithdrawalSuccess from '@/components/Withdrawal/CashWithdrawalSuccess.vue'
 import { ref, onMounted, computed } from "vue";
 import emitter from "@/plugins/emitter";
 import { useRouter } from "vue-router";
@@ -327,7 +478,12 @@ const showBanksAssets = ref(false);
 const usersStore = useUsersStore();
 const { SportsbookGlobalVariable } = useUtilsStore()
 const router = useRouter();
-
+const withdrawalMethods = [
+  { name: 'Bank Transfer', key: 'bank' },
+  { name: 'Shop', key: 'shop' },
+  { name: 'Transfer to Friend', key: 'transfer' }
+]
+const activeMethod = ref('bank')
 const banksList = ref([]);
 const bankAssets = ref([]);
 const selectedBank = ref(null);
@@ -336,8 +492,22 @@ const withdrawalAmount = ref();
 const isLoading = ref(false);
 const buttonLoader = ref(false);
 
+const transferReceiver = ref('')
+const transferAmount = ref(0)
+const transferPin = ref('')
+const transferError = ref(false)
+
+const transferErrorMessage = ref('')
+const transferSuccess = ref(false)
+
 const withdrawalSuccess = ref(false);
 const withdrawalSuccessData = ref({});
+
+const cashWithdrawalAmount = ref(0)
+const cashWithdrawalSuccess = ref(false)
+const cashWithdrawalSuccessData = ref({})
+const cashRequestError = ref(false)
+const cashRequestErrorMessage = ref('')
 
 const accountError = ref(false);
 const accountErrorMessage = ref("");
@@ -479,6 +649,48 @@ async function checkUserBankAssets() {
     console.log(err);
   }
 }
+
+async function submitTransferRequest() {
+  buttonLoader.value = true
+  let payload = {
+    pin: transferPin.value,
+    toUsername: transferReceiver.value,
+    amount: transferAmount.value
+  }
+  const res = await transferRequest(payload)
+  buttonLoader.value = false
+
+  if (res.success) {
+    transferSuccess.value = true
+  } else {
+    transferError.value = true
+    transferErrorMessage.value = res.message
+  }
+}
+
+async function submitCashRequest() {
+  let payload = {
+    amount: cashWithdrawalAmount.value.toString(),
+    clientId: CLIENT_ID,
+    type: 'cash'
+  }
+  buttonLoader.value = true
+  try {
+    const res = await withdrawalRequest(payload)
+    buttonLoader.value = false
+    if (res.success) {
+      cashWithdrawalSuccessData.value = { amount: payload.amount, withdrawalCode: res.data.code }
+      cashWithdrawalSuccess.value = true
+    } else {
+      cashRequestError.value = true
+      cashRequestErrorMessage.value = res.message
+    }
+  } catch (error) {
+    cashRequestError.value = true
+    cashRequestErrorMessage.value = 'An Error Occured'
+  }
+}
+
 onMounted(async () => {
   emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
   if (!usersStore.currentUser) {
@@ -592,6 +804,7 @@ onMounted(async () => {
 #withdraw .m-tabs-nav .m-tabs-tab.m-tabs-tab-active {
   color: #353a45;
   color: var(--text-type1-primary);
+  border-bottom: 2px solid var(--brand-secondary);
 }
 #withdraw .error-msg {
   color: #e41827;

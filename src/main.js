@@ -62,8 +62,8 @@ const startApp = async () => {
     app.use(Vue3Marquee);
 
     // Lazy load components
-    app.component("v-otp-input", () => import("vue3-otp-input"));
-    app.component("VueDatePicker", () => import("@vuepic/vue-datepicker"));
+    app.component("v-otp-input", VOtpInput);
+    app.component("VueDatePicker", VueDatePicker);
 
     // Performance mark for app initialization
     performanceMetrics.mark("appInit");

@@ -22,7 +22,7 @@
           style="transform: translateX(0%) translateZ(0px)"
         >
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
-            <img
+            <!-- <img
               src="@/assets/images/monnify.svg"
               v-show="activeTab == 'monnify'"
               alt=""
@@ -49,8 +49,8 @@
               alt=""
               style="height: 30px"
               srcset=""
-            />
-            <br /><br />
+            /> -->
+            <!-- <br /><br /> -->
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
@@ -96,7 +96,7 @@
             </button>
             <button
               class="af-button deposit-submit af-button--primary"
-              :class="amount == '' || isLoading ? ' is-disabled' : ''"
+              :class="amount == '' || isDepositing ? ' is-disabled' : ''"
               @click.prevent="beginDeposit"
             >
               <span><span> Top Up Now </span></span>
@@ -133,6 +133,7 @@ const router = useRouter();
 const amount = ref("");
 const isLoading = ref(false);
 const availableBonus = ref(null);
+const isDepositing = ref(false)
 
 const usersStore = useUsersStore();
 
@@ -178,7 +179,7 @@ function activateBonus() {
 }
 
 async function beginDeposit() {
-  isLoading.value = true;
+  isDepositing.value = true;
   try {
     const payload = {
       amount: amount.value,
@@ -194,15 +195,15 @@ async function beginDeposit() {
           const payazaCheckout = PayazaCheckout.setup({
             ...payazaConfig,
             merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
-            onClose: function () {
-              console.log("Payment window closed");
-              isLoading.value = false;
-            },
+            // onClose: function () {
+            //   emitter.emit('showErrorMessage', 'Payment cancelled!');
+            //   isDepositing.value = false;
+            // },
             callback: function (response) {
               console.log("Payment response:", response);
-              if (response.status === 'success') {
-                emitter.emit('showSuccessMessage', 'Payment successful!');
-                router.push({ name: 'account' });
+              if (response.type === 'success') {
+                // emitter.emit('showSuccessMessage', 'Payment successful!');
+                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${res.data.transactionRef}`
               } else {
                 emitter.emit('showErrorMessage', response.message || 'Payment failed. Please try again.');
               }
@@ -217,11 +218,13 @@ async function beginDeposit() {
           isLoading.value = false;
         }
       } else if (activeTab.value === 'sbengine') {
+        isDepositing.value = false
         emitter.emit('showDepositWithdrawalModal', {
           type: 'Deposit',
           code: res.data.transactionRef
         });
       } else {
+        isDepositing.value = false
         if (res.data.link === 'ACCEPTED') {
           window.location.href = '/';
         }  else if (!res.data.link.includes('http')) {
@@ -229,16 +232,16 @@ async function beginDeposit() {
         } else {
           window.location.href = res.data.link;
         }
-        isLoading.value = false;
       }
     } else {
       emitter.emit("showErrorMessage", res.message || "Failed to initiate deposit. Please try again.");
-      isLoading.value = false;
+      isDepositing.value = false
     }
+    
   } catch (error) {
     console.error("Error initiating deposit:", error);
     emitter.emit("showErrorMessage", "An error occurred. Please try again.");
-    isLoading.value = false;
+    isDepositing.value = false
   }
 }
 
