@@ -203,7 +203,7 @@ async function beginDeposit() {
               console.log("Payment response:", response);
               if (response.type === 'success') {
                 // emitter.emit('showSuccessMessage', 'Payment successful!');
-                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${response.data.payaza_reference}`
+                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${res.data.transactionRef}`
               } else {
                 emitter.emit('showErrorMessage', response.message || 'Payment failed. Please try again.');
               }
