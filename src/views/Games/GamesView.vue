@@ -22,6 +22,20 @@
             />
             <span>Discover</span>
           </div>
+          <div
+            class="category"
+            :class="activeTopCategory?.id === 'bonus' ? 'active' : ''"
+            @click="getBonusGames()"
+            id="bonus_games"
+          >
+            <img
+              src="@/assets/images/casino/bonus.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>Bonus Games</span>
+          </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
@@ -41,28 +55,7 @@
           </template>
         </div>
       </div>
-      <!-- <div
-        class="game-provider"
-        @click="$router.push({ name: 'casino-providers' })"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="25"
-          height="25"
-          viewBox="0 0 25 25"
-          fill="none"
-          stroke="#f2f2f2"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-gem icon providers"
-        >
-          <path d="M6 3h12l4 6-10 13L2 9Z" />
-          <path d="M11 3 8 9l4 13 4-13-3-6" />
-          <path d="M2 9h20" />
-        </svg>
-        <span class="pl-2">Providers</span>
-      </div> -->
+
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div
           v-if="currentView === 'grouped_category'"
@@ -284,7 +277,7 @@
           <div class="category" v-for="i in 4" :key="i"></div>
         </div>
       </div>
-      <div class="game-provider"></div>
+      <!-- <div class="game-provider"></div> -->
       <div class="games-grid mt-3">
         <div class="grouped-games-section">
           <div v-for="x in 3" :key="x" class="group">
@@ -293,7 +286,13 @@
               <div class="placeholder" style="width: 80px; height: 24px"></div>
             </div>
             <div class="grid-container">
-              <div class="placeholder" v-for="i in 4" :key="i" style="width: 150px; height: 200px"></div>
+              <div
+                class=""
+                v-for="i in 2"
+                :key="i"
+              >
+                <GameCard loading />
+              </div>
             </div>
           </div>
         </div>
@@ -329,6 +328,7 @@ import { getJackpots, slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import { useRoute } from "vue-router";
 import GameCard from "@/components/Casino/GameCard.vue";
+import { getCasinoBonusGames } from "@/helpers";
 
 const topGameCategories = ref([]);
 const gamesList = ref({});
@@ -441,6 +441,7 @@ async function getCategories() {
 async function getGameByTopCategory(category) {
   singleCategoryLoading.value = true;
   errorState.value.gamesError = false;
+  gamesList.value = []; // Clear the list to show loading state
 
   try {
     if (category) {
@@ -565,6 +566,32 @@ const getProviderImage = (provider) => {
     return `https://placehold.co/200x112?text=${encodeURIComponent(provider.name)}`;
   }
 };
+
+async function getBonusGames() {
+  singleCategoryLoading.value = true;
+  errorState.value.gamesError = false;
+  gamesList.value = []; // Clear the list to show loading state
+
+  try {
+    const element = document.getElementById("bonus_games");
+    element?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+
+    currentView.value = "single_category";
+    activeTopCategory.value = { id: 'bonus', name: 'Bonus Games' };
+    
+    const res = await getCasinoBonusGames(userStore.currentUser.id);
+    gamesList.value = Object.values(res.data) || [];
+  } catch (error) {
+    console.error("Error fetching bonus games:", error);
+    errorState.value.gamesError = true;
+  } finally {
+    singleCategoryLoading.value = false;
+  }
+}
 
 onBeforeMount(async () => {
   Promise.all([getJK(), getCategories(), getTopProviders()]);
@@ -785,8 +812,8 @@ onBeforeMount(async () => {
 .placeholder-glow .category {
   background-color: #2c2c2c;
   border-radius: 10px;
-  height: 80px;
-  width: 120px;
+  height: 60px;
+  width: 80px;
   margin-right: 10px;
 }
 
