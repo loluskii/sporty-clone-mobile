@@ -4,7 +4,7 @@
     <div class="es-dialog m-dialog">
       <div class="es-dialog-body m-dialog-body">
         <div
-          v-if="route.name === 'casino-bonus'"
+          v-if="route.name === 'casino-bonus' || route.name === 'bonus-games'"
           class="es-dialog-main m-dialog-main"
           style="height: auto; color: white"
         >

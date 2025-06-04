@@ -257,6 +257,7 @@ const getImagePath = (game) => {
 async function redirectToGamePlay(game) {
   utilsStore.previousRoute = route.fullPath;
   const gameIsBonus = activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)
+  // console.log(gameIsBonus)
   if (userStore.currentUser) {
     if (route.name !== "casino-bonus" && route.name !== "bonus-games") {
       if(gameIsBonus){
@@ -274,13 +275,20 @@ async function redirectToGamePlay(game) {
         });
       }
     } else {
-      return router.push({
-        name: "game-play",
-        params: {
-          game_name: slugify(game.title),
-          game_id: game.id,
-        },
-      });
+      if(gameIsBonus){
+        emitter.emit("showCasinoDialog", {
+          bonus: activeBonus.value,
+          game: game,
+        });
+      } else {
+        return router.push({
+          name: "game-play",
+          params: {
+            game_name: slugify(game.title),
+            game_id: game.id,
+          },
+        });
+      }
     }
   } else {
     authStore.returnUrl = route.fullPath;
