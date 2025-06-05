@@ -21,6 +21,7 @@ import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
 import { useUsersStore } from "./stores";
+
 import HandleCache from '@/components/HandleCache.vue';
 const cacheBuster = ref();
 
@@ -44,6 +45,10 @@ const mqttClient = ref(false);
 const bookBetModalShown = ref(false);
 const bookBetResponse = ref(null);
 const casinoGameData = ref(null);
+const depositWithdrawalShown = ref(false)
+const depositWithdrawalData = ref(null)
+const depositWithdrawalType = ref('')
+
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -86,6 +91,13 @@ function showToaster(data) {
   dialogueShown.value = true;
   dialogueMessage.value = data;
   dialogueType.value = "toaster";
+}
+
+function showDepositWithdrawal(data) {
+  document.getElementById('body').classList.add('no-scroll')
+  depositWithdrawalShown.value = true
+  depositWithdrawalData.value = data
+  depositWithdrawalType.value = data.type
 }
 
 async function loadBet(code) {
@@ -151,6 +163,13 @@ function toggleBookBetModal(data) {
 function handleCustomDatePicker(data) {
   // console.log(data)
   emitter.emit("dateRangeSet", data);
+}
+
+function hideModal() {
+  depositWithdrawalShown.value = false
+  depositWithdrawalData.value = null
+  depositWithdrawalType.value = ''
+  document.getElementById('body').classList.remove('no-scroll')
 }
 
 async function validateSelections() {
@@ -257,6 +276,7 @@ onMounted(async () => {
   emitter.on("showCasinoDialog", showCasinoDialog);
   emitter.on("showCustomDatePicker", toggleDatePicker);
   emitter.on("showBookBetModal", toggleBookBetModal);
+  emitter.on('showDepositWithdrawalModal', showDepositWithdrawal);
 });
 
 defineComponent({
@@ -268,7 +288,21 @@ defineComponent({
 <template>
   <HandleCache ref="cacheBuster">
     <template v-slot="{ isLoading, isLatestVersionAvailable }">
-      <h1 v-if="isLoading">Loading...</h1>
+      <template v-if="isLoading">
+        <transition name="move">
+          <div class="loading-overlay">
+            <div class="loading-spinner">
+              <img
+                src="@/assets/images/logo.png"
+                class="scaling-image"
+                style="height: 60px; margin-bottom: 20px"
+                alt="logo"
+              />
+              <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
+            </div>
+          </div>
+        </transition>
+      </template>
       <template v-else-if="isLatestVersionAvailable">
         <div class="page-content page-content--ng">
           <!-- Main content -->

@@ -22,6 +22,20 @@
             />
             <span>Discover</span>
           </div>
+          <div
+            class="category"
+            :class="activeTopCategory?.id === 'bonus' ? 'active' : ''"
+            @click="getBonusGames()"
+            id="bonus_games"
+          >
+            <img
+              src="@/assets/images/casino/bonus.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>Bonus Games</span>
+          </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
@@ -41,35 +55,13 @@
           </template>
         </div>
       </div>
-      <div
-        class="game-provider"
-        @click="$router.push({ name: 'casino-providers' })"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="25"
-          height="25"
-          viewBox="0 0 25 25"
-          fill="none"
-          stroke="#f2f2f2"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-gem icon providers"
-        >
-          <path d="M6 3h12l4 6-10 13L2 9Z" />
-          <path d="M11 3 8 9l4 13 4-13-3-6" />
-          <path d="M2 9h20" />
-        </svg>
-        <span class="pl-2">Providers</span>
-      </div>
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div
           v-if="currentView === 'grouped_category'"
           class="grouped-games-section"
         >
           <!-- Jackpots -->
-          <template v-if="jackpots">
+          <!-- <template v-if="jackpots">
             <div
               class="header d-flex justify-content-between align-items-center"
             >
@@ -81,14 +73,18 @@
               </span>
             </div>
             <Jackpots :jackpots="jackpots" :games="gamesList"></Jackpots>
-          </template>
+          </template> -->
           <!-- Jackpots -->
 
-          <template v-for="(top, index) in topGameCategories" :key="index">
-            <div class="group" v-if="top.priority >= 0">
-              <div
-                class="header d-flex justify-content-between align-items-center"
-              >
+          <!-- First two categories -->
+          <template v-for="(top, index) in topGameCategories.slice(0, 2)" :key="index">
+            <div 
+              class="group" 
+              v-if="top.priority >= 0" 
+              :data-category-id="top.id"
+              v-intersection="handleIntersection"
+            >
+              <div class="header d-flex justify-content-between align-items-center">
                 <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
                 <span
                   class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
@@ -96,46 +92,136 @@
                   >Show More
                 </span>
               </div>
-              <template v-if="top.games.length && !top.isLoading">
+              <template v-if="gamesList[top.id] && gamesList[top.id].length">
                 <div class="grid-container mb-3 pb-3" ref="scrollComponent">
                   <div
-                    class="card bg-dark rounded-3 shadow"
-                    style="width: 150px"
-                    @click="redirectToGamePlay(game)"
-                    v-for="(game, index) in top.games"
+                    class=""
+                    v-for="(game, index) in gamesList[top.id]"
                     :key="index"
+                    @click="redirectToGamePlay(game)"
                   >
-                    <img
-                      :src="getImagePath(game)"
-                      class="card-img-top"
-                      alt="..."
-                      @error="handleImageError($event, game)"
+                    <GameCard
+                      :image="getImagePath(game)"
+                      :title="game.title"
+                      :type="game.type"
                     />
-                    <div class="card-body d-flex flex-column p-2">
-                      <div
-                        class="text-truncate fw-bold"
-                        style="
-                          max-width: 150px;
-                          color: var(--brand-highlight-text);
-                        "
-                      >
-                        {{ game.title }}
-                      </div>
-                      <div class="text-muted">{{ game.type }}</div>
-                    </div>
                   </div>
                 </div>
               </template>
-              <div
-                v-else-if="!top.isLoading && !top.games.length"
-                class="no-data"
-              >
-                <div style="white-space: pre-line">
-                  Sorry, there are no games currently<br />available in this
-                  category. Please try later.<br />Thank you.
+              <template v-else-if="!gamesList[top.id]">
+                <div class="grid-container mb-3 pb-3">
+                  <div
+                    class=""
+                    v-for="i in 4"
+                    :key="i"
+                  >
+                    <GameCard loading />
+                  </div>
+                </div>
+              </template>
+              <div v-else class="no-data">
+                <div class="text-center py-4">
+                  <i class="x-icon-game text-muted mb-3" style="font-size: 2rem;"></i>
+                  <div class="text-muted" style="white-space: pre-line">
+                    Sorry, there are no games currently<br />available in this
+                    category. Please try later.<br />Thank you.
+                  </div>
                 </div>
               </div>
-              <LoadingSpinner v-else></LoadingSpinner>
+            </div>
+          </template>
+
+          <!-- Providers Section -->
+          <div class="group d-none">
+            <div class="header d-flex justify-content-between align-items-center">
+              <h1 class="h5 text-white fw-normal">Top Providers</h1>
+              <span
+                @click="$router.push({ name: 'casino-providers' })"
+                class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+                >Show More
+              </span>
+            </div>
+            <div class="providers-container mb-3 pb-3">
+              <div
+                class="provider-card"
+                v-for="(provider, index) in providers"
+                :key="index"
+                @click="$router.push({ 
+                  name: 'games-by-provider', 
+                  params: { provider: slugify(provider.name) },
+                  query: { providerId: provider.id }
+                })"
+              >
+                <div class="provider-image">
+                  <img :src="getProviderImage(provider)" :alt="provider.name" />
+                </div>
+                <div class="provider-info">
+                  <div class="provider-name">{{ provider.name }}</div>
+                  <div class="provider-type">{{ provider.type || 'Casino' }}</div>
+                </div>
+              </div>
+              <div v-if="isLoadingProviders" class="provider-card" v-for="i in 5" :key="i">
+                <div class="provider-image placeholder"></div>
+                <div class="provider-info">
+                  <div class="provider-name placeholder"></div>
+                  <div class="provider-type placeholder"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remaining categories -->
+          <template v-for="(top, index) in topGameCategories.slice(2)" :key="index">
+            <div 
+              class="group" 
+              v-if="top.priority >= 0" 
+              :data-category-id="top.id"
+              v-intersection="handleIntersection"
+            >
+              <div class="header d-flex justify-content-between align-items-center">
+                <h1 class="h5 text-white fw-normal">{{ top.name }}</h1>
+                <span
+                  class="text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
+                  @click="showMore(top)"
+                  >Show More
+                </span>
+              </div>
+              <template v-if="gamesList[top.id] && gamesList[top.id].length">
+                <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+                  <div
+                    class=""
+                    v-for="(game, index) in gamesList[top.id]"
+                    :key="index"
+                    @click="redirectToGamePlay(game)"
+                  >
+                    <GameCard
+                      :image="getImagePath(game)"
+                      :title="game.title"
+                      :type="game.type"
+                    />
+                  </div>
+                </div>
+              </template>
+              <template v-else-if="!gamesList[top.id]">
+                <div class="grid-container mb-3 pb-3">
+                  <div
+                    class=""
+                    v-for="i in 4"
+                    :key="i"
+                  >
+                    <GameCard loading />
+                  </div>
+                </div>
+              </template>
+              <div v-else class="no-data">
+                <div class="text-center py-4">
+                  <i class="x-icon-game text-muted mb-3" style="font-size: 2rem;"></i>
+                  <div class="text-muted" style="white-space: pre-line">
+                    Sorry, there are no games currently<br />available in this
+                    category. Please try later.<br />Thank you.
+                  </div>
+                </div>
+              </div>
             </div>
           </template>
         </div>
@@ -152,16 +238,21 @@
               </h1>
             </div>
             <div
-              class="row mb-3 pb-3"
+              class="grid-container mb-3 pb-3"
               v-if="gamesList.length"
               ref="scrollComponent"
             >
               <div
-                class="col-6"
+                class=""
                 v-for="(game, index) in gamesList"
                 :key="index"
+                @click="redirectToGamePlay(game)"
               >
-                <Game :game="game" />
+                <GameCard
+                  :image="getImagePath(game)"
+                  :title="game.title"
+                  :type="game.type"
+                />
               </div>
             </div>
             <div
@@ -182,36 +273,25 @@
     <div v-else class="games-container placeholder-glow">
       <div class="head-top d-flex align-items-center">
         <div class="categories-list">
-          <div class="category px-5 py-4 placeholder" id="discover"></div>
-          <div class="category px-5 py-4 placeholder" id="discover"></div>
-          <div class="category px-5 py-4 placeholder" id="discover"></div>
-          <div class="category px-5 py-4 placeholder" id="discover"></div>
+          <div class="category" v-for="i in 4" :key="i"></div>
         </div>
       </div>
-      <div class="game-provider placeholder p-4 rounded"></div>
+      <!-- <div class="game-provider"></div> -->
       <div class="games-grid mt-3">
         <div class="grouped-games-section">
-          <div v-for="x in 4" :key="x" class="group">
-            <div
-              class="header d-flex justify-content-between align-items-center"
-            >
-              <h1
-                class="fw-normal placeholder h4 p-2 rounded"
-                style="width: 50px"
-              ></h1>
-              <span
-                style="width: 50px"
-                class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
-              >
-              </span>
+          <div v-for="x in 3" :key="x" class="group">
+            <div class="header d-flex justify-content-between align-items-center">
+              <div class="placeholder h4" style="width: 120px"></div>
+              <div class="placeholder" style="width: 80px; height: 24px"></div>
             </div>
-            <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+            <div class="grid-container">
               <div
-                class="card bg-dark rounded-3 placeholder"
-                v-for="i in 3"
+                class=""
+                v-for="i in 2"
                 :key="i"
-                style="width: 150px"
-              ></div>
+              >
+                <GameCard loading />
+              </div>
             </div>
           </div>
         </div>
@@ -238,17 +318,19 @@ import {
   getTopGameCategories,
   gamesByTopCategory,
   getJackpotWinners,
+  getProviders,
 } from "@/helpers";
 import router from "@/router";
 import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { getJackpots, slugify } from "@/helpers";
 import emitter from "@/plugins/emitter";
-import Game from "@/components/Casino/Game.vue";
 import { useRoute } from "vue-router";
+import GameCard from "@/components/Casino/GameCard.vue";
+import { getCasinoBonusGames } from "@/helpers";
 
 const topGameCategories = ref([]);
-const gamesList = ref([]);
+const gamesList = ref({});
 const activeTopCategory = ref(null);
 const scrollComponent = ref(null);
 const authStore = useAuthStore();
@@ -266,6 +348,39 @@ const errorState = ref({
   gamesError: false,
   jackpotsError: false,
 });
+const providers = ref([]);
+const isLoadingProviders = ref(false);
+
+// Intersection Observer directive
+const vIntersection = {
+  mounted: (el, binding) => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          binding.value(entry.target);
+        }
+      });
+    });
+    observer.observe(el);
+  }
+};
+
+const handleIntersection = async (element) => {
+  const categoryId = element.getAttribute('data-category-id');
+  if (categoryId && !gamesList.value[categoryId]) {
+    await loadGamesForCategory(categoryId);
+  }
+};
+
+const loadGamesForCategory = async (categoryId) => {
+  try {
+    const response = await gamesByTopCategory(categoryId);
+    gamesList.value[categoryId] = response.data?.slice(0, 12).sort((a, b) => b.priority - a.priority) || [];
+  } catch (error) {
+    console.error(`Error loading games for category ${categoryId}:`, error);
+    gamesList.value[categoryId] = [];
+  }
+};
 
 const getImageSrc = (prov) => {
   try {
@@ -302,36 +417,18 @@ async function getCategories() {
     const response = await getTopGameCategories();
     const categories = response.data;
 
-    const data = await Promise.all(
-      categories.map(async (category) => {
-        if (!category.slug) {
-          return { ...category, games: [], isLoading: false };
-        }
+    topGameCategories.value = categories
+      .map(category => ({
+        ...category,
+        isLoading: false,
+        hasError: false
+      }))
+      .sort((a, b) => b.priority - a.priority);
 
-        try {
-          const gamesResponse = await gamesByTopCategory(category.id);
-          return {
-            ...category,
-            games:
-              gamesResponse.data
-                ?.slice(0, 12)
-                .sort((a, b) => b.priority - a.priority) || [],
-            isLoading: false,
-            hasError: false,
-          };
-        } catch (error) {
-          console.error(`Error fetching games for ${category.name}:`, error);
-          return {
-            ...category,
-            games: [],
-            isLoading: false,
-            hasError: true,
-          };
-        }
-      }),
-    );
-
-    topGameCategories.value = data.sort((a, b) => b.priority - a.priority);
+    // Load first category immediately
+    if (topGameCategories.value.length > 0) {
+      await loadGamesForCategory(topGameCategories.value[0].id);
+    }
   } catch (error) {
     console.error("Error fetching categories:", error);
     errorState.value.categoriesError = true;
@@ -343,6 +440,7 @@ async function getCategories() {
 async function getGameByTopCategory(category) {
   singleCategoryLoading.value = true;
   errorState.value.gamesError = false;
+  gamesList.value = []; // Clear the list to show loading state
 
   try {
     if (category) {
@@ -443,8 +541,59 @@ const updateCSSVar = () => {
   }
 };
 
+const getTopProviders = async () => {
+  isLoadingProviders.value = true;
+  try {
+    const response = await getProviders();
+    providers.value = Object.values(response.data)
+      .slice(0, 5);
+  } catch (error) {
+    console.error("Error fetching providers:", error);
+    providers.value = [];
+  } finally {
+    isLoadingProviders.value = false;
+  }
+};
+
+const getProviderImage = (provider) => {
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Providers%2F${encodeURIComponent(
+      provider.name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()
+    )}.png?alt=media`;
+  } catch (error) {
+    console.error("Error generating provider image path:", error);
+    return `https://placehold.co/200x112?text=${encodeURIComponent(provider.name)}`;
+  }
+};
+
+async function getBonusGames() {
+  singleCategoryLoading.value = true;
+  errorState.value.gamesError = false;
+  gamesList.value = []; // Clear the list to show loading state
+
+  try {
+    const element = document.getElementById("bonus_games");
+    element?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+
+    currentView.value = "single_category";
+    activeTopCategory.value = { id: 'bonus', name: 'Bonus Games' };
+    
+    const res = await getCasinoBonusGames(userStore.currentUser.id);
+    gamesList.value = Object.values(res.data) || [];
+  } catch (error) {
+    console.error("Error fetching bonus games:", error);
+    errorState.value.gamesError = true;
+  } finally {
+    singleCategoryLoading.value = false;
+  }
+}
+
 onBeforeMount(async () => {
-  Promise.all([getJK(), getCategories()]);
+  Promise.all([getJK(), getCategories(), getTopProviders()]);
   updateCSSVar();
   // $("body").addClass("no-scroll");
 });
@@ -583,14 +732,25 @@ onBeforeMount(async () => {
 
 .games-container .grid-container {
   display: grid;
-  /* display: flex; */
-  overflow-x: scroll;
-  white-space: nowrap;
-  grid-template-columns: repeat(12, 1fr);
-  /* Set total items in a single row */
-  grid-auto-rows: minmax(100px, auto);
-  gap: 10px;
-  padding: 20px 0px 0px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 0px 0px 0px;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.games-container .grid-container::-webkit-scrollbar {
+  display: none;
+}
+
+.games-container .grid-container > div {
+  scroll-snap-align: start;
+  /* width: 150px; */
+  flex: 0 0 auto;
 }
 
 .games-container .categories-list {
@@ -643,7 +803,176 @@ onBeforeMount(async () => {
   text-align: center;
   padding: 1rem;
   background-color: rgba(255, 68, 68, 0.1);
-  border-radius: 4px;
+  border-radius: 8px;
   margin: 1rem 15px;
+  font-size: 0.95rem;
+}
+
+.placeholder-glow .category {
+  background-color: #2c2c2c;
+  border-radius: 10px;
+  height: 60px;
+  width: 80px;
+  margin-right: 10px;
+}
+
+.placeholder-glow .game-provider {
+  height: 50px;
+  margin: 15px;
+  border-radius: 10px;
+}
+
+.placeholder-glow .group {
+  margin-bottom: 20px;
+}
+
+.placeholder-glow .header {
+  margin-bottom: 15px;
+}
+
+.header {
+  /* padding: 0 15px; */
+  margin-bottom: 15px;
+}
+
+.header h1 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.header span {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.header span:hover {
+  background-color: #494949;
+}
+
+.game-provider {
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px;
+  border-radius: 10px;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-provider:hover {
+  background-color: #494949;
+}
+
+.game-provider > span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0 15px;
+}
+
+.game-provider .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.providers-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 0 15px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* margin: 0 -15px; */
+  width: 100%;
+}
+
+.providers-container::-webkit-scrollbar {
+  display: none;
+}
+
+.provider-card {
+  flex: 0 0 70%;
+  scroll-snap-align: start;
+  background: #1a1a1a;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #2c2c2c;
+}
+
+.provider-card:hover {
+  transform: translateY(-2px);
+  border-color: #3a3a3a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.provider-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  background: #2c2c2c;
+  overflow: hidden;
+}
+
+.provider-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.provider-card:hover .provider-image img {
+  transform: scale(1.05);
+}
+
+.provider-info {
+  padding: 16px;
+  background: #1a1a1a;
+}
+
+.provider-name {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.provider-type {
+  color: #9ca0ab;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.provider-card .placeholder {
+  background: #2c2c2c;
+  animation: placeholder-glow 2s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.provider-card .provider-info .placeholder {
+  height: 20px;
+  margin-bottom: 8px;
+}
+
+.provider-card .provider-info .placeholder:last-child {
+  width: 60%;
+  margin-bottom: 0;
+}
+
+@keyframes placeholder-glow {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
 }
 </style>

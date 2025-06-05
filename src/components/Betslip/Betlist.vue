@@ -1348,7 +1348,6 @@ onMounted(() => {});
 }
 .m-error-info .m-deposit-link-wrapper .arrow-right::before {
   content: '\e608';
-  font-family: "iconfont" !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

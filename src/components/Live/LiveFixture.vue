@@ -441,7 +441,7 @@ onMounted(() => {
     };
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-      console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
+      // console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
       return subscribe(topic, (data) => {
         // console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
         handlers[key](data);
