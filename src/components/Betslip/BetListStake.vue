@@ -159,7 +159,7 @@ const placeBetDisabled = computed(() => {
 });
 
 const balanceLowerThanStake = computed(() => {
-  return userStore.currentUser && (betlistStake.value > parseFloat(userStore.balance));
+  return userStore.currentUser && ((betlistStake.value > userStore.currentUser?.availableBalance) || (userStore.currentUser?.sportBonusBalance > 0 && betlistStake.value > userStore.currentUser?.sportBonusBalance));
 })
 
 const amountNeededToStake = computed(() => {
