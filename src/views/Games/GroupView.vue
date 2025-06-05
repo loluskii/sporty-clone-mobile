@@ -128,14 +128,6 @@ const activeBonus = computed(() => {
   return userStore.casinoActiveBonus;
 });
 
-const displayedGames = computed(() => {
-  return gamesList.value.slice(0, displayLimit.value);
-});
-
-const hasMoreGames = computed(() => {
-  return displayLimit.value < gamesList.value.length;
-});
-
 watch(
   () => [
     route.name,
