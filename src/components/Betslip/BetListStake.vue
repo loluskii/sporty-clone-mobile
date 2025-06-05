@@ -159,11 +159,11 @@ const placeBetDisabled = computed(() => {
 });
 
 const balanceLowerThanStake = computed(() => {
-  return userStore.currentUser && ((betlistStake.value > userStore.availableBalance.toFixed(2)) || (betlistStake.value > userStore.sportBonusBalance));
+  return userStore.currentUser && ((betlistStake.value > userStore.currentUser?.availableBalance.toFixed(2)) || (betlistStake.value > userStore.currentUser?.sportBonusBalance));
 })
 
 const amountNeededToStake = computed(() => {
-  let bal = betlistStake.value - userStore.availableBalance
+  let bal = betlistStake.value - userStore.currentUser?.availableBalance
   return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(bal)}`;
 })
 
