@@ -14,7 +14,7 @@
 
           <span class="currency"><em>{{
             SportsbookGlobalVariable.CurrencyCode
-              }}</em></span>
+          }}</em></span>
           <span tabindex="0" type="text" disabled class="m-keybord-input multiple-stake-input" v-html="betlistStake"
             @click="toggleKeyboard"></span>
         </div>
@@ -159,7 +159,7 @@ const placeBetDisabled = computed(() => {
 });
 
 const balanceLowerThanStake = computed(() => {
-  return userStore.currentUser && ((betlistStake.value > userStore.currentUser?.availableBalance) || (userStore.currentUser?.sportBonusBalance > 0 && betlistStake.value > userStore.currentUser?.sportBonusBalance));
+  return userStore.currentUser && betlistStake.value > userStore.currentUser?.sportBonusBalance && betlistStake.value > userStore.currentUser?.availableBalance
 })
 
 const amountNeededToStake = computed(() => {
