@@ -50,7 +50,7 @@ export const useAuthStore = defineStore({
       this.token = null;
       this.mobile_number = null;
       this.clearStores();
-      return await router.push("/");
+      return window.location.href = "/";
     },
   },
   persist: {
