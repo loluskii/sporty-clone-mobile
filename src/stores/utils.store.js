@@ -216,29 +216,29 @@ export const useUtilsStore = defineStore({
     }
   },
 
-  persist: {
-    storage: localStorage,
-    paths: [
-      'brandName',
-      'sportID',
-      'live',
-      'sportsMenu',
-      'marketGroups',
-      'activeLiveMarkets',
-      'homeCarousel',
-      'SportsbookBonusList',
-      'SportsbookGlobalVariable',
-      'showBetslipCount',
-      'showFooter',
-      'showMobileNavigation',
-      'errorMessage',
-      'categoriesList',
-      'casinoBonusShown',
-      'previousRoute',
-      'featuredTournaments',
-      'featuredTournamentGames',
-      'featuredLastFetchTime',
-      'activeFeaturedTournament'
-    ]
-  },
+  // persist: {
+  //   storage: localStorage,
+  //   paths: [
+  //     'brandName',
+  //     'sportID',
+  //     'live',
+  //     'sportsMenu',
+  //     'marketGroups',
+  //     'activeLiveMarkets',
+  //     'homeCarousel',
+  //     'SportsbookBonusList',
+  //     'SportsbookGlobalVariable',
+  //     'showBetslipCount',
+  //     'showFooter',
+  //     'showMobileNavigation',
+  //     'errorMessage',
+  //     'categoriesList',
+  //     'casinoBonusShown',
+  //     'previousRoute',
+  //     'featuredTournaments',
+  //     'featuredTournamentGames',
+  //     'featuredLastFetchTime',
+  //     'activeFeaturedTournament'
+  //   ]
+  // },
 });
