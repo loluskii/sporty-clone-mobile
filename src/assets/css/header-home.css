@@ -93,10 +93,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
+  color: var(--brand-primary)
 }
 
 .mobile-navbar .x-icon-search:before {
-  color: #ffffff;
   font-size: 1.5rem;
 }
 
@@ -273,7 +273,7 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > div {
-  border: 1px solid #ffffff;
+  border: 1px solid var(--brand-primary);
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -292,16 +292,17 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
-  background-color: #ffffff;
-  color: var(--brand-primary);
+  background-color: var(--brand-primary);
+  color: #ffffff !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
-  color: var(--brand-primary);
+  /* color: var(--brand-primary); */
   text-decoration: none;
+  color: white;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login {
@@ -309,7 +310,7 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {
-  color: #ffffff;
+  color: var(--brand-primary);
 }
 
 .mobile-navbar .history-tip {
@@ -356,5 +357,5 @@
 }
 
 .page-content--ng .mobile-navbar .navbar-wraper {
-  background-color: var(--brand-primary);
+  background-color: #f2f2f2;
 }
