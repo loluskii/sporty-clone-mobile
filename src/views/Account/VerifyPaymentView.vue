@@ -48,6 +48,10 @@ watch(
     if (method === "fidelity") {
       ref = route.query.txnRef;
     }
+		
+		if(method === "smileandpay"){
+			ref = route.query.orderReference
+		}
 
     await verifyPaymentRef(method, ref);
   },
