@@ -235,10 +235,10 @@ export const useUtilsStore = defineStore({
       'categoriesList',
       'casinoBonusShown',
       'previousRoute',
-      'featuredTournaments',
-      'featuredTournamentGames',
+      // 'featuredTournaments',
+      // 'featuredTournamentGames',
       'featuredLastFetchTime',
-      'activeFeaturedTournament'
+      // 'activeFeaturedTournament'
     ]
   },
 });
