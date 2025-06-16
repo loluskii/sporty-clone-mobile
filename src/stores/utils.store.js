@@ -114,6 +114,17 @@ export const useUtilsStore = defineStore({
                   tournament.tournamentID,
                   tournament.sportID
                 );
+
+                if (!games?.fixtures?.length || !games?.markets?.length) {
+                  // Early return if no valid data
+                  const index = this.featuredTournaments.findIndex(
+                    (x) => x.tournamentID === tournament.tournamentID
+                  );
+                  if (index !== -1) {
+                    this.featuredTournaments.splice(index, 1);
+                  }
+                  return;
+                }
                 
                 if (games?.fixtures?.length && games?.markets?.length) {
                   // Take only first 5 fixtures
@@ -216,29 +227,29 @@ export const useUtilsStore = defineStore({
     }
   },
 
-  // persist: {
-  //   storage: localStorage,
-  //   paths: [
-  //     'brandName',
-  //     'sportID',
-  //     'live',
-  //     'sportsMenu',
-  //     'marketGroups',
-  //     'activeLiveMarkets',
-  //     'homeCarousel',
-  //     'SportsbookBonusList',
-  //     'SportsbookGlobalVariable',
-  //     'showBetslipCount',
-  //     'showFooter',
-  //     'showMobileNavigation',
-  //     'errorMessage',
-  //     'categoriesList',
-  //     'casinoBonusShown',
-  //     'previousRoute',
-  //     'featuredTournaments',
-  //     'featuredTournamentGames',
-  //     'featuredLastFetchTime',
-  //     'activeFeaturedTournament'
-  //   ]
-  // },
+  persist: {
+    storage: localStorage,
+    paths: [
+      'brandName',
+      'sportID',
+      'live',
+      'sportsMenu',
+      'marketGroups',
+      'activeLiveMarkets',
+      'homeCarousel',
+      'SportsbookBonusList',
+      'SportsbookGlobalVariable',
+      'showBetslipCount',
+      'showFooter',
+      'showMobileNavigation',
+      'errorMessage',
+      'categoriesList',
+      'casinoBonusShown',
+      'previousRoute',
+      // 'featuredTournaments',
+      // 'featuredTournamentGames',
+      'featuredLastFetchTime',
+      // 'activeFeaturedTournament'
+    ]
+  },
 });
