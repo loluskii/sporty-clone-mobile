@@ -432,7 +432,9 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   // Only fetch if we don't have data or it's stale
   if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames();
+    await utilsStore.fetchFeaturedGames().then(() => {
+      setActiveTournament(featuredTournaments.value[0])
+    });
   }
 });
 
