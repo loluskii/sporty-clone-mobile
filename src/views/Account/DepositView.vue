@@ -5,22 +5,15 @@
       <div class="m-tabs m-tabs-no-animation" has-right-btn="true">
         <div class="m-tabs-nav">
           <div class="m-tabs-ink-bar" style="display: block; left: 0px"></div>
-          <div
-            v-for="(method, index) in depositMethods"
-            :class="activeTab == method.provider ? 'm-tabs-tab-active' : ''"
-            :key="index"
-            class="m-tabs-tab"
-            @click="setActiveTab(method.provider)"
-          >
+          <div v-for="(method, index) in depositMethods"
+            :class="activeTab == method.provider ? 'm-tabs-tab-active' : ''" :key="index" class="m-tabs-tab"
+            @click="setActiveTab(method.provider)">
             <span style="text-transform: capitalize">{{
               method.provider === "sbengine" ? "Shop" : method.provider
             }}</span>
           </div>
         </div>
-        <div
-          class="m-tabs-content"
-          style="transform: translateX(0%) translateZ(0px)"
-        >
+        <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
           <div class="deposit-footer deposit-footer--bank-transfer" style="">
             <!-- <img
               src="@/assets/images/monnify.svg"
@@ -53,60 +46,50 @@
             <!-- <br /><br /> -->
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
-                <span class="balance-text balance-text--bank-transfer"
-                  ><span data-cms-key="balance">Balance</span> ({{
-                    SportsbookGlobalVariable.CurrencyCode
-                  }}) {{ usersStore.balance }}
+                <span class="balance-text balance-text--bank-transfer"><span data-cms-key="balance">Balance</span> ({{
+                  SportsbookGlobalVariable.CurrencyCode
+                }}) {{ usersStore.balance }}
                 </span>
               </div>
             </div>
             <div class="input-container">
-              <div
-                class="deposit-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
-              >
+              <div class="deposit-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend">
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
-                  <span class="amount-prepend"
-                    ><span data-cms-key="amount">Amount</span> ({{
-                      SportsbookGlobalVariable.CurrencyCode
-                    }})
+                  <span class="amount-prepend"><span data-cms-key="amount">Amount</span> ({{
+                    SportsbookGlobalVariable.CurrencyCode
+                  }})
                   </span>
                 </div>
-                <i
-                  class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
-                ></i>
-                <input
-                  type="number"
-                  v-model="amount"
-                  name=""
-                  placeholder="min. 100"
-                  class="m-input-wap"
-                />
+                <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
+                <input type="number" v-model="amount" name="" placeholder="min. 100" class="m-input-wap" />
               </div>
             </div>
 
             <span class="error-msg"> </span>
-            <button
-              v-if="availableBonus && !bonus"
-              class="af-button deposit-submit af-button--primary"
-              :class="amount == '' ? ' is-disabled' : ''"
-              @click.prevent="activateBonus"
-              :disabled="amount === ''"
-            >
+            <button v-if="availableBonus && !bonus" class="af-button deposit-submit af-button--primary"
+              :class="amount == '' ? ' is-disabled' : ''" @click.prevent="activateBonus" :disabled="amount === ''">
               <span>Activate Bonus</span>
             </button>
-            <button
-              class="af-button deposit-submit af-button--primary"
-              :class="amount == '' || isDepositing ? ' is-disabled' : ''"
-              @click.prevent="beginDeposit"
-            >
+            <button class="af-button deposit-submit af-button--primary" :class="isDepositing ? ' is-disabled' : ''"
+              @click.prevent="beginDeposit">
               <span><span> Top Up Now </span></span>
             </button>
             <p v-if="bonus">
-              You have activated <strong>{{ availableBonus?.name }}</strong
-              >. Complete payment to receive
+              You have activated <strong>{{ availableBonus?.name }}</strong>. Complete payment to receive
               <strong>{{ formatNumber(bonus?.amount) }}</strong> in your bonus
               account.
             </p>
+          </div>
+          <div class="deposit-footer" style="">
+            <div class="wrap">
+              <ul class="m-payment-tips f-count">
+                <li class="l-item">1. Minimum deposit amount is {{SportsbookGlobalVariable.CurrencyCode}} {{SportsbookGlobalVariable.MinDeposit}} - you can deposit at least {{SportsbookGlobalVariable.CurrencyCode}} {{SportsbookGlobalVariable.MinDeposit}} in one
+                  transaction.</li>
+                <li class="l-item">2. Maximum per transaction is {{SportsbookGlobalVariable.CurrencyCode}} 9,999,999.00 - you can deposit up to {{SportsbookGlobalVariable.CurrencyCode}}
+                  9,999,999.00 in one transaction.</li>
+                <li class="l-item">3. If you have any issues, please contact customer service.</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -180,6 +163,7 @@ function activateBonus() {
 
 async function beginDeposit() {
   isDepositing.value = true;
+  if (isDepositing.value) return
   try {
     const payload = {
       amount: amount.value,
@@ -227,7 +211,7 @@ async function beginDeposit() {
         isDepositing.value = false
         if (res.data.link === 'ACCEPTED') {
           window.location.href = '/';
-        }  else if (!res.data.link.includes('http')) {
+        } else if (!res.data.link.includes('http')) {
           emitter.emit("showErrorMessage", res.message);
         } else {
           window.location.href = res.data.link;
@@ -237,7 +221,7 @@ async function beginDeposit() {
       emitter.emit("showErrorMessage", res.message || "Failed to initiate deposit. Please try again.");
       isDepositing.value = false
     }
-    
+
   } catch (error) {
     console.error("Error initiating deposit:", error);
     emitter.emit("showErrorMessage", "An error occurred. Please try again.");
@@ -281,6 +265,7 @@ onUnmounted(() => {
 
 <style>
 @import url("@/assets/css/deposit.css");
+
 .af-button--primary {
   background: var(--brand-secondary);
   border: 0;
@@ -292,25 +277,30 @@ onUnmounted(() => {
   /* height: 3.33333333rem; */
   width: 100%;
 }
+
 .bank-transfer-card {
   margin-bottom: 1.66666667rem;
   padding: 1rem 1.33333333rem 1.33333333rem;
   border-radius: 0.16666667rem;
 }
+
 .bank-transfer-card-title {
   margin-bottom: 1rem;
   text-align: center;
   font-size: 1.33333333rem;
 }
+
 .bank-transfer-card-steps {
   counter-reset: step-counter;
   list-style: none;
 }
+
 .bank-transfer-card-steps li {
   margin-bottom: 1rem;
   display: flex;
   counter-increment: step-counter;
 }
+
 .bank-transfer-card-steps li:before {
   content: "Step " counter(step-counter);
   margin-right: 1rem;
@@ -318,6 +308,7 @@ onUnmounted(() => {
   display: block;
   min-width: 2.91666667rem;
 }
+
 .bank-transfer-card-steps li:last-child {
   margin-bottom: 0;
 }
@@ -325,6 +316,7 @@ onUnmounted(() => {
 ol.bank-transfer-card-steps {
   padding: 0;
 }
+
 html[theme="dark"] {
   color: #fff;
   background-color: #1b1e25;
@@ -338,5 +330,15 @@ html[theme="light"] {
 
 .m-tabs-tab-active {
   font-weight: bold;
+}
+.m-payment-tips .l-item {
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  grid-template-columns: 1.33333333rem 1fr;
+  color: #9CA0AB;
 }
 </style>
