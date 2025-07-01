@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/logo-3.png" />
+      <img src="/logo-2.png" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -72,6 +72,25 @@
       >
         Responsible Gaming
       </h5>
+    </div>
+        <div class="payment-methods">
+      <div class="slider-wrap">
+        <div class="slider-window">
+          <div class="sliders" style="transform: translateX(0%)">
+            <div class="row">
+              <a href="https://www.facebook.com/Streetbetng/" target="_blank">
+                <img src="@/assets/images/facebook.png" style="height: 2rem" />
+              </a>
+              <a href="https://www.instagram.com/streetbet.ng" target="_blank">
+                <img src="@/assets/images/instagram.png" style="height: 2rem" />
+              </a>
+              <a href="https://x.com/streetbet_ng" target="_blank">
+                <img src="@/assets/images/twitter.png" style="height: 2rem" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="btn" @click="handleClick">
       <button>
