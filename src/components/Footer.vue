@@ -79,13 +79,13 @@
           <div class="sliders" style="transform: translateX(0%)">
             <div class="row">
               <a href="https://www.facebook.com/Streetbetng/" target="_blank">
-                <img src="@/assets/images/fb-copy.svg" style="height: 2rem" />
+                <img src="@/assets/images/facebook.png" style="height: 2rem" />
               </a>
               <a href="https://www.instagram.com/streetbet.ng" target="_blank">
-                <img src="@/assets/images/ig-copy.svg" style="height: 2rem" />
+                <img src="@/assets/images/instagram.png" style="height: 2rem" />
               </a>
               <a href="https://x.com/streetbet_ng" target="_blank">
-                <img src="@/assets/images/x-copy.svg" style="height: 2rem" />
+                <img src="@/assets/images/twitter.png" style="height: 2rem" />
               </a>
             </div>
           </div>
