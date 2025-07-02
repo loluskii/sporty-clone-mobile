@@ -30,6 +30,9 @@ watch(
   () => [route.params.method],
   async ([method]) => {
     let ref;
+    if(!route.query){
+      return router.push({name: 'account-deposit'})
+    }
     if (method === "paystack") {
       ref = route.query.trxref;
     }
