@@ -162,8 +162,8 @@ function activateBonus() {
 }
 
 async function beginDeposit() {
-  isDepositing.value = true;
   if (isDepositing.value) return
+  isDepositing.value = true;
   try {
     const payload = {
       amount: amount.value,
