@@ -114,7 +114,7 @@ export const getUserDetailsByToken = async () => {
 
 export const getTopBets = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/admin/sports/${CLIENT_ID}/top-bets`),
+    fetchWrapper.get(`${NEW_BASE_API}/sports/${CLIENT_ID}/top-bets`),
   );
 };
 
@@ -192,30 +192,6 @@ export const getFixturesByCategories = async (categoryId, sid) => {
       `${NEW_BASE_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`,
     ),
   );
-};
-
-export const getFixturesBySport = async () => {
-  return parseData(
-    fetchWrapper.get(
-      `${BASE_API}/api/sports/group-fixtures-by-sport?date=${today()}&end_date=${end()}&timeoffset=${sign}${offsetHours}`,
-    ),
-  );
-};
-
-export const getToday = async (sid, market, no_games_today) => {
-  if (no_games_today) {
-    return parseData(
-      fetchWrapper.get(
-        `${BASE_API}/api/sports/get-fixtures-by-date?date=${tomorrow()}&sid=${sid}&market=${market}&channel=mobile&limit=50&page=1`,
-      ),
-    );
-  } else {
-    return parseData(
-      fetchWrapper.get(
-        `${BASE_API}/api/sports/get-fixtures-by-date?date=${today()}&sid=${sid}&market=${market}&channel=mobile&limit=50&page=1`,
-      ),
-    );
-  }
 };
 
 export const getToday2 = async (sid, page) => {
@@ -336,21 +312,6 @@ export const updatePassword = async () => {
   return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`));
 };
 
-export const getCouponById = async (id) => {
-  return parseData(
-    fetchWrapper.get(`${BASE_API}/api/sports/find-coupon/${id}`),
-  );
-};
-
-export const placeBet = async (payload) => {
-  return parseData(
-    fetchWrapper.post(
-      `${BASE_API}/api/sports/place-bet?channel=mobile`,
-      payload,
-    ),
-  );
-};
-
 export const placeBet2 = async (payload) => {
   return parseData(
     fetchWrapper.post(`${NEW_BASE_API}/bets/place-bet/${CLIENT_ID}`, payload),
@@ -365,15 +326,6 @@ export const validateBetslipSelections = async (payload) => {
 
 export const performCashout = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/cashout/`, payload));
-};
-
-export const bookBet = async (payload) => {
-  return parseData(
-    fetchWrapper.post(
-      `${BASE_API}/api/sports/book-bet?channel=mobile`,
-      payload,
-    ),
-  );
 };
 
 export const bookBet2 = async (payload) => {
