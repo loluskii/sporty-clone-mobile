@@ -308,8 +308,8 @@ export const fetchBankAssets = async () => {
   );
 };
 
-export const updatePassword = async () => {
-  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`));
+export const updatePassword = async (data) => {
+  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`, data));
 };
 
 export const placeBet2 = async (payload) => {
