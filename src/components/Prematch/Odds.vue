@@ -64,17 +64,17 @@ watch(
     const nVal = parseFloat(newValue.toFixed(2));
     const pVal = parseFloat(previousOdds.value.toFixed(2));
 
-    console.log(
-      "Odds watch triggered:",
-      "oddID:",
-      props.odds.oddID,
-      "new:",
-      nVal,
-      "prev:",
-      pVal,
-      "same ID?",
-      props.odds.oddID === oddsId.value,
-    );
+    // console.log(
+    //   "Odds watch triggered:",
+    //   "oddID:",
+    //   props.odds.oddID,
+    //   "new:",
+    //   nVal,
+    //   "prev:",
+    //   pVal,
+    //   "same ID?",
+    //   props.odds.oddID === oddsId.value,
+    // );
 
     // Only show indicators if there's an actual change in value
     // AND we're dealing with the same odds selection (same oddID)
