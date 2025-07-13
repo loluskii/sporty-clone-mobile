@@ -114,7 +114,7 @@ export const getUserDetailsByToken = async () => {
 
 export const getTopBets = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/admin/sports/${CLIENT_ID}/top-bets`),
+    fetchWrapper.get(`${NEW_BASE_API}/sports/${CLIENT_ID}/top-bets`),
   );
 };
 
