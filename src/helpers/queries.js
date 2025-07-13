@@ -401,10 +401,6 @@ export const getPromotions = async () => {
   );
 };
 
-export const getGames = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/admin/games/get-games`));
-};
-
 export const getCasinoBonusGames = async (userId) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/bonus-games?clientId=${import.meta.env.VITE_CLIENT_ID}&userId=${userId}`));
 };
@@ -449,7 +445,7 @@ export const getTopGameCategories = async () => {
 
 export const gamesByTopCategory = async (id) => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/admin/games/get-games?categoryId=${id}`),
+    fetchWrapper.get(`${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/list?categoryId=${id}`),
   );
 };
 
@@ -476,9 +472,9 @@ export const getJackpotWinners = async () => {
 export const getPaymentMethods = async () => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/admin/wallet/payment-methods/${
+      `${NEW_BASE_API}/user/wallet/${
         import.meta.env.VITE_CLIENT_ID
-      }`,
+      }/payment-methods`,
     ),
   );
 };
