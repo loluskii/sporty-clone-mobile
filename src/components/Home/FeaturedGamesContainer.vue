@@ -87,12 +87,18 @@ const setActiveCategory = (category) => {
   return emit("set-active-category", category);
 };
 
-const getImageSrc = (slug) => {
-  const imageUrl = new URL(
-    `../../assets/images/casino/${slug.toLowerCase()}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
+const getImageSrc = (prov) => {
+  try {
+    let name = prov.split("-");
+    let imageName = name[1] !== "games" ? prov : name[0];
+    return new URL(
+      `../../assets/images/casino/${imageName}.png`,
+      import.meta.url,
+    );
+  } catch (error) {
+    console.error("Error loading category image:", error);
+    return new URL(`../../assets/images/casino/virtuals.png`, import.meta.url);
+  }
 };
 
 const getImagePath = (game) => {

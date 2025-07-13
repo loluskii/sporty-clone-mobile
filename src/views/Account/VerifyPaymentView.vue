@@ -30,33 +30,35 @@ watch(
   () => [route.params.method],
   async ([method]) => {
     let ref;
-    if (method === "paystack") {
-      ref = route.query.trxref;
-    }
-    if (method === "monnify") {
-      ref = route.query.paymentReference;
+
+    switch (method) {
+      case "paystack":
+        ref = route.query.trxref;
+        break;
+      case "monnify":
+        ref = route.query.paymentReference;
+        break;
+      case "flutterwave":
+        ref = route.query.tx_ref;
+        break;
+      case "korapay":
+        ref = route.query.reference;
+        break;
+      case "fidelity":
+        ref = route.query.txnRef;
+        break;
     }
 
-    if (method === "flutterwave") {
-      ref = route.query.tx_ref;
+    if (!ref) {
+      // No reference param in query — redirect
+      return router.push({ name: 'account-deposit' });
     }
-
-    if (method === "korapay") {
-      ref = route.query.reference;
-    }
-
-    if (method === "fidelity") {
-      ref = route.query.txnRef;
-    }
-		
-		if(method === "smileandpay"){
-			ref = route.query.orderReference
-		}
 
     await verifyPaymentRef(method, ref);
   },
   { immediate: true },
 );
+
 
 const bonus = computed(() => {
   return usersStore.bonus;
