@@ -221,7 +221,7 @@ const verifyOTPRequest = async () => {
 const savePassword = async () => {
   isLoading.value = true;
   let payload = {
-    username: phoneNumber.value.replace(/^0/, ""),
+    username: String(phoneNumber.value).replace(/^0/, ""),
     password: password.value,
     clientId: CLIENT_ID,
   };
