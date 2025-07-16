@@ -15,7 +15,7 @@
           :class="currentIndex === index ? 'active' : ''"
           @click="goToSlide(image)"
         >
-          <img :src="image.image_path" />
+          <img :src="image.image" />
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@ function goToSlide(image) {
 
 onMounted(async () => {
   const res = await fetchBanners();
-  images.value = res.filter((b) => b.banner_type === props.type);
+  images.value = res.data.filter((b) => b.banner_type === props.type);
   startAutoSlider();
 });
 
