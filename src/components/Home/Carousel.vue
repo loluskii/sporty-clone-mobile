@@ -55,6 +55,7 @@ function goToSlide(image) {
 }
 
 onMounted(async () => {
+  console.log('kghfdsszfghj')
   const res = await fetchBanners();
   images.value = res.data.filter((b) => b.banner_type === props.type);
   startAutoSlider();
