@@ -57,8 +57,30 @@ function goToSlide(image) {
 onMounted(async () => {
   console.log('kghfdsszfghj')
   const res = await fetchBanners();
-  images.value = res.data.filter((b) => b.banner_type === props.type);
-  startAutoSlider();
+  if(res.data && Object.keys(res.data).length > 0){
+    images.value = Object.values(res.data).filter((b) => b.target === 'mobile');
+    startAutoSlider();
+  }else{
+    images.value = [
+      {
+        id: 670,
+        title: "Temp",
+        banner_type: "sport",
+        target: "web",
+        image_path: "https://placehold.co/414x69",
+        link: null,
+        position: "slider",
+        text: null,
+        sport: null,
+        category: null,
+        tournament: null,
+        competiton: null,
+        created_by: null,
+        created_at: null,
+        updated_at: null,
+      },
+    ];
+  }
 });
 
 onBeforeUnmount(() => {
