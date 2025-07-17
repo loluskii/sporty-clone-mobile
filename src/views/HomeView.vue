@@ -4,7 +4,7 @@
     <div></div>
     <div class="home">
       <!-- Banner Carousel -->
-      <Carousel :type="'sport'"></Carousel>
+      <Carousel></Carousel>
       <!-- Banner Carousel -->
       <!-- SportsList Carousel -->
       <SportsListCarousel></SportsListCarousel>
