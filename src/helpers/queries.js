@@ -49,11 +49,7 @@ export const fetchGlobalVars = async () => {
 };
 
 export const fetchBanners = async () => {
-  return parseData(
-    fetchWrapper.get(
-      `${BASE_API}/api/sports/mobile/sliders?banner_type=mobile`,
-    ),
-  );
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/content-management/banner?clientId=${import.meta.env.VITE_CLIENT_ID}`))
 };
 
 export const fetchBonusList = async () => {
@@ -504,7 +500,5 @@ export const awardBonus = async (payload) => {
 };
 
 export const getCMS = async (page) => {
-  return parseData(
-    fetchWrapper.get(`${BASE_API}/api/utilities/cms/page/${page}`),
-  );
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/content-management/page?clientId=${import.meta.env.VITE_CLIENT_ID}&slug=${page}`))
 };
