@@ -293,7 +293,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="@/assets/images/logo.png"
+                src="/logo-2.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
