@@ -25,7 +25,7 @@ import emitter from './plugins/emitter'
 import { useAuthStore, useUsersStore } from './stores'
 import { checkVersion } from '@/utils/version'
 import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
-
+import Cookies from 'js-cookie'
 import HandleCache from '@/components/HandleCache.vue'
 import ImageDialog from './components/ImageDialog.vue'
 const cacheBuster = ref()
@@ -240,9 +240,13 @@ watch(
 )
 
 onMounted(async () => {
-  utilsStore.clickId = new URLSearchParams(window.location.search).get('clickid')
   if (route.path !== '/') {
     isLoading.value = false
+  }
+  
+  const clickId = new URLSearchParams(window.location.search).get('clickid')
+  if (clickId) {
+    Cookies.set('clickId', clickId, { expires: 30 }); // expires in 30 days
   }
 
   const res = await fetchBanners()
