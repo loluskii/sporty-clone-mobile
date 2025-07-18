@@ -39,7 +39,7 @@
           <div
             class="category"
             @click="openQtechLobby()"
-            id="bonus_games"
+            id="qtech_games"
           >
             <img
               src="@/assets/images/casino/bonus.png"
