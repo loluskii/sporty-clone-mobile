@@ -410,7 +410,7 @@ const getImageSrc = (prov) => {
   }
 };
 
-const openQtechLobby = () => {
+const openQtechLobby = async () => {
   isLoading.value = true
   try {
     const { username, id, authCode } = userStore.currentUser || {};
