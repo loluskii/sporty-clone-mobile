@@ -433,9 +433,11 @@ const openQtechLobby = async () => {
     };
 
     const res = await getGameLobbyUrl(payload);
+    isLoading.value = false
     window.location.href = res.url
   } catch (error) {
     console.error(error);
+    isLoading.value = false
     errorState.qtechLobbyError = true
   }
 }
