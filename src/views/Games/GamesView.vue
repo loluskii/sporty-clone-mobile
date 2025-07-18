@@ -36,6 +36,19 @@
             />
             <span>Bonus Games</span>
           </div>
+          <div
+            class="category"
+            @click="openQtechLobby()"
+            id="bonus_games"
+          >
+            <img
+              src="@/assets/images/casino/bonus.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>QTech Lobby</span>
+          </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
@@ -318,7 +331,7 @@ import { ref, onBeforeMount, computed } from "vue";
 import {
   getTopGameCategories,
   gamesByTopCategory,
-  getJackpotWinners,
+  getGameLobbyUrl,
   getProviders,
 } from "@/helpers";
 import router from "@/router";
@@ -396,6 +409,30 @@ const getImageSrc = (prov) => {
     return new URL(`../../assets/images/casino/virtuals.png`, import.meta.url);
   }
 };
+
+const openQtechLobby = () => {
+  isLoading.value = true
+  try {
+    const { username, id, authCode } = userStore.currentUser || {};
+    let payload = {
+      gameId: 0,
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      username: username || 'Demo',
+      userId: id || 0,
+      demo: id ? false : true,
+      isMobile: true,
+      homeUrl: import.meta.env.VITE_SITE_URL,
+      authCode: authCode || '111111',
+      balanceType: "real",
+      type: 'lobby'
+    };
+
+    const res = await getGameLobbyUrl(payload);
+    window.location.href = res.url
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 const showMore = (top) => {
   utilsStore.previousRoute = route.fullPath;

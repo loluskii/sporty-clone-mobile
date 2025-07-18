@@ -68,6 +68,12 @@ export const getCombosData = async (payload) => {
   });
 };
 
+export const getGameLobbyUrl = async (payload) => {
+  return parseData(
+    fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/lobby-url`, payload),
+  );
+};
+
 export const login = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login/`, payload));
 };
