@@ -319,6 +319,10 @@
     <div v-if="errorState.gamesError" class="error-message">
       Failed to load games. Please try again later.
     </div>
+
+    <div v-if="errorState.qtechLobbyError" class="error-message">
+      Failed to load QTech Lobby
+    </div>
   </div>
 </template>
 
@@ -361,6 +365,7 @@ const errorState = ref({
   categoriesError: false,
   gamesError: false,
   jackpotsError: false,
+  qtechLobbyError: false
 });
 const providers = ref([]);
 const isLoadingProviders = ref(false);
@@ -431,6 +436,7 @@ const openQtechLobby = async () => {
     window.location.href = res.url
   } catch (error) {
     console.error(error);
+    errorState.qtechLobbyError = true
   }
 }
 
