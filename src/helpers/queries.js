@@ -328,8 +328,8 @@ export const fetchBankAssets = async () => {
   );
 };
 
-export const updatePassword = async () => {
-  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`));
+export const updatePassword = async (payload) => {
+  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`, payload));
 };
 
 export const getCouponById = async (id) => {
