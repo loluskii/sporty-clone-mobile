@@ -516,6 +516,15 @@ export const withdrawalRequest = async (payload) => {
   );
 };
 
+export const transferRequest = async (payload) => {
+  return parseData(
+    fetchWrapper.put(
+      `${NEW_BASE_API}/auth/initiate-transfer/${import.meta.env.VITE_CLIENT_ID}`,
+      payload,
+    ),
+  );
+};
+
 export const getUserBonus = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/bonus/user/list?client_id=${CLIENT_ID}`),
