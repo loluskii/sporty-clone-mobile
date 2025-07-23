@@ -24,8 +24,7 @@
                 srcset=""
                 height="25"
               /> -->
-              <span class="provider-name" v-if="provider.slug === provider.parentProvider">{{ provider.name }}</span>
-              <span class="provider-name" v-else>{{ provider.parentProvider }}</span>
+              <span class="provider-name">{{ provider.name }}</span>
             </div>
           </div>
         </div>
