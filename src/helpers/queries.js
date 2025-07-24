@@ -304,8 +304,8 @@ export const fetchBankAssets = async () => {
   );
 };
 
-export const updatePassword = async () => {
-  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`));
+export const updatePassword = async (payload) => {
+  return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`, payload));
 };
 
 export const placeBet2 = async (payload) => {
@@ -463,6 +463,15 @@ export const withdrawalRequest = async (payload) => {
   return parseData(
     fetchWrapper.post(
       `${NEW_BASE_API}/user/wallet/withdraw?source=mobile`,
+      payload,
+    ),
+  );
+};
+
+export const transferRequest = async (payload) => {
+  return parseData(
+    fetchWrapper.put(
+      `${NEW_BASE_API}/auth/initiate-transfer/${import.meta.env.VITE_CLIENT_ID}`,
       payload,
     ),
   );
