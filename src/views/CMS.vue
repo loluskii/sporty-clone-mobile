@@ -21,7 +21,7 @@ const route = useRoute();
 const isLoading = ref(false);
 
 const pageTitle = computed(() => {
-  let page = route.params.page.replace(/-/g, " ");
+  let page = route.params.page.replace(/_/g, " ");
   return page;
 });
 
