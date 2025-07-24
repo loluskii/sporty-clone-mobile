@@ -1,10 +1,9 @@
-import HeaderOther from '../../components/HeaderOther.vue';
 <template>
-  <div>
-    <HeaderOther :header-title="pageTitle.toUpperCase()"></HeaderOther>
+  <LoadingSpinner v-if="isLoading"></LoadingSpinner>
+  <div v-else>
+    <HeaderOther :header-title="pageTitle"></HeaderOther>
     <div class="body">
-      <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-      <div v-else v-html="html"></div>
+      <div v-html="html"></div>
     </div>
   </div>
 </template>
@@ -12,26 +11,28 @@ import HeaderOther from '../../components/HeaderOther.vue';
 <script setup>
 import HeaderOther from "@/components/HeaderOther.vue";
 import { getCMS } from "@/helpers";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref } from "vue";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import { useRoute } from "vue-router";
 
 const html = ref("");
 const route = useRoute();
 const isLoading = ref(false);
-
-const pageTitle = computed(() => {
-  let page = route.params.page.replace(/_/g, " ");
-  return page;
-});
+const pageTitle = ref(null);
 
 onMounted(async () => {
   try {
     isLoading.value = true;
-    const res = await getCMS(route.params.page);
-    isLoading.value = false;
-    html.value = res.body;
-  } catch (error) {}
+    await getCMS(route.params.page).then((res) => {
+      let result = Object.values(res.data)[0]
+      pageTitle.value = result.title
+      html.value = result.content
+      isLoading.value = false;
+    })
+  } catch (error) {
+    alert('Page does not exist!')
+    window.location.href = '/'
+  }
 });
 </script>
 <style scoped>
