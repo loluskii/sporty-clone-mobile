@@ -43,7 +43,7 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'terms-and-conditions' },
+            params: { page: 'terms_and_conditions' },
           })
         "
       >
@@ -53,7 +53,7 @@
       <h5
         class="underline"
         @click="
-          $router.push({ name: 'cms-page', params: { page: 'about-us' } })
+          $router.push({ name: 'cms-page', params: { page: 'about_us' } })
         "
       >
         About Us
@@ -64,7 +64,7 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'responsible-gaming' },
+            params: { page: 'responsible_gaming' },
           })
         "
       >

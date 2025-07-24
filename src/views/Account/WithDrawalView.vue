@@ -465,6 +465,7 @@ import {
   verifyAccount,
   withdrawalRequest,
   fetchBankAssets,
+  transferRequest
 } from "@/helpers";
 import TransferSuccess from '@/components/Withdrawal/TransferSuccess.vue'
 import CashWithdrawalSuccess from '@/components/Withdrawal/CashWithdrawalSuccess.vue'
