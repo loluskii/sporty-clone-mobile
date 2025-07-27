@@ -340,12 +340,12 @@ defineComponent({
                 :next-route="nextRoute"
               ></ErrorDialogue>
               <CasinoDialog
-                v-if="utilsStore.bonusModalShown === false && casinoGameData"
+                v-if="utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'"
                 :data="casinoGameData"
                 @hide-dialogue="utilsStore.bonusModalShown = true"
               />
               <ImageDialog 
-                v-if="utilsStore.popupDialogShown === false"
+                v-if="utilsStore.popupDialogShown === false && route.name === 'home'"
                 :image="popupData"
                 @hide-dialogue="utilsStore.popupDialogShown = true"
               />
