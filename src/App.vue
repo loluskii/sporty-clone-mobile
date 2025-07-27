@@ -342,7 +342,7 @@ defineComponent({
               <CasinoDialog
                 v-if="utilsStore.bonusModalShown === false && casinoGameData"
                 :data="casinoGameData"
-                @hide-dialogue="bonusModalShown = false"
+                @hide-dialogue="utilsStore.bonusModalShown = true"
               />
               <ImageDialog 
                 v-if="utilsStore.popupDialogShown === false"
