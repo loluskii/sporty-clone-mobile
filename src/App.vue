@@ -15,6 +15,7 @@ import {
   applyBranding,
   CLIENT_ID,
   validateBetslipSelections,
+  fetchBanners
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
@@ -25,6 +26,7 @@ import { checkVersion } from "@/utils/version";
 import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 
 import HandleCache from '@/components/HandleCache.vue';
+import ImageDialog from "./components/ImageDialog.vue";
 const cacheBuster = ref();
 
 const utilsStore = useUtilsStore();
@@ -50,7 +52,7 @@ const casinoGameData = ref(null);
 const depositWithdrawalShown = ref(false)
 const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
-
+const popupData = ref(null)
 
 // const showLoadingOverlay = computed(() => {
 //   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
@@ -235,6 +237,13 @@ onMounted(async () => {
     isLoading.value = false;
   }
 
+  const res = await fetchBanners();
+  if(res.data && Object.keys(res.data).length > 0){
+    utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile');
+  }else{
+    utilsStore.banners = []
+  }
+
   // Check version and clear cache if needed
   // await checkVersion();
 
@@ -263,6 +272,12 @@ onMounted(async () => {
       utilsStore.sportsbookBonusList = res[0].data;
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
+      setTimeout(() => {
+        popupData.value = utilsStore.banners.find((b) => b.position === 'popup')
+        if(utilsStore.popupDialogShown ===  null){
+          utilsStore.popupDialogShown = false;
+        }
+      }, 1000)
       isLoading.value = false;
     })
     .catch(() => {
@@ -295,7 +310,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="@/assets/images/logo.png"
+                src="/default.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
@@ -325,9 +340,14 @@ defineComponent({
                 :next-route="nextRoute"
               ></ErrorDialogue>
               <CasinoDialog
-                v-if="casinoDailogShown"
-                @hide-dialogue="casinoDailogShown = false"
+                v-if="utilsStore.bonusModalShown === false && casinoGameData"
                 :data="casinoGameData"
+                @hide-dialogue="bonusModalShown = false"
+              />
+              <ImageDialog 
+                v-if="utilsStore.popupDialogShown === false"
+                :image="popupData"
+                @hide-dialogue="utilsStore.popupDialogShown = true"
               />
             </div>
             <Betlist

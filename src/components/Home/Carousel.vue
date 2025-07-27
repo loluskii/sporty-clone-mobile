@@ -4,12 +4,12 @@
     id="carousel"
     data-html2canvas-ignore=""
     class="main-banner"
-    v-if="images.length"
+    v-if="banners.length"
   >
     <div data-ride="carousel" class="carousel slide">
       <div role="listbox" class="carousel-inner">
         <div
-          v-for="(image, index) in images"
+          v-for="(image, index) in banners"
           :key="index"
           class="item"
           :class="currentIndex === index ? 'active' : ''"
@@ -23,10 +23,15 @@
   <!-- Home Carousel -->
 </template>
 <script setup>
-import { ref, defineComponent, onMounted, onBeforeUnmount } from "vue";
-import { fetchBanners } from "@/helpers";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useUtilsStore } from "../../stores";
 
 const props = defineProps(["type"]);
+const utilsStore = useUtilsStore()
+
+const banners = computed(() => {
+  return utilsStore.banners.filter((b) => b.position === 'slider');
+})
 
 const currentIndex = ref(0);
 const intervalId = ref(null);
@@ -55,35 +60,13 @@ function goToSlide(image) {
 }
 
 onMounted(async () => {
-  const res = await fetchBanners();
-  if(res.data && Object.keys(res.data).length > 0){
-    images.value = Object.values(res.data).filter((b) => b.target === 'mobile');
-    startAutoSlider();
-  }else{
-    images.value = [
-      {
-        id: 670,
-        title: "Temp",
-        banner_type: "sport",
-        target: "web",
-        image_path: "https://placehold.co/414x69",
-        link: null,
-        position: "slider",
-        text: null,
-        sport: null,
-        category: null,
-        tournament: null,
-        competiton: null,
-        created_by: null,
-        created_at: null,
-        updated_at: null,
-      },
-    ];
-  }
+  startAutoSlider();
 });
 
 onBeforeUnmount(() => {
-  stopAutoSlider();
+  if(banners.value.length){
+    stopAutoSlider();
+  }
 });
 </script>
 <style scoped>
