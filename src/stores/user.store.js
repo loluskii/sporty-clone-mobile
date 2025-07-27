@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { getUserDetailsByToken, formatNumber } from "@/helpers";
 import { getUserActiveBonus } from "../helpers";
 import emitter from "../plugins/emitter";
+import { useUtilsStore } from "./utils.store";
 
 export const useUsersStore = defineStore({
   id: "users",
@@ -11,6 +12,7 @@ export const useUsersStore = defineStore({
     activeBonus: null,
     casinoActiveBonus: null,
     error: null,
+    utilsStore: useUtilsStore()
   }),
   getters: {
     // Helper function to safely access nested properties
@@ -103,7 +105,10 @@ export const useUsersStore = defineStore({
         // Handle bonus response
         if (bonusResponse.status === "fulfilled" && bonusResponse.value?.data) {
           this.casinoActiveBonus = bonusResponse.value.data;
-          emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
+          if(this.utilsStore.bonusModalShown === null){
+            this.utilsStore.bonusModalShown = false
+            emitter.emit("showCasinoDialog", { bonus: this.casinoActiveBonus });
+          }
         } else if (bonusResponse.status === "rejected") {
           console.warn("Failed to fetch active bonus:", bonusResponse.reason);
         }

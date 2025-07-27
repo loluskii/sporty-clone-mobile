@@ -39,10 +39,6 @@ export const useAuthStore = defineStore({
       }
     },
     clearStores() {
-      // const authStore = useAuthStore();
-      // authStore.$reset();
-      // const userStore = useUsersStore();
-      // userStore.$reset();
       // map through that list and use the **$reset** fn to reset the state
       getActivePinia()._s.forEach((store) => store.$reset())
     },
@@ -50,7 +46,7 @@ export const useAuthStore = defineStore({
       this.token = null;
       this.mobile_number = null;
       this.clearStores();
-      return window.location.href = "/";
+      window.location.href = "/"
     },
   },
   persist: {
