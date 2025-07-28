@@ -92,6 +92,13 @@ export const updateProfile = async (payload) => {
   return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/details`, payload))
 }
 
+export const processAccountVerification = async (payload) => {
+  return parseData(
+    fetchWrapper.post(`${NEW_BASE_API}/auth/kyc`, payload),
+  );
+};
+
+
 export const getUserDetailsByToken = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/auth/details/${CLIENT_ID}`))
 }
