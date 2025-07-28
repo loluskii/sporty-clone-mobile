@@ -4,8 +4,8 @@
         <div class="m-dialog popup">
             <div class="m-dialog-body">
                 <div class="m-dialog-main" style="height: auto">
-                    <div @click="nextAction">
-                        <img :src="image.image" style="height: 100%; width: 100%;" />
+                    <div>
+                        <img :src="image.image" style="height: 100%; width: 100%;" @click="nextAction"/>
                     </div>
                 </div>
             </div>
@@ -23,11 +23,11 @@ const utilsStore = useUtilsStore()
 defineProps(["image"])
 
 function nextAction() {
-    emits("hide-dialogue");
     utilsStore.popupDialogShown = true
     if (image.link && stringIsLink(image.link)) {
         return window.location.href = image.link
     }
+    emits("hide-dialogue");
 }
 </script>
 
