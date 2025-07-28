@@ -512,7 +512,7 @@
 
 .af-button--success {
   background-color: #0d9737;
-  background-color: var(--brand-text-secondary);
+  background-color: var(--brand-secondary);
   color: #ffffff;
 }
 .af-button--success:active {
