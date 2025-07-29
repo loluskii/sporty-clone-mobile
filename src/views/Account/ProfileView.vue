@@ -227,12 +227,26 @@ async function submitKycRequest(){
       documentNumber: documentNumber.value,
 			clientId: import.meta.env.VITE_CLIENT_ID
     });
+		if(!res.success){
+			emitter.emit(
+	      "showDialogueToaster",
+	      res.message,
+	    );
+		}else{
+			emitter.emit(
+	      "showDialogueToaster",
+	      res.message,
+	    );
+			setTimeout(() => {
+				handleBackToProfile();
+			},1000)
+		}
     isLoading.value = false
   } catch (error) {
     isLoading.value = false
     emitter.emit(
       "showDialogueToaster",
-      "An error has Occured. Try Again",
+      error,
     );
   }
 }
