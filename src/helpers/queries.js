@@ -110,7 +110,7 @@ export const updateProfile = async (payload) => {
 
 export const processAccountVerification = async (payload) => {
   return parseData(
-    fetchWrapper.post(`${NEW_BASE_API}/auth/kyc/${import.meta.env.VITE_CLIENT_ID}`, payload),
+    fetchWrapper.post(`${NEW_BASE_API}/auth/kyc`, payload),
   );
 };
 
