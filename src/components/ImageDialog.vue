@@ -1,11 +1,17 @@
 <template>
     <div class="es-dialog-wrap" id="esDialog0" style="visibility: visible">
-        <div class="layout mask" @click="$emit('hide-dialogue')" style="z-index: 1000; position: fixed"></div>
+        <div class="layout mask" @click="$emit('hide-dialogue')" style="z-index: 1000; position: fixed">
+            
+        </div>
         <div class="m-dialog popup">
             <div class="m-dialog-body">
                 <div class="m-dialog-main" style="height: auto">
                     <div>
                         <img :src="image.image" style="height: 100%; width: 100%;" @click="nextAction"/>
+                    </div>
+
+                    <div class="popup-footer">
+                        <span @click="$emit('hide-dialogue')" class="close"></span>
                     </div>
                 </div>
             </div>
@@ -32,6 +38,38 @@ function nextAction() {
 </script>
 
 <style>
+span.close {
+    float: right;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ccc;
+    opacity: .7;
+    margin-top: 25px;
+}
+
+span.close::before {
+  content: "\e69a";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+span.close:before {
+  font-size: 1.25rem;
+}
+
+.popup-footer{
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+}
+
 .m-dialog.popup {
     border-radius: 0.3rem;
     box-shadow:
