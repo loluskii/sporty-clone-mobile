@@ -12,7 +12,7 @@
       </select>
       <br />
       <div class=" x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
-        <input type="number" placeholder="ID Number" maxlength="10" class="x-input-wap fs-exclude"
+        <input type="text" placeholder="ID Number" maxlength="10" class="x-input-wap fs-exclude"
           v-model="documentNumber" style="padding: 10px 15px;" />
       </div>
       <!---->
