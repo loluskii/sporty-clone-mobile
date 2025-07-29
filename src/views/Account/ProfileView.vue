@@ -224,7 +224,8 @@ async function submitKycRequest(){
     isLoading.value = true
     const res = await processAccountVerification({
       documentType: documentType.value,
-      documentNumber: documentNumber.value
+      documentNumber: documentNumber.value,
+			clientId: import.meta.env.VITE_CLIENT_ID
     });
     isLoading.value = false
   } catch (error) {
