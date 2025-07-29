@@ -518,6 +518,10 @@ const amountErrorMessage = ref("");
 
 const searchQuery = ref("");
 
+const balance = computed(() => {
+  return userStore.balance
+})
+
 async function getBanks() {
   isLoading.value = true;
   const res = await getBanksList();
