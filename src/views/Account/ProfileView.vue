@@ -17,7 +17,7 @@
       </div>
       <!---->
       <div class="m-btn-wrapper">
-        <button class="af-button af-button--success" :disabled="{'is-disabled': isLoading}"  :class="{'is-disabled': isLoading}" @click.prevent="submitKycRequest">
+        <button class="af-button af-button--success" :disabled="isLoading"  :class="{'is-disabled': isLoading}" @click.prevent="submitKycRequest">
           <span> Verify </span>
         </button>
       </div>
@@ -228,9 +228,10 @@ async function submitKycRequest(){
     });
     isLoading.value = false
   } catch (error) {
+    isLoading.value = false
     emitter.emit(
       "showDialogueToaster",
-      "An error has Occured",
+      "An error has Occured. Try Again",
     );
   }
 }
