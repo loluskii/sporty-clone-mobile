@@ -14,7 +14,7 @@
         ></path>
       </svg>
     </div>
-    <p class="success-msg">Withdrawal Succeeded!</p>
+    <p class="success-msg">Withdrawal Request Recieved!</p>
 
     <div class="success-line"></div>
     <div class="success-form amount">
@@ -118,7 +118,7 @@ onMounted(async () => {
 .withdraw-success .success-msg {
   color: #353a45;
   color: var(--text-type1-primary);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   line-height: 27px;
   margin-bottom: 1.66666667rem;
