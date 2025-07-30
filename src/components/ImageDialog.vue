@@ -37,7 +37,7 @@ function nextAction() {
 }
 </script>
 
-<style>
+<style scoped>
 span.close {
     float: right;
     color: white;
