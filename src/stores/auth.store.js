@@ -30,6 +30,8 @@ export const useAuthStore = defineStore({
         this.loading = false;
         if (this.returnUrl) {
           return router.push(this.returnUrl);
+        }else{
+          return router.push('/')
         }
       } catch (error) {
         this.loading = false;
