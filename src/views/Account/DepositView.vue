@@ -230,9 +230,6 @@ async function beginDeposit() {
 }
 
 onMounted(async () => {
-  if (!currentUser) {
-    return router.push({ name: "sign-in" });
-  }
   usersStore.setActiveBonus(null);
 
   await getPayments();

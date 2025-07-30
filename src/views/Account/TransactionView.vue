@@ -171,11 +171,7 @@ const seeDetail = (item) => {
 }
 
 onMounted(async () => {
-  if (isAuthenticated) {
-    await getData();
-  } else {
-    router.push({ name: "sign-in" });
-  }
+  await getData();
 });
 </script>
 

@@ -113,11 +113,7 @@ const userStore = useUsersStore();
 const {SportsbookGlobalVariable} = useUtilsStore();
 
 function redirectToAccount() {
-  if (userStore.currentUser) {
-    router.push({ name: "account-profile" });
-  } else {
-    router.push({ name: "sign-in" });
-  }
+  router.push({ name: "account-profile" });
 }
 defineComponent({
   name: "me-view",

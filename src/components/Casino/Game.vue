@@ -75,10 +75,7 @@ async function redirectToGamePlay() {
         },
       });
     }
-  } else {
-    authStore.returnUrl = "/Games";
-    return router.push({ name: "sign-in" });
-  }
+  } 
 }
 </script>
 
