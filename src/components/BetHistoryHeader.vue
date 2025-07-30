@@ -49,7 +49,7 @@ import { useRoute } from "vue-router";
 import { defineProps, computed } from "vue";
 
 const route = useRoute();
-const { isAuthenticated } = useAuthStore();
+const authStore = useAuthStore();
 const usersStore = useUsersStore();
 const { SportsbookGlobalVariable } = useUtilsStore();
 

@@ -11,7 +11,7 @@
             <div class="wording-wrap">
               <div class="account">
                 {{
-                  isAuthenticated
+                  authStore.isAuthenticated
                     ? userStore.currentUser?.username
                     : "Login to view"
                 }}
@@ -75,7 +75,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
 // import { formatNumber } from '@/helpers'
 const router = useRouter();
-const { isAuthenticated } = useAuthStore();
+const authStore = useAuthStore();
 const userStore = useUsersStore();
 const { SportsbookGlobalVariable } = useUtilsStore();
 

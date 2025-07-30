@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from "@/components/Footer.vue";
 import MobileFooter from "@/components/MobileFooter.vue";
-import { defineComponent, onMounted, ref, watch, onBeforeUnmount } from "vue";
+import { defineComponent, onMounted, ref, watch, provide } from "vue";
 import { useUtilsStore, useCouponStore } from "@/stores";
 import CasinoDialog from "@/components/CasinoDialog.vue";
 import CalendarBox from "@/components/CalendarBox.vue";
@@ -278,6 +278,7 @@ onMounted(async () => {
           utilsStore.popupDialogShown = false;
         }
       }, 1000)
+      // provide() implement gloabal store 
       isLoading.value = false;
     })
     .catch(() => {
