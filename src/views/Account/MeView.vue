@@ -50,7 +50,7 @@
               class="transaction-wrap-item-img" /><span>Bonus</span>
           </div>
         </div>
-        <div class="list-wrap" v-if="isAuthenticated">
+        <div class="list-wrap" v-if="authStore.isAuthenticated">
           <div class="item" style="color: #ccc;" @click="$router.push({ name: 'account-pending-withdrawals' })">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" fill="transparent" class="bi bi-clock"
               viewBox="0 0 16 16" stroke="#ccc">
