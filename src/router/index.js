@@ -345,6 +345,7 @@ router.beforeEach((to, from, next) => {
     "bet-history",
     "bet-detail",
     "game-play",
+    "account-pending-withdrawals"
 
   ];
   const authRequired = authPages.includes(to.name);
