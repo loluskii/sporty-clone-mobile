@@ -698,11 +698,7 @@ async function submitCashRequest() {
 
 onMounted(async () => {
   emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
-  if (!userStore.currentUser) {
-    return router.push({ name: "sign-in" });
-  } else {
-    Promise.all([checkUserBankAssets(), getBanks()]);
-  }
+  Promise.all([checkUserBankAssets(), getBanks()]);
 });
 </script>
 

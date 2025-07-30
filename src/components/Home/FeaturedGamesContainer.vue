@@ -109,9 +109,6 @@ const getImagePath = (game) => {
 };
 
 async function redirectToGamePlay(game) {
-  if (!authStore.isAuthenticated) {
-    return router.push("/sign-in");
-  }
   utilsStore.previousRoute = route.fullPath;
   return router.push({
     name: "game-play",

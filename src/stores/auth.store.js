@@ -28,9 +28,7 @@ export const useAuthStore = defineStore({
         const userStore = useUsersStore();
         userStore.loadCurrentUser();
         this.loading = false;
-        if (!this.returnUrl || this.returnUrl === "/") {
-          return router.push("/");
-        } else {
+        if (this.returnUrl) {
           return router.push(this.returnUrl);
         }
       } catch (error) {
