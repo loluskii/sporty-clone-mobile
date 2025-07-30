@@ -9,7 +9,9 @@
                     <p class="transaction-detail-v2__col header" data-cms-key="status">
                         Amount</p>
                     <div class="transaction-detail-v2__col data flex">
-                        <p data-op="trans-detail-status" class="">{{ data.type === 'credit' ? '+' : '-' }} {{ data.amount
+                        <p data-op="trans-detail-status" class="">{{ type === 'pending_withdrawals' ? '-' : data.type
+                            === 'credit' ? '+' : '-' }} {{
+                                data.amount
                             }}
                             {{ SportsbookGlobalVariable.CurrencyCode }}</p> <!---->
                     </div>
@@ -18,7 +20,8 @@
                     <p class="transaction-detail-v2__col header" data-cms-key="status">
                         Status</p>
                     <div class="transaction-detail-v2__col data flex">
-                        <p data-op="trans-detail-status" class="">{{ data.status === 1 ? 'Success' : 'Failed' }}</p>
+                        <p data-op="trans-detail-status" class="">{{ data.status === 1 ? 'Success' : data.status === 0 ?
+                            'Pending' : 'Failed' }}</p>
                         <!---->
                     </div>
                 </div>
@@ -26,10 +29,10 @@
                     <p class="transaction-detail-v2__col header" data-cms-key="type">
                         Type</p>
                     <p data-op="trans-detail-type" class="transaction-detail-v2__col data">
-                        {{ data.subject }}
+                        {{ type === 'pending_withdrawals' ? 'Withdrawal' : data.subject }}
                     </p>
                 </div>
-                <div class="transaction-detail-v2__row">
+                <div class="transaction-detail-v2__row" v-if="type === 'transactions'">
                     <p data-op="trans-detail-counter-type" class="transaction-detail-v2__col header">
                         Deposit From
                     </p>
@@ -37,28 +40,33 @@
                         {{ data.channel }}
                     </p>
                 </div>
-                <div class="transaction-detail-v2__row">
+                <div class="transaction-detail-v2__row" v-if="type === 'transactions'">
                     <p class="transaction-detail-v2__col header" data-cms-key="transaction_no"
                         data-cms-page="page_transaction">Transaction No.</p>
                     <p data-op="trans-detail-pay-ch-tx-id" class="transaction-detail-v2__col data">
                         {{ data.referenceNo }}
                     </p>
                 </div>
-                <div class="transaction-detail-v2__row">
+                <div class="transaction-detail-v2__row" v-else>
+                    <p class="transaction-detail-v2__col header" data-cms-key="transaction_no"
+                        data-cms-page="page_transaction">Withdrawal Code</p>
+                    <p data-op="trans-detail-pay-ch-tx-id" class="transaction-detail-v2__col data">
+                        {{ data.withdrawal_code ?? 'N/A' }}
+                    </p>
+                </div>
+                <div class="transaction-detail-v2__row" v-if="type === 'transactions'">
                     <p class="transaction-detail-v2__col header" data-cms-key="balance"
                         data-cms-page="page_transaction">After Balance</p>
                     <p data-op="trans-detail-after-balance" class="transaction-detail-v2__col data">
                         {{ data.balance }} {{ SportsbookGlobalVariable.CurrencyCode }}
                     </p>
                 </div>
-                <div class="transaction-detail-v2__row" style="display: none;">
-                    <p class="transaction-detail-v2__col header" data-cms-key="initial_balance"
-                        data-cms-page="page_transaction">Initial Balance</p>
-                    <p class="transaction-detail-v2__col data">
-                        {{ data.balance - data.amount }} {{ SportsbookGlobalVariable.CurrencyCode }}
-                    </p>
-                </div>
             </div>
+
+            <br />
+            <button v-if="type === 'pending_withdrawals'" @click.prevent="cancelRequest" class="af-button login-btn af-button--primary" :class="isLoading ? 'is-disabled' : ''" :disabled="isLoading">
+                <span> Cancel Request </span>
+            </button>
 
             <!-- <div class="transaction-detail-v2-contact"><span>For assistance, reach
                     out to</span> <span class="link">Customer Service</span> <span>or</span> <a
@@ -69,9 +77,28 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useUtilsStore } from '../stores';
-const props = defineProps(['data'])
+import { cancelPendingWithdrawal } from '../helpers';
+import emitter from '../plugins/emitter';
+const props = defineProps(['data', 'type'])
 const { SportsbookGlobalVariable } = useUtilsStore()
+const isLoading = ref(false)
+
+const cancelRequest = async () => {
+    let userConfirm = confirm("Are you sure you want to cancel this withdrawal?");
+    if(userConfirm){
+        try {
+            isLoading.value = true
+            const res = await cancelPendingWithdrawal({withdrawalId: props.data.id, comment: ''})
+            isLoading.value = false
+            window.location.reload()
+        } catch (error) {
+            emitter.emit("showDialogueToaster", "Failed to cancel request");
+            isLoading.value = false
+        }
+    }
+}
 </script>
 
 <style scoped>

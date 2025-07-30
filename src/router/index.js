@@ -14,6 +14,7 @@ const ProfileView = () => import("@/views/Account/ProfileView.vue");
 const FixtureDetail = () => import("@/views/Sport/FixtureDetail.vue");
 const LiveFixtureDetail = () => import("@/views/Sport/LiveFixtureDetail.vue");
 const TransactionView = () => import("@/views/Account/TransactionView.vue");
+const PendingWithdrawalView = () => import("@/views/Account/PendingWithdrawalView.vue");
 const SportsView = () => import("@/views/SportsView.vue");
 const LiveView = () => import("@/views/LiveView.vue");
 const LoadBetView = () => import("@/views/LoadBetView.vue");
@@ -179,6 +180,12 @@ export const router = createRouter({
       path: "/Account/Transactions",
       name: "account-transactions",
       component: TransactionView,
+      meta: { showMobileNavigation: true },
+    },
+    {
+      path: "/Account/PendingWithdrawals",
+      name: "account-pending-withdrawals",
+      component: PendingWithdrawalView,
       meta: { showMobileNavigation: true },
     },
     {

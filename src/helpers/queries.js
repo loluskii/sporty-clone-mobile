@@ -335,6 +335,19 @@ export const getTransactionsData = async (payload) => {
   );
 };
 
+export const getPendingWithdrawalsData = async () => {
+  return parseData(
+    fetchWrapper.get(`${NEW_BASE_API}/user/wallet/list-pending-withdrawal/${import.meta.env.VITE_CLIENT_ID}`),
+  );
+};
+
+export const cancelPendingWithdrawal = async (payload) => {
+  return parseData(
+    fetchWrapper.patch(`${NEW_BASE_API}/user/wallet/cancel-withdrawal/${import.meta.env.VITE_CLIENT_ID}`, payload),
+  );
+};
+
+
 export const fetchBankAssets = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/user/wallet/bank-accounts`),
