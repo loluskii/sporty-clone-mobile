@@ -21,7 +21,7 @@ import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
-import { useUsersStore } from "./stores";
+import { useAuthStore, useUsersStore } from "./stores";
 import { checkVersion } from "@/utils/version";
 import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 
@@ -38,6 +38,7 @@ const errorMessage = ref(null);
 const nextRoute = ref(null);
 const dialogueMessage = ref(null);
 const usersStore = useUsersStore();
+const authStore = useAuthStore()
 const dialogueShown = ref(false);
 const dialogueType = ref("");
 const isLoading = ref(true);
@@ -247,7 +248,7 @@ onMounted(async () => {
   // Check version and clear cache if needed
   // await checkVersion();
 
-  if (usersStore.currentUser) {
+  if (authStore.isAuthenticated) {
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
         console.log(res[2]);
