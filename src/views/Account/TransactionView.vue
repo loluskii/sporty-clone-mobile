@@ -105,6 +105,7 @@ import { CLIENT_ID } from "@/helpers";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import TransactionDetail from "@/components/TransactionDetail.vue";
+import emitter from "../../plugins/emitter";
 
 const transactionData = ref();
 const { isAuthenticated } = useAuthStore();
