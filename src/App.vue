@@ -273,8 +273,9 @@ onMounted(async () => {
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
       setTimeout(() => {
-        popupData.value = utilsStore.banners.find((b) => b.position === 'popup')
-        if(utilsStore.popupDialogShown ===  null){
+        let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
+        if(popupBanner && utilsStore.popupDialogShown ===  null){
+          popupData.value = popupBanner
           utilsStore.popupDialogShown = false;
         }
       }, 1000)
@@ -346,7 +347,7 @@ defineComponent({
                 @hide-dialogue="utilsStore.bonusModalShown = true"
               />
               <ImageDialog 
-                v-if="utilsStore.popupDialogShown === false && route.name === 'home'"
+                v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
                 :image="popupData"
                 @hide-dialogue="utilsStore.popupDialogShown = true"
               />
