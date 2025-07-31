@@ -12,7 +12,7 @@ import {
   getSportsMenu,
   loadBetslipByCode,
   getBets,
-  applyBranding,
+  getUserActiveBonus,
   CLIENT_ID,
   validateBetslipSelections,
   fetchBanners
@@ -21,7 +21,7 @@ import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
 import { useRoute, useRouter } from "vue-router";
 import emitter from "./plugins/emitter";
-import { useUsersStore } from "./stores";
+import { useUsersStore, useAuthStore } from "./stores";
 
 import HandleCache from '@/components/HandleCache.vue';
 import ImageDialog from "./components/ImageDialog.vue";
@@ -36,6 +36,7 @@ const errorMessage = ref(null);
 const nextRoute = ref(null);
 const dialogueMessage = ref(null);
 const usersStore = useUsersStore();
+const authStore = useAuthStore()
 const dialogueShown = ref(false);
 const dialogueType = ref("");
 const isLoading = ref(true);
@@ -245,7 +246,7 @@ onMounted(async () => {
   // Check version and clear cache if needed
   // await checkVersion();
 
-  if (usersStore.currentUser) {
+  if (authStore.isAuthenticated) {
     Promise.all([usersStore.loadCurrentUser(), getBetsData()])
       .then((res) => {
         console.log(res[2]);
@@ -262,7 +263,8 @@ onMounted(async () => {
     fetchBonusList(),
     fetchGlobalVars(),
     getSportsMenu(),
-    validateSelections(),
+    getUserActiveBonus(),
+    validateSelections()
   ])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
@@ -270,6 +272,17 @@ onMounted(async () => {
       utilsStore.sportsbookBonusList = res[0].data;
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
+      // Handle bonus response
+      if (res[3].data) {
+        utilsStore.casinoActiveBonus = bonusResponse.value.data;
+        if(utilsStore.bonusModalShown === null){
+          utilsStore.bonusModalShown = false
+          emitter.emit("showCasinoDialog", { bonus: utilsStore.casinoActiveBonus });
+        }
+      } else {
+        console.warn("Failed to fetch active bonus:", bonusResponse.reason);
+      }
+      
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
         if(popupBanner && utilsStore.popupDialogShown ===  null){

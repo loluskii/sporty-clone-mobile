@@ -108,7 +108,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
 import emitter from "@/plugins/emitter";
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 
-const activeTab = ref("");
+const activeTab = ref("paystack");
 const depositMethods = ref([]);
 const usersStore = useUsersStore();
 const {SportsbookGlobalVariable} = useUtilsStore()
@@ -131,7 +131,6 @@ async function getPayments() {
   isLoading.value = true;
   const res = await getPaymentMethods();
   depositMethods.value = res.data;
-  activeTab.value = res.data[0].provider;
   isLoading.value = false;
 }
 
