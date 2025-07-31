@@ -90,6 +90,8 @@ export const useUsersStore = defineStore({
           getUserActiveBonus(),
         ]);
 
+        console.log(userResponse, bonusResponse)
+
         // Handle user details response
         if (userResponse.status === "rejected") {
           throw new Error("Failed to fetch user details");
