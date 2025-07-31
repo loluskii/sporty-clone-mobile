@@ -118,8 +118,6 @@ const isLoading = ref(false);
 const availableBonus = ref(null);
 const isDepositing = ref(false)
 
-const usersStore = useUsersStore();
-
 const bonus = computed(() => {
   return usersStore.bonus;
 });
