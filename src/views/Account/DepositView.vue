@@ -110,7 +110,7 @@ import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 
 const activeTab = ref("");
 const depositMethods = ref([]);
-const { currentUser } = useUsersStore();
+const usersStore = useUsersStore();
 const {SportsbookGlobalVariable} = useUtilsStore()
 const router = useRouter();
 const amount = ref("");
@@ -155,7 +155,7 @@ function activateBonus() {
   const bonus = {
     bonusId: availableBonus.value.bonusId,
     amount: bonusAmount,
-    username: currentUser.username,
+    username: usersStore.currentUser.username,
   };
   usersStore.setActiveBonus(bonus);
   // availableBonus.value = null;
