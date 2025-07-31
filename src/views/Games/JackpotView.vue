@@ -215,11 +215,6 @@ const getImagePath = (game) => {
 
 const redirectToGamePlay = async (game) => {
   try {
-    if (!authStore.currentUser) {
-      authStore.returnUrl = "/Games";
-      return router.push({ name: "sign-in" });
-    }
-
     await router.push({
       name: "game-play",
       params: { game_name: slugify(game.title), game_id: game.id },

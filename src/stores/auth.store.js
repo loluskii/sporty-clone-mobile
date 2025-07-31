@@ -28,10 +28,10 @@ export const useAuthStore = defineStore({
         const userStore = useUsersStore();
         userStore.loadCurrentUser();
         this.loading = false;
-        if (!this.returnUrl || this.returnUrl === "/") {
-          return router.push("/");
-        } else {
+        if (this.returnUrl) {
           return router.push(this.returnUrl);
+        }else{
+          return router.push('/')
         }
       } catch (error) {
         this.loading = false;
@@ -39,18 +39,14 @@ export const useAuthStore = defineStore({
       }
     },
     clearStores() {
-      const authStore = useAuthStore();
-      authStore.$reset();
-      const userStore = useUsersStore();
-      userStore.$reset();
       // map through that list and use the **$reset** fn to reset the state
-      // getActivePinia()._s.forEach((store) => store.$reset())
+      getActivePinia()._s.forEach((store) => store.$reset())
     },
     async logout() {
       this.token = null;
       this.mobile_number = null;
       this.clearStores();
-      return await router.push("/");
+      window.location.href = "/"
     },
   },
   persist: {

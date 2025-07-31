@@ -1,7 +1,7 @@
 <template>
   <div class="m-trans-wrap">
     <div id="transaction-list-container">
-      <div class="m-nav-secondary withHome" :style="styles">
+      <div class="m-nav-secondary withHome">
         <div class="m-nav-left">
           <span @click="toggleView" class="m-icon m-icon--back"></span>
           <span class="title"> {{ view }} </span>
@@ -87,7 +87,7 @@
         </div>
       </template>
       <template v-else>
-        <TransactionDetail :data="selectedTransaction" />
+        <TransactionDetail :data="selectedTransaction" :type="'transactions'" />
       </template>
     </div>
   </div>
@@ -171,11 +171,11 @@ const seeDetail = (item) => {
 }
 
 onMounted(async () => {
-  if (isAuthenticated) {
-    await getData();
-  } else {
-    router.push({ name: "sign-in" });
-  }
+  await getData().then(() => {
+    setTimeout(() => {
+      emitter.emit("showDialogueToaster", "NOTE: Click on a transaction to view more details");
+    }, 1000)
+  });
 });
 </script>
 
