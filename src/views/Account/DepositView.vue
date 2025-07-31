@@ -131,7 +131,7 @@ async function getPayments() {
   isLoading.value = true;
   const res = await getPaymentMethods();
   depositMethods.value = res.data;
-  activeTab.value = res.data[0].provider;
+  activeTab.value = depositMethods.value[0];
   isLoading.value = false;
 }
 
