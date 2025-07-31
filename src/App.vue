@@ -12,7 +12,7 @@ import {
   getSportsMenu,
   loadBetslipByCode,
   getBets,
-  applyBranding,
+  getUserActiveBonus,
   CLIENT_ID,
   validateBetslipSelections,
   fetchBanners
@@ -265,7 +265,8 @@ onMounted(async () => {
     fetchBonusList(),
     fetchGlobalVars(),
     getSportsMenu(),
-    validateSelections(),
+    getUserActiveBonus(),
+    validateSelections()
   ])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data;
@@ -273,6 +274,17 @@ onMounted(async () => {
       utilsStore.sportsbookBonusList = res[0].data;
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
+      // Handle bonus response
+      if (res[3].data) {
+        utilsStore.casinoActiveBonus = bonusResponse.value.data;
+        if(utilsStore.bonusModalShown === null){
+          utilsStore.bonusModalShown = false
+          emitter.emit("showCasinoDialog", { bonus: utilsStore.casinoActiveBonus });
+        }
+      } else {
+        console.warn("Failed to fetch active bonus:", bonusResponse.reason);
+      }
+      
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
         if(popupBanner && utilsStore.popupDialogShown ===  null){
