@@ -518,6 +518,10 @@ const amountErrorMessage = ref("");
 
 const searchQuery = ref("");
 
+const balance = computed(() => {
+  return userStore.balance
+})
+
 async function getBanks() {
   isLoading.value = true;
   const res = await getBanksList();
@@ -694,11 +698,7 @@ async function submitCashRequest() {
 
 onMounted(async () => {
   emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
-  if (!usersStore.currentUser) {
-    return router.push({ name: "sign-in" });
-  } else {
-    Promise.all([checkUserBankAssets(), getBanks()]);
-  }
+  Promise.all([checkUserBankAssets(), getBanks()]);
 });
 </script>
 

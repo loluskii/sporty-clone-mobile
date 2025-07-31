@@ -290,10 +290,7 @@ async function redirectToGamePlay(game) {
         });
       }
     }
-  } else {
-    authStore.returnUrl = route.fullPath;
-    return router.push({ name: "sign-in" });
-  }
+  } 
 }
 
 const loadMore = async () => {

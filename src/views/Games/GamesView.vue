@@ -506,10 +506,6 @@ const handleImageError = (event, game) => {
 async function redirectToGamePlay(game) {
   utilsStore.previousRoute = route.fullPath;
   try {
-    if (!userStore.currentUser) {
-      authStore.returnUrl = "/Games";
-      return router.push({ name: "sign-in" });
-    }
 
     if (
       activeBonus.value &&

@@ -9,7 +9,7 @@
         />
       </div>
       <div class="copyright" style="color: var(--brand-primary)">
-        © 2024 {{ utilsStore.brandName }}. All rights reserved.
+        &copy; {{ new Date().getFullYear() }} {{ utilsStore.brandName }}. All rights reserved.
       </div>
     </div>
     <div class="partnership-wrap text-center">

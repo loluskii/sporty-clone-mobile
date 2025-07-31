@@ -14,6 +14,7 @@ const ProfileView = () => import("@/views/Account/ProfileView.vue");
 const FixtureDetail = () => import("@/views/Sport/FixtureDetail.vue");
 const LiveFixtureDetail = () => import("@/views/Sport/LiveFixtureDetail.vue");
 const TransactionView = () => import("@/views/Account/TransactionView.vue");
+const PendingWithdrawalView = () => import("@/views/Account/PendingWithdrawalView.vue");
 const SportsView = () => import("@/views/SportsView.vue");
 const LiveView = () => import("@/views/LiveView.vue");
 const LoadBetView = () => import("@/views/LoadBetView.vue");
@@ -182,6 +183,12 @@ export const router = createRouter({
       meta: { showMobileNavigation: true },
     },
     {
+      path: "/Account/PendingWithdrawals",
+      name: "account-pending-withdrawals",
+      component: PendingWithdrawalView,
+      meta: { showMobileNavigation: true },
+    },
+    {
       path: "/Account/Deposit",
       name: "account-deposit",
       component: DepositView,
@@ -302,63 +309,59 @@ export const router = createRouter({
   ],
 });
 
-// Add route preloading
 router.beforeEach((to, from, next) => {
-  // Show loading state
   document.body.classList.add("route-loading");
 
-  // Preload next route's component
-  if (to.matched.length) {
-    const component = to.matched[0].components.default;
-    if (typeof component === "function") {
-      component();
-    }
-  }
+  // Preload the main component of the next route
+  const preloadComponent = (route) => {
+    const component = route.matched?.[0]?.components?.default;
+    if (typeof component === "function") component();
+  };
+
+  preloadComponent(to);
 
   // Preload frequently accessed routes
-  if (preloadRoutes.includes(to.name)) {
-    preloadRoutes.forEach((routeName) => {
+  preloadRoutes.forEach((routeName) => {
+    if (routeName !== to.name) {
       const route = router.resolve({ name: routeName });
-      if (route.matched.length) {
-        const component = route.matched[0].components.default;
-        if (typeof component === "function") {
-          component();
-        }
-      }
-    });
-  }
+      preloadComponent(route);
+    }
+  });
 
+  // Utils: toggle visibility of layout elements based on route meta
   const utilStore = useUtilsStore();
-  // Check if the meta field is set and decide whether to show the footer
-  const showFooter = to.meta.showFooter;
-  const showMobileNavigation = to.meta.showMobileNavigation;
-  const showBetslipCount = to.meta.showBetslipCount;
+  utilStore.showFooter = !!to.meta.showFooter;
+  utilStore.showMobileNavigation = !!to.meta.showMobileNavigation;
+  utilStore.showBetslipCount = !!to.meta.showBetslipCount;
 
-  utilStore.showBetslipCount = showBetslipCount ? showBetslipCount : false;
-  utilStore.showMobileNavigation = showMobileNavigation
-    ? showMobileNavigation
-    : false;
-  utilStore.showFooter = showFooter ? showFooter : false;
-
-  const publicPages = [
-    "account-withdraw",
-    "account-me",
-    "account-deposit",
-    "account-transactions",
-    "bet-detail",
-  ];
-  const authRequired = publicPages.includes(to.name);
+  // Auth handling
   const authStore = useAuthStore();
+  const authPages = [
+    "account-withdraw",
+    "account-profile",
+    "account-deposit",
+    "account-bonus",
+    "account-transactions",
+    "bet-history",
+    "bet-detail",
+    "game-play",
+    "account-pending-withdrawals"
 
-  if (
-    authStore.isAuthenticated &&
-    (to.name === "sign-in" || to.name === "sign-up")
-  ) {
-    // authStore.returnUrl = to.fullPath;
-    router.push("/");
+  ];
+  const authRequired = authPages.includes(to.name);
+
+  if (authStore.isAuthenticated && ["sign-in", "sign-up"].includes(to.name)) {
+    return next({ path: "/" });
   }
+
+  if (authRequired && !authStore.isAuthenticated) {
+    authStore.returnUrl = to.fullPath;
+    return next({ name: "sign-in" });
+  }
+
   next();
 });
+
 
 // Add afterEach to remove loading state
 router.afterEach(() => {

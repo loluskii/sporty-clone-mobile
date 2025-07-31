@@ -7,6 +7,7 @@ export const useUtilsStore = defineStore({
     brandName: "",
     sportID: 1,
     live: false,
+    banners: [],
     sportsMenu: [],
     marketGroups: [],
     activeLiveMarkets: [],
@@ -18,7 +19,8 @@ export const useUtilsStore = defineStore({
     showMobileNavigation: true,
     errorMessage: null,
     categoriesList: [],
-    casinoBonusShown: false,
+    bonusModalShown: null,
+    popupDialogShown: null,
     previousRoute: null,
     // Featured games state
     featuredTournaments: [],
@@ -244,12 +246,12 @@ export const useUtilsStore = defineStore({
       'showMobileNavigation',
       'errorMessage',
       'categoriesList',
-      'casinoBonusShown',
       'previousRoute',
       // 'featuredTournaments',
       // 'featuredTournamentGames',
       'featuredLastFetchTime',
-      // 'activeFeaturedTournament'
+      'popupDialogShown',
+      'bonusModalShown'
     ]
   },
 });
