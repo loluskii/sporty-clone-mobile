@@ -85,8 +85,6 @@ export const useUsersStore = defineStore({
         this.error = null;
         const [userResponse] = await Promise.allSettled([getUserDetailsByToken()]);
 
-        console.log(userResponse, bonusResponse)
-
         // Handle user details response
         if (userResponse.status === "rejected") {
           throw new Error("Failed to fetch user details");
