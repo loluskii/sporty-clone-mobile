@@ -9,7 +9,7 @@
             :class="activeTab == method.provider ? 'm-tabs-tab-active' : ''" :key="index" class="m-tabs-tab"
             @click="setActiveTab(method.provider)">
             <span style="text-transform: capitalize">{{
-              method.provider === "sbengine" ? "Shop" : method.provider
+              method.provider === "sbengine" ? "Shop" : method.title
             }}</span>
           </div>
         </div>
