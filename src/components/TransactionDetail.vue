@@ -61,6 +61,13 @@
                         {{ data.balance }} {{ SportsbookGlobalVariable.CurrencyCode }}
                     </p>
                 </div>
+                <div class="transaction-detail-v2__row" v-else>
+                    <p class="transaction-detail-v2__col header" data-cms-key="balance"
+                        data-cms-page="page_transaction">Created at</p>
+                    <p data-op="trans-detail-after-balance" class="transaction-detail-v2__col data">
+                        {{ data.created_at }}
+                    </p>
+                </div>
             </div>
 
             <br />
