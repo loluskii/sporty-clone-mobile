@@ -65,7 +65,7 @@
                     <p class="transaction-detail-v2__col header" data-cms-key="balance"
                         data-cms-page="page_transaction">Created at</p>
                     <p data-op="trans-detail-after-balance" class="transaction-detail-v2__col data">
-                        {{ new Date(data.created_at).format("DD/MM/YYYY") }}
+                        {{ formatDate(data.created_at) }}
                     </p>
                 </div>
             </div>
@@ -105,6 +105,14 @@ const cancelRequest = async () => {
             isLoading.value = false
         }
     }
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 </script>
 
