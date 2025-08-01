@@ -343,7 +343,7 @@ export const getPendingWithdrawalsData = async () => {
 
 export const cancelPendingWithdrawal = async (payload) => {
   return parseData(
-    fetchWrapper.patch(`${NEW_BASE_API}/user/wallet/cancel-withdrawal/${import.meta.env.VITE_CLIENT_ID}`, payload),
+    fetchWrapper.post(`${NEW_BASE_API}/user/wallet/cancel-withdrawal/${import.meta.env.VITE_CLIENT_ID}`, payload),
   );
 };
 
