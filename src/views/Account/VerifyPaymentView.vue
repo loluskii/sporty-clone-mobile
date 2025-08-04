@@ -47,6 +47,9 @@ watch(
       case "fidelity":
         ref = route.query.txnRef;
         break;
+      case "smileandpay":
+        ref = route.query.orderReference
+        break;
     }
 
     if (!ref) {
