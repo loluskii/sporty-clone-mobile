@@ -61,6 +61,7 @@
                 <em>{{
                   formatDate(item.transactionDate, "YYYY-MM-DD h:mma")
                 }}</em>
+                <i class="text-danger" v-if="item.status === 3">Cancelled</i>
                 <i class="text-danger" v-if="item.status === 2">Failed</i>
                 <i class="text-success" v-if="item.status === 1">Completed</i>
                 <i class="text-warning" v-if="item.status === 0">Pending</i>

@@ -14,7 +14,7 @@
         ></path>
       </svg>
     </div>
-    <p class="success-msg">Withdrawal Succeeded!</p>
+    <p class="success-msg">Withdrawal Request Recieved!</p>
 
     <div class="success-line"></div>
     <div class="success-form amount">

@@ -9,7 +9,7 @@
             :class="activeTab == method.provider ? 'm-tabs-tab-active' : ''" :key="index" class="m-tabs-tab"
             @click="setActiveTab(method.provider)">
             <span style="text-transform: capitalize">{{
-              method.provider === "sbengine" ? "Shop" : method.provider
+              method.provider === "sbengine" ? "Shop" : method.title
             }}</span>
           </div>
         </div>
@@ -47,7 +47,7 @@
             <div class="balance-container">
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"><span data-cms-key="balance">Balance</span> ({{
-                  SportsbookGlobalVariable.CurrencyCode
+                  utilsStore.SportsbookGlobalVariable.CurrencyCode
                 }}) {{ usersStore.balance }}
                 </span>
               </div>
@@ -56,7 +56,7 @@
               <div class="deposit-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend">
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
                   <span class="amount-prepend"><span data-cms-key="amount">Amount</span> ({{
-                    SportsbookGlobalVariable.CurrencyCode
+                    utilsStore.SportsbookGlobalVariable.CurrencyCode
                   }})
                   </span>
                 </div>
@@ -83,9 +83,13 @@
           <div class="deposit-footer" style="">
             <div class="wrap">
               <ul class="m-payment-tips f-count">
-                <li class="l-item">1. Minimum deposit amount is {{SportsbookGlobalVariable.CurrencyCode}} {{SportsbookGlobalVariable.MinDeposit}} - you can deposit at least {{SportsbookGlobalVariable.CurrencyCode}} {{SportsbookGlobalVariable.MinDeposit}} in one
+                <li class="l-item">1. Minimum deposit amount is {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} - you can deposit at least
+                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} in one
                   transaction.</li>
-                <li class="l-item">2. Maximum per transaction is {{SportsbookGlobalVariable.CurrencyCode}} 9,999,999.00 - you can deposit up to {{SportsbookGlobalVariable.CurrencyCode}}
+                <li class="l-item">2. Maximum per transaction is {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  9,999,999.00 - you can deposit up to {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
                   9,999,999.00 in one transaction.</li>
                 <li class="l-item">3. If you have any issues, please contact customer service.</li>
               </ul>
@@ -111,7 +115,7 @@ import { CLIENT_ID, checkFirstDeposit, formatNumber } from "@/helpers";
 const activeTab = ref("paystack");
 const depositMethods = ref([]);
 const usersStore = useUsersStore();
-const {SportsbookGlobalVariable} = useUtilsStore()
+const utilsStore = useUtilsStore()
 const router = useRouter();
 const amount = ref("");
 const isLoading = ref(false);
@@ -325,6 +329,7 @@ html[theme="light"] {
 .m-tabs-tab-active {
   font-weight: bold;
 }
+
 .m-payment-tips .l-item {
   -webkit-box-align: start;
   -webkit-align-items: flex-start;
