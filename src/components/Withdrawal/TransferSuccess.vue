@@ -14,7 +14,7 @@
         ></path>
       </svg>
     </div>
-    <p class="success-msg">Transfer Succeeded!</p>
+    <p class="success-msg">Transfer Request Recieved!</p>
 
     <div class="success-line"></div>
     <div class="success-form amount">
