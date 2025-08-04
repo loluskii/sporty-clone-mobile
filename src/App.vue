@@ -249,10 +249,8 @@ onMounted(async () => {
   // await checkVersion();
 
   if (authStore.isAuthenticated) {
-    Promise.all([usersStore.loadCurrentUser(), getBetsData()])
-      .then((res) => {
-        console.log(res[2]);
-      })
+    Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getBetsData()])
+      .then((res) => {})
       .catch(() => {
         isLoading.value = false;
       })
@@ -265,7 +263,6 @@ onMounted(async () => {
     fetchBonusList(),
     fetchGlobalVars(),
     getSportsMenu(),
-    getUserActiveBonus(),
     validateSelections()
   ])
     .then((res) => {
