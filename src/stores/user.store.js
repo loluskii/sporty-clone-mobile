@@ -9,6 +9,7 @@ export const useUsersStore = defineStore({
   state: () => ({
     currentUser: null,
     activeBonus: null,
+    activeCashback: null,
     casinoActiveBonus: null,
     error: null,
   }),

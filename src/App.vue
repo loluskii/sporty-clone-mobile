@@ -15,7 +15,8 @@ import {
   getUserActiveBonus,
   CLIENT_ID,
   validateBetslipSelections,
-  fetchBanners
+  fetchBanners,
+  getUserCashbackBonus
 } from "@/helpers";
 import Betlist from "@/components//Betslip/Betlist.vue";
 import ErrorDialogue from "./components/ErrorDialogue.vue";
@@ -249,8 +250,10 @@ onMounted(async () => {
   // await checkVersion();
 
   if (authStore.isAuthenticated) {
-    Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getBetsData()])
-      .then((res) => {})
+    Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getUserCashbackBonus(), getBetsData()])
+      .then((res) => {
+        usersStore.activeCashback = res[2].data !== null
+      })
       .catch(() => {
         isLoading.value = false;
       })
