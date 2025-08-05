@@ -35,7 +35,7 @@ export const useAuthStore = defineStore({
         }
       } catch (error) {
         this.loading = false;
-        this.authError = "Unauthorized. Please check your information";
+        this.authError = error;
       }
     },
     clearStores() {
