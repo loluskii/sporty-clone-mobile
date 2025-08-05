@@ -14,7 +14,7 @@
 
           <span class="currency"><em>{{
             SportsbookGlobalVariable.CurrencyCode
-          }}</em></span>
+              }}</em></span>
           <span tabindex="0" type="text" disabled class="m-keybord-input multiple-stake-input" v-html="betlistStake"
             @click="toggleKeyboard"></span>
         </div>
@@ -76,6 +76,18 @@
             v-model="couponStore.coupon.useBonus" id="" />
           <span>{{ SportsbookGlobalVariable.Currency }}
             {{ userStore.currentUser.sportBonusBalance }}</span>
+        </div>
+      </div>
+
+      <div v-if="
+        userStore.currentUser &&
+        userStore.activeCashback > 0 &&
+        !couponStore.betslipMode
+      " class="bonus mg-b-10">
+        <span>Use Cashback</span>
+        <div style="display: flex; align-items: center">
+          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
+            v-model="couponStore.coupon.useBonus" id="" />
         </div>
       </div>
 
