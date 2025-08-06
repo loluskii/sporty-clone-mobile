@@ -72,7 +72,7 @@
       " class="bonus mg-b-10">
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
-          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
+          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-secondary)"
             v-model="couponStore.coupon.useBonus" id="" />
           <span>{{ SportsbookGlobalVariable.Currency }}
             {{ userStore.currentUser.sportBonusBalance }}</span>
@@ -81,13 +81,13 @@
 
       <div v-if="
         userStore.currentUser &&
-        userStore.activeCashback > 0 &&
+        userStore.activeCashback &&
         !couponStore.betslipMode
       " class="bonus mg-b-10">
         <span>Use Cashback</span>
         <div style="display: flex; align-items: center">
-          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-primary)"
-            v-model="couponStore.coupon.useBonus" id="" />
+          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-secondary)"
+            v-model="couponStore.coupon.useCashback" id="" />
         </div>
       </div>
 
