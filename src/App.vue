@@ -246,9 +246,6 @@ onMounted(async () => {
     utilsStore.banners = []
   }
 
-  // Check version and clear cache if needed
-  // await checkVersion();
-
   if (authStore.isAuthenticated) {
     Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getUserCashbackBonus(), getBetsData()])
       .then((res) => {

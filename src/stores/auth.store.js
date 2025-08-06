@@ -1,8 +1,18 @@
-import { defineStore } from "pinia";
+import {
+  defineStore
+} from "pinia";
 
-import { login } from "@/helpers";
-import { getActivePinia } from "pinia";
-import { useUsersStore } from "@/stores";
+import {
+  login,
+  getUserActiveBonus,
+  getUserCashbackBonus
+} from "@/helpers";
+import {
+  getActivePinia
+} from "pinia";
+import {
+  useUsersStore
+} from "@/stores";
 import router from "../router";
 
 export const useAuthStore = defineStore({
@@ -23,15 +33,25 @@ export const useAuthStore = defineStore({
       this.authError = "";
       try {
         const res = await login(payload);
-        this.token = res.data.token;
-        this.mobile_number = payload.username;
-        const userStore = useUsersStore();
-        userStore.loadCurrentUser();
-        this.loading = false;
-        if (this.returnUrl) {
-          return router.push(this.returnUrl);
-        }else{
-          return router.push('/')
+        if (res.data && res.data.token) {
+          this.token = res.data.token;
+          this.mobile_number = payload.username;
+          const userStore = useUsersStore();
+          const data = await Promise.all([
+            userStore.loadCurrentUser(),
+            getUserActiveBonus(),
+            getUserCashbackBonus()
+          ]);
+
+          userStore.activeCashback = data[2].data
+          this.loading = false;
+          if (this.returnUrl) {
+            return router.push(this.returnUrl);
+          } else {
+            return router.push('/')
+          }
+        } else {
+          throw Error(res.error)
         }
       } catch (error) {
         this.loading = false;
