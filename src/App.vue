@@ -252,7 +252,7 @@ onMounted(async () => {
   if (authStore.isAuthenticated) {
     Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getUserCashbackBonus(), getBetsData()])
       .then((res) => {
-        usersStore.activeCashback = res[2].data !== null
+        usersStore.activeCashback = res[2].data;
       })
       .catch(() => {
         isLoading.value = false;
