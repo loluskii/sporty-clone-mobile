@@ -388,7 +388,7 @@
                 </button>
               </div>
             </div>
-            <div v-else-if="activeMethod === 'shop'" class="transfer-section">
+            <div v-else-if="activeMethod === 'shop' || activeMethod === 'smileandpay'" class="transfer-section">
               <div style="padding: 1.3rem">
                 <div class="balance-container mb-3">
                   <p class="balance-text">
@@ -399,7 +399,9 @@
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span
+                        >{{ SportsbookGlobalVariable.CurrencyCode }} {{ userStore.balance }}</span
+                      >
                     </p>
                   </div>
                 </div>
@@ -465,7 +467,7 @@ import {
   verifyAccount,
   withdrawalRequest,
   fetchBankAssets,
-  transferRequest
+  transferRequest, smileandpayPayout
 } from "@/helpers";
 import TransferSuccess from '@/components/Withdrawal/TransferSuccess.vue'
 import CashWithdrawalSuccess from '@/components/Withdrawal/CashWithdrawalSuccess.vue'
@@ -482,7 +484,7 @@ const router = useRouter();
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
   { name: 'Shop', key: 'shop' },
-  { name: 'Transfer to Friend', key: 'transfer' }
+  { name: 'SmileandPay Cash', key: 'smileandpay' }
 ]
 const activeMethod = ref('bank')
 const banksList = ref([]);
@@ -674,14 +676,24 @@ async function submitTransferRequest() {
 }
 
 async function submitCashRequest() {
-  let payload = {
-    amount: cashWithdrawalAmount.value.toString(),
-    clientId: CLIENT_ID,
-    type: 'cash'
-  }
+  let payload, res;
   buttonLoader.value = true
   try {
-    const res = await withdrawalRequest(payload)
+    if(activeMethod.value === 'smileandpay'){
+      payload = {
+        amount: cashWithdrawalAmount.value,
+        action: 'payouts',
+        type: 'cash'
+      }
+      res = await smileandpayPayout(payload)
+    }else{
+      payload = {
+        amount: cashWithdrawalAmount.value.toString(),
+        clientId: CLIENT_ID,
+        type: 'cash'
+      }
+      res = await withdrawalRequest(payload)
+    }
     buttonLoader.value = false
     if (res.success) {
       cashWithdrawalSuccessData.value = { amount: payload.amount, withdrawalCode: res.data.code }

@@ -542,6 +542,10 @@ export const withdrawalRequest = async (payload) => {
   );
 };
 
+export const smileandpayPayout = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/user/wallet/smileandpay/payout/${CLIENT_ID}?source=mobile`, payload))
+}
+
 export const transferRequest = async (payload) => {
   return parseData(
     fetchWrapper.put(
