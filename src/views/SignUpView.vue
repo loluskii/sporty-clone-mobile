@@ -8,14 +8,14 @@
         <div class="enter-mobile-container" v-if="activeStep === 1">
           <form>
             <div class="enter-mobile-label">
-              <p>Join {{ brandName }} with your mobile number</p>
+              <p>Join {{ utils.brandName }} with your mobile number</p>
             </div>
             <div
               class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
               :class="registerError ? 'm-input-wap-wrapper--error' : ''"
             >
               <div class="m-input-wap-prepend m-input-wap-prepend--default">
-                <div>+234</div>
+                <div>+{{ utils.dialCode }}</div>
               </div>
               <i
                 @click="clear"
@@ -70,7 +70,7 @@
             <div class="enter-mobile-label">
               <p>Verify Your Number</p>
               <span style="font-size: 15px; font-weight: 400"
-                >We’ve sent you a 6-digit code to +234 {{ formData.phone_no }}</span
+                >We've sent you a 6-digit code to +234 {{ formData.phone_no }}</span
               >
             </div>
             <div id="verify-otp-container" class="text-center">
@@ -143,6 +143,7 @@ import { useAuthStore, useUtilsStore } from '../stores'
 // Use ref for reactive data properties
 const authStore = useAuthStore()
 const { brandName } = useUtilsStore()
+const utilsStore = useUtilsStore()
 const formData = ref({
   phone_no: null,
   password: null,
@@ -158,7 +159,6 @@ const activeStep = ref(1)
 const OTP = ref('')
 const isDisabled = ref(false)
 const remainingTime = ref(60)
-const clickId = ref(null)
 let timer
 
 // Define methods using the Composition API
@@ -264,12 +264,13 @@ const doRegistration = async () => {
     promoCode: formData.value.promoCode
   }
 
-  if (clickId.value) {
-    payload.trackingToken = clickId.value
+  if (utilsStore.clickId !== null) {
+    payload.trackingToken = utilsStore.clickId
   }
 
   try {
     const res = await register(payload)
+    utilsStore.clickId = null
     if (res.data.success) {
       await authStore.doLogin(payload)
       isLoading.value = false
@@ -315,7 +316,7 @@ const toLogin = () => {
 
 onMounted(() => {
   if (route.query.clickid || route.query.token) {
-    clickId.value = route.query.clickid || route.query.token
+    utilsStore.clickId = route.query.clickid || route.query.token
   }
 })
 </script>
@@ -344,6 +345,7 @@ onMounted(() => {
   width: 100%;
   z-index: 10;
 }
+
 .register-and-login .warn-label {
   background-color: #e41827;
   background-color: var(--warning-primary);
@@ -354,6 +356,7 @@ onMounted(() => {
   text-align: center;
   width: 100%;
 }
+
 .register-and-login .page-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -378,6 +381,7 @@ onMounted(() => {
   padding: 8.91666667rem 2.5rem 1.66666667rem;
   width: 100%;
 }
+
 .register-and-login .page-container.page-fixed {
   padding: 1.66666667rem 0 1.66666667rem;
 }
@@ -386,13 +390,16 @@ onMounted(() => {
   border-top: 1px solid #d4d4d4;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-top-banner {
   margin-top: -1.66666667rem;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-top-banner img {
   width: 100%;
 }
+
 #enterMobile .change-region-wrap {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -412,13 +419,16 @@ onMounted(() => {
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 #enterMobile .change-region-wrap .m-icon-right::before {
   color: #0d9737;
   color: var(--brand-secondary);
 }
+
 #enterMobile .change-region-wrap .close {
   float: right;
 }
+
 #enterMobile .change-region-wrap .close::before {
   content: '\e69a';
   font-family: 'iconfont' !important;
@@ -427,9 +437,11 @@ onMounted(() => {
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 #enterMobile .change-region-wrap .close:before {
   font-size: 1.25rem;
 }
+
 #enterMobile .enter-mobile-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -449,12 +461,15 @@ onMounted(() => {
   padding: 5.41666667rem 2.5rem 0;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container form {
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container form .progress-container {
   height: 62px;
 }
+
 #enterMobile .enter-mobile-container .enter-mobile-label {
   color: #353a45;
   color: var(--text-type1-primary);
@@ -466,9 +481,11 @@ onMounted(() => {
   text-align: center;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container .m-input-wap-wrapper--active {
   border: 1px solid #0d9737;
 }
+
 #enterMobile .enter-mobile-container .verifyInputs {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -486,10 +503,12 @@ onMounted(() => {
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 #enterMobile .enter-mobile-container .verifyInputs input {
   height: 100%;
   padding: 1.41666667rem 10px;
 }
+
 #enterMobile .enter-mobile-container .error-message {
   color: #e41827;
   color: var(--warning-primary);
@@ -500,9 +519,11 @@ onMounted(() => {
   text-align: left;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container .error-message .err-login-btn {
   color: #3656a3;
 }
+
 #enterMobile .enter-mobile-container .enter-mobile-btn {
   background-color: var(--brand-secondary);
   color: white;
@@ -516,6 +537,7 @@ onMounted(() => {
   padding-right: 1px;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container .action-label {
   color: #0d9737;
   color: var(--brand-secondary);
@@ -524,33 +546,41 @@ onMounted(() => {
   text-align: center;
   width: 100%;
 }
+
 #enterMobile .mobile-warning-info {
   font-size: 12px;
   font-weight: bold;
   padding: 5px;
 }
+
 .wap-register.es-dialog .es-dialog-head h1 {
   font-size: 1.66666667rem;
   height: auto;
 }
+
 #verify-otp-container {
   color: #353a45;
   color: var(--text-type1-primary);
 }
+
 #verify-otp-container .m-loading-wrap {
   background-color: #ffffff;
   min-height: initial;
 }
+
 #verify-otp-container .m-loading-wrap .m-loading .loading {
   background-color: #ffffff;
 }
+
 #verify-otp-container .m-loading-wrap {
   background-color: var(--background-type1-quaternary);
   min-height: initial;
 }
+
 #verify-otp-container .m-loading-wrap .m-loading .loading {
   background-color: var(--background-type1-quaternary);
 }
+
 #verify-otp-container .split-line {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
@@ -558,6 +588,7 @@ onMounted(() => {
   margin: 1.66666667rem 0;
   width: 100%;
 }
+
 #verify-otp-container .sec-left {
   color: #353a45;
   color: var(--text-type1-primary);

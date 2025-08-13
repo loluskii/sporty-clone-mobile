@@ -4,6 +4,7 @@ import { getTopBets, getFixturesByTournamentId } from '@/helpers'
 export const useUtilsStore = defineStore({
   id: 'utils',
   state: () => ({
+    clickId: null,
     brandName: '',
     sportID: 1,
     live: false,

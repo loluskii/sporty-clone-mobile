@@ -238,6 +238,7 @@ watch(
 )
 
 onMounted(async () => {
+  utilsStore.clickId = new URLSearchParams(window.location.search).get('clickid')
   if (route.path !== '/') {
     isLoading.value = false
   }
