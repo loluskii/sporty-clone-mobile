@@ -11,8 +11,7 @@
         </p>
         <div
           class="fail-btn"
-          data-cms-key="reload"
-          data-cms-page="common_feedback"
+          @click="$router.go(0)"
         >
           Reload
         </div>
