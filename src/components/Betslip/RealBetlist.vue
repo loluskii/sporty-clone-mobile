@@ -3,9 +3,7 @@
     <div class="m-snap-nav-wrap m-list-bet-type" style="overflow: hidden">
       <ul class="m-snap-nav flex">
         <li
-          :class="
-            betSlipType !== 'Combo' && betType === 'Single' ? 'active' : ''
-          "
+          :class="betSlipType !== 'Combo' && betType === 'Single' ? 'active' : ''"
           @click="couponStore.setBetType('Single')"
           class="m-list-bet-type-item m-snap-nav-item"
           data-op="betslip-multi-tag-single"
@@ -13,9 +11,7 @@
           <span data-cms-key="singles">Single</span>
         </li>
         <li
-          :class="
-            betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''
-          "
+          :class="betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''"
           @click="couponStore.setBetType('Multiple')"
           class="flex flex-center m-list-bet-type-item m-snap-nav-item"
           data-op="betslip-multi-tag-multi"
@@ -36,9 +32,7 @@
     </div>
     <!-- Odd Change Notification -->
     <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
-      <div class="change-wrong-message">
-        Note: changes in odds or availability
-      </div>
+      <div class="change-wrong-message">Note: changes in odds or availability</div>
     </div>
   </div>
   <div v-if="betslipSelections.length > 0" class="m-bet-detail-wrap">
@@ -82,16 +76,10 @@
             <div class="blank-area"></div>
           </div>
           <div class="button-wrap">
-            <button
-              @click="toggleShow"
-              class="af-button flexibet-cancel af-button--primary"
-            >
+            <button @click="toggleShow" class="af-button flexibet-cancel af-button--primary">
               <span><span data-cms-key="cancel">Cancel </span></span>
             </button>
-            <button
-              class="af-button flexibet-confirm af-button--primary"
-              @click.prevent="placeBet"
-            >
+            <button class="af-button flexibet-confirm af-button--primary" @click.prevent="placeBet">
               <span><span data-cms-key="confirm">Confirm</span></span>
             </button>
           </div>

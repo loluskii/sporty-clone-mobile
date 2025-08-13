@@ -1,10 +1,7 @@
 <template>
   <div class="m-nav-secondary withHome">
     <div class="m-nav-left">
-      <span
-        @click="$emit('open-leave-modal')"
-        class="m-icon m-icon--back"
-      ></span>
+      <span @click="$emit('open-leave-modal')" class="m-icon m-icon--back"></span>
     </div>
     <div class="info-container">
       <div class="m-nav-right">
@@ -27,19 +24,19 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
-import { useUsersStore } from "../stores";
+import { defineProps, ref } from 'vue'
+import { useUsersStore } from '../stores'
 
-const usersStore = useUsersStore();
-defineEmits(["open-leave-modal"]);
+const usersStore = useUsersStore()
+defineEmits(['open-leave-modal'])
 
 defineProps({
-  headerTitle: String,
-});
+  headerTitle: String
+})
 </script>
 
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css');
 
 .m-nav-secondary {
   -webkit-box-align: center;
@@ -99,16 +96,16 @@ defineProps({
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -152,7 +149,7 @@ defineProps({
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: "";
+  content: '';
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -191,8 +188,8 @@ defineProps({
   margin-left: 15px;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: "\e6cb";
-  font-family: "iconfont" !important;
+  content: '\e6cb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

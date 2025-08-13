@@ -3,8 +3,8 @@ export const performanceMetrics = {
   metrics: {},
 
   start() {
-    this.startTime = performance.now();
-    this.metrics = {};
+    this.startTime = performance.now()
+    this.metrics = {}
   },
 
   mark(name) {
@@ -12,17 +12,16 @@ export const performanceMetrics = {
       this.metrics[name] = {
         start: performance.now(),
         end: null,
-        duration: null,
-      };
+        duration: null
+      }
     } else {
-      this.metrics[name].end = performance.now();
-      this.metrics[name].duration =
-        this.metrics[name].end - this.metrics[name].start;
+      this.metrics[name].end = performance.now()
+      this.metrics[name].duration = this.metrics[name].end - this.metrics[name].start
     }
   },
 
   getMetrics() {
-    const totalTime = performance.now() - this.startTime;
+    const totalTime = performance.now() - this.startTime
     return {
       totalTime,
       metrics: this.metrics,
@@ -30,24 +29,24 @@ export const performanceMetrics = {
         if (metric.duration) {
           acc[name] = {
             duration: metric.duration,
-            percentage: (metric.duration / totalTime) * 100,
-          };
+            percentage: (metric.duration / totalTime) * 100
+          }
         }
-        return acc;
-      }, {}),
-    };
+        return acc
+      }, {})
+    }
   },
 
   logMetrics() {
-    if (process.env.NODE_ENV === "development") {
-      const metrics = this.getMetrics();
-      console.group("Performance Metrics");
-      console.log("Total Time:", metrics.totalTime.toFixed(2), "ms");
-      console.table(metrics.summary);
-      console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      const metrics = this.getMetrics()
+      console.group('Performance Metrics')
+      console.log('Total Time:', metrics.totalTime.toFixed(2), 'ms')
+      console.table(metrics.summary)
+      console.groupEnd()
     }
-  },
-};
+  }
+}
 
 // Performance monitoring for API calls
 export const apiPerformance = {
@@ -57,27 +56,26 @@ export const apiPerformance = {
     this.metrics[name] = {
       start: performance.now(),
       end: null,
-      duration: null,
-    };
+      duration: null
+    }
   },
 
   end(name) {
     if (this.metrics[name]) {
-      this.metrics[name].end = performance.now();
-      this.metrics[name].duration =
-        this.metrics[name].end - this.metrics[name].start;
+      this.metrics[name].end = performance.now()
+      this.metrics[name].duration = this.metrics[name].end - this.metrics[name].start
     }
   },
 
   getMetrics() {
-    return this.metrics;
+    return this.metrics
   },
 
   logMetrics() {
-    if (process.env.NODE_ENV === "development") {
-      console.group("API Performance Metrics");
-      console.table(this.metrics);
-      console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.group('API Performance Metrics')
+      console.table(this.metrics)
+      console.groupEnd()
     }
-  },
-};
+  }
+}

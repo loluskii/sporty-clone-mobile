@@ -2,88 +2,43 @@
   <div class="m-snap-nav-wrap m-sports-choose">
     <ul class="m-snap-nav flex" style="width: 100%">
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a
-          @click.prevent="
-            $router.push({ name: 'sports', query: { sport: 'Soccer' } })
-          "
-        >
+        <a @click.prevent="$router.push({ name: 'sports', query: { sport: 'Soccer' } })">
           <div class="sport-icon">
-            <img
-              src="@/assets/images/sports/1.png"
-              loading="eager"
-              width="20"
-              height="20"
-            />
+            <img src="@/assets/images/sports/1.png" loading="eager" width="20" height="20" />
           </div>
-          <span
-            class="sport-text"
-            data-cms-key="sports"
-            data-cms-page="wap_home"
-            >Sports
-          </span>
+          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Sports </span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a @click.prevent="$router.push({ name: 'live' })">
           <div class="sport-icon">
-            <img
-              src="@/assets/images/live.png"
-              loading="eager"
-              width="20"
-              height="20"
-            />
+            <img src="@/assets/images/live.png" loading="eager" width="20" height="20" />
           </div>
-          <span
-            class="sport-text"
-            data-cms-key="sports"
-            data-cms-page="wap_home"
-            >Live
-          </span>
+          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Live </span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a @click.prevent="$router.push({ name: 'casino-games' })"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/games.png"
-              loading="eager"
-              width="20"
-              height="20"
-            />
+            <img src="@/assets/images/games.png" loading="eager" width="20" height="20" />
           </div>
-          <span class="sport-text" data-cms-key="games" data-cms-page="wap_home"
-            >Casino</span
-          >
+          <span class="sport-text" data-cms-key="games" data-cms-page="wap_home">Casino</span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="openVirtual"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/virtuals.png"
-              loading="eager"
-              width="20"
-              height="20"
-            />
+            <img src="@/assets/images/virtuals.png" loading="eager" width="20" height="20" />
           </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Virtuals</span
-          >
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Virtuals</span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="playAviator"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/aviator.png"
-              loading="eager"
-              width="24"
-              height="24"
-            />
+            <img src="@/assets/images/aviator.png" loading="eager" width="24" height="24" />
           </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Aviator</span
-          >
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
@@ -95,37 +50,23 @@
               loading="eager"
             />
           </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Livescore</span
-          >
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Livescore</span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="goToStatistics"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/presentation.png"
-              style="height: 25px"
-              loading="eager"
-            />
+            <img src="@/assets/images/presentation.png" style="height: 25px" loading="eager" />
           </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Statistics</span
-          >
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Statistics</span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="/Promotions"
           ><div class="sport-icon">
-            <img
-              src="@/assets/images/promotions.png"
-              style="height: 25px"
-              loading="eager"
-            />
+            <img src="@/assets/images/promotions.png" style="height: 25px" loading="eager" />
           </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home"
-            >Promotions</span
-          >
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Promotions</span>
         </a>
       </li>
       <li
@@ -135,12 +76,7 @@
       >
         <a href="" @click.prevent="setActiveSport(sport.sportID)"
           ><div class="sport-icon">
-            <img
-              :src="getImageSrc(sport.sportID)"
-              loading="lazy"
-              width="22"
-              height="22"
-            />
+            <img :src="getImageSrc(sport.sportID)" loading="lazy" width="22" height="22" />
           </div>
           <span class="sport-text"> {{ sport.sportName }} </span>
         </a>
@@ -151,118 +87,105 @@
   </div>
 </template>
 <script setup>
-import { useUtilsStore, useUsersStore } from "@/stores";
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { slugify } from "@/helpers";
-import MD5 from "crypto-js/md5";
-import emitter from "@/plugins/emitter";
+import { useUtilsStore, useUsersStore } from '@/stores'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { slugify } from '@/helpers'
+import MD5 from 'crypto-js/md5'
+import emitter from '@/plugins/emitter'
 
 // const { sports, sport_id } = useUtilsStore()
-const utilsStore = useUtilsStore();
-const router = useRouter();
-const usersStore = useUsersStore();
+const utilsStore = useUtilsStore()
+const router = useRouter()
+const usersStore = useUsersStore()
 // const token = ref('111111')
 // const group = ref(import.meta.env.VITE_APP_KEY)
 // const mode = ref(0)
 
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(
-    `../../assets/images/sports/${sportId}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
+  return imageUrl
+}
 
 const token = computed(() => {
-  return usersStore.currentUser ? usersStore.details.authCode : "111111";
-});
+  return usersStore.currentUser ? usersStore.details.authCode : '111111'
+})
 
 const mode = computed(() => {
-  return usersStore.currentUser ? 1 : 0;
-});
+  return usersStore.currentUser ? 1 : 0
+})
 
 const group = computed(() => {
-  return usersStore.currentUser
-    ? usersStore.details.group
-    : import.meta.env.VITE_APP_KEY;
-});
+  return usersStore.currentUser ? usersStore.details.group : import.meta.env.VITE_APP_KEY
+})
 
 const sportsList = computed(() => {
-  return utilsStore.sportsMenu;
-});
+  return utilsStore.sportsMenu
+})
 
 const activeSportID = computed(() => {
-  return utilsStore.sportID;
-});
+  return utilsStore.sportID
+})
 
 const getActiveSport = computed(() => {
-  return sportsList.value.find((x) => x.sportID == activeSportID.value);
-});
+  return sportsList.value.find((x) => x.sportID == activeSportID.value)
+})
 
 function setActiveSport(id) {
-  utilsStore.sportID = id;
+  utilsStore.sportID = id
   router.push({
-    name: "sports",
-    query: { sport: slugify(getActiveSport.value.sportName) },
-  });
+    name: 'sports',
+    query: { sport: slugify(getActiveSport.value.sportName) }
+  })
 }
 
 const hashStr = computed(() => {
   return MD5(
     `${token.value}10100${import.meta.env.VITE_SITE_URL}${mode.value}${
       group.value
-    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`,
-  ).toString();
-});
+    }mobile${import.meta.env.VITE_XPRESS_PRIVATE_KEY}`
+  ).toString()
+})
 
 const generatedURL = computed(() => {
   return `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
     token.value
   }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
     mode.value
-  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`;
-});
+  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`
+})
 
 const goToLiveScore = () => {
-  return window.open(
-    `https://ls.sir.sportradar.com/bematrics`,
-    "stats",
-    "width=1078,height=768",
-  );
-};
+  return window.open(`https://ls.sir.sportradar.com/bematrics`, 'stats', 'width=1078,height=768')
+}
 
 const goToStatistics = () => {
-  return window.open(
-    `https://s5.sir.sportradar.com/bematrics`,
-    "stats",
-    "width=1078,height=768",
-  );
-};
+  return window.open(`https://s5.sir.sportradar.com/bematrics`, 'stats', 'width=1078,height=768')
+}
 
 function openVirtual() {
   window.location.href = `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
     token.value
   }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
     mode.value
-  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`;
+  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`
 }
 
 async function playAviator() {
   return router.push({
-    name: "game-play",
-    params: { game_name: slugify("Aviator"), game_id: 1583 },
-  });
+    name: 'game-play',
+    params: { game_name: slugify('Aviator'), game_id: 1583 }
+  })
 }
 
 function playSmatVirtual() {
   if (usersStore.currentUser) {
     return router.push({
-      name: "game-play",
-      params: { game_name: slugify("SmatVirtual"), game_id: "smat_virtual" },
-    });
+      name: 'game-play',
+      params: { game_name: slugify('SmatVirtual'), game_id: 'smat_virtual' }
+    })
   } else {
-    return router.push("/sign-in");
+    return router.push('/sign-in')
   }
 }
 
@@ -272,7 +195,7 @@ onMounted(() => {
   //   mode.value = 1
   //   group.value = usersStore.details.group
   // }
-});
+})
 </script>
 <style scoped>
 .x-main-mid .m-bscast > div {
@@ -335,8 +258,8 @@ onMounted(() => {
   width: 100%;
 }
 .home .m-sports-choose .m-sports-choose-item .m-live-icon::before {
-  content: "\e62b";
-  font-family: "iconfont" !important;
+  content: '\e62b';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -371,13 +294,7 @@ onMounted(() => {
 }
 .home .m-popular {
   min-height: 4rem;
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#ffffff),
-    to(#f2f3f5)
-  );
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f2f3f5));
   background-image: -webkit-linear-gradient(top, #ffffff, #f2f3f5);
   background-image: linear-gradient(to bottom, #ffffff, #f2f3f5);
   background-image: -webkit-gradient(
@@ -459,7 +376,7 @@ onMounted(() => {
 .home .m-sports .nav-fixed .market-wrapper:after {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  content: "";
+  content: '';
   height: 4rem;
   left: 0;
   position: absolute;
@@ -490,8 +407,8 @@ onMounted(() => {
   position: relative;
 }
 .home .view-all a::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

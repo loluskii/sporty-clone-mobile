@@ -14,9 +14,7 @@
                     :key="status"
                     class="m-nav-item"
                     @click="setBetStatus(status.key)"
-                    :class="
-                      activeBetStatus === status.key ? 'm-nav-item--active' : ''
-                    "
+                    :class="activeBetStatus === status.key ? 'm-nav-item--active' : ''"
                   >
                     <span>{{ status.name }}</span>
                   </li>
@@ -44,13 +42,9 @@
                 <div v-for="(group, index) in settledBets" :key="index">
                   <div class="ticket-list">
                     <div class="date">
-                      <div class="day">{{ betlistformatDate(index, "D") }}</div>
-                      <div
-                        class="month"
-                        data-cms-key="nov"
-                        data-cms-page="common_dates"
-                      >
-                        {{ betlistformatDate(index, "MMM") }}
+                      <div class="day">{{ betlistformatDate(index, 'D') }}</div>
+                      <div class="month" data-cms-key="nov" data-cms-page="common_dates">
+                        {{ betlistformatDate(index, 'MMM') }}
                       </div>
                     </div>
                     <div class="place"></div>
@@ -60,53 +54,35 @@
                           class="bar"
                           @click="redirectToBet(bet)"
                           :class="
-                            bet.statusCode == 1
-                              ? 'win'
-                              : bet.statusCode == 2
-                                ? 'lost'
-                                : 'pending'
+                            bet.statusCode == 1 ? 'win' : bet.statusCode == 2 ? 'lost' : 'pending'
                           "
                         >
                           <span class="type"
                             ><span
-                              >{{
-                                bet.selections?.length > 1
-                                  ? "Multiple"
-                                  : "Single"
-                              }}&nbsp; {{ bet.isSim ? "(SIM)" : "" }}</span
+                              >{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}&nbsp;
+                              {{ bet.isSim ? '(SIM)' : '' }}</span
                             >
                           </span>
                           <span class="status"
-                            ><span>{{ bet.statusDescription }}</span>
-                            <i class="arrow"></i
+                            ><span>{{ bet.statusDescription }}</span> <i class="arrow"></i
                           ></span>
                         </div>
 
                         <div class="title">
-                          <span
-                            data-op="history-stake-text"
-                            data-cms-key="total_stake_vcurrency"
-                            >Total Stake({{
-                              SportsbookGlobalVariable.CurrencyCode
-                            }})</span
+                          <span data-op="history-stake-text" data-cms-key="total_stake_vcurrency"
+                            >Total Stake({{ SportsbookGlobalVariable.CurrencyCode }})</span
                           >
-                          <span
-                            data-op="history-return-text"
-                            data-cms-key="total_return"
+                          <span data-op="history-return-text" data-cms-key="total_return"
                             >Total Return</span
                           >
                         </div>
                         <div class="total_info">
-                          <span data-op="history-stake-amount">{{
-                            formatNumber(bet.stake)
-                          }}</span>
+                          <span data-op="history-stake-amount">{{ formatNumber(bet.stake) }}</span>
                           <span data-op="history-return-amount" class="">{{
-                            bet.winnings ? formatNumber(bet.winnings) : "0.00"
+                            bet.winnings ? formatNumber(bet.winnings) : '0.00'
                           }}</span>
                         </div>
-                        <bet-history-match-list
-                          :matches="bet.selections"
-                        ></bet-history-match-list>
+                        <bet-history-match-list :matches="bet.selections"></bet-history-match-list>
                         <div class="narrow"></div>
                       </template>
                     </div>
@@ -115,14 +91,8 @@
                 <div style="width: 100%; opacity: 0; visibility: hidden"></div>
               </div>
             </div>
-            <div
-              v-if="!isLoading && !Object.keys(settledBets).length"
-              class="m-list-none-wrap"
-            >
-              <div
-                class="m-list-none"
-                style="padding: 5rem 0 7.33333333rem; text-align: center"
-              >
+            <div v-if="!isLoading && !Object.keys(settledBets).length" class="m-list-none-wrap">
+              <div class="m-list-none" style="padding: 5rem 0 7.33333333rem; text-align: center">
                 <span class="no-list-txt">No Tickets Available.</span>
               </div>
             </div>
@@ -135,10 +105,7 @@
                 @click="showDateDrawer = false"
                 style="background-color: black"
               ></div>
-              <div
-                class="drawer__content bottom"
-                style="transition-timing-function: ease"
-              >
+              <div class="drawer__content bottom" style="transition-timing-function: ease">
                 <div class="drawer-container">
                   <div class="option-wrapper">
                     <div class="icon">
@@ -158,9 +125,7 @@
                       </div>
                     </div>
                     <div class="text">
-                      <span
-                        data-cms-key="filter_by_date"
-                        data-cms-page="bet_history"
+                      <span data-cms-key="filter_by_date" data-cms-page="bet_history"
                         >Filter by Date</span
                       >
                     </div>
@@ -183,9 +148,7 @@
       </template>
       <div v-else class="m-error-wrapper">
         <div>
-          <span
-            class="m-error-msg"
-            data-cms-key="please_log_in_to_see_your_bet_history"
+          <span class="m-error-msg" data-cms-key="please_log_in_to_see_your_bet_history"
             >Please Log In to see your Bet History</span
           >
           <div class="m-btn">Login</div>
@@ -196,121 +159,117 @@
 </template>
 
 <script setup>
-import { defineComponent, onMounted, ref } from "vue";
-import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
-import BetHistoryMatchList from "@/components/BetHistoryMatchList.vue";
-import { getBets, formatNumber } from "@/helpers";
-import _ from "lodash";
-import moment from "moment";
-import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
-import { CLIENT_ID } from "@/helpers";
-import router from "@/router";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import "@vuepic/vue-datepicker/dist/main.css";
+import { defineComponent, onMounted, ref } from 'vue'
+import BetHistoryHeader from '@/components/BetHistoryHeader.vue'
+import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
+import { getBets, formatNumber } from '@/helpers'
+import _ from 'lodash'
+import moment from 'moment'
+import { useAuthStore, useUsersStore, useUtilsStore } from '@/stores'
+import { CLIENT_ID } from '@/helpers'
+import router from '@/router'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import '@vuepic/vue-datepicker/dist/main.css'
 
-const { isAuthenticated } = useAuthStore();
-const settledBets = ref([]);
-const isLoading = ref(false);
-const usersStore = useUsersStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
+const { isAuthenticated } = useAuthStore()
+const settledBets = ref([])
+const isLoading = ref(false)
+const usersStore = useUsersStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 const betStatus = [
-  { name: "All", key: "" },
-  { name: "Settled", key: "settled" },
-  { name: "Unsettled", key: "0" },
-];
-const activeBetStatus = ref("");
-const showDateDrawer = ref(false);
-const range = ref("");
+  { name: 'All', key: '' },
+  { name: 'Settled', key: 'settled' },
+  { name: 'Unsettled', key: '0' }
+]
+const activeBetStatus = ref('')
+const showDateDrawer = ref(false)
+const range = ref('')
 
 const getDateWithoutTime = (dateString) => {
-  const dateObject = new Date(dateString);
+  const dateObject = new Date(dateString)
   // Extract components
-  const day = dateObject.getDate();
-  const month = dateObject.getMonth() + 1; // Month is zero-based, so we add 1
-  const year = dateObject.getFullYear();
+  const day = dateObject.getDate()
+  const month = dateObject.getMonth() + 1 // Month is zero-based, so we add 1
+  const year = dateObject.getFullYear()
 
-  const formattedDate = `${year}-${month}-${day}`;
-  return formattedDate;
-};
+  const formattedDate = `${year}-${month}-${day}`
+  return formattedDate
+}
 
 async function getBetsData(key = null) {
   let payload = {
     clientId: `${CLIENT_ID}`,
-    date: "",
-    status: key !== null ? key : "settled",
-    userId: usersStore.currentUser.id,
-  };
-  isLoading.value = true;
+    date: '',
+    status: key !== null ? key : 'settled',
+    userId: usersStore.currentUser.id
+  }
+  isLoading.value = true
   await getBets(payload)
     .then((response) => {
-      settledBets.value = _.groupBy(response.bets, (item) =>
-        getDateWithoutTime(item.created),
-      );
-      isLoading.value = false;
+      settledBets.value = _.groupBy(response.bets, (item) => getDateWithoutTime(item.created))
+      isLoading.value = false
     })
     .catch(() => {
-      isLoading.value = false;
-    });
+      isLoading.value = false
+    })
 }
 
 function redirectToBet(bet) {
-  localStorage.setItem("betDetail", JSON.stringify(bet));
-  router.push({ name: "bet-detail", params: { bet_id: bet.betslipId } });
+  localStorage.setItem('betDetail', JSON.stringify(bet))
+  router.push({ name: 'bet-detail', params: { bet_id: bet.betslipId } })
 }
 
 async function setBetStatus(status) {
-  activeBetStatus.value = status;
-  await getBetsData(status);
+  activeBetStatus.value = status
+  await getBetsData(status)
 }
 
 const betlistformatDate = (date, n) => {
-  const fixDateForAllBrowsers = date.replace(/-/g, "/");
-  const d = new Date(fixDateForAllBrowsers);
-  return moment(d).format(n);
-};
+  const fixDateForAllBrowsers = date.replace(/-/g, '/')
+  const d = new Date(fixDateForAllBrowsers)
+  return moment(d).format(n)
+}
 
 const handleDate = async () => {
-  showDateDrawer.value = false;
-  const start = moment(range.value[0]).format("YYYY-MM-DD");
-  const end = moment(range.value[1]).format("YYYY-MM-DD");
+  showDateDrawer.value = false
+  const start = moment(range.value[0]).format('YYYY-MM-DD')
+  const end = moment(range.value[1]).format('YYYY-MM-DD')
   try {
     let payload = {
       clientId: CLIENT_ID,
       from: start,
       to: end,
-      status: activeBetStatus.value ? activeBetStatus.value : "",
-      userId: usersStore.currentUser.id,
-    };
-    isLoading.value = true;
-    const response = await getBets(payload);
-    settledBets.value = _.groupBy(response.bets, (item) =>
-      getDateWithoutTime(item.created),
-    );
-    isLoading.value = false;
+      status: activeBetStatus.value ? activeBetStatus.value : '',
+      userId: usersStore.currentUser.id
+    }
+    isLoading.value = true
+    const response = await getBets(payload)
+    settledBets.value = _.groupBy(response.bets, (item) => getDateWithoutTime(item.created))
+    isLoading.value = false
   } catch (error) {
-    console.log(error);
-    isLoading.value = false;
+    console.log(error)
+    isLoading.value = false
   }
-};
+}
 
 onMounted(async () => {
   if (isAuthenticated) {
     try {
-      await getBetsData();
+      await getBetsData()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
   }
-});
+})
 defineComponent({
-  name: "bet-history",
-  components: { BetHistoryHeader },
-});
+  name: 'bet-history',
+  components: { BetHistoryHeader }
+})
 </script>
 
 <style>
-@import url("@/assets/css/bet-history.css");
+@import url('@/assets/css/bet-history.css');
 /* .m-uc-nav {
   height: 4rem;
   background-color: #fafafa;
@@ -460,7 +419,7 @@ defineComponent({
 .m-order .m-scroll .ticket-list .list .bar .block::before {
   background: #e41827;
   background: var(--warning-primary);
-  content: "";
+  content: '';
   display: inline-block;
   height: 1rem;
   margin-right: 0.41666667rem;
@@ -468,8 +427,8 @@ defineComponent({
   width: 1rem;
 }
 .m-order .m-scroll .ticket-list .list .bar .cup::before {
-  content: "\e626";
-  font-family: "iconfont" !important;
+  content: '\e626';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -485,8 +444,8 @@ defineComponent({
   /* font-size: 1.066rem; */
 }
 .m-order .m-scroll .ticket-list .list .bar .status .arrow::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -569,7 +528,7 @@ defineComponent({
 }
 .m-order .m-scroll .ticket-list .list .flexibet-title i:after {
   background: #33ea6a;
-  content: " ";
+  content: ' ';
   display: block;
   height: 100%;
   position: absolute;
@@ -640,8 +599,8 @@ defineComponent({
   padding-bottom: 1.25rem;
 }
 .m-order .m-scroll .view-more .view-more-btn .icon::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

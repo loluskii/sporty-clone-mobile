@@ -9,31 +9,31 @@
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import { getCMS } from "@/helpers";
-import { onMounted, ref } from "vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useRoute } from "vue-router";
+import HeaderOther from '@/components/HeaderOther.vue'
+import { getCMS } from '@/helpers'
+import { onMounted, ref } from 'vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { useRoute } from 'vue-router'
 
-const html = ref("");
-const route = useRoute();
-const isLoading = ref(false);
-const pageTitle = ref(null);
+const html = ref('')
+const route = useRoute()
+const isLoading = ref(false)
+const pageTitle = ref(null)
 
 onMounted(async () => {
   try {
-    isLoading.value = true;
+    isLoading.value = true
     await getCMS(route.params.page).then((res) => {
       let result = Object.values(res.data)[0]
       pageTitle.value = result.title
       html.value = result.content
-      isLoading.value = false;
+      isLoading.value = false
     })
   } catch (error) {
     alert('Page does not exist!')
     window.location.href = '/'
   }
-});
+})
 </script>
 <style scoped>
 .body {

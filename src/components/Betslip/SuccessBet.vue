@@ -4,12 +4,7 @@
       <div style="align-items: center; text-align: center">
         <img
           src="@/assets/images/checklist.png"
-          style="
-            height: 80px;
-            align-items: center;
-            margin-bottom: 15px;
-            filter: grayscale();
-          "
+          style="height: 80px; align-items: center; margin-bottom: 15px; filter: grayscale()"
           alt=""
           sizes=""
           srcset=""
@@ -49,10 +44,7 @@
                 </g>
               </svg>
             </span>
-            <span
-              data-clipboard-text="FB40C24"
-              @click="copyToClipboard(response.data.betslipId)"
-            >
+            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.betslipId)">
               <svg
                 viewBox="5 2 15 20"
                 fill="none"
@@ -73,23 +65,15 @@
       </ul>
 
       <div class="jump-box">
-        <span data-op="betslip-success-history" @click="viewOpenBets"
-          >View Open Bets</span
-        >
+        <span data-op="betslip-success-history" @click="viewOpenBets">View Open Bets</span>
         <i></i>
       </div>
     </div>
     <div class="btn-box">
-      <button
-        class="af-button rebet af-button--primary"
-        @click="$emit('rebet')"
-      >
+      <button class="af-button rebet af-button--primary" @click="$emit('rebet')">
         <span><span data-cms-key="rebet">Rebet</span></span>
       </button>
-      <button
-        class="af-button btn-ok af-button--primary"
-        @click="$emit('hide-success')"
-      >
+      <button class="af-button btn-ok af-button--primary" @click="$emit('hide-success')">
         <span><span data-cms-key="ok" style="color: white">OK</span></span>
       </button>
     </div>
@@ -97,33 +81,33 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { formatNumber } from "@/helpers";
-const router = useRouter();
+import { useRouter } from 'vue-router'
+import { formatNumber } from '@/helpers'
+const router = useRouter()
 const props = defineProps({
-  response: Object,
-});
+  response: Object
+})
 
-const emit = defineEmits(["hide-success", "rebet", "activate-share"]);
+const emit = defineEmits(['hide-success', 'rebet', 'activate-share'])
 function viewOpenBets() {
-  emit("hide-success");
-  return router.push({ name: "open-bets" });
+  emit('hide-success')
+  return router.push({ name: 'open-bets' })
 }
 
 function activateShare() {
-  emit("activate-share", props.response);
+  emit('activate-share', props.response)
 }
 
 function copyToClipboard(text) {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  document.body.appendChild(textarea);
-  textarea.select();
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  document.body.appendChild(textarea)
+  textarea.select()
 
   try {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text)
   } catch (err) {
-    console.error("Unable to copy to clipboard", err);
+    console.error('Unable to copy to clipboard', err)
   }
 }
 </script>
@@ -170,8 +154,8 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .title .m-icon-suc:before {
-  content: "\e60b";
-  font-family: "iconfont" !important;
+  content: '\e60b';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -242,8 +226,8 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .list li.share-code em:before {
-  content: "\e651";
-  font-family: "iconfont" !important;
+  content: '\e651';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -278,8 +262,8 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .jump-box i:before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;

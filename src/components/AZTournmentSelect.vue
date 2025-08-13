@@ -1,23 +1,15 @@
 <template>
   <div class="tournament-pop">
-    <div
-      class="tournament-pop--header undefined"
-      style="top: 0rem; z-index: 1000; position: fixed"
-    >
+    <div class="tournament-pop--header undefined" style="top: 0rem; z-index: 1000; position: fixed">
       <div>
         <span class="back" @click="$emit('close-select')"></span>
-        <span class="tournament-pop--header__title">{{
-          props.category.categoryName
-        }}</span>
+        <span class="tournament-pop--header__title">{{ props.category.categoryName }}</span>
       </div>
       <span class="home-icon"></span>
     </div>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     <template v-else>
-      <div
-        class="tournament-pop--body"
-        style="height: 100%; margin-top: 3.6667rem"
-      >
+      <div class="tournament-pop--body" style="height: 100%; margin-top: 3.6667rem">
         <div
           v-for="(tournament, t) in categoryTournaments"
           class="tournament"
@@ -44,66 +36,62 @@
 </template>
 
 <script setup>
-import { getTournamentsByCategories, slugify } from "@/helpers";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { defineComponent, ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { getTournamentsByCategories, slugify } from '@/helpers'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { defineComponent, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   sport: Object,
-  category: Object,
-});
+  category: Object
+})
 
-defineEmits(["close-select"]);
-const router = useRouter();
-const categoryTournaments = ref([]);
-const selectedTournaments = ref([]);
-const isLoading = ref(false);
+defineEmits(['close-select'])
+const router = useRouter()
+const categoryTournaments = ref([])
+const selectedTournaments = ref([])
+const isLoading = ref(false)
 
 const selected = (id) => {
-  return selectedTournaments.value.find(
-    (tournament) => tournament.tournamentID === id.tournamentID,
-  );
-};
+  return selectedTournaments.value.find((tournament) => tournament.tournamentID === id.tournamentID)
+}
 
 const selectTournament = (tournament) => {
   const index = selectedTournaments.value.findIndex(
-    (cat) => cat.tournamentID === tournament.tournamentID,
-  );
+    (cat) => cat.tournamentID === tournament.tournamentID
+  )
   if (index === -1) {
-    selectedTournaments.value.push(tournament); // Add the tournament if it's not already selected
+    selectedTournaments.value.push(tournament) // Add the tournament if it's not already selected
   } else {
-    selectedTournaments.value.splice(index, 1); // Remove the tournament if it's already selected
+    selectedTournaments.value.splice(index, 1) // Remove the tournament if it's already selected
   }
-};
+}
 
 const submit = () => {
-  let selected = selectedTournaments.value;
-  const tournamentIDs = selected.map((item) => item.tournamentID);
+  let selected = selectedTournaments.value
+  const tournamentIDs = selected.map((item) => item.tournamentID)
 
-  const tournaments = tournamentIDs
-    .map((id) => `sr:tournament:${id}`)
-    .join("_");
+  const tournaments = tournamentIDs.map((id) => `sr:tournament:${id}`).join('_')
 
   return router.push({
-    name: "fixtures-by-tournaments",
+    name: 'fixtures-by-tournaments',
     params: {
       sport: props.sport.sportName,
       categories: `sr:category:${props.category.categoryID}`,
-      tournaments: tournaments,
-    },
-  });
-};
+      tournaments: tournaments
+    }
+  })
+}
 
 onMounted(async () => {
-  isLoading.value = true;
-  const res = await getTournamentsByCategories(props.category.categoryID);
-  categoryTournaments.value = res.sports;
-  isLoading.value = false;
-});
+  isLoading.value = true
+  const res = await getTournamentsByCategories(props.category.categoryID)
+  categoryTournaments.value = res.sports
+  isLoading.value = false
+})
 defineComponent({
-  name: "az-tournaments-select",
-});
+  name: 'az-tournaments-select'
+})
 </script>
 <style scoped>
 .m-azmenu {
@@ -143,8 +131,8 @@ defineComponent({
   margin-right: 1.66666667rem;
 }
 .m-azmenu .tournament-pop--header .back:before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -163,8 +151,8 @@ defineComponent({
   padding: 0 1rem;
 }
 .m-azmenu .tournament-pop--header .home-icon:before {
-  content: "\e6cb";
-  font-family: "iconfont" !important;
+  content: '\e6cb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -223,12 +211,12 @@ defineComponent({
   align-items: center;
   border: 1px solid #dcdee5;
   border-radius: 0.25rem;
-  content: "";
+  content: '';
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   font-size: 1rem;
   height: 1.25rem;
   -webkit-box-pack: center;
@@ -241,7 +229,7 @@ defineComponent({
   background-color: var(--brand-secondary);
   border: 1px solid var(--brand-secondary);
   color: #ffffff;
-  content: "\e611";
+  content: '\e611';
   font-size: 0.83333333rem;
 }
 .m-azmenu .tournament-pop--footer {

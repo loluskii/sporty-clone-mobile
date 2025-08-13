@@ -1,11 +1,6 @@
 <template lang="">
   <!-- Home Carousel -->
-  <div
-    id="carousel"
-    data-html2canvas-ignore=""
-    class="main-banner"
-    v-if="banners.length"
-  >
+  <div id="carousel" data-html2canvas-ignore="" class="main-banner" v-if="banners.length">
     <div data-ride="carousel" class="carousel slide">
       <div role="listbox" class="carousel-inner">
         <div
@@ -23,51 +18,51 @@
   <!-- Home Carousel -->
 </template>
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useUtilsStore } from "../../stores";
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useUtilsStore } from '../../stores'
 
-const props = defineProps(["type"]);
+const props = defineProps(['type'])
 const utilsStore = useUtilsStore()
 
 const banners = computed(() => {
-  return utilsStore.banners.filter((b) => b.position === 'slider');
+  return utilsStore.banners.filter((b) => b.position === 'slider')
 })
 
-const currentIndex = ref(0);
-const intervalId = ref(null);
-const autoScrollDelay = ref(3000);
-const images = ref([]);
+const currentIndex = ref(0)
+const intervalId = ref(null)
+const autoScrollDelay = ref(3000)
+const images = ref([])
 function startAutoSlider() {
   intervalId.value = setInterval(() => {
-    nextSlide();
-  }, autoScrollDelay.value);
+    nextSlide()
+  }, autoScrollDelay.value)
 }
 function stopAutoSlider() {
-  clearInterval(intervalId.value);
+  clearInterval(intervalId.value)
 }
 function nextSlide() {
   if (currentIndex.value < images.value.length - 1) {
-    currentIndex.value++;
+    currentIndex.value++
   } else {
-    currentIndex.value = 0;
+    currentIndex.value = 0
   }
 }
 
 function goToSlide(image) {
   if (image.link) {
-    window.location.href = image.link;
+    window.location.href = image.link
   }
 }
 
 onMounted(async () => {
-  startAutoSlider();
-});
+  startAutoSlider()
+})
 
 onBeforeUnmount(() => {
-  if(banners.value.length){
-    stopAutoSlider();
+  if (banners.value.length) {
+    stopAutoSlider()
   }
-});
+})
 </script>
 <style scoped>
 .carousel {
@@ -107,8 +102,8 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.carousel .carousel-inner > .item > img[src=""],
-.carousel .carousel-inner > .item > a > img[src=""] {
+.carousel .carousel-inner > .item > img[src=''],
+.carousel .carousel-inner > .item > a > img[src=''] {
   visibility: hidden;
 }
 
@@ -196,7 +191,7 @@ onBeforeUnmount(() => {
   height: 100%;
   width: 5%;
   font:
-    bold 50px/10 "Microsoft Yahei",
+    bold 50px/10 'Microsoft Yahei',
     sans-serif;
   text-align: center;
   color: #dcdee5;

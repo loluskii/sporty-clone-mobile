@@ -39,7 +39,7 @@
         class="vue-toggles__text"
         test-id="text"
         style="
-          font-family: &quot;Anton&quot;, serif !important;
+          font-family: 'Anton', serif !important;
           font-size: 14px;
           color: var(--sim-primary);
           right: 13%;
@@ -66,9 +66,7 @@
         cursor: pointer;
       "
     >
-      <span class="vue-toggles__text" test-id="text" style="left: 13%"
-        >REAL</span
-      >
+      <span class="vue-toggles__text" test-id="text" style="left: 13%">REAL</span>
 
       <span
         aria-hidden="true"
@@ -76,7 +74,7 @@
         test-id="dot"
         style="
           font-size: 14px;
-          font-family: &quot;Anton&quot;, serif !important;
+          font-family: 'Anton', serif !important;
           background: var(--sim-primary);
           width: auto;
           border-radius: 9999px;
@@ -94,9 +92,9 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore } from "@/stores";
+import { useCouponStore } from '@/stores'
 
-const couponStore = useCouponStore();
+const couponStore = useCouponStore()
 </script>
 <style scoped>
 .light {

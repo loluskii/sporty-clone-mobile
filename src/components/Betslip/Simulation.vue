@@ -32,119 +32,119 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from "vue";
-import { useCouponStore, useUtilsStore } from "@/stores";
-import SimulationHeader from "./SimulationHeader.vue";
-import SimulationEvent from "./SimulationEvent.vue";
-import SimulationControls from "./SimulationControls.vue";
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { useCouponStore, useUtilsStore } from '@/stores'
+import SimulationHeader from './SimulationHeader.vue'
+import SimulationEvent from './SimulationEvent.vue'
+import SimulationControls from './SimulationControls.vue'
 
 // Store and Props
-const couponStore = useCouponStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
+const couponStore = useCouponStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
 const props = defineProps({
   simulationResults: {
     type: Object,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
-const emit = defineEmits(["exit"]);
+const emit = defineEmits(['exit'])
 // Constants
-const SIMULATION_DURATION = 9; // seconds
-const UPDATE_INTERVAL = 250; // milliseconds
-const INITIAL_DELAY = 1000; // milliseconds
+const SIMULATION_DURATION = 9 // seconds
+const UPDATE_INTERVAL = 250 // milliseconds
+const INITIAL_DELAY = 1000 // milliseconds
 
 // Reactive State
-const currentTime = ref(0);
-const intervalId = ref(0);
+const currentTime = ref(0)
+const intervalId = ref(0)
 
 // Computed Properties
 const simulationData = computed(() => {
   try {
-    const events = JSON.parse(props.simulationResults.events);
+    const events = JSON.parse(props.simulationResults.events)
     return events.reduce((acc, ev) => {
-      const matchId = Number(ev.reference);
-      const playout = ev.playout;
+      const matchId = Number(ev.reference)
+      const playout = ev.playout
 
       const goalEvents = [
         ...(playout.homeCompetitorGoals?.map((time) => ({
           time: time / 10,
-          team: "home",
+          team: 'home'
         })) || []),
         ...(playout.awayCompetitorGoals?.map((time) => ({
           time: time / 10,
-          team: "away",
-        })) || []),
-      ].sort((a, b) => a.time - b.time);
+          team: 'away'
+        })) || [])
+      ].sort((a, b) => a.time - b.time)
 
       acc[matchId] = {
         goalEvents,
         finalScore: {
           home: playout.homeCompetitorScore,
-          away: playout.awayCompetitorScore,
+          away: playout.awayCompetitorScore
         },
         halfTime: {
           home: playout.homeCompetitorHalfTimeScore,
-          away: playout.awayCompetitorHalfTimeScore,
+          away: playout.awayCompetitorHalfTimeScore
         },
-        status: ev.status,
-      };
-      return acc;
-    }, {});
+        status: ev.status
+      }
+      return acc
+    }, {})
   } catch (error) {
-    console.error("Error processing simulation data:", error);
-    return {};
+    console.error('Error processing simulation data:', error)
+    return {}
   }
-});
+})
 
-const timerStarted = computed(() => currentTime.value > 0);
-const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION);
-const isWinner = computed(() => props.simulationResults.statusCode === 2);
+const timerStarted = computed(() => currentTime.value > 0)
+const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
+const isWinner = computed(() => props.simulationResults.statusCode === 2)
 
 const timerDisplay = computed(() => {
-  if (!timerStarted.value) return "Starting Game...";
-  return `${currentTime.value * 10}'`;
-});
+  if (!timerStarted.value) return 'Starting Game...'
+  return `${currentTime.value * 10}'`
+})
 
 const formattedWinAmount = computed(() => {
-  const amount = props.simulationResults.possibleWin;
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString("en")}`;
-});
+  const amount = props.simulationResults.possibleWin
+  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`
+})
 
 // Methods
 const handleSimulationExit = (action) => {
-  if (action === "skip") {
-    currentTime.value = SIMULATION_DURATION;
-    clearInterval(intervalId.value);
-    return;
+  if (action === 'skip') {
+    currentTime.value = SIMULATION_DURATION
+    clearInterval(intervalId.value)
+    return
   }
 
-  if (action === "close") {
-    emit("exit");
+  if (action === 'close') {
+    emit('exit')
   }
-};
+}
 
 // Lifecycle Hooks
 onMounted(() => {
-  currentTime.value = 0;
+  currentTime.value = 0
 
   setTimeout(() => {
     intervalId.value = setInterval(() => {
       if (currentTime.value >= SIMULATION_DURATION) {
-        currentTime.value = SIMULATION_DURATION;
-        clearInterval(intervalId.value);
-        return;
+        currentTime.value = SIMULATION_DURATION
+        clearInterval(intervalId.value)
+        return
       }
-      currentTime.value = +(currentTime.value + 0.1).toFixed(1);
-    }, UPDATE_INTERVAL);
-  }, INITIAL_DELAY);
-});
+      currentTime.value = +(currentTime.value + 0.1).toFixed(1)
+    }, UPDATE_INTERVAL)
+  }, INITIAL_DELAY)
+})
 
 onUnmounted(() => {
   if (intervalId.value) {
-    clearInterval(intervalId.value);
+    clearInterval(intervalId.value)
   }
-});
+})
 </script>
 
 <style>
@@ -175,7 +175,7 @@ onUnmounted(() => {
 }
 
 #Simulate .ticket-wrapper .ticker-bar .left {
-  font-family: "Roboto-Medium";
+  font-family: 'Roboto-Medium';
 }
 
 #Simulate .ticket-wrapper .ticker-bar .rotate {

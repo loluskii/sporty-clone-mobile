@@ -13,9 +13,7 @@
         <div class="modal-content position-absolute bottom-0">
           <div class="modal-body text-center">
             <!-- Confirmation Message -->
-            <p class="mb-0 fw-bold" style="font-size: 16px">
-              You may also like these games...
-            </p>
+            <p class="mb-0 fw-bold" style="font-size: 16px">You may also like these games...</p>
             <!-- Carousel -->
             <div class="game-carousel pb-0">
               <div class="game-carousel-inner">
@@ -36,10 +34,7 @@
                   <div class="card-footer d-flex flex-column p-2 text-left">
                     <div
                       class="text-truncate fw-bold"
-                      style="
-                        max-width: 150px;
-                        color: var(--brand-highlight-text);
-                      "
+                      style="max-width: 150px; color: var(--brand-highlight-text)"
                     >
                       {{ game.title }}
                     </div>
@@ -51,10 +46,7 @@
             <!-- Buttons -->
           </div>
           <div class="d-flex justify-content-between">
-            <button
-              class="btn btn-lg btn-secondary w-25 py-3 rounded-0"
-              @click="exitGame"
-            >
+            <button class="btn btn-lg btn-secondary w-25 py-3 rounded-0" @click="exitGame">
               Exit
             </button>
             <button
@@ -72,51 +64,51 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { useUsersStore } from "@/stores";
-import { slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import { computed } from "vue";
+import { useRouter } from 'vue-router'
+import { useUsersStore } from '@/stores'
+import { slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import { computed } from 'vue'
 
-const props = defineProps(["showPopup", "gamesList"]);
-const emit = defineEmits(["exit", "continue", "select-game"]);
-const usersStore = useUsersStore();
-const router = useRouter();
+const props = defineProps(['showPopup', 'gamesList'])
+const emit = defineEmits(['exit', 'continue', 'select-game'])
+const usersStore = useUsersStore()
+const router = useRouter()
 
 const getImagePath = (game) => {
   try {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`
   } catch (error) {
-    console.error('Error generating image path:', error);
-    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`;
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-};
+}
 
 const handleImageError = (event, game) => {
   // Replace the failed image with a placeholder
-  let name = encodeURIComponent(game.title);
-  event.target.src = `https://placehold.co/150x175?text=${name}`; // Specify your placeholder image path
-  event.target.alt = `${game.title}`;
-};
+  let name = encodeURIComponent(game.title)
+  event.target.src = `https://placehold.co/150x175?text=${name}` // Specify your placeholder image path
+  event.target.alt = `${game.title}`
+}
 
 function exitGame() {
-  emit("exit");
+  emit('exit')
 }
 
 function continueGame() {
-  emit("continue");
+  emit('continue')
 }
 
 const activeBonus = computed(() => {
-  return usersStore.casinoActiveBonus;
-});
+  return usersStore.casinoActiveBonus
+})
 
 async function redirectToGamePlay(game) {
-  emit("select-game", game);
+  emit('select-game', game)
 }
 </script>
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 body {
   font-family: Arial, Helvetica, sans-serif !important;
 }

@@ -3,15 +3,13 @@
     <div class="m-event-meta">
       <span class="m-event-time">{{ displayTime }}</span>
       <span class="match-status">{{
-        gameData.matchStatus == "1st half"
-          ? "H1"
-          : gameData.matchStatus == "2nd half"
-            ? "H2"
+        gameData.matchStatus == '1st half'
+          ? 'H1'
+          : gameData.matchStatus == '2nd half'
+            ? 'H2'
             : gameData.matchStatus
       }}</span>
-      <span class="m-league-name"
-        >{{ gameData.categoryName }} - {{ gameData.tournament }}</span
-      >
+      <span class="m-league-name">{{ gameData.categoryName }} - {{ gameData.tournament }}</span>
       <div class="live-marker" data-cms-key="live">Live</div>
     </div>
     <div class="x-table-row x-live-table">
@@ -23,8 +21,8 @@
               sport: slugify(gameData.sportName),
               tournament_name: slugify(gameData.tournament),
               event_name: slugify(gameData.name),
-              event_id: gameData.matchID,
-            },
+              event_id: gameData.matchID
+            }
           })
         "
         class="x-table-cell m-info-cell"
@@ -58,17 +56,11 @@
               class="af-select-list m-event-specifiers-order"
               v-if="specifierOpen"
               :class="'af-select-list-' + gameData.matchID"
-              style="
-                width: 67px;
-                opacity: 1;
-                position: absolute;
-                top: 37px;
-                left: 0;
-              "
+              style="width: 67px; opacity: 1; position: absolute; top: 37px; left: 0"
             >
               <span
                 class="af-select-item"
-                :class="{'af-select-item-active': activeSpecifier === item.value}"
+                :class="{ 'af-select-item-active': activeSpecifier === item.value }"
                 @click="setActiveSpecifier(item)"
                 v-for="(item, i) in getSpecifiers"
                 :key="i"
@@ -85,9 +77,9 @@
                     gameData.matchID,
                     odd.outcomeName,
                     odd.oddID,
-                    gameData.name,
+                    gameData.name
                   ),
-                  couponStore.coupon,
+                  couponStore.coupon
                 )
                   ? 'm-outcome--checked'
                   : ''
@@ -96,11 +88,7 @@
               :odds="odd"
             ></LiveOdds>
           </template>
-          <EmptyOdds
-            v-for="(odd, index) in activeMarket.outcomes"
-            :key="index"
-            v-else
-          ></EmptyOdds>
+          <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index" v-else></EmptyOdds>
         </div>
       </div>
     </div>
@@ -111,87 +99,86 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
-import LiveOdds from "./LiveOdds.vue";
-import EmptyOdds from "@/components/EmptyOdds.vue";
-import { sortArr, createID, isSelected, slugify } from "@/helpers";
-import { useCouponStore } from "@/stores";
-import emitter from "@/plugins/emitter";
-import { SIM_ALLOWED_MARKETS } from "@/helpers";
-import { useMqttService } from "@/composables/useMqtt";
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import LiveOdds from './LiveOdds.vue'
+import EmptyOdds from '@/components/EmptyOdds.vue'
+import { sortArr, createID, isSelected, slugify } from '@/helpers'
+import { useCouponStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { SIM_ALLOWED_MARKETS } from '@/helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
-const couponStore = useCouponStore();
-const updatePending = ref(false);
+const couponStore = useCouponStore()
+const updatePending = ref(false)
 
 // Extract the subscribe function at the top level
-const { subscribe } = useMqttService();
+const { subscribe } = useMqttService()
 
 const props = defineProps({
   gameData: Object,
-  activeMarket: Object,
-});
+  activeMarket: Object
+})
 
-const activeSpecifier = ref();
-const specifierOpen = ref(false);
-const timer = ref(null);
-const displayTime = ref(props.gameData.eventTime || '00:00');
+const activeSpecifier = ref()
+const specifierOpen = ref(false)
+const timer = ref(null)
+const displayTime = ref(props.gameData.eventTime || '00:00')
 const isClockStopped = ref(false)
 
 const scores = ref({
   homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0,
-});
+  awayScore: props.gameData?.awayScore || 0
+})
 
-const outcomes = ref([]);
+const outcomes = ref([])
 
 // Keep track of updated odds
-const updatedOutcomes = ref({});
+const updatedOutcomes = ref({})
 
 // Keep track of the last update timestamp for each match
-const lastUpdateTimestamp = ref({});
+const lastUpdateTimestamp = ref({})
 
 // Time handling functions
 const parseTimeToSeconds = (timeStr) => {
-  if (timeStr === "--:--") return null;
-  const [minutes, seconds] = timeStr.split(':').map(Number);
-  return minutes * 60 + seconds;
-};
+  if (timeStr === '--:--') return null
+  const [minutes, seconds] = timeStr.split(':').map(Number)
+  return minutes * 60 + seconds
+}
 
 const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
 
 const stopTimer = () => {
   if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
+    clearInterval(timer.value)
+    timer.value = null
   }
-};
+}
 
 const startTimer = () => {
-  stopTimer();
-  
-  const initialTime = parseTimeToSeconds(displayTime.value);
-  if (initialTime === null || initialTime === 45*60 || initialTime === 90*60) return;
-  
-  let currentSeconds = initialTime;
-  displayTime.value = formatSecondsToTime(currentSeconds);
+  stopTimer()
 
-  
+  const initialTime = parseTimeToSeconds(displayTime.value)
+  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
+
+  let currentSeconds = initialTime
+  displayTime.value = formatSecondsToTime(currentSeconds)
+
   timer.value = setInterval(() => {
-    currentSeconds++;
-    
+    currentSeconds++
+
     // Stop at key match times
     if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
-      stopTimer();
-      return;
+      stopTimer()
+      return
     }
-    
-    displayTime.value = formatSecondsToTime(currentSeconds);
-  }, 1000);
-};
+
+    displayTime.value = formatSecondsToTime(currentSeconds)
+  }, 1000)
+}
 
 // Function to handle fixture status updates
 function handleFixtureStatus(data) {
@@ -199,163 +186,144 @@ function handleFixtureStatus(data) {
     // Check if match has ended
     if (data.status_code === 100) {
       // Emit event to parent to remove this fixture
-      emitter.emit('match-ended', props.gameData.matchID);
-      return;
+      emitter.emit('match-ended', props.gameData.matchID)
+      return
     }
 
     // Update scores
-    scores.value.homeScore = data.home_score;
-    scores.value.awayScore = data.away_score;
-    
+    scores.value.homeScore = data.home_score
+    scores.value.awayScore = data.away_score
+
     // Update time and status
-    displayTime.value = data.event_time;
-    props.gameData.matchStatus = data.match_status;
-    
+    displayTime.value = data.event_time
+    props.gameData.matchStatus = data.match_status
+
     // Restart timer with new time
-    startTimer();
-  });
+    startTimer()
+  })
 }
 
 const getOdds = () => {
   if (props.activeMarket && props.gameData.activeMarkets > 0) {
     if (props.gameData.outcomes) {
       // Find and return the odds based on marketID and outcomeID
-      const odds = props.gameData.outcomes;
-      let filtered = odds.filter(
-        (item) => item.marketID == props.activeMarket.marketID,
-      );
-      let uniqueFiltered = uniqueOutcomes(filtered);
+      const odds = props.gameData.outcomes
+      let filtered = odds.filter((item) => item.marketID == props.activeMarket.marketID)
+      let uniqueFiltered = uniqueOutcomes(filtered)
 
       // Apply any updates we've received from MQTT
       const updatedOutcomesList = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`;
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
         if (updatedOutcomes.value[key]) {
           return {
             ...outcome,
             odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active,
-          };
+            active: updatedOutcomes.value[key].active
+          }
         }
-        return outcome;
-      });
+        return outcome
+      })
 
-      if (props.activeMarket.specifier && props.activeMarket.specifier !== "") {
-        let defaultSpecifier = updatedOutcomesList[0]?.specifier;
+      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+        let defaultSpecifier = updatedOutcomesList[0]?.specifier
         if (defaultSpecifier) {
           const filteredBySpecifier = updatedOutcomesList.filter(
-            (item) => item.specifier === defaultSpecifier,
-          );
+            (item) => item.specifier === defaultSpecifier
+          )
 
           // Only update activeSpecifier if it's different to avoid recursive updates
-          if (activeSpecifier.value !== defaultSpecifier.split("=")[1]) {
-            activeSpecifier.value = defaultSpecifier.split("=")[1];
+          if (activeSpecifier.value !== defaultSpecifier.split('=')[1]) {
+            activeSpecifier.value = defaultSpecifier.split('=')[1]
           }
 
           // Compare before updating to avoid unnecessary reactivity
-          if (
-            JSON.stringify(filteredBySpecifier) !==
-            JSON.stringify(outcomes.value)
-          ) {
-            outcomes.value = sortArr([...filteredBySpecifier], "outcomeID");
+          if (JSON.stringify(filteredBySpecifier) !== JSON.stringify(outcomes.value)) {
+            outcomes.value = sortArr([...filteredBySpecifier], 'outcomeID')
           }
         }
       } else if (updatedOutcomesList.length) {
         // Compare before updating to avoid unnecessary reactivity
-        const sortedOutcomes = sortArr([...updatedOutcomesList], "outcomeID");
+        const sortedOutcomes = sortArr([...updatedOutcomesList], 'outcomeID')
         if (JSON.stringify(sortedOutcomes) !== JSON.stringify(outcomes.value)) {
-          outcomes.value = sortedOutcomes;
+          outcomes.value = sortedOutcomes
         }
       } else if (outcomes.value.length > 0) {
-        outcomes.value = [];
+        outcomes.value = []
       }
     }
   }
-};
+}
 
 const getSpecifiers = computed(() => {
-  if (
-    props.activeMarket &&
-    props.activeMarket.specifier &&
-    props.activeMarket.specifier !== ""
-  ) {
-    const result = [];
+  if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+    const result = []
 
-    const outcomes = props.gameData.outcomes;
+    const outcomes = props.gameData.outcomes
     if (outcomes.length > 0) {
       const filtered = outcomes.filter(
-        (item) => item.marketID === parseInt(props.activeMarket.marketID),
-      );
+        (item) => item.marketID === parseInt(props.activeMarket.marketID)
+      )
 
-      let uniqueFiltered = uniqueOutcomes(filtered);
+      let uniqueFiltered = uniqueOutcomes(filtered)
 
       uniqueFiltered.forEach((outcome) => {
-        let specifier = outcome.specifier;
-        let found = result.find((item) => item.specifier === specifier);
+        let specifier = outcome.specifier
+        let found = result.find((item) => item.specifier === specifier)
         if (!found)
           // check if specifier has been listed
-          result.push({ specifier, value: specifier.split("=")[1] }); //push value to array
-      });
+          result.push({ specifier, value: specifier.split('=')[1] }) //push value to array
+      })
     }
-    return result.sort((a, b) => a.value - b.value);
+    return result.sort((a, b) => a.value - b.value)
   } else {
-    return [];
+    return []
   }
-});
+})
 
 // set active specifier value
 const setActiveSpecifier = (spec) => {
   if (props.gameData.outcomes) {
     // console.log(spec)
-    const odds = props.gameData.outcomes;
-    let filtered = odds.filter(
-      (item) => item.marketID === parseInt(props.activeMarket.marketID),
-    );
+    const odds = props.gameData.outcomes
+    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
     if (filtered) {
-      let uniqueFiltered = uniqueOutcomes(filtered);
-      uniqueFiltered = uniqueFiltered.filter(
-        (item) => item.specifier === spec.specifier,
-      );
+      let uniqueFiltered = uniqueOutcomes(filtered)
+      uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
 
       // Apply any updates we've received from MQTT
       uniqueFiltered = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`;
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
         if (updatedOutcomes.value[key]) {
           return {
             ...outcome,
             odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active,
-          };
+            active: updatedOutcomes.value[key].active
+          }
         }
-        return outcome;
-      });
+        return outcome
+      })
 
-      outcomes.value = uniqueFiltered;
-      activeSpecifier.value = spec.value;
-      toggleList();
+      outcomes.value = uniqueFiltered
+      activeSpecifier.value = spec.value
+      toggleList()
     }
   }
-};
+}
 
 const toggleList = () => {
-  specifierOpen.value = !specifierOpen.value;
-};
+  specifierOpen.value = !specifierOpen.value
+}
 
 function addToBetslip(event, odd) {
-  if (odd.odds <= 1) return;
-  const id = createID(
-    event.gameID,
-    event.matchID,
-    odd.outcomeName,
-    odd.oddID,
-    event.name,
-  );
-  let marketId = parseInt(odd.marketID);
+  if (odd.odds <= 1) return
+  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
-      "showErrorMessage",
-      "This market is not supported in simulation mode. Exit Simulation mode to add to betslip",
-    );
-    return;
+      'showErrorMessage',
+      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
+    )
+    return
   }
   const data = {
     fixture: event,
@@ -366,170 +334,166 @@ function addToBetslip(event, odd) {
     odds: odd.odds,
     odd_id: odd.oddID,
     odd_name: odd.outcomeName,
-    type: "live",
+    type: 'live',
     event_id: event.gameID,
-    specifier: props.activeMarket.specifier,
-  };
+    specifier: props.activeMarket.specifier
+  }
 
-  const existsInBetslip = isSelected(id, couponStore.coupon);
-  return existsInBetslip
-    ? couponStore.removeSelection(id)
-    : couponStore.addToCoupon(data);
+  const existsInBetslip = isSelected(id, couponStore.coupon)
+  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
 }
 
 function handleOddsChange(data) {
-  if (!data || !data.markets) return;
-  
-  const matchId = props.gameData.matchID;
-  if (String(data.event_id) !== String(matchId)) return;
+  if (!data || !data.markets) return
+
+  const matchId = props.gameData.matchID
+  if (String(data.event_id) !== String(matchId)) return
 
   if (data.sport_event_status?.clock?.stopped !== undefined) {
-    isClockStopped.value = data.sport_event_status.clock.stopped;
+    isClockStopped.value = data.sport_event_status.clock.stopped
     if (isClockStopped.value) {
-      stopTimer();
+      stopTimer()
     } else {
-      startTimer();
+      startTimer()
     }
   }
   // Use requestAnimationFrame for smooth UI updates
   requestAnimationFrame(() => {
     // Update scores
-    scores.value.homeScore = data.sport_event_status.home_score;
-    scores.value.awayScore = data.sport_event_status.away_score;
-
+    scores.value.homeScore = data.sport_event_status.home_score
+    scores.value.awayScore = data.sport_event_status.away_score
 
     // Batch odds updates
     if (data.markets?.length > 0) {
-      const updatedOutcomesCopy = { ...updatedOutcomes.value };
-      
-      data.markets.forEach(market => {
-        market.outcomes?.forEach(outcome => {
-          const key = `${market.id}-${outcome.id}-${market.specifiers || ""}`;
+      const updatedOutcomesCopy = { ...updatedOutcomes.value }
+
+      data.markets.forEach((market) => {
+        market.outcomes?.forEach((outcome) => {
+          const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
           updatedOutcomesCopy[key] = {
             odds: outcome.odds,
-            active: outcome.active ? 1 : 0,
-          };
-        });
-      });
+            active: outcome.active ? 1 : 0
+          }
+        })
+      })
 
-      updatedOutcomes.value = updatedOutcomesCopy;
-      getOdds();
+      updatedOutcomes.value = updatedOutcomesCopy
+      getOdds()
     }
-  });
+  })
 }
 
 function handleBetStop(data) {
-  const matchId = props.gameData.matchID;
-  const dataMatchId = data.event_id || data.match_id;
+  const matchId = props.gameData.matchID
+  const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
     // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
-    return;
+    return
   }
-  
+
   // console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
-  
+
   setTimeout(() => {
     const newOutcomes = outcomes.value.map((outcome) => ({
       ...outcome,
       odds: 0,
-      active: 0,
-    }));
+      active: 0
+    }))
 
-    const updatedOutcomesCopy = { ...updatedOutcomes.value };
+    const updatedOutcomesCopy = { ...updatedOutcomes.value }
 
     newOutcomes.forEach((outcome) => {
-      const key = `${outcome.marketID}-${outcome.outcomeID}-${
-        outcome.specifier || ""
-      }`;
+      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
       updatedOutcomesCopy[key] = {
         odds: 0,
         active: 0,
-        timestamp: Date.now(),
-      };
-    });
+        timestamp: Date.now()
+      }
+    })
 
-    updatedOutcomes.value = updatedOutcomesCopy;
+    updatedOutcomes.value = updatedOutcomesCopy
 
     if (JSON.stringify(newOutcomes) !== JSON.stringify(outcomes.value)) {
-      outcomes.value = newOutcomes;
+      outcomes.value = newOutcomes
     }
-  }, 0);
+  }, 0)
 }
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
     (outcome, index, self) =>
       index ===
-      self.findIndex(
-        (o) =>
-          o.outcomeID == outcome.outcomeID && o.specifier == outcome.specifier,
-      ),
-  );
-  return x;
-};
+      self.findIndex((o) => o.outcomeID == outcome.outcomeID && o.specifier == outcome.specifier)
+  )
+  return x
+}
 
-watch(() => displayTime.value, (newTime) => {
-  if (newTime) {
-    startTimer();
-  }
-}, { immediate: true });
+watch(
+  () => displayTime.value,
+  (newTime) => {
+    if (newTime) {
+      startTimer()
+    }
+  },
+  { immediate: true }
+)
 
 watch(
   [() => props.activeMarket, () => props.gameData.outcomes],
   () => {
     // Use setTimeout to break potential update cycles
     setTimeout(() => {
-      getOdds();
-    }, 0);
+      getOdds()
+    }, 0)
   },
-  { immediate: true },
-);
+  { immediate: true }
+)
 
 onMounted(() => {
   // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
-  
+
   // Initialize scores from props
   scores.value = {
     homeScore: props.gameData.homeScore,
-    awayScore: props.gameData.awayScore,
-  };
+    awayScore: props.gameData.awayScore
+  }
 
-  outcomes.value = props.gameData.outcomes || [];
-  getOdds();
+  outcomes.value = props.gameData.outcomes || []
+  getOdds()
 
-  const matchId = props.gameData.matchID;
+  const matchId = props.gameData.matchID
 
   if (matchId) {
-    const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`;
+    const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`
 
     const topics = {
       oddsChange: `feeds/live/odds_change/${matchId}`,
       betStop: `feeds/live/bet_stop/${matchId}`,
       fixtureStatus: `feeds/live/fixture_status/${matchId}`
-    };
+    }
 
     const handlers = {
       oddsChange: handleOddsChange,
       betStop: handleBetStop,
       fixtureStatus: handleFixtureStatus
-    };
+    }
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {
       // console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
       return subscribe(topic, (data) => {
         // console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
-        handlers[key](data);
-      });
-    });
+        handlers[key](data)
+      })
+    })
 
     onBeforeUnmount(() => {
       // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
-      unsubscribers.forEach(unsubscribe => unsubscribe());
-      stopTimer();
-    });
+      unsubscribers.forEach((unsubscribe) => unsubscribe())
+      stopTimer()
+    })
   }
-});
+})
 </script>
 
 <style scoped>
@@ -563,12 +527,12 @@ onMounted(() => {
 .m-event-specifiers-order {
   padding: 0;
   text-align: center;
-  background-color: #50545F;
+  background-color: #50545f;
   font-weight: bold;
   color: #f2f3f5;
 }
 
-.af-select-item-active{
-  color: var(--brand-live-odds-text)
+.af-select-item-active {
+  color: var(--brand-live-odds-text);
 }
 </style>
