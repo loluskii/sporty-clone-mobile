@@ -22,7 +22,6 @@ import { useMqttService } from "@/composables/useMqtt";
 const couponCalculation = new CouponCalculation();
 const WTH_PERC = import.meta.env.VITE_WTH_PERC;
 const { subscribe, unsubscribe } = useMqttService();
-const mqttService = useMqttService();
 
 export const useCouponStore = defineStore({
   id: "coupon",
