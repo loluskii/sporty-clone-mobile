@@ -504,6 +504,14 @@ export const getUserActiveBonus = async () => {
   );
 };
 
+export const getUserCashbackBonus = async () => {
+  return parseData(
+    fetchWrapper.get(
+      `${NEW_BASE_API}/bonus/user/check-cashback-bonus?clientId=${CLIENT_ID}`,
+    ),
+  );
+};
+
 export const checkFirstDeposit = async () => {
   return parseData(
     fetchWrapper.get(

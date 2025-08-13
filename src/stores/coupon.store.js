@@ -22,7 +22,6 @@ import { useMqttService } from "@/composables/useMqtt";
 const couponCalculation = new CouponCalculation();
 const WTH_PERC = import.meta.env.VITE_WTH_PERC;
 const { subscribe, unsubscribe } = useMqttService();
-const mqttService = useMqttService();
 
 export const useCouponStore = defineStore({
   id: "coupon",
@@ -52,7 +51,9 @@ export const useCouponStore = defineStore({
       maxOdds: 1,
       wthTax: 0,
       exciseDuty: 0,
+      bonusId: null,
       useBonus: false,
+      useCashback: false,
       source: "mobile",
     },
     activeSubscriptions: [], // Will store objects with topic and unsubscribe function
@@ -820,7 +821,7 @@ export const useCouponStore = defineStore({
       });
       this.coupon.selections = newSelections;
     },
-    async placeBet(e, type) {
+    async placeBet(e, type, bonusId) {
       let ele = e.target;
       const coupondata = { ...this.coupon };
       const usersStore = useUsersStore();
@@ -838,6 +839,9 @@ export const useCouponStore = defineStore({
       if (type === "bet") {
         this.isBetslipLoading = true;
         coupondata.isBooking = this.mode === "real" ? 0 : 2;
+        if(bonusId){
+          coupondata.bonusId = bonusId
+        }
 
         delete coupondata.combos;
         delete coupondata.fixtures;

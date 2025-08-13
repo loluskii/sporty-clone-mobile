@@ -301,7 +301,7 @@ import BookBetModal from "@/components/Betslip/BookBetModal.vue";
 import SuccessBet from "@/components/Betslip/SuccessBet.vue";
 import { computed, ref, defineComponent, onMounted } from "vue";
 import { useCouponStore, useUsersStore } from "@/stores";
-import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS } from "@/helpers";
+import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import BetlistBookingCode from "./BetlistBookingCode.vue";
 import BetSettings from "./BetSettings.vue";
@@ -386,9 +386,24 @@ async function placeBet(e) {
 
   show.value = false;
   couponStore.isBetslipLoading = true;
+  let bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
+  if(bonusId){
+    try {
+      const bonus = {
+        bonusId: bonusId,
+        amount: totalStake.value,
+        username: usersStore.currentUser.username,
+      };
+      await awardBonus(bonus)
+    } catch (error) {
+      emitter.emit("showErrorMessage", "Failed to activate Cashback!");
+      return
+    }
+  }
+
 
   try {
-    const res = await couponStore.placeBet(e, "bet");
+    const res = await couponStore.placeBet(e, "bet", bonusId);
     couponStore.isBetslipLoading = false;
 
     if (res?.success) {

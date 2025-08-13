@@ -20,8 +20,13 @@
                     <p class="transaction-detail-v2__col header" data-cms-key="status">
                         Status</p>
                     <div class="transaction-detail-v2__col data flex">
-                        <p data-op="trans-detail-status" class="">{{ data.status === 1 ? 'Success' : data.status === 0 ?
-                            'Pending' : 'Failed' }}</p>
+                        <p data-op="trans-detail-status" class="">
+                            <i class="text-danger" v-if="data.status === 4">Cancelled</i>
+                            <i class="text-danger" v-if="data.status === 3">Rejected</i>
+                            <i class="text-danger" v-if="data.status === 2">Failed</i>
+                            <i class="text-success" v-if="data.status === 1">Successful</i>
+                            <i class="text-warning" v-if="data.status === 0">Pending</i>
+                        </p>
                         <!---->
                     </div>
                 </div>
