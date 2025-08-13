@@ -64,7 +64,7 @@
           <div
             v-show="filterIsOpen && filterName === 'league'"
             class="m-list"
-            style="min-height: calc(100vh - 94px) !important"
+            style="min-height: calc(80vh - 94px) !important"
           >
             <LoadingSpinner v-if="isCategoriesLoading" />
             <div v-else class="m-regions">
