@@ -8,14 +8,14 @@
         <div class="enter-mobile-container" v-if="activeStep === 1">
           <form>
             <div class="enter-mobile-label">
-              <p>Join {{ utils.brandName }} with your mobile number</p>
+              <p>Join {{ brandName }} with your mobile number</p>
             </div>
             <div
               class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
               :class="registerError ? 'm-input-wap-wrapper--error' : ''"
             >
               <div class="m-input-wap-prepend m-input-wap-prepend--default">
-                <div>+{{ utils.dialCode }}</div>
+                <div>+{{ SportsbookGlobalVariable.dialCode }}</div>
               </div>
               <i
                 @click="clear"
@@ -142,7 +142,7 @@ import { useAuthStore, useUtilsStore } from '../stores'
 
 // Use ref for reactive data properties
 const authStore = useAuthStore()
-const { brandName } = useUtilsStore()
+const { brandName, SportsbookGlobalVariable } = useUtilsStore()
 const utilsStore = useUtilsStore()
 const formData = ref({
   phone_no: null,
