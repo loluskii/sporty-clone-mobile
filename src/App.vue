@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from "@/components/Footer.vue";
 import MobileFooter from "@/components/MobileFooter.vue";
-import { defineComponent, onMounted, ref, watch, provide } from "vue";
+import { defineComponent, onMounted, ref, watch, computed } from "vue";
 import { useUtilsStore, useCouponStore } from "@/stores";
 import CasinoDialog from "@/components/CasinoDialog.vue";
 import CalendarBox from "@/components/CalendarBox.vue";
@@ -56,10 +56,9 @@ const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
 
-// const showLoadingOverlay = computed(() => {
-//   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
-//   return specificPages.includes(route.path)
-// })
+const isAuthenticated = computed(() => {
+  return authStore.token !== null
+})
 
 function toggleBetslip() {
   showBetslip.value = !showBetslip.value;
@@ -223,6 +222,13 @@ async function validateSelections() {
   }
 }
 
+const safeLoad = (promise) => promise.catch(err => {
+  console.error('Data loading failed:', err);
+  return null;
+});
+          
+          
+
 watch(
   () => route.query.shareCode,
   async (code) => {
@@ -246,20 +252,18 @@ onMounted(async () => {
     utilsStore.banners = []
   }
 
-  if (authStore.isAuthenticated) {
-    Promise.all([usersStore.loadCurrentUser(), getUserActiveBonus(), getUserCashbackBonus(), getBetsData()])
-      .then((res) => {
-        usersStore.activeCashback = res[2].data;
-      })
-      .catch(() => {
-        isLoading.value = false;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+  if (isAuthenticated.value) {
+    const [, activeBonus, cashbackData] = await Promise.all([safeLoad(usersStore.loadCurrentUser()), safeLoad(getUserActiveBonus()), safeLoad(getUserCashbackBonus()), safeLoad(getBetsData())])
+    usersStore.activeCashback = cashbackData.data;
+    usersStore.casinoActiveBonus = activeBonus.data;
+    if(utilsStore.bonusModalShown === null && cashbackData.data.bonusType !== 'cashback'){
+      casinoGameData.value = cashbackData.data
+      utilsStore.bonusModalShown = false
+    }
+    isLoading.value = false;
   }
 
-  Promise.all([
+  await Promise.all([
     fetchBonusList(),
     fetchGlobalVars(),
     getSportsMenu(),
@@ -271,16 +275,6 @@ onMounted(async () => {
       utilsStore.sportsbookBonusList = res[0].data;
       utilsStore.SportsbookGlobalVariable = res[1].data.data;
       utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
-      // Handle bonus response
-      if (res[3].data) {
-        utilsStore.casinoActiveBonus = bonusResponse.value.data;
-        if(utilsStore.bonusModalShown === null){
-          utilsStore.bonusModalShown = false
-          emitter.emit("showCasinoDialog", { bonus: utilsStore.casinoActiveBonus });
-        }
-      } else {
-        console.warn("Failed to fetch active bonus:", bonusResponse.reason);
-      }
       
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')

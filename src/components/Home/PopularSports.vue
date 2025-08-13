@@ -231,7 +231,7 @@
           :featuredCasino="featuredCasino"
           :activeCasinoCategory="activeCasinoCategory"
           @set-active-category="setActiveCategory"
-          :casinoIsLoading="casinoIsLoading"
+          :casinoIsLoading="casinoIsLoadingGames"
         ></FeaturedGamesContainer>
         <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
@@ -321,7 +321,6 @@ const setActiveCategory = async (category) => {
     return;
   }
 
-  casinoIsLoading.value = true;
   activeCasinoCategory.value = category.id;
   
   try {
@@ -330,18 +329,14 @@ const setActiveCategory = async (category) => {
   } catch (error) {
     console.error("Error fetching games for category:", error);
     featuredCasinogames.value = [];
-  } finally {
-    casinoIsLoading.value = false;
   }
 };
 
 async function getCasinoGames() {
-  casinoIsLoading.value = true;
   const res = await getTopGameCategories();
   featuredCasino.value = res.data;
   activeCasinoCategory.value = res.data[0].id;
   const games = await gamesByTopCategory(activeCasinoCategory.value);
-  casinoIsLoading.value = false;
   featuredCasinogames.value = games.data ? games.data.splice(0, 5) : [];
 }
 
@@ -468,7 +463,7 @@ const {
 });
 
 // Update computed properties
-const casinoIsLoading = computed(() => isCasinoLoading.value);
+const casinoIsLoadingGames = computed(() => isCasinoLoading.value);
 
 // Watch for casino data changes
 watch(casinoData, (newData) => {

@@ -37,25 +37,28 @@ export const useAuthStore = defineStore({
           this.token = res.data.token;
           this.mobile_number = payload.username;
           const userStore = useUsersStore();
-          const data = await Promise.all([
-            userStore.loadCurrentUser(),
-            getUserActiveBonus(),
-            getUserCashbackBonus()
+          const safeLoad = (promise) => promise.catch(err => {
+            console.error('Data loading failed:', err);
+            return null;
+          });
+          
+          const [, , cashbackData] = await Promise.all([
+            safeLoad(userStore.loadCurrentUser()),
+            safeLoad(getUserActiveBonus()),
+            safeLoad(getUserCashbackBonus())
           ]);
-
-          userStore.activeCashback = data[2].data
-          this.loading = false;
-          if (this.returnUrl) {
-            return router.push(this.returnUrl);
-          } else {
-            return router.push('/')
+          if (cashbackData?.data) {
+            userStore.activeCashback = cashbackData.data;
           }
+          this.loading = false;
+          return router.push(this.returnUrl || '/');
         } else {
-          throw Error(res.error)
+          throw new Error(res.error || 'Login failed');
         }
       } catch (error) {
         this.loading = false;
-        this.authError = error;
+        this.authError = error.message || 'Login failed';
+        console.error('Login error:', error);
       }
     },
     clearStores() {
