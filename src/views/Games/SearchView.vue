@@ -28,11 +28,7 @@
       <div class="scroll-search-area">
         <div v-if="searchEmtpyResult" class="mt-2 not-found">
           <div class="row d-flex justify-content-center m-2 no-gutters">
-            <div
-              class="text-center col-12"
-              data-cms-key="search_no_match"
-              data-cms-page="sg_lobby"
-            >
+            <div class="text-center col-12" data-cms-key="search_no_match" data-cms-page="sg_lobby">
               Sorry! No game found.
             </div>
           </div>
@@ -44,9 +40,7 @@
               data-cms-key="search_found_single"
               data-cms-page="sg_lobby"
             >
-              {{ searchResult.length }} result{{
-                searchResult.length > 1 ? "s" : ""
-              }}
+              {{ searchResult.length }} result{{ searchResult.length > 1 ? 's' : '' }}
               found
             </div>
             <div class="row mb-3 pb-3" ref="scrollComponent">
@@ -56,11 +50,7 @@
                 :key="index"
                 @click="redirectToGamePlay(game)"
               >
-                <GameCard
-                  :image="getImagePath(game)"
-                  :title="game.title"
-                  :type="game.type"
-                />
+                <GameCard :image="getImagePath(game)" :title="game.title" :type="game.type" />
               </div>
             </div>
 
@@ -72,7 +62,7 @@
                 @click="loadMore"
                 :disabled="isLoadingMore"
               >
-                {{ isLoadingMore ? "Loading..." : "Load More" }}
+                {{ isLoadingMore ? 'Loading...' : 'Load More' }}
               </button>
             </div>
 
@@ -87,159 +77,147 @@
 </template>
 
 <script setup>
-import HeaderCasino from "@/components/HeaderCasino.vue";
-import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, watch, nextTick, computed } from "vue";
-import {
-  getTopGameCategories,
-  gamesByTopCategory,
-  getGamesBySearch,
-  debounce,
-} from "@/helpers";
-import router from "@/router";
-import { useAuthStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import $ from "jquery";
-import GameCard from "@/components/Casino/GameCard.vue";
+import HeaderCasino from '@/components/HeaderCasino.vue'
+import Carousel from '@/components/Home/Carousel.vue'
+import { ref, onBeforeMount, watch, nextTick, computed } from 'vue'
+import { getTopGameCategories, gamesByTopCategory, getGamesBySearch, debounce } from '@/helpers'
+import router from '@/router'
+import { useAuthStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import $ from 'jquery'
+import GameCard from '@/components/Casino/GameCard.vue'
 
-const topGameCategories = ref([]);
-const gamesList = ref([]);
-const activeTopCategory = ref("all");
-const scrollComponent = ref(null);
-const authStore = useAuthStore();
-const isLoading = ref(true);
-const isSearchMode = ref(false);
-const isSearching = ref(false);
-const searchQuery = ref("");
-const myElement = ref(null);
-const searchResult = ref([]);
-const displayLimit = ref(12);
-const isLoadingMore = ref(false);
+const topGameCategories = ref([])
+const gamesList = ref([])
+const activeTopCategory = ref('all')
+const scrollComponent = ref(null)
+const authStore = useAuthStore()
+const isLoading = ref(true)
+const isSearchMode = ref(false)
+const isSearching = ref(false)
+const searchQuery = ref('')
+const myElement = ref(null)
+const searchResult = ref([])
+const displayLimit = ref(12)
+const isLoadingMore = ref(false)
 
 const displayedGames = computed(() => {
-  return searchResult.value.slice(0, displayLimit.value);
-});
+  return searchResult.value.slice(0, displayLimit.value)
+})
 
 const hasMoreGames = computed(() => {
-  return displayLimit.value < searchResult.value.length;
-});
+  return displayLimit.value < searchResult.value.length
+})
 
 async function getCategories() {
-  const response = await getTopGameCategories();
-  topGameCategories.value = response.data;
-  await getGameByTopCategory(topGameCategories.value[0]);
+  const response = await getTopGameCategories()
+  topGameCategories.value = response.data
+  await getGameByTopCategory(topGameCategories.value[0])
 }
 
 async function getGameByTopCategory(category) {
-  isLoading.value = true;
-  activeTopCategory.value = category;
-  const res = await gamesByTopCategory(category.id);
-  isLoading.value = false;
-  gamesList.value = res.data ? res.data : [];
+  isLoading.value = true
+  activeTopCategory.value = category
+  const res = await gamesByTopCategory(category.id)
+  isLoading.value = false
+  gamesList.value = res.data ? res.data : []
 }
 
 const searchEmptyState = computed(() => {
-  return searchQuery.value === "" || searchQuery.value.length < 3;
-});
+  return searchQuery.value === '' || searchQuery.value.length < 3
+})
 
 const searchEmtpyResult = computed(() => {
   return (
-    searchQuery.value !== "" &&
+    searchQuery.value !== '' &&
     searchQuery.value.length > 3 &&
     searchResult.value.length === 0 &&
     !isSearching.value
-  );
-});
+  )
+})
 
 const clearSearch = () => {
-  searchQuery.value = "";
-  searchResult.value = [];
-};
+  searchQuery.value = ''
+  searchResult.value = []
+}
 
 const updateCSSVar = () => {
   if (myElement.value) {
-    const distanceFromTop =
-      myElement.value.getBoundingClientRect().top + window.scrollY;
+    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY
     // Assign the distance to a CSS variable
-    document.documentElement.style.setProperty(
-      "--distance-from-top",
-      `${distanceFromTop}px`,
-    );
+    document.documentElement.style.setProperty('--distance-from-top', `${distanceFromTop}px`)
   }
-};
+}
 
 const search = debounce(async (query) => {
   if (query.length < 3) {
-    searchResult.value = [];
-    return;
+    searchResult.value = []
+    return
   }
 
-  isSearching.value = true;
+  isSearching.value = true
   try {
-    const response = await getGamesBySearch(query);
+    const response = await getGamesBySearch(query)
 
-    searchResult.value = response.games || [];
+    searchResult.value = response.games || []
   } catch (error) {
-    console.error("Error fetching data:", error);
-    searchResult.value = [];
+    console.error('Error fetching data:', error)
+    searchResult.value = []
   } finally {
-    isSearching.value = false;
+    isSearching.value = false
   }
-}, 500);
+}, 500)
 
 const handleInput = () => {
-  search(searchQuery.value);
-};
+  search(searchQuery.value)
+}
 
 onBeforeMount(async () => {
-  await getCategories();
-});
+  await getCategories()
+})
 
 watch(isSearchMode, async (newVal) => {
   if (newVal) {
-    await nextTick(); // Wait for the element to be in the DOM
-    updateCSSVar();
+    await nextTick() // Wait for the element to be in the DOM
+    updateCSSVar()
   }
-});
+})
 
 const getImagePath = (game) => {
   try {
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
-      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
-    )}.png?alt=media`;
+      game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+    )}.png?alt=media`
   } catch (error) {
-    console.error("Error generating image path:", error);
-    return `https://placehold.co/150x175?text=${encodeURIComponent(
-      game.title,
-    )}`;
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-};
+}
 
 const redirectToGamePlay = async (game) => {
   try {
-
     await router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
+      name: 'game-play',
+      params: { game_name: slugify(game.title), game_id: game.id }
+    })
   } catch (error) {
-    console.error("Error redirecting to game:", error);
+    console.error('Error redirecting to game:', error)
   }
-};
+}
 
 const loadMore = async () => {
-  isLoadingMore.value = true;
+  isLoadingMore.value = true
   // Simulate loading delay for better UX
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  displayLimit.value += 12;
-  isLoadingMore.value = false;
-};
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  displayLimit.value += 12
+  isLoadingMore.value = false
+}
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 .search-backdrop {
   background: rgba(0, 0, 0, 0.7);
   bottom: 0;
@@ -304,7 +282,7 @@ const loadMore = async () => {
 
 .game-search .search-input .search-close-button-wrapper:before {
   background-color: #424242;
-  content: "";
+  content: '';
   display: inline-block;
   height: 28px;
   margin-right: 16px;

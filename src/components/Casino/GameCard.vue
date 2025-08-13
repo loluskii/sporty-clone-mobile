@@ -1,5 +1,5 @@
 <template>
-  <div class="casino-game-card" :class="{ 'skeleton': loading }">
+  <div class="casino-game-card" :class="{ skeleton: loading }">
     <div class="game-image-wrapper">
       <div v-if="loading" class="skeleton-image"></div>
       <img v-else :src="image" :alt="title" class="game-image" @error="handleImageError" />
@@ -14,18 +14,18 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps } from 'vue'
 
 const props = defineProps({
   image: String,
   title: String,
   type: String,
   loading: Boolean
-});
+})
 
 const handleImageError = (event) => {
-  event.target.src = `https://placehold.co/150x175?text=${encodeURIComponent(props.title)}`;
-};
+  event.target.src = `https://placehold.co/150x175?text=${encodeURIComponent(props.title)}`
+}
 </script>
 
 <style scoped>
@@ -33,7 +33,7 @@ const handleImageError = (event) => {
   background: #181a20;
   border-radius: 16px;
   padding: 0.75rem 0.75rem 1rem 0.75rem;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -42,7 +42,7 @@ const handleImageError = (event) => {
 }
 
 .casino-game-card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.18);
 }
 
 .game-image-wrapper {
@@ -125,7 +125,11 @@ const handleImageError = (event) => {
 }
 
 @keyframes skeleton-bg {
-  0% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
-</style> 
+</style>

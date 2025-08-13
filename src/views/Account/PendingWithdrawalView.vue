@@ -18,17 +18,28 @@
         <LoadingSpinner v-if="isLoading"></LoadingSpinner>
         <div class="list-bg" v-else style="position: relative">
           <ul v-if="transactionData" class="m-trans-list">
-            <li v-for="(item, index) in transactionData" :key="index" data-op="transaction_item"
-              @click="seeDetail(item)">
+            <li
+              v-for="(item, index) in transactionData"
+              :key="index"
+              data-op="transaction_item"
+              @click="seeDetail(item)"
+            >
               <div class="m-trans-r1">
-                <em data-op="transaction_type">{{ item.withdrawal_code ? 'Shop' : 'Bank' }} Withdrawal</em>
+                <em data-op="transaction_type"
+                  >{{ item.withdrawal_code ? 'Shop' : 'Bank' }} Withdrawal</em
+                >
                 <i data-op="transaction_amount" class="m-txt-dark-gray">
                   -{{ formatNumber(item.amount) }}
                 </i>
               </div>
               <div class="m-trans-r2">
-                <em>{{ item.withdrawal_code ? item.withdrawal_code : item.bank_name && item.account_number ?
-                  `${item.bank_name} ${item.account_number}` : 'N/A' }}</em>
+                <em>{{
+                  item.withdrawal_code
+                    ? item.withdrawal_code
+                    : item.bank_name && item.account_number
+                      ? `${item.bank_name} ${item.account_number}`
+                      : 'N/A'
+                }}</em>
                 <i class="text-danger" v-if="item.status === 2">Failed</i>
                 <i class="text-success" v-if="item.status === 1">Completed</i>
                 <i class="text-warning" v-if="item.status === 0">Pending</i>
@@ -36,8 +47,12 @@
             </li>
           </ul>
           <div v-else class="m-list-none">
-            <span class="no-list-txt"><i class="m-icon--pageques"></i>
-              <span data-cms-key="no_records_found" data-cms-page="common_feedback">No Records Found.</span></span>
+            <span class="no-list-txt"
+              ><i class="m-icon--pageques"></i>
+              <span data-cms-key="no_records_found" data-cms-page="common_feedback"
+                >No Records Found.</span
+              ></span
+            >
           </div>
         </div>
       </template>
@@ -49,57 +64,57 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { getPendingWithdrawalsData, formatDate, formatNumber } from "@/helpers";
-import { useRouter } from "vue-router";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import emitter from "../../plugins/emitter";
+import { onMounted, ref } from 'vue'
+import { getPendingWithdrawalsData, formatDate, formatNumber } from '@/helpers'
+import { useRouter } from 'vue-router'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import emitter from '../../plugins/emitter'
 
-import "@vuepic/vue-datepicker/dist/main.css";
-import TransactionDetail from "@/components/TransactionDetail.vue";
+import '@vuepic/vue-datepicker/dist/main.css'
+import TransactionDetail from '@/components/TransactionDetail.vue'
 
-const transactionData = ref();
-const router = useRouter();
-const isLoading = ref(false);
-const view = ref("Pending Withdrawals");
+const transactionData = ref()
+const router = useRouter()
+const isLoading = ref(false)
+const view = ref('Pending Withdrawals')
 const viewMode = ref('list')
 const selectedTransaction = ref(null)
 
 async function getData(start, end) {
   try {
-    isLoading.value = true;
-    const res = await getPendingWithdrawalsData();
-    transactionData.value = res.data;
-    isLoading.value = false;
+    isLoading.value = true
+    const res = await getPendingWithdrawalsData()
+    transactionData.value = res.data
+    isLoading.value = false
   } catch (error) {
-    console.log(error);
-    isLoading.value = false;
+    console.log(error)
+    isLoading.value = false
   }
 }
 
 const toggleView = () => {
   if (viewMode.value === 'detail') {
-    view.value = 'Pending Withdrawals';
+    view.value = 'Pending Withdrawals'
     viewMode.value = 'list'
-    selectedTransaction.value = null;
+    selectedTransaction.value = null
   } else {
-    return router.go(-1);
+    return router.go(-1)
   }
 }
 
 const seeDetail = (item) => {
-  view.value = 'Detail';
+  view.value = 'Detail'
   viewMode.value = 'detail'
-  selectedTransaction.value = item;
+  selectedTransaction.value = item
 }
 
 onMounted(async () => {
   await getData().then(() => {
     setTimeout(() => {
-      emitter.emit("showDialogueToaster", "NOTE: Click on a transaction to view more details");
+      emitter.emit('showDialogueToaster', 'NOTE: Click on a transaction to view more details')
     }, 1000)
-  });
-});
+  })
+})
 </script>
 
 <style type="text/css">
@@ -148,7 +163,7 @@ onMounted(async () => {
 
 .m-trans-list li:not(.m-trans-mon):after {
   clear: both;
-  content: ".";
+  content: '.';
   display: block;
   height: 0;
   visibility: hidden;
@@ -175,7 +190,7 @@ onMounted(async () => {
 
 .m-trans-list .m-trans-r1:after {
   clear: both;
-  content: ".";
+  content: '.';
   display: block;
   height: 0;
   visibility: hidden;
@@ -197,7 +212,7 @@ onMounted(async () => {
 
 .m-trans-list .m-trans-r2:after {
   clear: both;
-  content: ".";
+  content: '.';
   display: block;
   height: 0;
   visibility: hidden;
@@ -262,8 +277,8 @@ onMounted(async () => {
 }
 
 .no-list-txt .m-icon--pageques::before {
-  content: "\e61b";
-  font-family: "iconfont" !important;
+  content: '\e61b';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -303,7 +318,7 @@ onMounted(async () => {
   border-color: var(--background-type1-tertiary);
 }
 
-#transaction-list-container .m-custom-selection-wrapper>* {
+#transaction-list-container .m-custom-selection-wrapper > * {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -438,9 +453,9 @@ onMounted(async () => {
 }
 
 #transaction-list-container .trans-select .af-select .af-select-list .af-select-item.active:after {
-  content: "\e611";
+  content: '\e611';
   float: right;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   font-size: 1.33333333rem;
 }
 
@@ -466,7 +481,7 @@ onMounted(async () => {
   border-color: var(--background-type1-tertiary);
 }
 
-#transaction-list-container .m-custom-selection-wrapper>* {
+#transaction-list-container .m-custom-selection-wrapper > * {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -521,14 +536,14 @@ onMounted(async () => {
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon {
   color: #0d9737;
   color: var(--brand-secondary);
-  font-family: "iconfont";
+  font-family: 'iconfont';
   width: auto;
 }
 
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon:before {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
-  content: "\e6A3";
+  content: '\e6A3';
   display: inline-block;
   font-size: 0.83333333rem;
 }
@@ -615,8 +630,8 @@ onMounted(async () => {
 }
 
 .m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -624,8 +639,8 @@ onMounted(async () => {
 }
 
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -677,7 +692,7 @@ onMounted(async () => {
 
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: "";
+  content: '';
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -719,8 +734,8 @@ onMounted(async () => {
 }
 
 .m-nav-secondary .home-link .home-icon::before {
-  content: "\e6cb";
-  font-family: "iconfont" !important;
+  content: '\e6cb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

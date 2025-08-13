@@ -11,7 +11,7 @@
             $router.push({
               name: 'games-by-provider',
               params: { provider: slugify(provider.name) },
-              query: { providerId: provider.id },
+              query: { providerId: provider.id }
             })
           "
         >
@@ -34,42 +34,42 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount, watch, computed } from "vue";
-import { getTopGameCategories, gamesByTopCategory } from "@/helpers";
-import { useAuthStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import $ from "jquery";
-import { useRouter, useRoute } from "vue-router";
+import { ref, onBeforeMount, watch, computed } from 'vue'
+import { getTopGameCategories, gamesByTopCategory } from '@/helpers'
+import { useAuthStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import $ from 'jquery'
+import { useRouter, useRoute } from 'vue-router'
 
-const props = defineProps(["providers"]);
-const route = useRoute();
-const viewMode = ref("providers");
-const titleText = ref("Providers");
+const props = defineProps(['providers'])
+const route = useRoute()
+const viewMode = ref('providers')
+const titleText = ref('Providers')
 
 watch(
   () => [route.name],
   async ([routeName]) => {
     // Check the route name
     switch (routeName) {
-      case "casino-providers":
-        handleProvidersView();
+      case 'casino-providers':
+        handleProvidersView()
       default:
         // Handle other routes or provide a default behavior
-        break;
+        break
     }
   },
-  { immediate: true }, // Trigger the watch callback immediately on component mount
-);
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
 
 function handleProvidersView() {
-  viewMode.value = "providers";
+  viewMode.value = 'providers'
 }
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 
 .title-bg {
   font-size: 28px;
@@ -91,7 +91,7 @@ function handleProvidersView() {
 }
 
 .title-bg:after {
-  content: "";
+  content: '';
   position: absolute;
   z-index: -1;
   top: 0;

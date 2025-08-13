@@ -109,7 +109,7 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  font-family: "Roboto", "Microsoft Yahei", "simsun";
+  font-family: 'Roboto', 'Microsoft Yahei', 'simsun';
   font-weight: 500;
   overflow-x: hidden;
   background-color: #fafafa;
@@ -146,9 +146,7 @@
 .code-hub-list-filter .select-container .select[data-v-51a6e872]:nth-child(1) {
   border-left-width: 0;
 }
-.code-hub-list-filter
-  .select-container
-  .select[data-v-51a6e872]:nth-last-child(1) {
+.code-hub-list-filter .select-container .select[data-v-51a6e872]:nth-last-child(1) {
   border-right-width: 0;
 }
 .code-hub-list-filter .select-container .select .text[data-v-51a6e872] {

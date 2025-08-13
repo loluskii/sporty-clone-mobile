@@ -6,37 +6,49 @@
         <div class="m-input-wrapper">
           <span data-cms-key="total_stake">
             {{
-              betSlipType !== "Multiple" && selectionsLength > 1
-                ? "Stake per bet (" + selectionsLength + " bets)"
-                : "Total Stake"
+              betSlipType !== 'Multiple' && selectionsLength > 1
+                ? 'Stake per bet (' + selectionsLength + ' bets)'
+                : 'Total Stake'
             }}
           </span>
 
-          <span class="currency"><em>{{
-            SportsbookGlobalVariable.CurrencyCode
-              }}</em></span>
-          <span tabindex="0" type="text" disabled class="m-keybord-input multiple-stake-input" v-html="betlistStake"
-            @click="toggleKeyboard"></span>
+          <span class="currency"
+            ><em>{{ SportsbookGlobalVariable.CurrencyCode }}</em></span
+          >
+          <span
+            tabindex="0"
+            type="text"
+            disabled
+            class="m-keybord-input multiple-stake-input"
+            v-html="betlistStake"
+            @click="toggleKeyboard"
+          ></span>
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
-          <p>You need a balance of {{
-            SportsbookGlobalVariable.CurrencyCode
-          }} {{ betlistStake }} to place this bet. Please deposit an additional
-            {{ amountNeededToStake }}</p>
+          <p>
+            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ betlistStake }} to
+            place this bet. Please deposit an additional {{ amountNeededToStake }}
+          </p>
           <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
             <a class="m-deposit-link">
               <span>Go to Deposit</span>
-            </a> <i class="arrow-right"></i>
+            </a>
+            <i class="arrow-right"></i>
           </p>
         </div>
-        <BetlistStakeKeyboard :keyboard-visible="keyboardVisible" @button-click="onKeyClick"></BetlistStakeKeyboard>
+        <BetlistStakeKeyboard
+          :keyboard-visible="keyboardVisible"
+          @button-click="onKeyClick"
+        ></BetlistStakeKeyboard>
       </div>
 
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
           <span>Stake After Tax</span>
-          <span>{{ SportsbookGlobalVariable.Currency }}
-            {{ parseFloat(stakeAfterTax).toFixed(2) }}</span>
+          <span
+            >{{ SportsbookGlobalVariable.Currency }}
+            {{ parseFloat(stakeAfterTax).toFixed(2) }}</span
+          >
         </div>
       </template>
 
@@ -47,47 +59,58 @@
 
       <div class="bonus mg-b-10">
         <span>Max Bonus</span>
-        <span>{{ SportsbookGlobalVariable.Currency }}
-          {{ formatNumber(maxBonus) }}</span>
+        <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(maxBonus) }}</span>
       </div>
 
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
           <span>Excise Tax</span>
-          <span>{{ SportsbookGlobalVariable.Currency }}
-            {{ parseFloat(exciseTax).toFixed(2) }}</span>
+          <span
+            >{{ SportsbookGlobalVariable.Currency }} {{ parseFloat(exciseTax).toFixed(2) }}</span
+          >
         </div>
 
         <div v-if="wthTax > 0" class="bonus mg-b-10">
           <span>Withholding Tax</span>
-          <span>{{ SportsbookGlobalVariable.Currency }}
-            {{ formatNumber(wthTax) }}</span>
+          <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(wthTax) }}</span>
         </div>
       </template>
 
-      <div v-if="
-        userStore.currentUser &&
-        userStore.currentUser.sportBonusBalance > 0 &&
-        !couponStore.betslipMode
-      " class="bonus mg-b-10">
+      <div
+        v-if="
+          userStore.currentUser &&
+          userStore.currentUser.sportBonusBalance > 0 &&
+          !couponStore.betslipMode
+        "
+        class="bonus mg-b-10"
+      >
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
-          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-secondary)"
-            v-model="couponStore.coupon.useBonus" id="" />
-          <span>{{ SportsbookGlobalVariable.Currency }}
-            {{ userStore.currentUser.sportBonusBalance }}</span>
+          <input
+            type="checkbox"
+            style="margin-right: 7px; accent-color: var(--brand-secondary)"
+            v-model="couponStore.coupon.useBonus"
+            id=""
+          />
+          <span
+            >{{ SportsbookGlobalVariable.Currency }}
+            {{ userStore.currentUser.sportBonusBalance }}</span
+          >
         </div>
       </div>
 
-      <div v-if="
-        userStore.currentUser &&
-        userStore.activeCashback &&
-        !couponStore.betslipMode
-      " class="bonus mg-b-10">
+      <div
+        v-if="userStore.currentUser && userStore.activeCashback && !couponStore.betslipMode"
+        class="bonus mg-b-10"
+      >
         <span>Use Cashback</span>
         <div style="display: flex; align-items: center">
-          <input type="checkbox" style="margin-right: 7px; accent-color: var(--brand-secondary)"
-            v-model="couponStore.coupon.useCashback" id="" />
+          <input
+            type="checkbox"
+            style="margin-right: 7px; accent-color: var(--brand-secondary)"
+            v-model="couponStore.coupon.useCashback"
+            id=""
+          />
         </div>
       </div>
 
@@ -102,7 +125,11 @@
       </div>
 
       <div class="m-submit">
-        <div class="place-bet bet-accept-change" v-if="!acceptedChanges" @click="handleAcceptChange">
+        <div
+          class="place-bet bet-accept-change"
+          v-if="!acceptedChanges"
+          @click="handleAcceptChange"
+        >
           <span>Accept Changes</span>
         </div>
 
@@ -110,13 +137,17 @@
           <div v-if="!betslipMode" class="m-book-btn" @click="book">
             <div>Book Bet</div>
           </div>
-          <div class="place-bet" :class="[
-            {
-              'bet-disabled': placeBetDisabled,
-              'sim-theme': betslipMode,
-            },
-          ]" @click="placeBet">
-            <span>{{ !betslipMode ? "Place Bet" : "Place Simulate Bet" }}</span>
+          <div
+            class="place-bet"
+            :class="[
+              {
+                'bet-disabled': placeBetDisabled,
+                'sim-theme': betslipMode
+              }
+            ]"
+            @click="placeBet"
+          >
+            <span>{{ !betslipMode ? 'Place Bet' : 'Place Simulate Bet' }}</span>
             <div class="m-pay-num" v-if="totalStake != 0">
               <span>About to pay {{ totalStake }}</span>
             </div>
@@ -127,149 +158,142 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore, useUsersStore, useUtilsStore } from "@/stores";
-import { formatNumber } from "@/helpers";
-import BetslipBonusBar from "./BetslipBonusBar.vue";
-import { computed, ref, onBeforeUnmount, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
-import emitter from "@/plugins/emitter";
+import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
+import { formatNumber } from '@/helpers'
+import BetslipBonusBar from './BetslipBonusBar.vue'
+import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
+import emitter from '@/plugins/emitter'
 // import placeBet2
 const props = defineProps({
   betSlipType: String,
-  betType: String,
-});
-const couponStore = useCouponStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
-const userStore = useUsersStore();
-const router = useRouter();
-const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
-const keyboardVisible = ref(false);
+  betType: String
+})
+const couponStore = useCouponStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
+const userStore = useUsersStore()
+const router = useRouter()
+const emit = defineEmits(['toggle-show', 'toggle-betslip', 'book-bet'])
+const keyboardVisible = ref(false)
 
 const updateStake = (stake) => {
-  couponStore.coupon.stake = stake;
+  couponStore.coupon.stake = stake
   return couponStore.updateWinnings({
     stake: stake,
-    id: "all",
-  });
-};
+    id: 'all'
+  })
+}
 
 const betlistStake = computed(() => {
-  return couponStore.coupon.totalStake;
-});
+  return couponStore.coupon.totalStake
+})
 
 const goToDeposit = () => {
-  emit("toggle-betslip");
+  emit('toggle-betslip')
   return router.push({ name: 'account-deposit' })
 }
 
 const placeBetDisabled = computed(() => {
   return (
-    couponStore.coupon.totalStake <
-    parseFloat(SportsbookGlobalVariable.MinBetStake)
-  ) || couponStore.isBetslipLoading || hasSuspendedSelections.value || balanceLowerThanStake.value;
-});
+    couponStore.coupon.totalStake < parseFloat(SportsbookGlobalVariable.MinBetStake) ||
+    couponStore.isBetslipLoading ||
+    hasSuspendedSelections.value ||
+    balanceLowerThanStake.value
+  )
+})
 
 const balanceLowerThanStake = computed(() => {
-  return userStore.currentUser && betlistStake.value > userStore.currentUser?.sportBonusBalance && betlistStake.value > userStore.currentUser?.availableBalance
+  return (
+    userStore.currentUser &&
+    betlistStake.value > userStore.currentUser?.sportBonusBalance &&
+    betlistStake.value > userStore.currentUser?.availableBalance
+  )
 })
 
 const amountNeededToStake = computed(() => {
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`;
+  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
 })
 
 const acceptedChanges = computed(() => {
-  return couponStore.coupon.acceptChanges;
-});
+  return couponStore.coupon.acceptChanges
+})
 
-const taxEnabled = computed(
-  () => SportsbookGlobalVariable.taxEnabled === "1",
-);
-const exciseTax = computed(() =>
-  parseFloat(SportsbookGlobalVariable.exciseTax || 0),
-);
+const taxEnabled = computed(() => SportsbookGlobalVariable.taxEnabled === '1')
+const exciseTax = computed(() => parseFloat(SportsbookGlobalVariable.exciseTax || 0))
 
 const stakeAfterTax = computed(() => {
-  const excise = betlistStake.value * (exciseTax.value / 100);
-  return betlistStake.value - excise;
-});
+  const excise = betlistStake.value * (exciseTax.value / 100)
+  return betlistStake.value - excise
+})
 
 const wthTax = computed(() => {
-  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100;
-  return (
-    (stakeAfterTax.value * couponStore.coupon.totalOdds -
-      couponStore.coupon.totalStake) *
-    wth
-  );
-});
+  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
+  return (stakeAfterTax.value * couponStore.coupon.totalOdds - couponStore.coupon.totalStake) * wth
+})
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
-  const stake = parseFloat(betlistStake.value) || 0;
-  const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0;
-  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0);
+  const stake = parseFloat(betlistStake.value) || 0
+  const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
+  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0)
 
   if (taxEnabled.value) {
-    let finalPayout = stake * totalOdd;
+    let finalPayout = stake * totalOdd
 
     if (exciseTax.value > 0) {
-      finalPayout = parseFloat(stakeAfterTax.value || 0) * totalOdd;
+      finalPayout = parseFloat(stakeAfterTax.value || 0) * totalOdd
     }
 
     if (wth > 0) {
       // wth tax
-      finalPayout = finalPayout - parseFloat(wthTax.value || 0);
+      finalPayout = finalPayout - parseFloat(wthTax.value || 0)
     }
-    return formatNumber(
-      (finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2),
-    );
+    return formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
   }
 
-  const isSingleBet =
-    props.betSlipType === "Single" && selectionsLength.value === 1;
-  const isMultipleBet = props.betSlipType === "Multiple";
+  const isSingleBet = props.betSlipType === 'Single' && selectionsLength.value === 1
+  const isMultipleBet = props.betSlipType === 'Multiple'
 
   if (isMultipleBet || isSingleBet) {
-    return formatNumber(parseFloat(maxWin.value || 0));
+    return formatNumber(parseFloat(maxWin.value || 0))
   }
   return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
-    parseFloat(maxWin.value || 0),
-  )}`;
-});
+    parseFloat(maxWin.value || 0)
+  )}`
+})
 
 const toggleKeyboard = () => {
-  keyboardVisible.value = !keyboardVisible.value;
-};
+  keyboardVisible.value = !keyboardVisible.value
+}
 
 const totalOdds = computed(() => {
-  return formatNumber(couponStore.coupon.totalOdds);
-});
+  return formatNumber(couponStore.coupon.totalOdds)
+})
 
 const maxBonus = computed(() => {
-  return couponStore.coupon.maxBonus;
-});
+  return couponStore.coupon.maxBonus
+})
 
 const selectionsLength = computed(() => {
-  return couponStore.coupon.selections.length;
-});
+  return couponStore.coupon.selections.length
+})
 
 const minWin = computed(() => {
-  return couponStore.coupon.minWin;
-});
+  return couponStore.coupon.minWin
+})
 
 const maxWin = computed(() => {
-  return couponStore.coupon.maxWin;
-});
+  return couponStore.coupon.maxWin
+})
 
 const betslipMode = computed(() => {
-  return couponStore.betslipMode;
-});
+  return couponStore.betslipMode
+})
 
 const totalStake = computed(() => {
-  return couponStore.coupon.totalStake === ""
-    ? 0.0
-    : formatNumber(couponStore.coupon.totalStake);
-});
+  return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
+})
 
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
@@ -277,140 +301,137 @@ const hasSuspendedSelections = computed(() => {
     (selection) =>
       selection.suspended ||
       selection.unavailable ||
-      (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3,
-  );
-});
+      (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+  )
+})
 
 async function book(e) {
   try {
     if (totalStake.value < 1) {
-      return;
+      return
     }
 
-    e.target.classList.add("loading-icon");
-    couponStore.isBetslipBooking = true;
+    e.target.classList.add('loading-icon')
+    couponStore.isBetslipBooking = true
 
-    const res = await couponStore.placeBet(e, "book");
-    couponStore.isBetslipBooking = false;
-    e.target.classList.remove("loading-icon");
+    const res = await couponStore.placeBet(e, 'book')
+    couponStore.isBetslipBooking = false
+    e.target.classList.remove('loading-icon')
 
     if (res.success) {
-      emit("book-bet", res);
+      emit('book-bet', res)
     } else {
       // Handle error display or other actions as needed
-      emit("toggle-betslip");
-      emitter.emit("showErrorMessage", res.message);
+      emit('toggle-betslip')
+      emitter.emit('showErrorMessage', res.message)
     }
   } catch (error) {
-    emit("toggle-betslip");
+    emit('toggle-betslip')
     // Handle error display or other actions as needed
-    emitter.emit("showErrorMessage", error);
+    emitter.emit('showErrorMessage', error)
   }
 }
 
 function placeBet() {
   if (hasSuspendedSelections.value) {
-    emit("toggle-betslip");
-    emitter.emit("showErrorMessage", "Some selections are suspended");
-    return;
+    emit('toggle-betslip')
+    emitter.emit('showErrorMessage', 'Some selections are suspended')
+    return
   }
   if (!userStore.currentUser) {
-    emit("toggle-betslip");
-    return router.push({ name: "sign-in" });
+    emit('toggle-betslip')
+    return router.push({ name: 'sign-in' })
   } else if (placeBetDisabled.value) {
-    return;
+    return
   } else if (hasSuspendedSelections.value) {
-    emit("toggle-betslip");
-    emitter.emit("showErrorMessage", "Some selections are suspended");
-    return;
+    emit('toggle-betslip')
+    emitter.emit('showErrorMessage', 'Some selections are suspended')
+    return
   }
-  emit("toggle-show");
+  emit('toggle-show')
 }
 
 function onKeyClick(type, value) {
-  let stake = betlistStake.value.toString();
-  let finalStake;
+  let stake = betlistStake.value.toString()
+  let finalStake
   switch (type) {
-    case "number":
+    case 'number':
       // Append clicked number to the display
       if (stake.length < 7) {
-        if (typeof value === "number") {
-          if (stake === "") {
-            finalStake = value;
+        if (typeof value === 'number') {
+          if (stake === '') {
+            finalStake = value
           } else {
-            finalStake = parseFloat(stake) + value;
+            finalStake = parseFloat(stake) + value
           }
         } else {
-          finalStake = stake + value;
+          finalStake = stake + value
         }
-        updateStake(finalStake);
+        updateStake(finalStake)
       }
-      break;
-    case "dot":
+      break
+    case 'dot':
       // Append dot to the display
-      if (stake.length < 6 && !stake.includes(".")) {
-        stake += ".";
-        updateStake(stake);
+      if (stake.length < 6 && !stake.includes('.')) {
+        stake += '.'
+        updateStake(stake)
       }
-      break;
-    case "double-zero":
+      break
+    case 'double-zero':
       // Append double zero to the display
       if (stake.length < 6) {
-        stake += "00";
-        updateStake(stake);
+        stake += '00'
+        updateStake(stake)
       }
-      break;
-    case "clear":
+      break
+    case 'clear':
       // Clear the display
-      stake = "";
-      updateStake(stake);
-      break;
-    case "delete":
+      stake = ''
+      updateStake(stake)
+      break
+    case 'delete':
       // Remove the last character from the display
-      stake = stake.toString().slice(0, -1);
-      updateStake(stake);
-      break;
-    case "done":
+      stake = stake.toString().slice(0, -1)
+      updateStake(stake)
+      break
+    case 'done':
       // Handle the "Done" button click if needed
-      keyboardVisible.value = false;
-      break;
+      keyboardVisible.value = false
+      break
     // Add more cases for other button types if necessary
   }
 }
 
 function handleAcceptChange() {
   // Set acceptChanges to true in the coupon store
-  couponStore.coupon.acceptChanges = true;
+  couponStore.coupon.acceptChanges = true
 
   // Clear the changed flag for all selections
   couponStore.coupon.selections.forEach((selection) => {
-    selection.changed = false;
-  });
+    selection.changed = false
+  })
 
   // Remove any suspended selections that are unavailable
-  const updatedSelections = couponStore.coupon.selections.filter(
-    (selection) => {
-      const isExpired =
-        (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3;
-      return !(selection.suspended && isExpired);
-    },
-  );
+  const updatedSelections = couponStore.coupon.selections.filter((selection) => {
+    const isExpired = (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+    return !(selection.suspended && isExpired)
+  })
 
   if (updatedSelections.length !== couponStore.coupon.selections.length) {
-    couponStore.coupon.selections = updatedSelections;
+    couponStore.coupon.selections = updatedSelections
     // Recalculate winnings after removing suspended selections
     couponStore.updateWinnings({
       stake: couponStore.coupon.totalStake,
-      id: "all",
-    });
+      id: 'all'
+    })
   }
 }
 
 onMounted(() => {
   couponStore.updateWinnings({
-    stake: betlistStake.value,
-  });
-});
+    stake: betlistStake.value
+  })
+})
 </script>
 <style>
 .m-bet-detail-wrap {
@@ -455,7 +476,7 @@ onMounted(() => {
   color: var(--text-type1-primary);
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -463,12 +484,15 @@ onMounted(() => {
   padding: 0 1.33333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div.alternative-bet-active-content-panel {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  > div.alternative-bet-active-content-panel {
   display: initial;
   padding: 0;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div>span {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div > span {
   display: block;
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -476,7 +500,7 @@ onMounted(() => {
   flex: 0 0 auto;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>div>span:last-child {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > div > span:last-child {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -491,7 +515,7 @@ onMounted(() => {
   margin-left: -1.33333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake>.confirm-wrap {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > .confirm-wrap {
   padding: 0;
 }
 
@@ -520,11 +544,7 @@ onMounted(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .is--boost,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win .is--boost {
-  background: -webkit-gradient(linear,
-      left top,
-      right top,
-      from(#40208c),
-      to(#1e0e53));
+  background: -webkit-gradient(linear, left top, right top, from(#40208c), to(#1e0e53));
   background: -webkit-linear-gradient(left, #40208c, #1e0e53);
   background: linear-gradient(to right, #40208c, #1e0e53);
   background: var(--background-flash-odds);
@@ -678,8 +698,8 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .loading-icon::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -702,20 +722,35 @@ onMounted(() => {
   padding: 0 1.83333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-share-text {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .m-share-btn
+  .m-share-text {
   font-size: 1.33333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-icon-share::before {
-  content: "\e63d";
-  font-family: "iconfont" !important;
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .m-share-btn
+  .m-icon-share::before {
+  content: '\e63d';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-share-btn .m-icon-share:before {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .m-share-btn
+  .m-icon-share:before {
   color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.33333333rem;
@@ -759,13 +794,21 @@ onMounted(() => {
   color: var(--text-disable-type1-primary);
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-accept-change {
   background: #0d9737;
   background: var(--brand-secondary);
   color: #ffffff;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-accept-change:active {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-accept-change:active {
   background: #33ea6a;
 }
 
@@ -776,16 +819,24 @@ onMounted(() => {
   color: var(--brand-tertiary);
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-submit::before {
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit:before {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-submit:before {
   -webkit-animation: circles 1s infinite;
   animation: circles 1s infinite;
   -webkit-animation-timing-function: linear;
@@ -794,25 +845,42 @@ onMounted(() => {
   vertical-align: top;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit>span {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-submit
+  > span {
   display: inline-block;
   padding-left: 0.83333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit:active {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-submit:active {
   background: #33ea6a;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-flexibet-loading::before {
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading:before {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-flexibet-loading:before {
   -webkit-animation: circles 1s infinite;
   animation: circles 1s infinite;
   -webkit-animation-timing-function: linear;
@@ -822,12 +890,21 @@ onMounted(() => {
   vertical-align: top;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-flexibet-loading>span {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.bet-flexibet-loading
+  > span {
   display: inline-block;
   padding-left: 0.83333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.required-change {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .m-submit
+  .place-bet.required-change {
   background-color: #50545f;
   background-color: var(--disable-type1-primary);
 }
@@ -896,7 +973,12 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action {
   -webkit-align-content: center;
   -ms-flex-line-pack: center;
   align-content: center;
@@ -921,7 +1003,13 @@ onMounted(() => {
   color: var(--c-betslip-flexibet-action);
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-up {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action
+  .arrow-up {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -936,16 +1024,28 @@ onMounted(() => {
   justify-content: center;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-up::before {
-  content: "\e62d";
-  font-family: "iconfont" !important;
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action
+  .arrow-up::before {
+  content: '\e62d';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-down {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action
+  .arrow-down {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -960,20 +1060,36 @@ onMounted(() => {
   justify-content: center;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action .arrow-down::before {
-  content: "\e6a3";
-  font-family: "iconfont" !important;
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action
+  .arrow-down::before {
+  content: '\e6a3';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-action.disabled {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-action.disabled {
   color: #9ca0ab;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-num {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-num {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   display: inline-block;
@@ -982,7 +1098,12 @@ onMounted(() => {
   width: 5.33333333rem;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flexibet-wrap .flexibet-num-wrap .flexibet-num.flexibet-change {
+.m-bet-detail-wrap
+  .m-betslips-stake-wrapper
+  .m-betslips-stake
+  .flexibet-wrap
+  .flexibet-num-wrap
+  .flexibet-num.flexibet-change {
   background-color: #d6ebdc;
   background-color: var(--c-betslip-flexibet-change-bg);
   font-weight: bold;

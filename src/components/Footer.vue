@@ -31,11 +31,10 @@
         </div>
       </div>
       <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}.
-        Play Responsibly. Betting is addictive and can be psychologically
-        harmful. | {{ utilsStore.brandName }} is licensed by the Oyo State
-        Gaming Board, according to the License No: OYSGB/SPB/232975 issued by
-        the Oyo State Gaming Board.
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
+        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is
+        licensed by the Oyo State Gaming Board, according to the License No: OYSGB/SPB/232975 issued
+        by the Oyo State Gaming Board.
       </p>
     </div>
     <div class="hr"></div>
@@ -45,7 +44,7 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'terms_and_conditions' },
+            params: { page: 'terms_and_conditions' }
           })
         "
       >
@@ -54,9 +53,7 @@
       <h5 class="divider">|</h5>
       <h5
         class="underline"
-        @click="
-          $router.push({ name: 'cms-page', params: { page: 'about_us' } })
-        "
+        @click="$router.push({ name: 'cms-page', params: { page: 'about_us' } })"
       >
         About Us
       </h5>
@@ -66,7 +63,7 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'responsible_gaming' },
+            params: { page: 'responsible_gaming' }
           })
         "
       >
@@ -75,42 +72,38 @@
     </div>
     <div class="btn" @click="handleClick">
       <button>
-        {{
-          route.name == "account-me" && authStore.token
-            ? "Logout"
-            : "Back to Top"
-        }}
+        {{ route.name == 'account-me' && authStore.token ? 'Logout' : 'Back to Top' }}
       </button>
     </div>
   </footer>
 </template>
 <script setup>
-import { useRoute } from "vue-router";
-import { useAuthStore, useUtilsStore } from "@/stores";
-import { defineComponent } from "vue";
+import { useRoute } from 'vue-router'
+import { useAuthStore, useUtilsStore } from '@/stores'
+import { defineComponent } from 'vue'
 
-const route = useRoute();
-const authStore = useAuthStore();
-const utilsStore = useUtilsStore();
+const route = useRoute()
+const authStore = useAuthStore()
+const utilsStore = useUtilsStore()
 
 async function doLogout() {
-  return authStore.logout();
+  return authStore.logout()
 }
 
 async function handleClick() {
-  if (route.name == "account-me" && authStore.token) {
-    return authStore.logout();
+  if (route.name == 'account-me' && authStore.token) {
+    return authStore.logout()
   } else {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
-    });
+      behavior: 'smooth'
+    })
   }
 }
 
 defineComponent({
-  name: "global-footer",
-});
+  name: 'global-footer'
+})
 </script>
 <style>
 footer {
@@ -256,7 +249,7 @@ footer .hr {
 }
 footer .hr::before {
   background-color: #35465a;
-  content: "";
+  content: '';
   height: 1px;
   width: 100%;
 }

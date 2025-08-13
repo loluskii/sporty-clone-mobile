@@ -9,23 +9,15 @@
       style="margin-top: 20px; text-align: center"
     >
       <div>
-        <span class="m-error-msg"
-          >Please Log In to see your Open Bets and Cashout Bets</span
-        >
+        <span class="m-error-msg">Please Log In to see your Open Bets and Cashout Bets</span>
         <div class="m-btn" @click="$router.push('/sign-in')">Login</div>
       </div>
       <div v-if="codes.length" class="empty-recommended-code-container">
         <div class="recommended-code">
-          <span data-cms-key="recommended_code" data-cms-page="cashout"
-            >Recommended Codes</span
-          >
+          <span data-cms-key="recommended_code" data-cms-page="cashout">Recommended Codes</span>
         </div>
         <div class="code-hub-list-item-container" style="position: relative">
-          <CodeHubItem
-            v-for="code in codes"
-            :code="code"
-            :key="code.betslipId"
-          />
+          <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
           <div class="mb-3"></div>
         </div>
       </div>
@@ -43,20 +35,13 @@
                 >Recommended Football Codes</span
               >
             </div>
-            <div
-              class="code-hub-list-item-container"
-              style="position: relative"
-            >
+            <div class="code-hub-list-item-container" style="position: relative">
               <div class="m-loading-wrap m-loading-wrap__center">
                 <div class="m-loading light">
                   <div class="loading"></div>
                 </div>
               </div>
-              <CodeHubItem
-                v-for="code in codes"
-                :code="code"
-                :key="code.betslipId"
-              />
+              <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
               <div class="mb-3"></div>
             </div>
           </div>
@@ -68,11 +53,7 @@
       <div v-else class="m-openbet">
         <div class="m-sportsBet--bets cashout-loading">
           <ul class="m-bet-list">
-            <li
-              v-for="(bet, index) in openBets"
-              :key="index"
-              class="m-bet-item"
-            >
+            <li v-for="(bet, index) in openBets" :key="index" class="m-bet-item">
               <div class="m-item-wrap">
                 <div class="m-title">
                   <div>
@@ -80,9 +61,7 @@
                       {{ bet.betCategory }}
                     </span>
                     <span v-if="bet.hasLiveSelection"
-                      ><span class="m-i-live bg-green-200 m-t-b5"
-                        >Live</span
-                      ></span
+                      ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
                     >
                   </div>
                   <div class="actions">
@@ -101,11 +80,7 @@
                     </li>
                   </ul>
                   <ul :id="bet.betslipId + '_child'" class="m-bet-sel d-none">
-                    <li
-                      v-for="event in bet.selections"
-                      :key="event.id"
-                      class="f-flex"
-                    >
+                    <li v-for="event in bet.selections" :key="event.id" class="f-flex">
                       <div class="m-l-left m-t-12 m-t-l16 m-t-bold m-t-dark">
                         <span v-if="event.statusDescription === 'Lost'">
                           <svg
@@ -154,12 +129,8 @@
                       <div class="m-l-right f-flex-item">
                         <div class="m-t-14 m-t-l16 m-t-dark f-wrap">
                           <i class="m-r-5" :class="'m-icon-' + event.sport"></i>
-                          <span class="m-r-5 m-t-bold">{{
-                            event.outcomeName
-                          }}</span>
-                          <span class="m-t-bold m-r-5 m-b-5">
-                            @ {{ event.odds.toFixed(2) }}
-                          </span>
+                          <span class="m-r-5 m-t-bold">{{ event.outcomeName }}</span>
+                          <span class="m-t-bold m-r-5 m-b-5"> @ {{ event.odds.toFixed(2) }} </span>
                           <span class="m-t-14 m-t-gray m-b-5">
                             {{ event.marketName }}
                           </span>
@@ -170,8 +141,7 @@
                               event.isLive &&
                               event.currentOdds > 1 &&
                               (event.matchStatus
-                                ? event.matchStatus.toLowerCase() !==
-                                  'not started'
+                                ? event.matchStatus.toLowerCase() !== 'not started'
                                 : '')
                             "
                           >
@@ -191,10 +161,7 @@
                           </div>
                         </div>
 
-                        <div
-                          @click="goToEvent(event)"
-                          class="m-aginst m-t-black m-t-14"
-                        >
+                        <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
                             {{ event.eventName }}
                           </span>
@@ -202,27 +169,20 @@
                         <div
                           v-if="
                             event.matchStatus
-                              ? event.matchStatus.toLowerCase() ===
-                                'not started'
+                              ? event.matchStatus.toLowerCase() === 'not started'
                               : ''
                           "
                           class="m-score"
                         >
                           <span class="m-t-12 capitalize m-t-gray">
-                            {{ formatDate(event.eventDate, "DD/MM HH:mm") }}
+                            {{ formatDate(event.eventDate, 'DD/MM HH:mm') }}
                           </span>
                           <span class="m-t-12"></span>
                         </div>
-                        <div
-                          v-else
-                          class="m-score"
-                          style="color: var(--brand-secondary)"
-                        >
+                        <div v-else class="m-score" style="color: var(--brand-secondary)">
                           <span class="m-t-12 capitalize">
                             {{
-                              !event.isLive
-                                ? "FT"
-                                : `${event.eventTime} ${getMatchStatus(event)}`
+                              !event.isLive ? 'FT' : `${event.eventTime} ${getMatchStatus(event)}`
                             }}
                           </span>
                           <span class="m-t-12" style="font-weight: bold">
@@ -230,16 +190,13 @@
                           </span>
                         </div>
                         <div v-else data-v-f5461f3c="" class="m-score">
-                          <span
-                            data-v-f5461f3c=""
-                            class="m-t-12 capitalize m-t-gray"
-                          >
+                          <span data-v-f5461f3c="" class="m-t-12 capitalize m-t-gray">
                             {{
                               parseInt(event.matchStatus) === 3
-                                ? "FT"
+                                ? 'FT'
                                 : event.eventTime
                                   ? `${event.eventTime}'`
-                                  : ""
+                                  : ''
                             }}
                           </span>
                           <span
@@ -275,28 +232,17 @@
                   :class="{ disabled: !bet.cashOutAmount }"
                 >
                   <button
-                    :disabled="
-                      !bet.cashOutAmount || cashingOut || bet.isBonusBet
-                    "
+                    :disabled="!bet.cashOutAmount || cashingOut || bet.isBonusBet"
                     @click.prevent="handleCashout(bet)"
                     type="button"
                     class="m-btn--cashout"
                   >
                     <span v-if="!cashingOut">{{
-                      bet.cashOutAmount &&
-                      bet.cashOutAmount > 0 &&
-                      !bet.isBonusBet
+                      bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
                         ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.cashOutAmount.toFixed(2)}`
-                        : "Cashout Unavailable"
+                        : 'Cashout Unavailable'
                     }}</span>
-                    <img
-                      v-else
-                      src="/loader.gif"
-                      height="24"
-                      width="24"
-                      alt=""
-                      srcset=""
-                    />
+                    <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
                   </button>
                 </div>
               </div>
@@ -331,18 +277,13 @@
                       >Full Cashout
                     </span>
                     <div class="number-grow-warp">
-                      <span class="number-grow">{{
-                        cashoutData.cashOutAmount.toFixed(2)
-                      }}</span>
+                      <span class="number-grow">{{ cashoutData.cashOutAmount.toFixed(2) }}</span>
                     </div>
                   </div>
                 </div>
                 <div class="m-btn-wrapper">
                   <div>
-                    <button
-                      @click.prevent="confirmCashout"
-                      class="af-button af-button--primary"
-                    >
+                    <button @click.prevent="confirmCashout" class="af-button af-button--primary">
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
@@ -350,14 +291,7 @@
                           {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
-                      <img
-                        v-else
-                        src="/loader.gif"
-                        height="24"
-                        width="24"
-                        alt=""
-                        srcset=""
-                      />
+                      <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
                     </button>
                   </div>
                 </div>
@@ -371,68 +305,68 @@
 </template>
 
 <script setup>
-import BetHistoryHeader from "@/components/BetHistoryHeader.vue";
+import BetHistoryHeader from '@/components/BetHistoryHeader.vue'
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
-import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
-import OpenBet from "@/components/BetHistory/OpenBet.vue";
-import { ref, defineComponent, onMounted, onUnmounted } from "vue";
+import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
+import OpenBet from '@/components/BetHistory/OpenBet.vue'
+import { ref, defineComponent, onMounted, onUnmounted } from 'vue'
 import {
   getBets,
   formatNumber,
   formatDate,
   slugify,
   getNext7Days,
-  getCodeHubItems,
-} from "@/helpers";
-import { useAuthStore, useUtilsStore } from "@/stores";
-import $ from "jquery";
-import { useUsersStore } from "@/stores";
-import { CLIENT_ID, performCashout } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import { useRouter } from "vue-router";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+  getCodeHubItems
+} from '@/helpers'
+import { useAuthStore, useUtilsStore } from '@/stores'
+import $ from 'jquery'
+import { useUsersStore } from '@/stores'
+import { CLIENT_ID, performCashout } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import { useRouter } from 'vue-router'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-const openBets = ref(null);
-const isLoading = ref(true);
-const { isAuthenticated } = useAuthStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
-const userStore = useUsersStore();
-const showCashoutModal = ref(false);
-const cashoutData = ref({});
-const cashingOut = ref(false);
-const codes = ref([]);
-const router = useRouter();
-const intervalId = ref();
+const openBets = ref(null)
+const isLoading = ref(true)
+const { isAuthenticated } = useAuthStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
+const userStore = useUsersStore()
+const showCashoutModal = ref(false)
+const cashoutData = ref({})
+const cashingOut = ref(false)
+const codes = ref([])
+const router = useRouter()
+const intervalId = ref()
 
 const getMatchStatus = (event) => {
-  return event.matchStatus == "1st half"
-    ? "H1"
-    : event.matchStatus == "2nd half"
-      ? "H2"
-      : event.matchStatus;
-};
+  return event.matchStatus == '1st half'
+    ? 'H1'
+    : event.matchStatus == '2nd half'
+      ? 'H2'
+      : event.matchStatus
+}
 
 async function getBetsData() {
   try {
     let payload = {
       clientId: CLIENT_ID,
-      date: "",
+      date: '',
       status: 0,
-      userId: userStore.currentUser.id,
-    };
-    const res = await getBets(payload);
-    openBets.value = res.bets;
+      userId: userStore.currentUser.id
+    }
+    const res = await getBets(payload)
+    openBets.value = res.bets
     res.bets.forEach((bet) => {
-      let hasLiveSelection = bet.selections.filter((s) => s.type === "live");
+      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live')
       if (hasLiveSelection.length > 0) {
-        bet.hasLiveSelection = true;
+        bet.hasLiveSelection = true
       } else {
-        bet.hasLiveSelection = false;
+        bet.hasLiveSelection = false
       }
-    });
-    isLoading.value = false;
+    })
+    isLoading.value = false
   } catch (error) {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
@@ -440,65 +374,65 @@ async function getCodes() {
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data.slice(0, 10);
+    betType: 0
+  }
+  const res = await getCodeHubItems(payload)
+  codes.value = res.data.data.slice(0, 10)
 }
 
 function closeCashoutModal() {
   if (!cashingOut.value) {
-    showCashoutModal.value = false;
+    showCashoutModal.value = false
   } else {
-    return;
+    return
   }
 }
 
 function handleCashout(bet) {
   // console.log(bet);
-  showCashoutModal.value = true;
-  cashoutData.value = bet;
+  showCashoutModal.value = true
+  cashoutData.value = bet
 }
 
 async function confirmCashout() {
-  cashingOut.value = true;
+  cashingOut.value = true
   const res = await performCashout({
     betId: cashoutData.value.id,
-    amount: cashoutData.value.cashOutAmount,
-  });
-  cashingOut.value = false;
-  showCashoutModal.value = false;
+    amount: cashoutData.value.cashOutAmount
+  })
+  cashingOut.value = false
+  showCashoutModal.value = false
 
   if (res.success) {
-    console.log("cashout successful");
-    emitter.emit("showDialogueToaster", "Cashout Successful!");
-    await getBetsData();
+    console.log('cashout successful')
+    emitter.emit('showDialogueToaster', 'Cashout Successful!')
+    await getBetsData()
   } else {
-    emitter.emit("showDialogueToaster", res.message);
+    emitter.emit('showDialogueToaster', res.message)
   }
 }
 
 function goToEvent(event) {
   if (!event.isLive) {
     return router.push({
-      name: "fixtures-detail",
+      name: 'fixtures-detail',
       params: {
         sport: slugify(event.sport),
         tournament_name: slugify(event.tournament),
         event_name: slugify(event.eventName),
-        event_id: event.matchId,
-      },
-    });
+        event_id: event.matchId
+      }
+    })
   } else {
     return router.push({
-      name: "live-fixtures-detail",
+      name: 'live-fixtures-detail',
       params: {
         sport: slugify(event.sport),
         tournament_name: slugify(event.tournament),
         event_name: slugify(event.eventName),
-        event_id: event.matchId,
-      },
-    });
+        event_id: event.matchId
+      }
+    })
   }
 }
 
@@ -511,39 +445,39 @@ function goToEvent(event) {
 // }
 
 function showChild(e, index) {
-  let y = $(e.target).hasClass("hide");
+  let y = $(e.target).hasClass('hide')
   if (y) {
-    $(e.target).removeClass("hide");
+    $(e.target).removeClass('hide')
   } else {
-    $(e.target).addClass("hide");
+    $(e.target).addClass('hide')
   }
-  $("#" + index + "_bop").toggleClass("d-none");
-  $("#" + index + "_child").toggleClass("d-none");
+  $('#' + index + '_bop').toggleClass('d-none')
+  $('#' + index + '_child').toggleClass('d-none')
 }
 
 onMounted(async () => {
-  getCodes();
+  getCodes()
   if (isAuthenticated) {
-    getBetsData();
+    getBetsData()
 
     intervalId.value = setInterval(() => {
-      getBetsData();
-    }, 10000);
+      getBetsData()
+    }, 10000)
   }
-});
+})
 
 onUnmounted(() => {
-  clearInterval(intervalId.value);
-});
+  clearInterval(intervalId.value)
+})
 
 defineComponent({
-  name: "open-bets",
-  components: { BetHistoryHeader },
-});
+  name: 'open-bets',
+  components: { BetHistoryHeader }
+})
 </script>
 
 <style scoped>
-@import url("@/assets/css/bet-history.css");
+@import url('@/assets/css/bet-history.css');
 .m-btn--text {
   color: #0d9737;
 }
@@ -612,9 +546,7 @@ defineComponent({
   padding-bottom: 0.66666667rem;
   position: relative;
 }
-.code-hub-list-item-container
-  .code-hub-list-item-wrap
-  + .code-hub-list-item-wrap {
+.code-hub-list-item-container .code-hub-list-item-wrap + .code-hub-list-item-wrap {
   margin-top: 0.66666667rem;
 }
 </style>

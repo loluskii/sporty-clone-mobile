@@ -1,20 +1,14 @@
 <template>
   <div class="m-default">
     <div class="featured-code-container" v-if="codes.length">
-      <div
-        class="recommended-code"
-        data-cms-key="recommended_code"
-        data-cms-page="cashout"
-      >
+      <div class="recommended-code" data-cms-key="recommended_code" data-cms-page="cashout">
         Recommended Code
       </div>
       <Codes :codes="codes" v-if="!codeHubLoading" />
       <LoadingSpinner v-else />
     </div>
     <p class="m-default-info">
-      <span
-        data-cms-key="please_insert_booking_code"
-        data-cms-page="component_betslip"
+      <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
         >Enter a booking code</span
       >
       <span class="m-dialog-tip"></span>
@@ -24,9 +18,7 @@
         class="m-default-code m-input-wap-wrapper"
         :class="{ 'm-input-wap-wrapper--error': isInvalidCode }"
       >
-        <i
-          class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
-        ></i>
+        <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
         <input
           type="input"
           name=""
@@ -45,7 +37,7 @@
       @click.prevent="loadBet"
       :class="[
         isLoading ? 'share-code-btn--disabled' : '',
-        bookingCode == '' ? 'share-code-btn--disabled' : '',
+        bookingCode == '' ? 'share-code-btn--disabled' : ''
       ]"
     >
       <span>Load</span>
@@ -54,56 +46,56 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { loadBetslipByCode, getNext7Days, getCodeHubItems } from "@/helpers";
-import { useCouponStore } from "@/stores";
-import emitter from "@/plugins/emitter";
-import { useRouter } from "vue-router";
-import Codes from "@/components/Home/Codes.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { onMounted, ref } from 'vue'
+import { loadBetslipByCode, getNext7Days, getCodeHubItems } from '@/helpers'
+import { useCouponStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { useRouter } from 'vue-router'
+import Codes from '@/components/Home/Codes.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-const isInvalidCode = ref();
-const bookingCode = ref("");
-const isLoading = ref(false);
-const codeHubLoading = ref(true);
-const couponStore = useCouponStore();
-const router = useRouter();
-const errorMesssage = ref("");
-const codes = ref([]);
+const isInvalidCode = ref()
+const bookingCode = ref('')
+const isLoading = ref(false)
+const codeHubLoading = ref(true)
+const couponStore = useCouponStore()
+const router = useRouter()
+const errorMesssage = ref('')
+const codes = ref([])
 
 async function loadBet() {
-  isLoading.value = true;
-  isInvalidCode.value = false;
+  isLoading.value = true
+  isInvalidCode.value = false
   try {
-    const res = await loadBetslipByCode(bookingCode.value);
-    isLoading.value = false;
+    const res = await loadBetslipByCode(bookingCode.value)
+    isLoading.value = false
     if (res.success) {
       if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections;
-        couponStore.coupon.totalOdds = res.data.totalOdd;
-        couponStore.coupon.totalStake = res.data.stake;
-        couponStore.coupon.stake = res.data.stake;
-        couponStore.coupon.maxWin = res.data.possibleWin;
-        couponStore.coupon.source = "mobile";
+        couponStore.coupon.selections = res.data.selections
+        couponStore.coupon.totalOdds = res.data.totalOdd
+        couponStore.coupon.totalStake = res.data.stake
+        couponStore.coupon.stake = res.data.stake
+        couponStore.coupon.maxWin = res.data.possibleWin
+        couponStore.coupon.source = 'mobile'
         if (res.data.selections.length === 1) {
-          couponStore.coupon.bet_type = "Single";
-          couponStore.coupon.betslip_type = "Single";
+          couponStore.coupon.bet_type = 'Single'
+          couponStore.coupon.betslip_type = 'Single'
         } else {
-          couponStore.coupon.bet_type = "Multiple";
-          couponStore.coupon.betslip_type = "Multiple";
+          couponStore.coupon.bet_type = 'Multiple'
+          couponStore.coupon.betslip_type = 'Multiple'
         }
         // emitter.emit('openBetslip')
-        return router.push({ name: "home" });
+        return router.push({ name: 'home' })
       } else {
-        emitter.emit("showDialogueToaster", "All selections have expired");
+        emitter.emit('showDialogueToaster', 'All selections have expired')
       }
     } else {
-      throw new Error(res.message);
+      throw new Error(res.message)
     }
   } catch (error) {
-    isInvalidCode.value = true;
-    isLoading.value = false;
-    errorMesssage.value = error;
+    isInvalidCode.value = true
+    isLoading.value = false
+    errorMesssage.value = error
   }
 }
 
@@ -112,16 +104,16 @@ async function getCodes() {
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codeHubLoading.value = false;
-  codes.value = res.data.data;
+    betType: 0
+  }
+  const res = await getCodeHubItems(payload)
+  codeHubLoading.value = false
+  codes.value = res.data.data
 }
 
 onMounted(async () => {
-  await getCodes();
-});
+  await getCodes()
+})
 </script>
 
 <style scoped>
@@ -148,8 +140,8 @@ onMounted(async () => {
   padding-left: 0.41666667rem;
 }
 .m-default .m-default-info .m-dialog-tip::before {
-  content: "\e651";
-  font-family: "iconfont" !important;
+  content: '\e651';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -206,8 +198,8 @@ onMounted(async () => {
   border-color: var(--warning-primary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper .m-icon-delete::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -243,7 +235,7 @@ onMounted(async () => {
 .m-default .divider:before,
 .m-default .divider:after {
   background: #9ca0ab;
-  content: "";
+  content: '';
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -295,8 +287,8 @@ onMounted(async () => {
   color: var(--brand-tertiary);
 }
 .share-code-btn--loading::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

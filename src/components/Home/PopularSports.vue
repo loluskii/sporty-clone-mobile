@@ -6,7 +6,7 @@
         @click.prevent="
           $router.push({
             name: 'today-fixtures',
-            params: { sport: 'Soccer' },
+            params: { sport: 'Soccer' }
           })
         "
       >
@@ -19,17 +19,12 @@
           $router.push({
             name: 'fixtures-by-sports',
             params: { sport: 'Soccer' },
-            query: { period: '3hrs' },
+            query: { period: '3hrs' }
           })
         "
       >
         <div class="image">
-          <img
-            src="@/assets/images/3hrs.jpeg"
-            style="height: 24px"
-            alt=""
-            srcset=""
-          />
+          <img src="@/assets/images/3hrs.jpeg" style="height: 24px" alt="" srcset="" />
         </div>
         <div class="text">football in 3 hours</div>
       </div>
@@ -42,8 +37,8 @@
               params: {
                 sport: 'Soccer',
                 categories: `sr:category:${match.categoryID}`,
-                tournaments: `sr:tournament:${match.tournamentID}`,
-              },
+                tournaments: `sr:tournament:${match.tournamentID}`
+              }
             })
           "
         >
@@ -62,23 +57,12 @@
 
     <div class="featured-match-placeholder">
       <div class="featured-widget with-nav" style="">
-        <div
-          role="tablist"
-          aria-label="featured widgets tabs"
-          class="featured-nav-list"
-        >
+        <div role="tablist" aria-label="featured widgets tabs" class="featured-nav-list">
           <div class="featured-header-left">
-            <span
-              role="heading"
-              aria-label="featured widgets title"
-              class="featured-title"
+            <span role="heading" aria-label="featured widgets title" class="featured-title"
               >Featured</span
             >
-            <div
-              role="group"
-              aria-label="featured widget tablist container"
-              class="tabList"
-            >
+            <div role="group" aria-label="featured widget tablist container" class="tabList">
               <div
                 class="m-snap-nav-wrap"
                 role="tablist"
@@ -88,35 +72,27 @@
                 <ul class="m-snap-nav flex">
                   <li
                     class="featured-nav-item m-snap-nav-item"
-                    :class="
-                      activeFeaturedTab == 'featuredMatches' ? 'active' : ''
-                    "
+                    :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
                     @click="setActiveTab('featuredMatches')"
                     role="tab"
                     aria-label="featured matches"
                   >
                     <span
                       class="feature-nav-span"
-                      :class="
-                        activeFeaturedTab == 'featuredMatches' ? 'active' : ''
-                      "
+                      :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
                       >Matches</span
                     >
                   </li>
                   <li
                     class="featured-nav-item m-snap-nav-item"
                     @click="setActiveTab('featuredGames')"
-                    :class="
-                      activeFeaturedTab == 'featuredGames' ? 'active' : ''
-                    "
+                    :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
                     role="tab"
                     aria-label="featured games"
                   >
                     <span
                       class="feature-nav-span"
-                      :class="
-                        activeFeaturedTab == 'featuredGames' ? 'active' : ''
-                      "
+                      :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
                       >Casino</span
                     >
                   </li>
@@ -169,10 +145,7 @@
             </a>
           </div>
         </div>
-        <div
-          v-show="activeFeaturedTab == 'featuredMatches'"
-          class="featuredMatch bg-white"
-        >
+        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch bg-white">
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
@@ -188,11 +161,7 @@
                   >
                     <div
                       class="featuredMatchCategory"
-                      :class="
-                        activeFeaturedTournament == top.tournamentID
-                          ? 'active'
-                          : ''
-                      "
+                      :class="activeFeaturedTournament == top.tournamentID ? 'active' : ''"
                     >
                       <div class="wrapper">
                         <div class="img">
@@ -207,11 +176,7 @@
                 <i class="controls right-controls"></i>
               </div>
             </div>
-            <div
-              class="HorizonSwipe"
-              id="featuredMatchCardBox"
-              style="overflow: auto"
-            >
+            <div class="HorizonSwipe" id="featuredMatchCardBox" style="overflow: auto">
               <template v-for="tournament in sortedTournamentGames">
                 <FeaturedMatchCard
                   v-for="(game, g) in tournament.fixtures"
@@ -239,9 +204,9 @@
   </div>
 </template>
 <script setup>
-import FeaturedMatchCard from "./FeaturedMatchCard.vue";
-import Codes from "./Codes.vue";
-import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from "vue";
+import FeaturedMatchCard from './FeaturedMatchCard.vue'
+import Codes from './Codes.vue'
+import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from 'vue'
 import {
   getTopBets,
   getFixturesByTournamentId,
@@ -249,179 +214,166 @@ import {
   getTopGameCategories,
   gamesByTopCategory,
   getCodeHubItems,
-  getNext7Days,
-} from "@/helpers";
-import { useQuery } from "vue-query";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import FeaturedGamesContainer from "./FeaturedGamesContainer.vue";
-import { useMqttService } from "@/composables/useMqtt";
-import { useUtilsStore } from '@/stores/utils.store';
+  getNext7Days
+} from '@/helpers'
+import { useQuery } from 'vue-query'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import FeaturedGamesContainer from './FeaturedGamesContainer.vue'
+import { useMqttService } from '@/composables/useMqtt'
+import { useUtilsStore } from '@/stores/utils.store'
 
-const { subscribe } = useMqttService();
-const unsubscribeFunctions = ref({}); // Store unsubscribe functions by match ID
-const componentId = `popular-sports-${Date.now()}`; // Unique ID for this component instance
-const shouldRefresh = ref(false);
+const { subscribe } = useMqttService()
+const unsubscribeFunctions = ref({}) // Store unsubscribe functions by match ID
+const componentId = `popular-sports-${Date.now()}` // Unique ID for this component instance
+const shouldRefresh = ref(false)
 
-const utilsStore = useUtilsStore();
-const featuredTournaments = computed(() => utilsStore.featuredTournaments);
-const featuredTournamentGames = computed(() => utilsStore.featuredTournamentGames);
-const isLoading = computed(() => utilsStore.featuredIsLoading);
-const activeFeaturedTournament = computed(() => utilsStore.activeFeaturedTournament);
+const utilsStore = useUtilsStore()
+const featuredTournaments = computed(() => utilsStore.featuredTournaments)
+const featuredTournamentGames = computed(() => utilsStore.featuredTournamentGames)
+const isLoading = computed(() => utilsStore.featuredIsLoading)
+const activeFeaturedTournament = computed(() => utilsStore.activeFeaturedTournament)
 
-const activeFeaturedTab = ref("featuredMatches");
+const activeFeaturedTab = ref('featuredMatches')
 
-const activeCasinoCategory = ref(null);
-const featuredCasinogames = ref([]);
-const featuredCasino = ref([]);
-const codes = ref([]);
+const activeCasinoCategory = ref(null)
+const featuredCasinogames = ref([])
+const featuredCasino = ref([])
+const codes = ref([])
 
 function scrollGamesIntoView() {
-  document
-    .getElementById("featuredMatchCard_" + activeFeaturedTournament.value)
-    .scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+  document.getElementById('featuredMatchCard_' + activeFeaturedTournament.value).scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 
 function setActiveTab(tab) {
-  activeFeaturedTab.value = tab;
+  activeFeaturedTab.value = tab
 }
 
 const sortedTournamentGames = computed(() => {
   return featuredTournamentGames.value.length
-    ? [...featuredTournamentGames.value].sort(
-        (a, b) => a.tournamentID - b.tournamentID,
-      )
-    : [];
-});
+    ? [...featuredTournamentGames.value].sort((a, b) => a.tournamentID - b.tournamentID)
+    : []
+})
 
 function getImageURL(name) {
-  if (name == "Championship") {
-    return new URL(
-      "../../assets/images/EFL_Championship_Logo.png",
-      import.meta.url,
-    );
-  } else if (name == "Bundesliga") {
-    return new URL("../../assets/images/Bundesliga.png", import.meta.url);
+  if (name == 'Championship') {
+    return new URL('../../assets/images/EFL_Championship_Logo.png', import.meta.url)
+  } else if (name == 'Bundesliga') {
+    return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`
   }
 }
 
 const setActiveTournament = (tournament) => {
-  utilsStore.setActiveFeaturedTournament(tournament.tournamentID);
-  scrollGamesIntoView();
-};
+  utilsStore.setActiveFeaturedTournament(tournament.tournamentID)
+  scrollGamesIntoView()
+}
 
 const setActiveCategory = async (category) => {
   if (!category?.id) {
-    console.warn("Invalid category provided to setActiveCategory");
-    return;
+    console.warn('Invalid category provided to setActiveCategory')
+    return
   }
 
-  activeCasinoCategory.value = category.id;
-  
+  activeCasinoCategory.value = category.id
+
   try {
-    const games = await gamesByTopCategory(category.id);
-    featuredCasinogames.value = games.data ? games.data.splice(0, 5) : [];
+    const games = await gamesByTopCategory(category.id)
+    featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
   } catch (error) {
-    console.error("Error fetching games for category:", error);
-    featuredCasinogames.value = [];
+    console.error('Error fetching games for category:', error)
+    featuredCasinogames.value = []
   }
-};
+}
 
 async function getCasinoGames() {
-  const res = await getTopGameCategories();
-  featuredCasino.value = res.data;
-  activeCasinoCategory.value = res.data[0].id;
-  const games = await gamesByTopCategory(activeCasinoCategory.value);
-  featuredCasinogames.value = games.data ? games.data.splice(0, 5) : [];
+  const res = await getTopGameCategories()
+  featuredCasino.value = res.data
+  activeCasinoCategory.value = res.data[0].id
+  const games = await gamesByTopCategory(activeCasinoCategory.value)
+  featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
 }
 
 async function getCodes() {
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
+    betType: 0
+  }
+  const res = await getCodeHubItems(payload)
+  codes.value = res.data.data
 }
 
 function assignTournaments(tournament, games, tournamentID) {
   if (!games?.fixtures?.length || !games?.markets?.length) {
     // Early return if no valid data
-    const index = featuredTournaments.value.findIndex(
-      (x) => x.tournament_id === tournament.id
-    );
+    const index = featuredTournaments.value.findIndex((x) => x.tournament_id === tournament.id)
     if (index !== -1) {
-      featuredTournaments.value.splice(index, 1);
+      featuredTournaments.value.splice(index, 1)
     }
-    return;
+    return
   }
 
   // Take only first 5 fixtures
-  const gamesList = games.fixtures.slice(0, 5);
+  const gamesList = games.fixtures.slice(0, 5)
 
   // Create tournament games object
   const tournamentGames = {
     tournamentID,
     fixtures: gamesList,
     markets: games.markets
-  };
+  }
 
   // Add to featured games
-  featuredTournamentGames.value.push(tournamentGames);
+  featuredTournamentGames.value.push(tournamentGames)
 
   // Batch MQTT subscriptions
-  const matchIds = gamesList
-    .filter(fixture => fixture.matchID)
-    .map(fixture => fixture.matchID);
+  const matchIds = gamesList.filter((fixture) => fixture.matchID).map((fixture) => fixture.matchID)
 
   if (matchIds.length > 0) {
-    setupMqttSubscriptions(matchIds);
+    setupMqttSubscriptions(matchIds)
   }
 }
 
 function setupMqttSubscriptions(matchIds) {
   // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchIds.join(',')}`;
+  const subscriptionKey = `${componentId}-${matchIds.join(',')}`
   if (unsubscribeFunctions.value[subscriptionKey]) {
-    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) =>
-      unsubscribe(),
-    );
+    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
   }
 
   // Create subscriptions for each match ID
-  const subscriptions = matchIds.map(matchId => {
+  const subscriptions = matchIds.map((matchId) => {
     // Subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
+    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      utilsStore.handleOddsChange(data);
-    });
+      utilsStore.handleOddsChange(data)
+    })
 
     // Subscribe to bet stop
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
+    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      utilsStore.handleBetStop(data);
-    });
+      utilsStore.handleBetStop(data)
+    })
 
-    return [unsubscribeOddsChange, unsubscribeBetStop];
-  });
+    return [unsubscribeOddsChange, unsubscribeBetStop]
+  })
 
   // Flatten the array of subscription pairs
-  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat();
+  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
 }
 
 onBeforeUnmount(() => {
   // Clean up all MQTT subscriptions
   Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
-    subscriptions.forEach((unsubscribe) => unsubscribe());
-  });
-  unsubscribeFunctions.value = {};
-});
+    subscriptions.forEach((unsubscribe) => unsubscribe())
+  })
+  unsubscribeFunctions.value = {}
+})
 
 // Update onMounted
 onMounted(async () => {
@@ -429,110 +381,117 @@ onMounted(async () => {
   if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
     await utilsStore.fetchFeaturedGames().then(() => {
       setActiveTournament(featuredTournaments.value[0])
-    });
+    })
   }
-});
+})
 
-const {
-  data: casinoData,
-  isLoading: isCasinoLoading,
-} = useQuery("casinoGames", getTopGameCategories, {
-  refetchOnWindowFocus: false,
-  refetchOnMount: true,
-  refetchOnReconnect: false,
-  staleTime: 60000,
-  cacheTime: 300000,
-});
+const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
+  'casinoGames',
+  getTopGameCategories,
+  {
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    staleTime: 60000,
+    cacheTime: 300000
+  }
+)
 
-const {
-  data: codesData,
-  isLoading: isCodesLoading,
-} = useQuery("codes", () => {
-  const payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0,
-  };
-  return getCodeHubItems(payload);
-}, {
-  refetchOnWindowFocus: false,
-  refetchOnMount: true,
-  refetchOnReconnect: false,
-  staleTime: 60000,
-  cacheTime: 300000,
-});
+const { data: codesData, isLoading: isCodesLoading } = useQuery(
+  'codes',
+  () => {
+    const payload = {
+      from: getNext7Days()[0],
+      to: getNext7Days()[7],
+      betType: 0
+    }
+    return getCodeHubItems(payload)
+  },
+  {
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    staleTime: 60000,
+    cacheTime: 300000
+  }
+)
 
 // Update computed properties
-const casinoIsLoadingGames = computed(() => isCasinoLoading.value);
+const casinoIsLoadingGames = computed(() => isCasinoLoading.value)
 
 // Watch for casino data changes
-watch(casinoData, (newData) => {
-  if (newData?.data) {
-    featuredCasino.value = newData.data;
-    if (newData.data.length > 0) {
-      const firstCategory = newData.data[0];
-      activeCasinoCategory.value = firstCategory.id;
-      setActiveCategory(firstCategory);
+watch(
+  casinoData,
+  (newData) => {
+    if (newData?.data) {
+      featuredCasino.value = newData.data
+      if (newData.data.length > 0) {
+        const firstCategory = newData.data[0]
+        activeCasinoCategory.value = firstCategory.id
+        setActiveCategory(firstCategory)
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+)
 
 // Watch for codes data changes
-watch(codesData, (newData) => {
-  if (newData?.data?.data) {
-    codes.value = newData.data.data;
-  }
-}, { immediate: true });
+watch(
+  codesData,
+  (newData) => {
+    if (newData?.data?.data) {
+      codes.value = newData.data.data
+    }
+  },
+  { immediate: true }
+)
 
 // Update the getFeaturedGames function
 async function getFeaturedGames() {
-  if (!topBetsData.value) return;
+  if (!topBetsData.value) return
 
   // Use Set for faster unique tournament filtering
-  const uniqueTournamentIds = new Set();
-  const uniqueTournaments = [];
+  const uniqueTournamentIds = new Set()
+  const uniqueTournaments = []
 
   // Single pass to filter unique tournaments
   for (const tournament of topBetsData.value.data) {
     if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-      uniqueTournamentIds.add(tournament.tournamentID);
-      uniqueTournaments.push(tournament);
+      uniqueTournamentIds.add(tournament.tournamentID)
+      uniqueTournaments.push(tournament)
     }
   }
 
   // Sort tournaments and update featuredTournaments immediately
-  featuredTournaments.value = uniqueTournaments.sort(
-    (a, b) => a.tournamentID - b.tournamentID
-  );
+  featuredTournaments.value = uniqueTournaments.sort((a, b) => a.tournamentID - b.tournamentID)
 
   // Set active tournament
-  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID;
+  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID
 
   // Process tournaments in parallel with concurrency limit
-  const CONCURRENCY_LIMIT = 3;
-  const chunks = [];
+  const CONCURRENCY_LIMIT = 3
+  const chunks = []
   for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
-    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT));
+    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT))
   }
 
   for (const chunk of chunks) {
     await Promise.all(
       chunk.map(async (tournament) => {
         try {
-          const games = await getFixturesByTournamentId(
-            tournament.tournamentID,
-            tournament.sportID
-          );
-          assignTournaments(tournament, games, tournament.tournamentID);
+          const games = await getFixturesByTournamentId(tournament.tournamentID, tournament.sportID)
+          assignTournaments(tournament, games, tournament.tournamentID)
         } catch (error) {
-          console.error(`Error processing tournament ${tournament.tournamentID}:`, error);
-          const index = featuredTournaments.value.findIndex(t => t.tournamentID === tournament.tournamentID);
+          console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
+          const index = featuredTournaments.value.findIndex(
+            (t) => t.tournamentID === tournament.tournamentID
+          )
           if (index !== -1) {
-            featuredTournaments.value.splice(index, 1);
+            featuredTournaments.value.splice(index, 1)
           }
         }
       })
-    );
+    )
   }
 }
 
@@ -540,18 +499,18 @@ async function getFeaturedGames() {
 onActivated(async () => {
   // Only fetch if we don't have data or it's stale
   if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames();
+    await utilsStore.fetchFeaturedGames()
   }
-});
+})
 
 // Update onDeactivated
 onDeactivated(() => {
   // Clean up MQTT subscriptions
   Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
-    subscriptions.forEach((unsubscribe) => unsubscribe());
-  });
-  unsubscribeFunctions.value = {};
-});
+    subscriptions.forEach((unsubscribe) => unsubscribe())
+  })
+  unsubscribeFunctions.value = {}
+})
 </script>
 <style scoped>
 .home .m-popular {
@@ -658,7 +617,7 @@ onDeactivated(() => {
 .home .m-sports .nav-fixed .market-wrapper:after {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  content: "";
+  content: '';
   height: 4rem;
   left: 0;
   position: absolute;
@@ -689,8 +648,8 @@ onDeactivated(() => {
   position: relative;
 }
 .home .view-all a::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -722,7 +681,7 @@ onDeactivated(() => {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  font-family: "roboto", sans-serif;
+  font-family: 'roboto', sans-serif;
   background-color: #ffffff;
   background-color: var(--c-featured-match-bg);
 }
@@ -836,7 +795,7 @@ onDeactivated(() => {
 }
 .featured-active::before {
   bottom: 0;
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   width: 10%;
@@ -916,7 +875,7 @@ onDeactivated(() => {
   width: auto;
 }
 .featuredMatchCategory::after {
-  content: "";
+  content: '';
   display: none;
   bottom: 6px;
   height: 0;
@@ -958,15 +917,12 @@ onDeactivated(() => {
 .featuredMatch .featuredMatchCategoryBox .featuredMatchCategoryNav {
   width: 100%;
 }
-.featuredMatch
-  .featuredMatchCategoryBox
-  .featuredMatchCategoryNav
-  .featuredMatchCategoryNavItem {
+.featuredMatch .featuredMatchCategoryBox .featuredMatchCategoryNav .featuredMatchCategoryNavItem {
   padding: 0 0 0.4rem 0;
 }
 
 .featuredMatchCategory::before {
-  content: "";
+  content: '';
   display: none;
   bottom: 0px;
   height: 0;

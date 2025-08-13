@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="fixed-wrap"
-    style="position: fixed; top: 0rem; z-index: 1000; width: 100%"
-  >
+  <div class="fixed-wrap" style="position: fixed; top: 0rem; z-index: 1000; width: 100%">
     <div>
       <div class="m-openbet-header">
         <div v-if="authStore.isAuthenticated" class="is-login">
@@ -17,10 +14,7 @@
         </div>
       </div>
     </div>
-    <div
-      class="m-snap-nav-wrap m-list-nav-type m-bets--nav"
-      style="overflow: hidden"
-    >
+    <div class="m-snap-nav-wrap m-list-nav-type m-bets--nav" style="overflow: hidden">
       <ul class="m-snap-nav flex" style="width: 100%">
         <li
           class="m-list-nav-type-item m-snap-nav-item"
@@ -44,18 +38,18 @@
 </template>
 
 <script setup>
-import { useUsersStore, useAuthStore, useUtilsStore } from "../stores";
-import { useRoute } from "vue-router";
-import { defineProps, computed } from "vue";
+import { useUsersStore, useAuthStore, useUtilsStore } from '../stores'
+import { useRoute } from 'vue-router'
+import { defineProps, computed } from 'vue'
 
-const route = useRoute();
-const authStore = useAuthStore();
-const usersStore = useUsersStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
+const route = useRoute()
+const authStore = useAuthStore()
+const usersStore = useUsersStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 defineProps({
-  active: String,
-});
+  active: String
+})
 </script>
 <style scoped>
 .m-openbet-header {
@@ -90,7 +84,7 @@ defineProps({
   border-left: 1px solid #ffffff;
   border-color: #ffffff;
   border-color: var(--text-type2-primary);
-  content: "";
+  content: '';
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;

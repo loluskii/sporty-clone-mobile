@@ -24,35 +24,28 @@
         </div>
       </div>
       <div class="bottom d-flex">
-        <span class="home-team text-size-10">{{
-          data.eventName.split("vs.")[0]
-        }}</span
+        <span class="home-team text-size-10">{{ data.eventName.split('vs.')[0] }}</span
         ><span class="vs color-secondary text-size-10">vs</span
-        ><span class="away-team text-size-10">{{
-          data.eventName.split("vs.")[1]
-        }}</span>
+        ><span class="away-team text-size-10">{{ data.eventName.split('vs.')[1] }}</span>
         <div class="time color-secondary text-size-10 ml-auto">
-          {{ formatDate(data.eventDate, "ddd Do, hh:mma") }}
+          {{ formatDate(data.eventDate, 'ddd Do, hh:mma') }}
         </div>
       </div>
     </div>
   </div>
 </template>
 <script setup>
-import { formatDate } from "@/helpers";
+import { formatDate } from '@/helpers'
 
-const props = defineProps(["data"]);
+const props = defineProps(['data'])
 
 function getImageURL(name) {
-  if (name == "Championship") {
-    return new URL(
-      "../../assets/images/EFL_Championship_Logo.png",
-      import.meta.url,
-    );
-  } else if (name == "Bundesliga") {
-    return new URL("../../assets/images/Bundesliga.png", import.meta.url);
+  if (name == 'Championship') {
+    return new URL('../../assets/images/EFL_Championship_Logo.png', import.meta.url)
+  } else if (name == 'Bundesliga') {
+    return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`;
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`
   }
 }
 </script>

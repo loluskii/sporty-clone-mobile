@@ -53,8 +53,7 @@
             {{ simulationData?.finalScore.away }}
           </span>
           <span class="teamScore__half">
-            ({{ simulationData?.halfTime.home }} -
-            {{ simulationData?.halfTime.away }})
+            ({{ simulationData?.halfTime.home }} - {{ simulationData?.halfTime.away }})
           </span>
         </template>
       </div>
@@ -65,50 +64,48 @@
     <div class="event-bet pd-t-10 pd-b-12">
       <div class="info">
         <span class="type__name">{{ selection.marketName }}</span>
-        <div class="info-odds">
-          {{ selection.outcomeName }} @ {{ selection.odds }}
-        </div>
+        <div class="info-odds">{{ selection.outcomeName }} @ {{ selection.odds }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue'
 
 const props = defineProps({
   selection: {
     type: Object,
-    required: true,
+    required: true
   },
   simulationData: {
     type: Object,
-    required: true,
+    required: true
   },
   currentTime: {
     type: Number,
-    required: true,
+    required: true
   },
   timerEnded: {
     type: Boolean,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
 const currentScore = computed(() => {
-  if (!props.simulationData) return { home: 0, away: 0 };
+  if (!props.simulationData) return { home: 0, away: 0 }
 
   return {
     home: props.simulationData.goalEvents.filter(
-      (g) => g.team === "home" && g.time <= props.currentTime,
+      (g) => g.team === 'home' && g.time <= props.currentTime
     ).length,
     away: props.simulationData.goalEvents.filter(
-      (g) => g.team === "away" && g.time <= props.currentTime,
-    ).length,
-  };
-});
+      (g) => g.team === 'away' && g.time <= props.currentTime
+    ).length
+  }
+})
 
-const isSelectionWinner = computed(() => props.simulationData?.status === 1);
+const isSelectionWinner = computed(() => props.simulationData?.status === 1)
 </script>
 
 <style scoped>
@@ -123,7 +120,7 @@ const isSelectionWinner = computed(() => props.simulationData?.status === 1);
   align-items: center;
   justify-content: space-between;
   width: 6rem;
-  font-family: "Roboto-Bold";
+  font-family: 'Roboto-Bold';
 }
 
 .simulate-card .teamScore .teamScore__finished {
@@ -133,7 +130,7 @@ const isSelectionWinner = computed(() => props.simulationData?.status === 1);
 .simulate-card .teamScore .teamScore__half {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
-  font-family: "Roboto-Medium";
+  font-family: 'Roboto-Medium';
 }
 
 .team-match {
@@ -143,7 +140,7 @@ const isSelectionWinner = computed(() => props.simulationData?.status === 1);
   text-align: center;
   border-bottom: 1px solid #eaecef;
   border-bottom-color: #eaecef;
-  font-family: "Roboto-Medium";
+  font-family: 'Roboto-Medium';
 }
 
 .team-match .teamName {
@@ -155,12 +152,12 @@ const isSelectionWinner = computed(() => props.simulationData?.status === 1);
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  font-family: "Roboto-Bold";
+  font-family: 'Roboto-Bold';
 }
 
 .event-bet {
   display: flex;
-  font-family: "Roboto-Regular";
+  font-family: 'Roboto-Regular';
 }
 
 .event-bet .info {
