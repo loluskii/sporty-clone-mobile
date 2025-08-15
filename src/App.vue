@@ -259,10 +259,10 @@ onMounted(async () => {
       safeLoad(getUserCashbackBonus()),
       safeLoad(getBetsData())
     ])
-    usersStore.activeCashback = cashbackData.data
-    usersStore.casinoActiveBonus = activeBonus.data
-    if (utilsStore.bonusModalShown === null && cashbackData.data.bonusType !== 'cashback') {
-      casinoGameData.value = cashbackData.data
+    usersStore.activeCashback = cashbackData?.data
+    usersStore.casinoActiveBonus = activeBonus?.data
+    if (utilsStore.bonusModalShown === null && cashbackData?.data?.bonusType !== 'cashback') {
+      casinoGameData.value = cashbackData?.data
       utilsStore.bonusModalShown = false
     }
     isLoading.value = false
