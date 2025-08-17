@@ -28,20 +28,13 @@
       </div>
       <div style="position: relative">
         <div class="m-bet-content">
-          <div
-            class="m-market-tab m-tabs m-tabs-mini m-tabs-no-animation"
-            style="overflow: auto"
-          >
+          <div class="m-market-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: auto">
             <div class="m-tabs-nav">
               <div
                 v-for="(market, m) in sportMarkets"
                 :key="m"
                 class="m-tabs-tab"
-                :class="
-                  market.marketID === activeMarket.marketID
-                    ? 'm-tabs-tab-active'
-                    : ''
-                "
+                :class="market.marketID === activeMarket.marketID ? 'm-tabs-tab-active' : ''"
                 @click="selectMarket(market)"
               >
                 {{ market.marketName }}
@@ -60,10 +53,7 @@
                     {{ activeMarket.specifier }}
                   </div>
                   <template
-                    v-for="(market, m) in _.sortBy(
-                      activeMarket.outcomes,
-                      'outcomeID',
-                    )"
+                    v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
                     :key="m"
                   >
                     <div class="market-name">
@@ -92,55 +82,52 @@
   </div>
 </template>
 <script setup>
-import LiveHighlightsFixture from "@/components/Live/LiveHighlightsFixture.vue";
+import LiveHighlightsFixture from '@/components/Live/LiveHighlightsFixture.vue'
 
-import { ref, computed, onMounted } from "vue";
-import _ from "lodash";
+import { ref, computed, onMounted } from 'vue'
+import _ from 'lodash'
 
-const props = defineProps(["fixturesData", "markets"]);
-const activeMarket = ref({});
+const props = defineProps(['fixturesData', 'markets'])
+const activeMarket = ref({})
 const activeSport = ref({
   sportId: props.fixturesData[0].sportID,
-  sportName: props.fixturesData[0].sportName,
-});
+  sportName: props.fixturesData[0].sportName
+})
 
 const sportsListData = computed(() => {
-  return props.fixturesData;
-});
+  return props.fixturesData
+})
 
 const activeSportFixtures = computed(() => {
-  return props.fixturesData.find(
-    (group) => group.sportID == activeSport.value.sportId,
-  );
-});
+  return props.fixturesData.find((group) => group.sportID == activeSport.value.sportId)
+})
 
 const sportMarkets = computed(() => {
   return props.markets.filter(
-    (market) =>
-      market.sportID == activeSport.value.sportId && market.specifier == "",
-  );
-});
+    (market) => market.sportID == activeSport.value.sportId && market.specifier == ''
+  )
+})
 
 function selectMarket(market) {
-  activeMarket.value = market;
+  activeMarket.value = market
 }
 
 async function setActiveSport(sport) {
-  activeSport.value.sportId = sport.sportID;
-  activeSport.value.sportName = sport.sportName;
-  activeMarket.value = sportMarkets.value.length ? sportMarkets.value[0] : {};
-  document.getElementById("live_" + sport.sportId).scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center",
-  });
+  activeSport.value.sportId = sport.sportID
+  activeSport.value.sportName = sport.sportName
+  activeMarket.value = sportMarkets.value.length ? sportMarkets.value[0] : {}
+  document.getElementById('live_' + sport.sportId).scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 
 onMounted(() => {
   if (sportMarkets.value.length > 0) {
-    activeMarket.value = sportMarkets.value[0];
+    activeMarket.value = sportMarkets.value[0]
   }
-});
+})
 </script>
 
 <style scoped>
@@ -233,12 +220,7 @@ onMounted(() => {
   display: -ms-flexbox;
   display: flex;
 }
-.live-container
-  .m-bet-tab
-  .m-bet-content
-  .x-live-table
-  .m-name-row
-  .m-name-cell {
+.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell {
   background-color: #3a3c42;
   background-color: var(--c-live-section-market-indicated-bar);
   color: #9ca0ab;
@@ -253,27 +235,14 @@ onMounted(() => {
   justify-content: flex-end;
   padding: 0 0.83333333rem;
 }
-.live-container
-  .m-bet-tab
-  .m-bet-content
-  .x-live-table
-  .m-name-row
-  .m-name-cell
-  .m-name {
+.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   width: 55%;
 }
-.live-container
-  .m-bet-tab
-  .m-bet-content
-  .x-live-table
-  .m-name-row
-  .m-name-cell
-  .m-name
-  > div {
+.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name > div {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;

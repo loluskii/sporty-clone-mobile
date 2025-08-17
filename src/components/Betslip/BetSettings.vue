@@ -11,10 +11,7 @@
           class="svg-icon-base"
         >
           <g fill="none" fill-rule="evenodd">
-            <path
-              d="M45.64 22H0L19.958 1.615a4 4 0 015.657 0L45.64 22z"
-              fill="#353A45"
-            ></path>
+            <path d="M45.64 22H0L19.958 1.615a4 4 0 015.657 0L45.64 22z" fill="#353A45"></path>
             <path
               fill="#FFF"
               fill-rule="nonzero"
@@ -30,11 +27,7 @@
         <div class="m-body">
           <div class="select-list">
             <div>
-              <div
-                class="container select-item"
-                theme="light"
-                style="padding-right: 1.33333rem"
-              >
+              <div class="container select-item" theme="light" style="padding-right: 1.33333rem">
                 <div class="item-title">Auto-remove suspended events</div>
                 <div
                   class="toggle-container"
@@ -48,16 +41,8 @@
                   ></div>
                   <div
                     class="toggle-bar"
-                    style="
-                      border-radius: 1.25rem;
-                      height: 1.25rem;
-                      width: 1.25rem;
-                    "
-                    :style="
-                      autoRemoveSusEvents
-                        ? 'transform: translateX(1.25rem)'
-                        : ''
-                    "
+                    style="border-radius: 1.25rem; height: 1.25rem; width: 1.25rem"
+                    :style="autoRemoveSusEvents ? 'transform: translateX(1.25rem)' : ''"
                   ></div>
                 </div>
               </div>
@@ -69,17 +54,12 @@
                 data-op="accept_odds_changes"
                 style="padding-right: 1.33333rem"
               >
-                <div class="item-title" data-cms-key="accept_odds_changes">
-                  Accept odds changes
-                </div>
+                <div class="item-title" data-cms-key="accept_odds_changes">Accept odds changes</div>
                 <div
                   class="toggle-container"
                   style="height: 1.25rem; width: 2.5rem"
                   :class="{ active: acceptChanges }"
-                  @click="
-                    couponStore.coupon.acceptChanges =
-                      !couponStore.coupon.acceptChanges
-                  "
+                  @click="couponStore.coupon.acceptChanges = !couponStore.coupon.acceptChanges"
                 >
                   <div
                     class="toggle-background"
@@ -87,14 +67,8 @@
                   ></div>
                   <div
                     class="toggle-bar"
-                    style="
-                      border-radius: 1.25rem;
-                      height: 1.25rem;
-                      width: 1.25rem;
-                    "
-                    :style="
-                      acceptChanges ? 'transform: translateX(1.25rem)' : ''
-                    "
+                    style="border-radius: 1.25rem; height: 1.25rem; width: 1.25rem"
+                    :style="acceptChanges ? 'transform: translateX(1.25rem)' : ''"
                   ></div>
                 </div>
               </div>
@@ -107,21 +81,14 @@
                 style="padding-right: 1.33333rem"
               >
                 <div class="item-title">Retain selections after Rebet</div>
-                <div
-                  class="toggle-container"
-                  style="height: 1.25rem; width: 2.5rem"
-                >
+                <div class="toggle-container" style="height: 1.25rem; width: 2.5rem">
                   <div
                     class="toggle-background"
                     style="border-radius: 1.25rem; height: 0.75rem; width: 2rem"
                   ></div>
                   <div
                     class="toggle-bar"
-                    style="
-                      border-radius: 1.25rem;
-                      height: 1.25rem;
-                      width: 1.25rem;
-                    "
+                    style="border-radius: 1.25rem; height: 1.25rem; width: 1.25rem"
                   ></div>
                 </div>
               </div>
@@ -133,14 +100,14 @@
   </div>
 </template>
 <script setup>
-import { useCouponStore } from "@/stores";
-import { computed, ref } from "vue";
+import { useCouponStore } from '@/stores'
+import { computed, ref } from 'vue'
 
-const couponStore = useCouponStore();
-const autoRemoveSusEvents = ref(false);
+const couponStore = useCouponStore()
+const autoRemoveSusEvents = ref(false)
 const acceptChanges = computed(() => {
-  return couponStore.coupon.acceptChanges;
-});
+  return couponStore.coupon.acceptChanges
+})
 </script>
 <style scoped>
 .popup-modal {
@@ -175,7 +142,7 @@ const acceptChanges = computed(() => {
 .select-container {
   border-top: 0.41666667rem solid;
   bottom: 0;
-  font-family: "Roboto";
+  font-family: 'Roboto';
   left: 0;
   position: fixed;
   width: 100%;

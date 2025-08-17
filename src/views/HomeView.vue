@@ -24,20 +24,20 @@
   </div>
 </template>
 <script setup>
-import HeaderHome from "@/components/HeaderHome.vue";
-import Carousel from "@/components/Home/Carousel.vue";
-import SportsListCarousel from "@/components/Home/SportsListCarousel.vue";
-import LiveContainer from "@/components/Home/LiveContainer.vue";
-import PopularSports from "@/components/Home/PopularSports.vue";
-import Highlights from "@/components/Home/HighlightsContainer.vue";
-import emitter from "@/plugins/emitter";
-import { useUsersStore, useUtilsStore } from "../stores";
-import { onMounted } from "vue";
+import HeaderHome from '@/components/HeaderHome.vue'
+import Carousel from '@/components/Home/Carousel.vue'
+import SportsListCarousel from '@/components/Home/SportsListCarousel.vue'
+import LiveContainer from '@/components/Home/LiveContainer.vue'
+import PopularSports from '@/components/Home/PopularSports.vue'
+import Highlights from '@/components/Home/HighlightsContainer.vue'
+import emitter from '@/plugins/emitter'
+import { useUsersStore, useUtilsStore } from '../stores'
+import { onMounted } from 'vue'
 
-const userStore = useUsersStore();
-const utilsStore = useUtilsStore();
+const userStore = useUsersStore()
+const utilsStore = useUtilsStore()
 
-onMounted(async () => {});
+onMounted(async () => {})
 </script>
 
 <style>
@@ -144,8 +144,8 @@ onMounted(async () => {});
 }
 
 .m-sports .m-sports-title .filter-control .m-icon-close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -194,8 +194,8 @@ onMounted(async () => {});
 }
 
 .m-sports .m-sports-title .filter-control.active .m-icon-clear::before {
-  content: "\e602";
-  font-family: "iconfont" !important;
+  content: '\e602';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -335,7 +335,7 @@ onMounted(async () => {});
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
   bottom: 0;
-  content: "";
+  content: '';
   height: 100%;
   margin-left: 50%;
   position: absolute;

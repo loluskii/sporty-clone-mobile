@@ -26,8 +26,8 @@
 }
 
 .ng-deposit-header.m-nav-secondary .header-icon-help::before {
-  content: "\e6cc";
-  font-family: "iconfont" !important;
+  content: '\e6cc';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -69,7 +69,7 @@
 }
 
 #deposit .m-tabs-nav .m-tabs-tab:last-child::after {
-  content: "";
+  content: '';
   display: -webkit-inline-box;
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
@@ -172,8 +172,8 @@
 }
 
 #deposit .deposit-bank .deposit-bank-static .bank-static-arrow::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -224,11 +224,7 @@
   padding: 8px 0;
 }
 
-#deposit
-  .deposit-bank
-  .deposit-bank-number.static
-  .static-content
-  .static-label {
+#deposit .deposit-bank .deposit-bank-number.static .static-content .static-label {
   color: #0d9737;
   color: var(--brand-secondary);
   font-size: 10px;
@@ -238,11 +234,7 @@
   text-align: left;
 }
 
-#deposit
-  .deposit-bank
-  .deposit-bank-number.static
-  .static-content
-  .static-input {
+#deposit .deposit-bank .deposit-bank-number.static .static-content .static-input {
   font-size: 14px;
   height: 16px;
   line-height: 16px;
@@ -282,8 +274,8 @@
 }
 
 #deposit .deposit-bank .switch-container .switch-bank .switch-icon::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -299,8 +291,8 @@
 }
 
 #deposit .deposit-bank .m-icon-phone::before {
-  content: "\e666";
-  font-family: "iconfont" !important;
+  content: '\e666';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -343,8 +335,8 @@
 }
 
 #deposit .deposit-footer .balance-container .m-icon-help::before {
-  content: "\e686";
-  font-family: "iconfont" !important;
+  content: '\e686';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -384,11 +376,7 @@
   margin-left: 0.66666667rem;
 }
 
-#deposit
-  .deposit-footer
-  .balance-container
-  .balance-section
-  .balance-text--bank-transfer {
+#deposit .deposit-footer .balance-container .balance-section .balance-text--bank-transfer {
   margin-left: 0;
 }
 
@@ -499,7 +487,7 @@
 #deposit .deposit-footer .bank-transfer-card-steps li:before {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
-  content: "Step " counter(step-counter);
+  content: 'Step ' counter(step-counter);
   display: block;
   margin-right: 1rem;
   min-width: 2.91666667rem;
@@ -566,8 +554,8 @@
 }
 
 #deposit .icon-lock--outline::before {
-  content: "\e650";
-  font-family: "iconfont" !important;
+  content: '\e650';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -734,8 +722,8 @@
 }
 
 #card-fields-container .icon-card::before {
-  content: "\e652";
-  font-family: "iconfont" !important;
+  content: '\e652';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -743,8 +731,8 @@
 }
 
 #card-fields-container .icon-lock::before {
-  content: "\e650";
-  font-family: "iconfont" !important;
+  content: '\e650';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -752,8 +740,8 @@
 }
 
 #card-fields-container .icon-help::before {
-  content: "\e686";
-  font-family: "iconfont" !important;
+  content: '\e686';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -761,8 +749,8 @@
 }
 
 #card-fields-container .icon-date::before {
-  content: "\e659";
-  font-family: "iconfont" !important;
+  content: '\e659';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

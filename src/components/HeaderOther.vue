@@ -15,12 +15,12 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps } from 'vue'
 
 defineProps({
   headerTitle: String,
-  styles: String,
-});
+  styles: String
+})
 </script>
 
 <style scoped>
@@ -82,16 +82,16 @@ defineProps({
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -135,7 +135,7 @@ defineProps({
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: "";
+  content: '';
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -173,8 +173,8 @@ defineProps({
   padding: 0 1.5rem 0 1.33333333rem;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: "\e6cb";
-  font-family: "iconfont" !important;
+  content: '\e6cb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
