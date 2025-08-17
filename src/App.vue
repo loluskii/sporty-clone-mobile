@@ -23,6 +23,7 @@ import ErrorDialogue from './components/ErrorDialogue.vue'
 import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
 import { useUsersStore, useAuthStore } from './stores'
+import Cookies from 'js-cookie'
 
 import HandleCache from '@/components/HandleCache.vue'
 import ImageDialog from './components/ImageDialog.vue'
@@ -55,7 +56,7 @@ const depositWithdrawalType = ref('')
 const popupData = ref(null)
 
 const isAuthenticated = computed(() => {
-  return authStore.token !== null
+  return authStore.isAuthenticated
 })
 
 function toggleBetslip() {
@@ -238,9 +239,13 @@ watch(
 )
 
 onMounted(async () => {
-  utilsStore.clickId = new URLSearchParams(window.location.search).get('clickid')
   if (route.path !== '/') {
     isLoading.value = false
+  }
+  
+  const clickId = new URLSearchParams(window.location.search).get('clickid')
+  if (clickId) {
+    Cookies.set('clickId', clickId, { expires: 30 }); // expires in 30 days
   }
 
   const res = await fetchBanners()
@@ -257,10 +262,10 @@ onMounted(async () => {
       safeLoad(getUserCashbackBonus()),
       safeLoad(getBetsData())
     ])
-    usersStore.activeCashback = cashbackData.data
-    usersStore.casinoActiveBonus = activeBonus.data
-    if (utilsStore.bonusModalShown === null && cashbackData.data.bonusType !== 'cashback') {
-      casinoGameData.value = cashbackData.data
+    usersStore.activeCashback = cashbackData?.data
+    usersStore.casinoActiveBonus = activeBonus?.data
+    if (utilsStore.bonusModalShown === null && cashbackData?.data?.bonusType !== 'cashback') {
+      casinoGameData.value = cashbackData?.data
       utilsStore.bonusModalShown = false
     }
     isLoading.value = false
