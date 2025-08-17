@@ -15,6 +15,9 @@ export const useAuthStore = defineStore({
     loading: false,
     authError: null
   }),
+  getters: {
+    // isAuthenticated: () => Cookies.get('SBE-TOKEN') !== null || Cookies.get('SBE-TOKEN')
+  },
   actions: {
     async doLogin(payload) {
       this.loading = true
@@ -22,6 +25,7 @@ export const useAuthStore = defineStore({
       try {
         const res = await login(payload)
         if (res.data && res.data.token) {
+          this.isAuthenticated = true
           Cookies.set('SBE-TOKEN', res.data.token, { 
             expires: 7, // 7 days
             // secure: true, // Only send over HTTPS
@@ -59,7 +63,7 @@ export const useAuthStore = defineStore({
       getActivePinia()._s.forEach((store) => store.$reset())
     },
     async logout() {
-      this.token = null
+      Cookies.remove('SBE-TOKEN')
       this.mobile_number = null
       this.clearStores()
       window.location.href = '/'
