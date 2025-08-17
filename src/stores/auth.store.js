@@ -4,19 +4,17 @@ import { login, getUserActiveBonus, getUserCashbackBonus } from '@/helpers'
 import { getActivePinia } from 'pinia'
 import { useUsersStore } from '@/stores'
 import router from '../router'
+import Cookies from 'js-cookie'
 
 export const useAuthStore = defineStore({
   id: 'auth',
   state: () => ({
     mobile_number: null,
-    token: null,
+    isAuthenticated: null,
     returnUrl: null,
     loading: false,
     authError: null
   }),
-  getters: {
-    isAuthenticated: (state) => !!state.token
-  },
   actions: {
     async doLogin(payload) {
       this.loading = true
@@ -24,7 +22,11 @@ export const useAuthStore = defineStore({
       try {
         const res = await login(payload)
         if (res.data && res.data.token) {
-          this.token = res.data.token
+          Cookies.set('SBE-TOKEN', res.data.token, { 
+            expires: 7, // 7 days
+            // secure: true, // Only send over HTTPS
+            sameSite: 'strict' // CSRF protection
+          })
           this.mobile_number = payload.username
           const userStore = useUsersStore()
           const safeLoad = (promise) =>

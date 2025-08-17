@@ -57,7 +57,7 @@ const depositWithdrawalType = ref('')
 const popupData = ref(null)
 
 const isAuthenticated = computed(() => {
-  return authStore.token !== null
+  return authStore.isAuthenticated
 })
 
 function toggleBetslip() {

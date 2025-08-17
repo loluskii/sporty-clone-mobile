@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js'
 import { useAuthStore } from '@/stores'
 import { CLIENT_ID, APP_KEY } from './constants'
 import moment from 'moment'
+import Cookies from 'js-cookie'
 
 export const fetchWrapper = {
   get: request('GET'),
@@ -9,7 +10,6 @@ export const fetchWrapper = {
   put: request('PUT'),
   delete: request('DELETE'),
   patch: request('PATCH'),
-  public_get: publicRequest('GET')
 }
 
 function aesEncrypt() {
@@ -89,8 +89,9 @@ function authHeader() {
     'SBE-API-SIGNATURE': aesEncrypt()
   }
   // return auth header with jwt if user is logged in and request is to the api url
-  const { isAuthenticated, token } = useAuthStore()
-  if (isAuthenticated) {
+  const { isAuthenticated } = useAuthStore()
+  const token = Cookies.get('SBE-TOKEN')
+  if (isAuthenticated && token) {
     // if it's not authenticated also (i.e. token is null), a 401 is fine
     return { ...headers, Authorization: `Bearer ${token}` }
   } else {

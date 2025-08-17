@@ -72,7 +72,7 @@
     </div>
     <div class="btn" @click="handleClick">
       <button>
-        {{ route.name == 'account-me' && authStore.token ? 'Logout' : 'Back to Top' }}
+        {{ route.name == 'account-me' && authStore.isAuthenticated ? 'Logout' : 'Back to Top' }}
       </button>
     </div>
   </footer>
@@ -91,7 +91,7 @@ async function doLogout() {
 }
 
 async function handleClick() {
-  if (route.name == 'account-me' && authStore.token) {
+  if (route.name == 'account-me' && authStore.isAuthenticated) {
     return authStore.logout()
   } else {
     window.scrollTo({

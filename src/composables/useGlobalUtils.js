@@ -7,7 +7,7 @@ export const useGlobalUtils = () => {
 
   return computed(() => {
     const { CurrencyCode, DialCode, brandName } = utilsStore.SportsbookGlobalVariable
-    const isAuthenticated = authStore.token !== null
+    const isAuthenticated = authStore.isAuthenticated
 
     return {
       isAuthenticated,
