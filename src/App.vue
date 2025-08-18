@@ -242,10 +242,10 @@ onMounted(async () => {
   if (route.path !== '/') {
     isLoading.value = false
   }
-  
+
   const clickId = new URLSearchParams(window.location.search).get('clickid')
   if (clickId) {
-    Cookies.set('clickId', clickId, { expires: 30 }); // expires in 30 days
+    Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
   const res = await fetchBanners()
