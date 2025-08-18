@@ -9,7 +9,7 @@ export const fetchWrapper = {
   post: request('POST'),
   put: request('PUT'),
   delete: request('DELETE'),
-  patch: request('PATCH'),
+  patch: request('PATCH')
 }
 
 function aesEncrypt() {

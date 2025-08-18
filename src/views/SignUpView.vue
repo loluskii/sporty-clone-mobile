@@ -140,7 +140,7 @@ import {
 } from '../helpers'
 import { useAuthStore, useUtilsStore } from '../stores'
 import { useGlobalUtils } from '../composables/useGlobalUtils'
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 
 // Use ref for reactive data properties
 const authStore = useAuthStore()
@@ -267,19 +267,19 @@ const doRegistration = async () => {
   }
 
   // Get trackingToken from cookie
-  const trackingToken = Cookies.get('clickId');
+  const trackingToken = Cookies.get('clickId')
   if (trackingToken) {
-    payload.trackingToken = trackingToken;
+    payload.trackingToken = trackingToken
   }
 
   try {
     const res = await register(payload)
     utilsStore.clickId = null
     if (res.data.success) {
-      await authStore.doLogin(payload);
-      isLoading.value = false;
+      await authStore.doLogin(payload)
+      isLoading.value = false
       // Optionally clear the cookie after registration
-      Cookies.remove('clickId');
+      Cookies.remove('clickId')
     } else {
       isLoading.value = false
       registerError.value = true

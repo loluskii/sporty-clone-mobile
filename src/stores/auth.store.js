@@ -26,7 +26,7 @@ export const useAuthStore = defineStore({
         const res = await login(payload)
         if (res.data && res.data.token) {
           this.isAuthenticated = true
-          Cookies.set('SBE-TOKEN', res.data.token, { 
+          Cookies.set('SBE-TOKEN', res.data.token, {
             expires: 7, // 7 days
             // secure: true, // Only send over HTTPS
             sameSite: 'strict' // CSRF protection
