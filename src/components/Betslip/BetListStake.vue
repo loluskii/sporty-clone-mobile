@@ -2,35 +2,15 @@
   <div class="m-betslips-stake-wrapper">
     <div class="m-betslips-stake">
       <BetslipBonusBar v-if="parseFloat(maxBonus) > 0"></BetslipBonusBar>
-      <div class="m-input-keyboard-wrapper m-input mg-b-10">
-        <div class="m-input-wrapper">
-          <span data-cms-key="total_stake">
-            {{
-              betSlipType !== "Multiple" && selectionsLength > 1
-                ? "Stake per bet (" + selectionsLength + " bets)"
-                : "Total Stake"
-            }}
-          </span>
-
-          <span class="currency"><em>{{
-            SportsbookGlobalVariable.CurrencyCode
-              }}</em></span>
-          <span tabindex="0" type="text" disabled class="m-keybord-input multiple-stake-input" v-html="betlistStake"
-            @click="toggleKeyboard"></span>
-        </div>
-        <div v-if="balanceLowerThanStake" class="m-error-info">
-          <p>You need a balance of {{
-            SportsbookGlobalVariable.CurrencyCode
-          }} {{ betlistStake }} to place this bet. Please deposit an additional
-            {{ amountNeededToStake }}</p>
-          <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
-            <a class="m-deposit-link">
-              <span>Go to Deposit</span>
-            </a> <i class="arrow-right"></i>
-          </p>
-        </div>
-        <BetlistStakeKeyboard :keyboard-visible="keyboardVisible" @button-click="onKeyClick"></BetlistStakeKeyboard>
-      </div>
+      <StakeInput 
+        :title="
+              betSlipType == 'Single'
+                ? 'Stake per bet (' + selectionsLength + ' bets)'
+                : 'Total Stake'
+            "
+        :stake="betlistStake"
+        :can-edit="betSlipType !== 'Combo' ? true : false"
+      />
 
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
@@ -130,10 +110,10 @@
 import { useCouponStore, useUsersStore, useUtilsStore } from "@/stores";
 import { formatNumber } from "@/helpers";
 import BetslipBonusBar from "./BetslipBonusBar.vue";
-import { computed, ref, onBeforeUnmount, onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
 import emitter from "@/plugins/emitter";
+import StakeInput from "./StakeInput.vue";
 // import placeBet2
 const props = defineProps({
   betSlipType: String,
@@ -144,24 +124,13 @@ const { SportsbookGlobalVariable } = useUtilsStore();
 const userStore = useUsersStore();
 const router = useRouter();
 const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
-const keyboardVisible = ref(false);
 
-const updateStake = (stake) => {
-  couponStore.coupon.stake = stake;
-  return couponStore.updateWinnings({
-    stake: stake,
-    id: "all",
-  });
-};
+
 
 const betlistStake = computed(() => {
   return couponStore.coupon.totalStake;
 });
 
-const goToDeposit = () => {
-  emit("toggle-betslip");
-  return router.push({ name: 'account-deposit' })
-}
 
 const placeBetDisabled = computed(() => {
   return (
@@ -238,9 +207,6 @@ const potentialWin = computed(() => {
   )}`;
 });
 
-const toggleKeyboard = () => {
-  keyboardVisible.value = !keyboardVisible.value;
-};
 
 const totalOdds = computed(() => {
   return formatNumber(couponStore.coupon.totalOdds);
@@ -326,57 +292,6 @@ function placeBet() {
     return;
   }
   emit("toggle-show");
-}
-
-function onKeyClick(type, value) {
-  let stake = betlistStake.value.toString();
-  let finalStake;
-  switch (type) {
-    case "number":
-      // Append clicked number to the display
-      if (stake.length < 7) {
-        if (typeof value === "number") {
-          if (stake === "") {
-            finalStake = value;
-          } else {
-            finalStake = parseFloat(stake) + value;
-          }
-        } else {
-          finalStake = stake + value;
-        }
-        updateStake(finalStake);
-      }
-      break;
-    case "dot":
-      // Append dot to the display
-      if (stake.length < 6 && !stake.includes(".")) {
-        stake += ".";
-        updateStake(stake);
-      }
-      break;
-    case "double-zero":
-      // Append double zero to the display
-      if (stake.length < 6) {
-        stake += "00";
-        updateStake(stake);
-      }
-      break;
-    case "clear":
-      // Clear the display
-      stake = "";
-      updateStake(stake);
-      break;
-    case "delete":
-      // Remove the last character from the display
-      stake = stake.toString().slice(0, -1);
-      updateStake(stake);
-      break;
-    case "done":
-      // Handle the "Done" button click if needed
-      keyboardVisible.value = false;
-      break;
-    // Add more cases for other button types if necessary
-  }
 }
 
 function handleAcceptChange() {

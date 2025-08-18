@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 // import _ from 'lodash'
 import { useUsersStore } from "@/stores";
 import emitter from "../plugins/emitter";
+import { formatNumber } from "@/helpers";
 import CouponCalculation from "@/helpers/coupon-calculation.js";
 import {
   calculateWinnings,
@@ -960,6 +961,58 @@ export const useCouponStore = defineStore({
         console.error("📊 Betslip: Error resubscribing to selections:", error);
       }
     },
+    updateComboWinnings(val, combo, index) {
+      let coupondata = { ...this.coupon };
+      console.log('combo stake',val)
+      let stake = val;
+      if (stake === '') {
+        stake = 0;
+      } else {
+        stake = val
+      }
+
+      combo.Stake = parseFloat(stake);
+
+      if (!coupondata.Groupings || !coupondata.Groupings.length) {
+        coupondata.Groupings = [combo];
+      } else {
+        const groupIndex = coupondata.Groupings.findIndex(function (g) { return g.Grouping === combo.Grouping; });
+        if (groupIndex === -1) {
+          coupondata.Groupings = [...coupondata.Groupings, combo];
+        } else {//update combo stake
+          const groupings = [...coupondata.Groupings]
+          groupings[groupIndex] = combo;
+          coupondata.Groupings = groupings;
+        }
+      }
+
+      const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.SportsbookGlobalVariable.MinBonusOdd);
+      coupondata = couponCalculation.updateFromCalculatedCoupon(coupondata, calculatedCoupon, this.SportsbookGlobalVariable, this.sportsbookBonusList);
+      let total = 0;
+
+      const combos = []
+
+      // update combos with max win
+      coupondata.combos.forEach((item) => {
+        let comboItem = { ...item };
+        for (let i = 0; i < coupondata.Groupings.length; i++) {
+          if (comboItem.Grouping === coupondata.Groupings[i].Grouping) {
+            comboItem.minWin = formatNumber(coupondata.Groupings[i].minWin);
+            comboItem.maxWin = formatNumber(coupondata.Groupings[i].maxWin);
+            comboItem.Stake = coupondata.Groupings[i].Stake;
+            comboItem.checked = true;
+            total += parseFloat(comboItem.Stake) * parseFloat(coupondata.Groupings[i].Combinations);
+          }
+        }
+        combos.push(comboItem);
+      });
+      coupondata.combos = combos;
+      coupondata.totalStake = total;
+      coupondata.exciseDuty = coupondata.totalStake * 0 / 100;
+      coupondata.stake = coupondata.totalStake - coupondata.exciseDuty;
+
+      this.coupon = coupondata;
+    }
   },
   persist: {
     storage: localStorage,
