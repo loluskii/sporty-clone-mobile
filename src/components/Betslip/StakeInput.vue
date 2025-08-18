@@ -100,8 +100,9 @@ const toggleKeyboard = () => {
 };
 
 function onKeyClick(type, value) {
-  let stake = betlistStake.value.toString();
+  let stake = props.stake.toString();
   let finalStake;
+  console.log('OnKeyClick', type, value);
   switch (type) {
     case "number":
       // Append clicked number to the display
