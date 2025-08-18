@@ -253,7 +253,7 @@ onMounted(async () => {})
 .m-sports .view-all a:visited,
 .m-sports .view-all a:active,
 .m-sports .view-all a:after {
-  color: var(--brand-primary);
+  color: var(--brand-secondary);
   text-decoration: none;
 }
 

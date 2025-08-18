@@ -8,12 +8,12 @@
           src="//s.sporty.net/global/main/brand/sportybet/mobile/images/icon18.996cdffd94.svg"
         />
       </div>
-      <div class="copyright" style="color: var(--brand-primary)">
+      <div class="copyright" style="color: var(--brand-secondary)">
         &copy; {{ new Date().getFullYear() }} {{ utilsStore.brandName }}. All rights reserved.
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/default.png" />
+      <img src="/logo.png" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -25,7 +25,6 @@
               <img src="/logo_visa.fd08bf37cf.png" />
               <img src="/logo_mc.51fc36230c.png" />
               <img src="/paystack-logo.png" style="height: 3rem" />
-              <img src="/monnify.png" style="height: 3.5rem" />
             </div>
           </div>
         </div>

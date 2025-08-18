@@ -1,18 +1,18 @@
 import moment from 'moment'
 // import _ from 'lodash'
 import { getSplitPropsData } from '@/helpers'
-// import { brandDetails } from '/branding'
-import { brandDetails as defBrandDetails } from '/branding-template'
+import { brandDetails } from '/branding'
+// import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
 
 export const applyBranding = async () => {
   try {
     let defConfig
-    // if (brandDetails) {
-    //   defConfig = brandDetails
-    // } else {
-    defConfig = defBrandDetails
-    // }
+    if (brandDetails) {
+      defConfig = brandDetails
+    } else {
+      // defConfig = defBrandDetails
+    }
     const config = defConfig
     const utilsStore = useUtilsStore()
     const loadFont = (url) => {

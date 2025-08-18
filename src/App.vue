@@ -319,7 +319,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="/default.png"
+                src="/logo.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
@@ -364,20 +364,6 @@ defineComponent({
               @update-betcount="getBetsData"
             ></Betlist>
           </div>
-
-          <!-- <transition name="move">
-            <div class="loading-overlay" v-if="isLoading">
-              <div class="loading-spinner">
-                <img
-                  src="/default.png"
-                  class="scaling-image"
-                  style="height: 60px; margin-bottom: 20px"
-                  alt="logo"
-                />
-                <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
-              </div>
-            </div>
-          </transition> -->
           <CalendarBox
             v-if="customDatePickerShown"
             @hide="toggleDatePicker"
