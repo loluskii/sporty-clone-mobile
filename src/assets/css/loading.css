@@ -67,8 +67,8 @@
 }
 
 .m-loading .loading::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -88,8 +88,8 @@
 }
 
 .m-loading .loading-fail::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

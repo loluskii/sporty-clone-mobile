@@ -130,8 +130,8 @@
   width: 100%;
 }
 .grid-specifier-select .grid-specifier-select-icon::before {
-  content: "\e603";
-  font-family: "iconfont" !important;
+  content: '\e603';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -146,8 +146,8 @@
   font-size: 0px;
 }
 .grid-specifier-select .grid-specifier-select-icon.is-open::before {
-  content: "\e6a5";
-  font-family: "iconfont" !important;
+  content: '\e6a5';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -235,7 +235,7 @@
   border-color: var(--brand-secondary) !important;
 }
 
-.af-checkbox.pc-header input[type="checkbox"] + .check-stroke-wrapper {
+.af-checkbox.pc-header input[type='checkbox'] + .check-stroke-wrapper {
   background-color: transparent;
 }
 
@@ -299,17 +299,17 @@
   margin-right: 8px;
 }
 
-.af-checkbox input[type="checkbox"] {
+.af-checkbox input[type='checkbox'] {
   position: absolute;
   visibility: hidden;
 }
 
-.af-checkbox input[type="checkbox"]:checked + .check-stroke-wrapper {
+.af-checkbox input[type='checkbox']:checked + .check-stroke-wrapper {
   background-color: #0d9737;
   background-color: var(--brand-secondary);
 }
 
-.af-checkbox input[type="checkbox"]:checked + .check-stroke-wrapper svg {
+.af-checkbox input[type='checkbox']:checked + .check-stroke-wrapper svg {
   stroke: #ffffff;
   stroke-dashoffset: 0;
   -webkit-transition: all 0.1s ease;
@@ -411,15 +411,15 @@
   border-radius: inherit;
   bottom: -1px;
   color: black;
-  content: "";
+  content: '';
   left: -1px;
   pointer-events: none;
   position: absolute;
   right: -1px;
   top: -1px;
 }
-.af-button [class*="af-icon-"] + span,
-.af-button [class^="af-icon-"] {
+.af-button [class*='af-icon-'] + span,
+.af-button [class^='af-icon-'] {
   display: inline-block;
   font-family: element-icons !important;
   -webkit-font-smoothing: antialiased;
@@ -445,12 +445,12 @@
   }
 }
 .af-button .af-icon-loading:before {
-  font-family: "iconfont" !important;
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
-  content: "\e648";
+  content: '\e648';
   font-size: 1.066rem;
 }
 .af-button .af-icon-loading {
@@ -458,40 +458,40 @@
   animation: loading-rotate 2s linear infinite;
 }
 .af-button .af-icon-edit:before {
-  content: "\e61c";
-  font-family: "iconfont" !important;
+  content: '\e61c';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .af-button .af-icon-share:before {
-  content: "\e63d";
-  font-family: "iconfont" !important;
+  content: '\e63d';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .af-button .af-icon-upload:before {
-  content: "\e601";
-  font-family: "iconfont" !important;
+  content: '\e601';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .af-button .af-icon-search:before {
-  content: "\e613";
-  font-family: "iconfont" !important;
+  content: '\e613';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .af-button .af-icon-delete:before {
-  content: "\e677";
-  font-family: "iconfont" !important;
+  content: '\e677';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -822,8 +822,8 @@
 }
 
 .m-event-outcome-default.m-outcome--up::before {
-  content: "\e609";
-  font-family: "iconfont" !important;
+  content: '\e609';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -847,8 +847,8 @@
 }
 
 .m-event-outcome-default.m-outcome--down::before {
-  content: "\e605";
-  font-family: "iconfont" !important;
+  content: '\e605';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -909,8 +909,8 @@
 }
 
 .m-event-outcome-default.m-outcome--disabled .m-icon-lock::before {
-  content: "\e647";
-  font-family: "iconfont" !important;
+  content: '\e647';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -922,8 +922,8 @@
 }
 
 .m-event-outcome-default.m-outcome--disabled .m-icon-lock::before {
-  content: "\e647";
-  font-family: "iconfont" !important;
+  content: '\e647';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -942,8 +942,8 @@
 
 .m-sports .no-data::before,
 .live-container .no-data::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -996,8 +996,8 @@
 }
 
 .m-sportBets .m-error-wrapper .m-icon-loading:before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -1027,8 +1027,8 @@
 }
 
 .m-sportBets .m-error-wrapper .m-error-msg:before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -1144,7 +1144,7 @@
 .m-event-live .m-event-meta .m-mark-live:before {
   background: #33ea6a;
   border-radius: 50%;
-  content: "";
+  content: '';
   height: 0.5rem;
   left: 0;
   margin-top: -0.25rem;
@@ -1178,8 +1178,8 @@
 }
 
 .m-event-live .m-event-meta .m-live-icon::before {
-  content: "\e663";
-  font-family: "iconfont" !important;
+  content: '\e663';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1253,12 +1253,7 @@
   color: #e41827;
 }
 
-.m-event-live
-  .m-market-cell
-  .m-market
-  .m-outcome.specifiers-select
-  .af-select
-  .af-select-title {
+.m-event-live .m-market-cell .m-market .m-outcome.specifiers-select .af-select .af-select-title {
   background: transparent;
   border-radius: 0;
   color: #32ce62;
@@ -1396,8 +1391,8 @@
 }
 
 .m-market-title .dis-icon::before {
-  content: "\e6a3";
-  font-family: "iconfont" !important;
+  content: '\e6a3';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1432,8 +1427,8 @@
 }
 
 .m-market-title .m-icon--pri::before {
-  content: "\e60c";
-  font-family: "iconfont" !important;
+  content: '\e60c';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1476,8 +1471,8 @@
 }
 
 .m-market-title .m-icon-tips::before {
-  content: "\e651";
-  font-family: "iconfont" !important;
+  content: '\e651';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1508,8 +1503,8 @@
 }
 
 .m-market-title .arrows-icon::before {
-  content: "\e6dc";
-  font-family: "iconfont" !important;
+  content: '\e6dc';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1584,8 +1579,8 @@
 }
 
 .market-content .m-outcome.m-outcome--disabled .m-icon-lock::before {
-  content: "\e647";
-  font-family: "iconfont" !important;
+  content: '\e647';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1826,8 +1821,7 @@
   width: 23.5%;
 }
 
-.player-goals-market-content
-  .m-outcome-row-specifier-combo-title.m-outcome-row-four {
+.player-goals-market-content .m-outcome-row-specifier-combo-title.m-outcome-row-four {
   width: 17%;
 }
 
@@ -1934,7 +1928,6 @@
   line-height: 1.1rem;
   overflow: hidden;
 }
-
 
 .m-event-specifiers-order {
   background-color: #f2f3f5;

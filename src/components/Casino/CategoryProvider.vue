@@ -9,17 +9,12 @@
             $router.push({
               name: 'games-by-category',
               params: { category: slugify(top.name) },
-              query: { category_id: top.id },
+              query: { category_id: top.id }
             })
           "
           v-if="top.slug !== 'all'"
         >
-          <img
-            :src="getImageSrc(top.slug)"
-            class="img-fluid"
-            alt=""
-            srcset=""
-          />
+          <img :src="getImageSrc(top.slug)" class="img-fluid" alt="" srcset="" />
           <span>{{ top.name }}</span>
         </div>
       </template>
@@ -30,57 +25,54 @@
   </div>
 </template>
 <script setup>
-import { ref, onBeforeMount, computed } from "vue";
-import { getTopGameCategories, slugify } from "@/helpers";
-import { useAuthStore, useUsersStore } from "@/stores";
-import { useRoute } from "vue-router";
+import { ref, onBeforeMount, computed } from 'vue'
+import { getTopGameCategories, slugify } from '@/helpers'
+import { useAuthStore, useUsersStore } from '@/stores'
+import { useRoute } from 'vue-router'
 
-const route = useRoute();
-const topGameCategories = ref([]);
-const gamesList = ref([]);
-const scrollComponent = ref(null);
-const authStore = useAuthStore();
-const userStore = useUsersStore();
-const isLoading = ref(true);
-const myElement = ref(null);
-const currentView = ref("grouped_category");
-const providers = ref([]);
+const route = useRoute()
+const topGameCategories = ref([])
+const gamesList = ref([])
+const scrollComponent = ref(null)
+const authStore = useAuthStore()
+const userStore = useUsersStore()
+const isLoading = ref(true)
+const myElement = ref(null)
+const currentView = ref('grouped_category')
+const providers = ref([])
 
 const activeTopCategory = computed(() => {
-  return route.query?.category_id;
-});
+  return route.query?.category_id
+})
 
 const getImageSrc = (cat) => {
-  const imageUrl = new URL(
-    `../../assets/images/casino/${cat}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  const imageUrl = new URL(`../../assets/images/casino/${cat}.png`, import.meta.url)
+  return imageUrl
+}
 
 async function getCategories() {
   try {
-    const response = await getTopGameCategories();
-    isLoading.value = false;
-    topGameCategories.value = response.data;
+    const response = await getTopGameCategories()
+    isLoading.value = false
+    topGameCategories.value = response.data
   } catch (error) {
-    console.error("Error fetching categories or games:", error);
+    console.error('Error fetching categories or games:', error)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
 onBeforeMount(async () => {
-  await getCategories();
-});
+  await getCategories()
+})
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 
 .x-icon-search::before {
-  content: "\e613";
-  font-family: "iconfont" !important;
+  content: '\e613';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

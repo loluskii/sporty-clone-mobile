@@ -5,8 +5,7 @@
         <div role="row" class="header">
           <div role="rowheader" class="code flex-1">{{ code.betslipId }}</div>
           <div class="folds text-center flex-1">
-            <span class="label">Folds:</span
-            ><span>{{ code.totalSelections }}</span>
+            <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
           </div>
           <div class="odds text-right flex-1">
             <span class="label">Odds:</span><span>{{ code.total_odd }}</span>
@@ -38,17 +37,9 @@
               v-if="shareCodeLoading"
               class="loading-icon-container share-loading-icon-container"
             >
-              <div
-                class="loading-icon icon-font-base"
-                role="alert"
-                style="font-size: 12px"
-              >
-                
-              </div>
+              <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px"></div>
             </div>
-            <span
-              v-else
-              class="loading-button-click-area share-button-click-area mr-auto"
+            <span v-else class="loading-button-click-area share-button-click-area mr-auto"
               ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
               <span>Share</span></span
             >
@@ -72,13 +63,7 @@
             @click="addToBetslip(code)"
           >
             <div v-if="addToBetslipLoading" class="loading-icon-container">
-              <div
-                class="loading-icon icon-font-base"
-                role="alert"
-                style="font-size: 12px"
-              >
-                
-              </div>
+              <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px"></div>
             </div>
             <span v-else class="loading-button-click-area"
               ><span data-cms-key="add_to_betslip" data-cms-page="page_code_hub"
@@ -93,52 +78,52 @@
 </template>
 
 <script setup>
-import CodeSelectionItem from "./CodeSelectionItem.vue";
-import { useCouponStore } from "@/stores";
-import { ref } from "vue";
-import emitter from "@/plugins/emitter";
-const props = defineProps(["code"]);
+import CodeSelectionItem from './CodeSelectionItem.vue'
+import { useCouponStore } from '@/stores'
+import { ref } from 'vue'
+import emitter from '@/plugins/emitter'
+const props = defineProps(['code'])
 
-const addToBetslipLoading = ref(false);
-const shareCodeLoading = ref(false);
-const couponStore = useCouponStore();
+const addToBetslipLoading = ref(false)
+const shareCodeLoading = ref(false)
+const couponStore = useCouponStore()
 
 function addToBetslip(code) {
-  addToBetslipLoading.value = true;
+  addToBetslipLoading.value = true
   setTimeout(() => {
-    addToBetslipLoading.value = false;
+    addToBetslipLoading.value = false
     try {
       if (couponStore.coupon.selections.length) {
-        emitter.emit("showBetslipConfirmation", code);
+        emitter.emit('showBetslipConfirmation', code)
       } else {
-        couponStore.coupon.selections = code.selections;
-        couponStore.coupon.totalOdds = parseFloat(code.totalOdd);
-        couponStore.coupon.totalStake = parseFloat(code.stake);
-        couponStore.coupon.stake = parseFloat(code.stake);
-        couponStore.coupon.maxWin = parseFloat(code.possibleWin);
-        couponStore.coupon.source = code.source;
+        couponStore.coupon.selections = code.selections
+        couponStore.coupon.totalOdds = parseFloat(code.totalOdd)
+        couponStore.coupon.totalStake = parseFloat(code.stake)
+        couponStore.coupon.stake = parseFloat(code.stake)
+        couponStore.coupon.maxWin = parseFloat(code.possibleWin)
+        couponStore.coupon.source = code.source
         if (code.selections.length === 1) {
-          couponStore.coupon.bet_type = "Single";
-          couponStore.coupon.betslip_type = "Single";
+          couponStore.coupon.bet_type = 'Single'
+          couponStore.coupon.betslip_type = 'Single'
         } else {
-          couponStore.coupon.bet_type = "Multiple";
-          couponStore.coupon.betslip_type = "Multiple";
+          couponStore.coupon.bet_type = 'Multiple'
+          couponStore.coupon.betslip_type = 'Multiple'
         }
-        emitter.emit("openBetslip");
+        emitter.emit('openBetslip')
       }
     } catch (error) {
-      console.log(error);
-      emitter.emit("showDialogueToaster", "Error Loading Betslip");
+      console.log(error)
+      emitter.emit('showDialogueToaster', 'Error Loading Betslip')
     }
-  }, 1000);
+  }, 1000)
 }
 
 function shareCode(data) {
-  shareCodeLoading.value = true;
+  shareCodeLoading.value = true
   setTimeout(() => {
-    shareCodeLoading.value = false;
-    emitter.emit("showBookBetModal", { data: data });
-  }, 1000);
+    shareCodeLoading.value = false
+    emitter.emit('showBookBetModal', { data: data })
+  }, 1000)
 }
 </script>
 

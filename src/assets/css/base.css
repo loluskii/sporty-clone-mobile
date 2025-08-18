@@ -6,8 +6,8 @@
   --brand-text-secondary: #fca311;
   --brand-background-primary: #ffffff;
   --brand-background-secondary: #e0e0f5;
-  --brand-primary-font-family: "Montserrat";
-  --brand-text-secondary-font-family: "Poppins";
+  --brand-primary-font-family: 'Montserrat';
+  --brand-text-secondary-font-family: 'Poppins';
 
   /* Light Mode */
   --light-text-primary: #353a45;
@@ -86,11 +86,11 @@
   font-family: iconfont;
   src: url(../fonts/iconfont.df3dff72a2.eot);
   src:
-    url(../fonts/iconfont.df3dff72a2.eot#iefix) format("embedded-opentype"),
-    url(../fonts/iconfont.8f9f91f0ca.woff2) format("woff2"),
-    url(../fonts/iconfont.c8c78c77f0.woff) format("woff"),
-    url(../fonts/iconfont.bc2180cb01.ttf) format("truetype"),
-    url(../fonts/icofont.svg) format("svg");
+    url(../fonts/iconfont.df3dff72a2.eot#iefix) format('embedded-opentype'),
+    url(../fonts/iconfont.8f9f91f0ca.woff2) format('woff2'),
+    url(../fonts/iconfont.c8c78c77f0.woff) format('woff'),
+    url(../fonts/iconfont.bc2180cb01.ttf) format('truetype'),
+    url(../fonts/icofont.svg) format('svg');
 }
 
 :root {
@@ -240,11 +240,7 @@
   --c-search-input-placeholder-text: #9ca0ab;
   --c-list-item-border: #f2f3f5;
   --c-login-link-text: #0d9737;
-  --c-withdraw-request-list-detail-connect-line: linear-gradient(
-    to bottom,
-    #0d9737,
-    #dcdee5
-  );
+  --c-withdraw-request-list-detail-connect-line: linear-gradient(to bottom, #0d9737, #dcdee5);
   --c-booking-code-input-border: #dcdee5;
   --c-booking-code-body: #1b1e25;
   --c-booking-code-slip-bar: rgba(214, 235, 220, 0.6);
@@ -379,7 +375,7 @@ h6 {
 
 q:after,
 q:before {
-  content: "";
+  content: '';
 }
 
 sub,
@@ -431,104 +427,104 @@ object {
 } */
 
 @media screen and (min-width: 240px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 10px;
-}
+  }
 }
 @media screen and (min-width: 321px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 12px;
-}
+  }
 }
 @media screen and (min-width: 375px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 13.0625px;
-}
+  }
 }
 @media screen and (min-width: 420px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 16px;
-}
+  }
 }
 @media screen and (min-width: 450px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 17px;
-}
+  }
 }
 @media screen and (min-width: 480px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 18px;
-}
+  }
 }
 @media screen and (min-width: 540px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 20.25px;
-}
+  }
 }
 @media screen and (min-width: 600px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 22px;
-}
+  }
 }
 @media screen and (min-width: 640px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 24px;
-}
+  }
 }
 @media screen and (min-width: 750px) {
-html,
+  html,
   body,
   button,
   input,
   select,
   textarea {
     font-size: 28.125px;
-}
+  }
 }
 
 html {
@@ -739,887 +735,887 @@ ins {
 }
 
 .icon-live_virtuals-01:before {
-  content: "\e6d4";
+  content: '\e6d4';
 }
 
 .icon-content_copy:before {
-  content: "\e6d2";
+  content: '\e6d2';
 }
 
 .icon-reversed-sms:before {
-  content: "\e6d22";
+  content: '\e6d22';
 }
 
 .icon-ic_olympic1:before {
-  content: "\e6d3";
+  content: '\e6d3';
 }
 
 .icon-svg_eicehockey:before {
-  content: "\e6d1";
+  content: '\e6d1';
 }
 
 .icon-svg_ebasketball:before {
-  content: "\e6cf";
+  content: '\e6cf';
 }
 
 .icon-svg_etennis:before {
-  content: "\e6d0";
+  content: '\e6d0';
 }
 
 .icon-svg_esoccer:before {
-  content: "\e6cd";
+  content: '\e6cd';
 }
 
 .icon-mmaicon:before {
-  content: "\e6ce";
+  content: '\e6ce';
 }
 
 .icon-help_new:before {
-  content: "\e6cc";
+  content: '\e6cc';
 }
 
 .icon-home:before {
-  content: "\e6cb";
+  content: '\e6cb';
 }
 
 .icon-snooker:before {
-  content: "\e6ca";
+  content: '\e6ca';
 }
 
 .icon-golf:before {
-  content: "\e6c9";
+  content: '\e6c9';
 }
 
 .icon-futsal:before {
-  content: "\e6c8";
+  content: '\e6c8';
 }
 
 .icon-f1:before {
-  content: "\e6c7";
+  content: '\e6c7';
 }
 
 .icon-boxing:before {
-  content: "\e6c6";
+  content: '\e6c6';
 }
 
 .icon-american_football:before {
-  content: "\e6c5";
+  content: '\e6c5';
 }
 
 .icon-virtuals_new_icon:before {
-  content: "\e6c4";
+  content: '\e6c4';
 }
 
 .icon-ic_gift_check:before {
-  content: "\e6c3";
+  content: '\e6c3';
 }
 
 .icon-live_games:before {
-  content: "\e6bf";
+  content: '\e6bf';
 }
 
 .icon-discount_gift:before {
-  content: "\e6c2";
+  content: '\e6c2';
 }
 
 .icon-free_bet_gift:before {
-  content: "\e6c1";
+  content: '\e6c1';
 }
 
 .icon-cash_gift:before {
-  content: "\e6c0";
+  content: '\e6c0';
 }
 
 .icon-baseball:before {
-  content: "\e6bc";
+  content: '\e6bc';
 }
 
 .icon-phone-call:before {
-  content: "\e6be";
+  content: '\e6be';
 }
 
 .icon-sms:before {
-  content: "\e6bd";
+  content: '\e6bd';
 }
 
 .icon-cs_go:before {
-  content: "\e6ba";
+  content: '\e6ba';
 }
 
 .icon-ic_badminton:before {
-  content: "\e6bb";
+  content: '\e6bb';
 }
 
 .icon-dota:before {
-  content: "\e6b9";
+  content: '\e6b9';
 }
 
 .icon-lol:before {
-  content: "\e6b8";
+  content: '\e6b8';
 }
 
 .icon-gift-2:before {
-  content: "\e6b7";
+  content: '\e6b7';
 }
 
 .icon-tableTennis:before {
-  content: "\e6b6";
+  content: '\e6b6';
 }
 
 .icon-eSports:before {
-  content: "\e6b5";
+  content: '\e6b5';
 }
 
 .icon-page2:before {
-  content: "\e6b4";
+  content: '\e6b4';
 }
 
 .icon-lock-with-slot:before {
-  content: "\e6b2";
+  content: '\e6b2';
 }
 
 .icon-t-shirt-1:before {
-  content: "\e6b3";
+  content: '\e6b3';
 }
 
 .icon-team-base-1:before {
-  content: "\e68f";
+  content: '\e68f';
 }
 
 .icon-team-base-2:before {
-  content: "\e699";
+  content: '\e699';
 }
 
 .icon-team-sleeve-1:before {
-  content: "\e69f";
+  content: '\e69f';
 }
 
 .icon-team-outline-1:before {
-  content: "\e6a0";
+  content: '\e6a0';
 }
 
 .icon-team-sleeve-2:before {
-  content: "\e6a1";
+  content: '\e6a1';
 }
 
 .icon-team-outline-2:before {
-  content: "\e6a4";
+  content: '\e6a4';
 }
 
 .icon-team-base-3:before {
-  content: "\e6a6";
+  content: '\e6a6';
 }
 
 .icon-team-base-4:before {
-  content: "\e6a7";
+  content: '\e6a7';
 }
 
 .icon-team-sleeve-3:before {
-  content: "\e6a8";
+  content: '\e6a8';
 }
 
 .icon-team-outline-3:before {
-  content: "\e6a9";
+  content: '\e6a9';
 }
 
 .icon-team-base-5:before {
-  content: "\e6aa";
+  content: '\e6aa';
 }
 
 .icon-team-sleeve-4:before {
-  content: "\e6ab";
+  content: '\e6ab';
 }
 
 .icon-team-outline-4:before {
-  content: "\e6ac";
+  content: '\e6ac';
 }
 
 .icon-team-sleeve-5:before {
-  content: "\e6ad";
+  content: '\e6ad';
 }
 
 .icon-team-outline-5:before {
-  content: "\e6ae";
+  content: '\e6ae';
 }
 
 .icon-team-base-6:before {
-  content: "\e6af";
+  content: '\e6af';
 }
 
 .icon-team-sleeve-6:before {
-  content: "\e6b0";
+  content: '\e6b0';
 }
 
 .icon-team-outline-6:before {
-  content: "\e6b1";
+  content: '\e6b1';
 }
 
 .icon-scheduled-virtuals:before {
-  content: "\e68a";
+  content: '\e68a';
 }
 
 .icon-instant-virtuals:before {
-  content: "\e69d";
+  content: '\e69d';
 }
 
 .icon-fantasy:before {
-  content: "\e69e";
+  content: '\e69e';
 }
 
 .icon-won:before {
-  content: "\e69c";
+  content: '\e69c';
 }
 
 .icon-iw_team_logo_sleeve:before {
-  content: "\e698";
+  content: '\e698';
 }
 
 .icon-iw_team_logo_base:before {
-  content: "\e697";
+  content: '\e697';
 }
 
 .icon-iw_team_logo_top:before {
-  content: "\e695";
+  content: '\e695';
 }
 
 .icon-plus-circle:before {
-  content: "\e696";
+  content: '\e696';
 }
 
 .icon-captain_unselected:before {
-  content: "\e694";
+  content: '\e694';
 }
 
 .icon-minus-circle:before {
-  content: "\e690";
+  content: '\e690';
 }
 
 .icon-captain_selected:before {
-  content: "\e691";
+  content: '\e691';
 }
 
 .icon-vc_unselected:before {
-  content: "\e692";
+  content: '\e692';
 }
 
 .icon-vc_selected:before {
-  content: "\e693";
+  content: '\e693';
 }
 
 .icon-clock:before {
-  content: "\e68e";
+  content: '\e68e';
 }
 
 .icon-t-shirt-bg:before {
-  content: "\e607";
+  content: '\e607';
 }
 
 .icon-collar:before {
-  content: "\e60a";
+  content: '\e60a';
 }
 
 .icon-t-shirt-2:before {
-  content: "\e60d";
+  content: '\e60d';
 }
 
 .icon-info:before {
-  content: "\e68b";
+  content: '\e68b';
 }
 
 .icon-flag-plus:before {
-  content: "\e68c";
+  content: '\e68c';
 }
 
 .icon-timer:before {
-  content: "\e689";
+  content: '\e689';
 }
 
 .icon-calendar:before {
-  content: "\e61a";
+  content: '\e61a';
 }
 
 .icon-emoji:before {
-  content: "\e688";
+  content: '\e688';
 }
 
 .icon-_CommentCopyx:before {
-  content: "\e687";
+  content: '\e687';
 }
 
 .icon-_x:before {
-  content: "\e686";
+  content: '\e686';
 }
 
 .icon-Pathx:before {
-  content: "\e685";
+  content: '\e685';
 }
 
 .icon-_SportyCoinsx:before {
-  content: "\e684";
+  content: '\e684';
 }
 
 .icon-_ME-PromotionsCop:before {
-  content: "\e683";
+  content: '\e683';
 }
 
 .icon-_Help-DepositFaile:before {
-  content: "\e67e";
+  content: '\e67e';
 }
 
 .icon-_Help-LiveChatx:before {
-  content: "\e681";
+  content: '\e681';
 }
 
 .icon-_Help-phoneCallx:before {
-  content: "\e682";
+  content: '\e682';
 }
 
 .icon-Ball-Tennisx1:before {
-  content: "\e680";
+  content: '\e680';
 }
 
 .icon-Ball-Cricketx:before {
-  content: "\e673";
+  content: '\e673';
 }
 
 .icon-Ball-Basketx:before {
-  content: "\e674";
+  content: '\e674';
 }
 
 .icon-Ball-Dartsx:before {
-  content: "\e675";
+  content: '\e675';
 }
 
 .icon-Ball-BeachVolleyx:before {
-  content: "\e676";
+  content: '\e676';
 }
 
 .icon-Ball-handballx:before {
-  content: "\e67a";
+  content: '\e67a';
 }
 
 .icon-Ball-Rugbyx:before {
-  content: "\e67b";
+  content: '\e67b';
 }
 
 .icon-Ball-IceHockeyx:before {
-  content: "\e67c";
+  content: '\e67c';
 }
 
 .icon-Ball-footabllx:before {
-  content: "\e67d";
+  content: '\e67d';
 }
 
 .icon-Ball-Volleyballx:before {
-  content: "\e67f";
+  content: '\e67f';
 }
 
 .icon-CombinedShape:before {
-  content: "\e679";
+  content: '\e679';
 }
 
 .icon-shop_x:before {
-  content: "\e678";
+  content: '\e678';
 }
 
 .icon-_editx:before {
-  content: "\e671";
+  content: '\e671';
 }
 
 .icon-_backspaceCopyx:before {
-  content: "\e672";
+  content: '\e672';
 }
 
 .icon-_Keyboardx:before {
-  content: "\e670";
+  content: '\e670';
 }
 
 .icon-_Analyzex:before {
-  content: "\e667";
+  content: '\e667';
 }
 
 .icon-_Commentx:before {
-  content: "\e669";
+  content: '\e669';
 }
 
 .icon-_VoteUpx:before {
-  content: "\e66b";
+  content: '\e66b';
 }
 
 .icon-_Chatx:before {
-  content: "\e66c";
+  content: '\e66c';
 }
 
 .icon-_Votedx:before {
-  content: "\e66d";
+  content: '\e66d';
 }
 
 .icon-_Marketx:before {
-  content: "\e66e";
+  content: '\e66e';
 }
 
 .icon-help:before {
-  content: "\e66f";
+  content: '\e66f';
 }
 
 .icon-shouji:before {
-  content: "\e666";
+  content: '\e666';
 }
 
 .icon-FlexiBetx:before {
-  content: "\e66a";
+  content: '\e66a';
 }
 
 .icon-geren:before {
-  content: "\e662";
+  content: '\e662';
 }
 
 .icon-live:before {
-  content: "\e663";
+  content: '\e663';
 }
 
 .icon-LoadCodex:before {
-  content: "\e661";
+  content: '\e661';
 }
 
 .icon-jiaoyijilu:before {
-  content: "\e660";
+  content: '\e660';
 }
 
 .icon-chongzhi:before {
-  content: "\e65e";
+  content: '\e65e';
 }
 
 .icon-tixian:before {
-  content: "\e65f";
+  content: '\e65f';
 }
 
 .icon-Trashx:before {
-  content: "\e65d";
+  content: '\e65d';
 }
 
 .icon-facebookhover:before {
-  content: "\e65c";
+  content: '\e65c';
 }
 
 .icon-group-:before {
-  content: "\e668";
+  content: '\e668';
 }
 
 .icon-social-whatsapp:before {
-  content: "\e65b";
+  content: '\e65b';
 }
 
 .icon-all:before {
-  content: "\e68d";
+  content: '\e68d';
 }
 
 .icon-group:before {
-  content: "\e665";
+  content: '\e665';
 }
 
 .icon-rili:before {
-  content: "\e664";
+  content: '\e664';
 }
 
 .icon-xiaolian:before {
-  content: "\e79e";
+  content: '\e79e';
 }
 
 .icon-kulian-line:before {
-  content: "\e6a2";
+  content: '\e6a2';
 }
 
 .icon-dianzan:before {
-  content: "\e60f";
+  content: '\e60f';
 }
 
 .icon-lock_outline_black_:before {
-  content: "\e650";
+  content: '\e650';
 }
 
 .icon-credit_card_black_:before {
-  content: "\e652";
+  content: '\e652';
 }
 
 .icon-date_range_black_p:before {
-  content: "\e659";
+  content: '\e659';
 }
 
 .icon-me-how-to:before {
-  content: "\e65a";
+  content: '\e65a';
 }
 
 .icon-Live-Statistic:before {
-  content: "\e64a";
+  content: '\e64a';
 }
 
 .icon-Live-Stream:before {
-  content: "\e64e";
+  content: '\e64e';
 }
 
 .icon-Live-tracker:before {
-  content: "\e64f";
+  content: '\e64f';
 }
 
 .icon-Homex:before {
-  content: "\e649";
+  content: '\e649';
 }
 
 .icon-LockCopyx:before {
-  content: "\e647";
+  content: '\e647';
 }
 
 .icon-twitter:before {
-  content: "\e642";
+  content: '\e642';
 }
 
 .icon-instegrame-copy:before {
-  content: "\eb6a";
+  content: '\eb6a';
 }
 
 .icon-chatx:before {
-  content: "\e657";
+  content: '\e657';
 }
 
 .icon-loudspeaker:before {
-  content: "\e656";
+  content: '\e656';
 }
 
 .icon-Safaricomgray:before {
-  content: "\e64d";
+  content: '\e64d';
 }
 
 .icon-mpesagray:before {
-  content: "\e64c";
+  content: '\e64c';
 }
 
 .icon-x:before {
-  content: "\e653";
+  content: '\e653';
 }
 
 .icon-licensex:before {
-  content: "\e655";
+  content: '\e655';
 }
 
 .icon-livechatx:before {
-  content: "\e646";
+  content: '\e646';
 }
 
 .icon-ic_info:before {
-  content: "\e64b";
+  content: '\e64b';
 }
 
 .icon-Top:before {
-  content: "\e60c";
+  content: '\e60c';
 }
 
 .icon-Slider:before {
-  content: "\e625";
+  content: '\e625';
 }
 
 .icon-Swich_OFF:before {
-  content: "\e628";
+  content: '\e628';
 }
 
 .icon-ChechBox_checked:before {
-  content: "\e638";
+  content: '\e638';
 }
 
 .icon-Play_Hide:before {
-  content: "\e63e";
+  content: '\e63e';
 }
 
 .icon-Swich_ON:before {
-  content: "\e63f";
+  content: '\e63f';
 }
 
 .icon-Play:before {
-  content: "\e640";
+  content: '\e640';
 }
 
 .icon-HideAndSeeCopy:before {
-  content: "\e641";
+  content: '\e641';
 }
 
 .icon-Refresh:before {
-  content: "\e645";
+  content: '\e645';
 }
 
 .icon-giftCheckbox:before {
-  content: "\e622";
+  content: '\e622';
 }
 
 .icon-accountx:before {
-  content: "\e644";
+  content: '\e644';
 }
 
 .icon-cricket:before {
-  content: "\e643";
+  content: '\e643';
 }
 
 .icon-share-fb:before {
-  content: "\e63d";
+  content: '\e63d';
 }
 
 .icon-dollar2:before {
-  content: "\e63c";
+  content: '\e63c';
 }
 
 .icon-duigou:before {
-  content: "\e63b";
+  content: '\e63b';
 }
 
 .icon-user_dft:before {
-  content: "\e639";
+  content: '\e639';
 }
 
 .icon-mail:before {
-  content: "\e63a";
+  content: '\e63a';
 }
 
 .icon-flash:before {
-  content: "\e637";
+  content: '\e637';
 }
 
 .icon-mobile:before {
-  content: "\e630";
+  content: '\e630';
 }
 
 .icon-setting:before {
-  content: "\e631";
+  content: '\e631';
 }
 
 .icon-promotions:before {
-  content: "\e632";
+  content: '\e632';
 }
 
 .icon-gift:before {
-  content: "\e633";
+  content: '\e633';
 }
 
 .icon-banlence:before {
-  content: "\e634";
+  content: '\e634';
 }
 
 .icon-file-download:before {
-  content: "\e635";
+  content: '\e635';
 }
 
 .icon-add_circle_black:before {
-  content: "\e636";
+  content: '\e636';
 }
 
 .icon-jackpot:before {
-  content: "\e629";
+  content: '\e629';
 }
 
 .icon-result:before {
-  content: "\e62a";
+  content: '\e62a';
 }
 
 .icon-tv:before {
-  content: "\e62b";
+  content: '\e62b';
 }
 
 .icon-livescore:before {
-  content: "\e62c";
+  content: '\e62c';
 }
 
 .icon-sports:before {
-  content: "\e62e";
+  content: '\e62e';
 }
 
 .icon-virtual:before {
-  content: "\e62f";
+  content: '\e62f';
 }
 
 .icon-wincup:before {
-  content: "\e626";
+  content: '\e626';
 }
 
 .icon-dollar:before {
-  content: "\e627";
+  content: '\e627';
 }
 
 .icon-exclamation:before {
-  content: "\e624";
+  content: '\e624';
 }
 
 .icon-icon-user:before {
-  content: "\e621";
+  content: '\e621';
 }
 
 .icon-Shape:before {
-  content: "\e61f";
+  content: '\e61f';
 }
 
 .icon-arrowback:before {
-  content: "\e620";
+  content: '\e620';
 }
 
 .icon-loading-circle:before {
-  content: "\e654";
+  content: '\e654';
 }
 
 .icon-question:before {
-  content: "\e61e";
+  content: '\e61e';
 }
 
 .icon-cup:before {
-  content: "\e619";
+  content: '\e619';
 }
 
 .icon-pageques:before {
-  content: "\e61b";
+  content: '\e61b';
 }
 
 .icon-light:before {
-  content: "\e612";
+  content: '\e612';
 }
 
 .icon-safe:before {
-  content: "\e615";
+  content: '\e615';
 }
 
 .icon-page:before {
-  content: "\e616";
+  content: '\e616';
 }
 
 .icon-cashout:before {
-  content: "\e617";
+  content: '\e617';
 }
 
 .icon-logo:before {
-  content: "\e610";
+  content: '\e610';
 }
 
 .icon-lock:before {
-  content: "\e60e";
+  content: '\e60e';
 }
 
 .icon-ac-right:before {
-  content: "\e60b";
+  content: '\e60b';
 }
 
 .icon-check:before {
-  content: "\e658";
+  content: '\e658';
 }
 
 .icon-angleleft:before {
-  content: "\e604";
+  content: '\e604';
 }
 
 .icon-print:before {
-  content: "\e77b";
+  content: '\e77b';
 }
 
 .icon-delete:before {
-  content: "\e602";
+  content: '\e602';
 }
 
 .icon-checknor:before {
-  content: "\e614";
+  content: '\e614';
 }
 
 .icon-star:before {
-  content: "\e898";
+  content: '\e898';
 }
 
 .icon-sanjiaoxing:before {
-  content: "\e62d";
+  content: '\e62d';
 }
 
 .icon-zhiding:before {
-  content: "\e600";
+  content: '\e600';
 }
 
 .icon-checkmark:before {
-  content: "\e611";
+  content: '\e611';
 }
 
 .icon-sanjiaoxing1:before {
-  content: "\e6a3";
+  content: '\e6a3';
 }
 
 .icon-arrowRight-copy:before {
-  content: "\e603";
+  content: '\e603';
 }
 
 .icon-facebookf:before {
-  content: "\e6e2";
+  content: '\e6e2';
 }
 
 .icon-hide:before {
-  content: "\e76b";
+  content: '\e76b';
 }
 
 .icon-jiantou-xia:before {
-  content: "\e605";
+  content: '\e605';
 }
 
 .icon-error:before {
-  content: "\e606";
+  content: '\e606';
 }
 
 .icon-arrowll-right:before {
-  content: "\e608";
+  content: '\e608';
 }
 
 .icon-jiantou-copy:before {
-  content: "\e609";
+  content: '\e609';
 }
 
 .icon-qushitu:before {
-  content: "\e61d";
+  content: '\e61d';
 }
 
 .icon-error1:before {
-  content: "\e623";
+  content: '\e623';
 }
 
 .icon-tips:before {
-  content: "\e651";
+  content: '\e651';
 }
 
 .icon-wifi:before {
-  content: "\e733";
+  content: '\e733';
 }
 
 .icon-tick1:before {
-  content: "\e69b";
+  content: '\e69b';
 }
 
 .icon-edit1:before {
-  content: "\e61c";
+  content: '\e61c';
 }
 
 .icon-loading:before {
-  content: "\e648";
+  content: '\e648';
 }
 
 .icon-UploadCloud:before {
-  content: "\e601";
+  content: '\e601';
 }
 
 .icon-search:before {
-  content: "\e613";
+  content: '\e613';
 }
 
 .icon-delete8e:before {
-  content: "\e677";
+  content: '\e677';
 }
 
 .icon-close:before {
-  content: "\e69a";
+  content: '\e69a';
 }
 
 .icon-less:before {
-  content: "\e6a5";
+  content: '\e6a5';
 }
 
 .icon-switch:before {
-  content: "\e6dc";
+  content: '\e6dc';
 }
 
 @-webkit-keyframes logoLoading {
@@ -1758,9 +1754,7 @@ ins {
   color: var(--brand-text-secondary);
 }
 
-.x-dialog.opennet-dialog-style.has-oppositive-button
-  .x-dialog-footer
-  .es-dialog-btn:first-child {
+.x-dialog.opennet-dialog-style.has-oppositive-button .x-dialog-footer .es-dialog-btn:first-child {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
@@ -1779,9 +1773,7 @@ ins {
   color: var(--text-type1-secondary);
 }
 
-.x-dialog.opennet-dialog-style.no-padding-on-main
-  .x-dialog-body
-  .x-dialog-main {
+.x-dialog.opennet-dialog-style.no-padding-on-main .x-dialog-body .x-dialog-main {
   padding: 0;
 }
 
@@ -1800,16 +1792,12 @@ ins {
   font-size: 1.066rem !important;
 }
 
-.x-dialog.opennet-dialog-style.leave-dialog
-  .x-dialog-footer.es-dialog-footer
-  a:first-of-type {
+.x-dialog.opennet-dialog-style.leave-dialog .x-dialog-footer.es-dialog-footer a:first-of-type {
   color: #9ca0ab !important;
   color: var(--text-type1-secondary) !important;
 }
 
-.x-dialog.opennet-dialog-style.leave-dialog-pc
-  .es-dialog-head.x-dialog-head
-  h1 {
+.x-dialog.opennet-dialog-style.leave-dialog-pc .es-dialog-head.x-dialog-head h1 {
   font-size: 18px !important;
 }
 
@@ -1820,9 +1808,7 @@ ins {
   font-size: 14px !important;
 }
 
-.x-dialog.opennet-dialog-style.leave-dialog-pc
-  .x-dialog-footer.es-dialog-footer
-  a:first-of-type {
+.x-dialog.opennet-dialog-style.leave-dialog-pc .x-dialog-footer.es-dialog-footer a:first-of-type {
   color: #9ca0ab !important;
   color: var(--text-type1-secondary) !important;
 }
@@ -3371,8 +3357,8 @@ ins {
     -webkit-filter,
     -webkit-backdrop-filter;
   transition-property:
-    background-color, border-color, color, fill, stroke, opacity, box-shadow,
-    transform, filter, backdrop-filter;
+    background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter,
+    backdrop-filter;
   transition-property:
     background-color,
     border-color,
@@ -3579,8 +3565,8 @@ ins {
 }
 
 .x-input-wap-wrapper .x-input-wap-icon::before {
-  content: "\e602";
-  font-family: "iconfont" !important;
+  content: '\e602';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3588,7 +3574,7 @@ ins {
 }
 
 .x-input-wap-wrapper .x-input-wap-icon::after {
-  content: "";
+  content: '';
   display: inline-block;
   height: 100%;
   vertical-align: middle;
@@ -3605,9 +3591,7 @@ ins {
   cursor: pointer;
 }
 
-.x-input-wap-wrapper
-  .x-input-wap-icon.x-input-wap-icon--clickable:hover
-  + .x-input-wap {
+.x-input-wap-wrapper .x-input-wap-icon.x-input-wap-icon--clickable:hover + .x-input-wap {
   border-color: #0d9737;
   border-color: var(--brand-text-secondary);
 }
@@ -3666,20 +3650,17 @@ ins {
   cursor: not-allowed;
 }
 
-.x-input-wap-wrapper.x-input-wap-wrapper--disabled
-  .x-input-wap::-webkit-input-placeholder {
+.x-input-wap-wrapper.x-input-wap-wrapper--disabled .x-input-wap::-webkit-input-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
 
-.x-input-wap-wrapper.x-input-wap-wrapper--disabled
-  .x-input-wap::-moz-placeholder {
+.x-input-wap-wrapper.x-input-wap-wrapper--disabled .x-input-wap::-moz-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
 
-.x-input-wap-wrapper.x-input-wap-wrapper--disabled
-  .x-input-wap::-ms-input-placeholder {
+.x-input-wap-wrapper.x-input-wap-wrapper--disabled .x-input-wap::-ms-input-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
@@ -3877,8 +3858,8 @@ ins {
 
 .m-icon-football::before,
 .m-icon-Soccer::before {
-  content: "\e67d";
-  font-family: "iconfont" !important;
+  content: '\e67d';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3887,8 +3868,8 @@ ins {
 
 .m-icon--basketball::before,
 .m-icon-Basketball::before {
-  content: "\e674";
-  font-family: "iconfont" !important;
+  content: '\e674';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3897,8 +3878,8 @@ ins {
 
 .m-icon--tennis::before,
 .m-icon-Tennis::before {
-  content: "\e680";
-  font-family: "iconfont" !important;
+  content: '\e680';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3907,8 +3888,8 @@ ins {
 
 .m-icon--rugby::before,
 .m-icon-Rugby::before {
-  content: "\e67b";
-  font-family: "iconfont" !important;
+  content: '\e67b';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3917,8 +3898,8 @@ ins {
 
 .m-icon--cricket::before,
 .m-icon-Cricket::before {
-  content: "\e673";
-  font-family: "iconfont" !important;
+  content: '\e673';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3927,8 +3908,8 @@ ins {
 
 .m-icon--volleyball::before,
 .m-icon-volleyball::before {
-  content: "\e67f";
-  font-family: "iconfont" !important;
+  content: '\e67f';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3937,8 +3918,8 @@ ins {
 
 .m-icon--iceHockey::before,
 .m-icon-iceHockey::before {
-  content: "\e67c";
-  font-family: "iconfont" !important;
+  content: '\e67c';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3947,8 +3928,8 @@ ins {
 
 .m-icon--handball::before,
 .m-icon-handball::before {
-  content: "\e67a";
-  font-family: "iconfont" !important;
+  content: '\e67a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3957,8 +3938,8 @@ ins {
 
 .m-icon--darts::before,
 .m-icon-darts::before {
-  content: "\e675";
-  font-family: "iconfont" !important;
+  content: '\e675';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3967,8 +3948,8 @@ ins {
 
 .m-icon--beachVolleyball::before,
 .m-icon-beachVolley::before {
-  content: "\e676";
-  font-family: "iconfont" !important;
+  content: '\e676';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3977,8 +3958,8 @@ ins {
 
 .m-icon--tableTennis::before,
 .m-icon-tableTennis::before {
-  content: "\e6b6";
-  font-family: "iconfont" !important;
+  content: '\e6b6';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3987,8 +3968,8 @@ ins {
 
 .m-icon--eSports::before,
 .m-icon-eSports::before {
-  content: "\e6b5";
-  font-family: "iconfont" !important;
+  content: '\e6b5';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3997,8 +3978,8 @@ ins {
 
 .m-icon--dota::before,
 .m-icon-dota::before {
-  content: "\e6b9";
-  font-family: "iconfont" !important;
+  content: '\e6b9';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4007,8 +3988,8 @@ ins {
 
 .m-icon--cs-go::before,
 .m-icon-cs-go::before {
-  content: "\e6ba";
-  font-family: "iconfont" !important;
+  content: '\e6ba';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4017,8 +3998,8 @@ ins {
 
 .m-icon--lol::before,
 .m-icon-lol::before {
-  content: "\e6b8";
-  font-family: "iconfont" !important;
+  content: '\e6b8';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4027,8 +4008,8 @@ ins {
 
 .m-icon--badminton::before,
 .m-icon-badminton::before {
-  content: "\e6bb";
-  font-family: "iconfont" !important;
+  content: '\e6bb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4037,8 +4018,8 @@ ins {
 
 .m-icon--baseball::before,
 .m-icon-baseball::before {
-  content: "\e6bc";
-  font-family: "iconfont" !important;
+  content: '\e6bc';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4046,8 +4027,8 @@ ins {
 }
 
 .m-icon-boxing::before {
-  content: "\e6c6";
-  font-family: "iconfont" !important;
+  content: '\e6c6';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4055,8 +4036,8 @@ ins {
 }
 
 .m-icon-americanFootball::before {
-  content: "\e6c5";
-  font-family: "iconfont" !important;
+  content: '\e6c5';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4064,8 +4045,8 @@ ins {
 }
 
 .m-icon-mma::before {
-  content: "\e6ce";
-  font-family: "iconfont" !important;
+  content: '\e6ce';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4073,8 +4054,8 @@ ins {
 }
 
 .m-icon-futsal::before {
-  content: "\e6c8";
-  font-family: "iconfont" !important;
+  content: '\e6c8';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4082,8 +4063,8 @@ ins {
 }
 
 .m-icon-eFootball::before {
-  content: "\e6cd";
-  font-family: "iconfont" !important;
+  content: '\e6cd';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4091,8 +4072,8 @@ ins {
 }
 
 .m-icon-eBasketball::before {
-  content: "\e6cf";
-  font-family: "iconfont" !important;
+  content: '\e6cf';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4100,8 +4081,8 @@ ins {
 }
 
 .m-icon-basketball3x3::before {
-  content: "\e6da";
-  font-family: "iconfont" !important;
+  content: '\e6da';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4109,8 +4090,8 @@ ins {
 }
 
 .m-icon-eIceHockey::before {
-  content: "\e6d1";
-  font-family: "iconfont" !important;
+  content: '\e6d1';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4118,8 +4099,8 @@ ins {
 }
 
 .m-icon-vFootball::before {
-  content: "\e6d4";
-  font-family: "iconfont" !important;
+  content: '\e6d4';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4127,8 +4108,8 @@ ins {
 }
 
 .m-icon-snooker::before {
-  content: "\e6ca";
-  font-family: "iconfont" !important;
+  content: '\e6ca';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4136,8 +4117,8 @@ ins {
 }
 
 .m-icon-f1::before {
-  content: "\e6c7";
-  font-family: "iconfont" !important;
+  content: '\e6c7';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4145,8 +4126,8 @@ ins {
 }
 
 .m-icon-fantasy::before {
-  content: "\e69e";
-  font-family: "iconfont" !important;
+  content: '\e69e';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4154,8 +4135,8 @@ ins {
 }
 
 .m-icon-golf::before {
-  content: "\e6c9";
-  font-family: "iconfont" !important;
+  content: '\e6c9';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4163,8 +4144,8 @@ ins {
 }
 
 .m-icon-virtual::before {
-  content: "\e68a";
-  font-family: "iconfont" !important;
+  content: '\e68a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4180,7 +4161,7 @@ ins {
 }
 
 .icon-font-base:not(.icon-from-brand) {
-  font-family: "iconfont" !important;
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4188,7 +4169,7 @@ ins {
 }
 
 .icon-font-base.icon-from-brand {
-  font-family: "iconfont-sportybet" !important;
+  font-family: 'iconfont-sportybet' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4279,15 +4260,15 @@ ins {
   width: 35px;
 }
 .m-input-wap-wrapper .m-input-wap-icon::before {
-  content: "\e602";
-  font-family: "iconfont" !important;
+  content: '\e602';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-input-wap-wrapper .m-input-wap-icon::after {
-  content: "";
+  content: '';
   display: inline-block;
   height: 100%;
   vertical-align: middle;
@@ -4301,9 +4282,7 @@ ins {
   color: var(--brand-secondary);
   cursor: pointer;
 }
-.m-input-wap-wrapper
-  .m-input-wap-icon.m-input-wap-icon--clickable:hover
-  + .m-input-wap {
+.m-input-wap-wrapper .m-input-wap-icon.m-input-wap-icon--clickable:hover + .m-input-wap {
   border-color: #0d9737;
   border-color: var(--brand-secondary);
 }
@@ -4355,18 +4334,15 @@ ins {
   color: var(--text-type1-secondary);
   cursor: not-allowed;
 }
-.m-input-wap-wrapper.m-input-wap-wrapper--disabled
-  .m-input-wap::-webkit-input-placeholder {
+.m-input-wap-wrapper.m-input-wap-wrapper--disabled .m-input-wap::-webkit-input-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
-.m-input-wap-wrapper.m-input-wap-wrapper--disabled
-  .m-input-wap::-moz-placeholder {
+.m-input-wap-wrapper.m-input-wap-wrapper--disabled .m-input-wap::-moz-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }
-.m-input-wap-wrapper.m-input-wap-wrapper--disabled
-  .m-input-wap::-ms-input-placeholder {
+.m-input-wap-wrapper.m-input-wap-wrapper--disabled .m-input-wap::-ms-input-placeholder {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
 }

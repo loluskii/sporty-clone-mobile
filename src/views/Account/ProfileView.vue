@@ -108,12 +108,12 @@ import emitter from "../../plugins/emitter";
 const usersStore = useUsersStore();
 
 const currentUser = computed(() => {
-  return usersStore.currentUser;
-});
+  return usersStore.currentUser
+})
 
 const details = computed(() => {
-  return usersStore.currentUser;
-});
+  return usersStore.currentUser
+})
 
 const inputTitle = ref("");
 const textType = ref("text");
@@ -125,22 +125,22 @@ const documentNumber = ref('')
 const documentType = ref('')
 const isLoading = ref(false)
 
-const oldPassword = ref("");
-const newPassword = ref("");
+const oldPassword = ref('')
+const newPassword = ref('')
 
-const buttonText = ref("Save");
+const buttonText = ref('Save')
 
 function showInput(title, text_type, value_exists, editable, inputType = null) {
-  if (!editable && value_exists) return;
-  console.log(inputType);
-  showInputFieldView.value = true;
-  inputTitle.value = title;
+  if (!editable && value_exists) return
+  console.log(inputType)
+  showInputFieldView.value = true
+  inputTitle.value = title
   if (!value_exists && value_exists !== null) {
-    textType.value = text_type;
+    textType.value = text_type
   } else if (value_exists !== null && editable) {
-    textType.value = text_type;
-  } else if (inputType && inputType === "password") {
-    isPasswordUpdate.value = true;
+    textType.value = text_type
+  } else if (inputType && inputType === 'password') {
+    isPasswordUpdate.value = true
   }
 }
 
@@ -151,61 +151,61 @@ function handleBackToProfile() {
 }
 
 async function saveUpdate() {
-  let url;
+  let url
   let payload = {
     userID: currentUser.value.id,
     roleId: currentUser.value.roleId,
-    email: currentUser.value.email ?? "",
-    firstName: details.value?.firstName ?? "",
-    lastName: details.value?.lastName ?? "",
-    phone: details.value?.phone ?? "",
-    address: details.value?.address ?? "",
-    city: details.value?.city ?? "",
-    gender: details.value?.gender ?? "",
+    email: currentUser.value.email ?? '',
+    firstName: details.value?.firstName ?? '',
+    lastName: details.value?.lastName ?? '',
+    phone: details.value?.phone ?? '',
+    address: details.value?.address ?? '',
+    city: details.value?.city ?? '',
+    gender: details.value?.gender ?? ''
     // date_of_birth: details.value?.date_of_birth ?? ''
-  };
+  }
   switch (inputTitle.value) {
-    case "First Name":
-      payload.firstName = inputValue.value;
-      break;
-    case "Last Name":
-      payload.lastName = inputValue.value;
-      break;
-    case "Email":
-      payload.email = inputValue.value;
-      break;
-    case "Address":
-      payload.address = inputValue.value;
-      break;
-    case "City":
-      payload.city = inputValue.value;
-      break;
-    case "Gender":
-      payload.gender = inputValue.value;
-      break;
-    case "Date of Birth":
-      payload.date_of_birth = inputValue.value;
-      break;
-    case "Update Password":
+    case 'First Name':
+      payload.firstName = inputValue.value
+      break
+    case 'Last Name':
+      payload.lastName = inputValue.value
+      break
+    case 'Email':
+      payload.email = inputValue.value
+      break
+    case 'Address':
+      payload.address = inputValue.value
+      break
+    case 'City':
+      payload.city = inputValue.value
+      break
+    case 'Gender':
+      payload.gender = inputValue.value
+      break
+    case 'Date of Birth':
+      payload.date_of_birth = inputValue.value
+      break
+    case 'Update Password':
       payload = {
         clientId: CLIENT_ID,
         oldPassword: oldPassword.value,
-        password: newPassword.value,
-      };
-      break;
+        password: newPassword.value
+      }
+      break
     default:
-      break;
+      break
   }
-  let res;
+  let res
   if (isPasswordUpdate.value) {
-    if (oldPassword.value === "" || newPassword.value === "") return;
-    buttonText.value = "Saving...";
-    res = await updatePassword(payload);
+    if (oldPassword.value === '' || newPassword.value === '') return
+    buttonText.value = 'Saving...'
+    res = await updatePassword(payload)
   } else {
-    buttonText.value = "Saving...";
-    res = await updateProfile(payload);
+    buttonText.value = 'Saving...'
+    res = await updateProfile(payload)
   }
-  buttonText.value = "Save";
+  buttonText.value = 'Save'
   if (res.success) {
     await usersStore.loadCurrentUser();
     alert("Update Successful!");
@@ -215,7 +215,7 @@ async function saveUpdate() {
     inputValue.value = "";
     textType.value = "text";
   } else {
-    alert(`Error: ${res.message}`);
+    alert(`Error: ${res.message}`)
   }
 }
 
@@ -310,8 +310,8 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-ac-info-wrap li.with-arrow::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -410,8 +410,8 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-wrapper .m-input-icon::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -624,8 +624,8 @@ async function submitKycRequest(){
 }
 
 .m-ac-form-wrap .password-nav .m-icon-close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

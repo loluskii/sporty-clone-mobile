@@ -6,18 +6,16 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-const props = defineProps(["bonus"]);
+import { computed } from 'vue'
+const props = defineProps(['bonus'])
 
 const bonusPerc = computed(() => {
   if (props.bonus) {
-    return parseFloat(
-      (props.bonus.rolledAmount / props.bonus.pendingAmount) * 100,
-    );
+    return parseFloat((props.bonus.rolledAmount / props.bonus.pendingAmount) * 100)
   } else {
-    return 0.0;
+    return 0.0
   }
-});
+})
 </script>
 <style>
 #bonus-progress-bar {

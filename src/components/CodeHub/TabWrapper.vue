@@ -18,9 +18,7 @@
             :class="active === 'code-hub' ? 'active' : ''"
             @click="$emit('set-active', 'code-hub')"
           >
-            <span data-cms-key="popular_codes" data-cms-page="page_code_hub"
-              >Popular Codes</span
-            >
+            <span data-cms-key="popular_codes" data-cms-page="page_code_hub">Popular Codes</span>
           </li>
           <li
             class="nav-tab-item m-snap-nav-item"
@@ -30,9 +28,7 @@
             :class="active === 'load-code' ? 'active' : ''"
             @click="$emit('set-active', 'load-code')"
           >
-            <span data-cms-key="load_code" data-cms-page="page_code_hub"
-              >Load Code</span
-            >
+            <span data-cms-key="load_code" data-cms-page="page_code_hub">Load Code</span>
           </li>
         </ul>
         <i class="controls left-controls"></i>
@@ -42,8 +38,8 @@
   </div>
 </template>
 <script setup>
-const props = defineProps(["active"]);
-defineEmits(["set-active"]);
+const props = defineProps(['active'])
+defineEmits(['set-active'])
 </script>
 
 <style>
@@ -178,7 +174,7 @@ defineEmits(["set-active"]);
 .code-hub-header-right::before {
   background-color: #9ca0ab;
   background-color: var(--line-type1-secondary);
-  content: "";
+  content: '';
   height: 1.33333333rem;
   margin-right: 1rem;
   position: relative;

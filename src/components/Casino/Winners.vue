@@ -16,7 +16,7 @@
         >
           {{ `${winner.username} won ` }} &bull;
           <b style="font-weight: bold">{{
-            `${winner.currency} ${winner.winAmount.toLocaleString("en")}`
+            `${winner.currency} ${winner.winAmount.toLocaleString('en')}`
           }}</b>
         </p>
       </div>
@@ -24,16 +24,16 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
-import { getJackpotWinners } from "@/helpers";
-const winners = ref(null);
+import { ref, onMounted } from 'vue'
+import { getJackpotWinners } from '@/helpers'
+const winners = ref(null)
 
 onMounted(async () => {
   try {
-    const res = await getJackpotWinners();
-    winners.value = (res.data && res.data.winners.length) ?? null;
+    const res = await getJackpotWinners()
+    winners.value = (res.data && res.data.winners.length) ?? null
   } catch (error) {
-    winners.value = null;
+    winners.value = null
   }
-});
+})
 </script>

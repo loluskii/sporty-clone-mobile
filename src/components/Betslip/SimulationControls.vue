@@ -1,7 +1,7 @@
 <template>
   <div class="buttons h-48 size-16" @click="handleSimulationExit">
     <div data-op="sim-ok-button" class="button__ok">
-      <span>{{ timerEnded ? "OK" : "Skip to Results" }}</span>
+      <span>{{ timerEnded ? 'OK' : 'Skip to Results' }}</span>
     </div>
   </div>
 </template>
@@ -10,33 +10,33 @@
 const props = defineProps({
   timerEnded: {
     type: Boolean,
-    required: true,
+    required: true
   },
   timerStarted: {
     type: Boolean,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
-const emit = defineEmits(["exit"]);
+const emit = defineEmits(['exit'])
 
 const handleSimulationExit = () => {
   if (props.timerStarted && !props.timerEnded) {
-    emit("exit", "skip");
-    return;
+    emit('exit', 'skip')
+    return
   }
 
   if (props.timerEnded) {
-    emit("exit", "close");
+    emit('exit', 'close')
   }
-};
+}
 </script>
 
 <style scoped>
 .buttons {
   cursor: pointer;
   flex-shrink: 0;
-  font-family: "Roboto-Bold";
+  font-family: 'Roboto-Bold';
 }
 
 .buttons > div {

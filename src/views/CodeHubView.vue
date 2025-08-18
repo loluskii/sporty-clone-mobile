@@ -1,9 +1,6 @@
 <template>
   <div class="x-load-bet">
-    <HeaderOther
-      :headerTitle="'Code Hub'"
-      :styles="'position: fixed; top: 0'"
-    ></HeaderOther>
+    <HeaderOther :headerTitle="'Code Hub'" :styles="'position: fixed; top: 0'"></HeaderOther>
     <div class="code-hub-content">
       <TabWrapper :active="activeTab" @set-active="setActive" />
       <div v-if="activeTab === 'code-hub'" class="code-hub-list-container">
@@ -14,11 +11,7 @@
           class="scroll-wrap scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
         >
           <div class="code-hub-list-item-container">
-            <CodeHubItem
-              v-for="code in codes"
-              :code="code"
-              :key="code.betslipId"
-            />
+            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
           </div>
           <div class="loading-more-wrapper" style="position: relative"></div>
           <div class="bottom-ele"></div>
@@ -30,32 +23,32 @@
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import CodeHubItem from "@/components/CodeHub/CodeHubItem.vue";
-import TabWrapper from "@/components/CodeHub/TabWrapper.vue";
-import LoadCode from "@/components/CodeHub/LoadCode.vue";
-import OptionsContainer from "../components/CodeHub/OptionsContainer.vue";
-import { onMounted, ref } from "vue";
-import { getCodeHubItems, getNext7Days } from "../helpers";
-const codes = ref([]);
-const activeTab = ref("code-hub");
+import HeaderOther from '@/components/HeaderOther.vue'
+import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
+import TabWrapper from '@/components/CodeHub/TabWrapper.vue'
+import LoadCode from '@/components/CodeHub/LoadCode.vue'
+import OptionsContainer from '../components/CodeHub/OptionsContainer.vue'
+import { onMounted, ref } from 'vue'
+import { getCodeHubItems, getNext7Days } from '../helpers'
+const codes = ref([])
+const activeTab = ref('code-hub')
 
 async function getCodes() {
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
-    betType: 0,
-  };
-  const res = await getCodeHubItems(payload);
-  codes.value = res.data.data;
+    betType: 0
+  }
+  const res = await getCodeHubItems(payload)
+  codes.value = res.data.data
 }
 
 function setActive(data) {
-  activeTab.value = data;
+  activeTab.value = data
 }
 onMounted(async () => {
-  await getCodes();
-});
+  await getCodes()
+})
 </script>
 
 <style scoped>
@@ -208,7 +201,7 @@ onMounted(async () => {
 .code-hub-header-right::before {
   background-color: #9ca0ab;
   background-color: var(--line-type1-secondary);
-  content: "";
+  content: '';
   height: 1.33333333rem;
   margin-right: 1rem;
   position: relative;

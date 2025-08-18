@@ -1,10 +1,7 @@
 <template>
   <div class="m-nav-secondary withHome">
     <div class="m-nav-left">
-      <span
-        @click="$emit('back-to-profile')"
-        class="m-icon m-icon--back"
-      ></span>
+      <span @click="$emit('back-to-profile')" class="m-icon m-icon--back"></span>
       <span class="title"> {{ headerTitle }} </span>
     </div>
     <div class="info-container">
@@ -18,13 +15,13 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps } from 'vue'
 
-defineEmits(["back-to-profile"]);
+defineEmits(['back-to-profile'])
 
 defineProps({
-  headerTitle: String,
-});
+  headerTitle: String
+})
 </script>
 
 <style scoped>
@@ -86,16 +83,16 @@ defineProps({
   font-size: 1.33333333rem !important;
 }
 .m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .m-nav-secondary .m-nav-left .m-icon--close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -139,7 +136,7 @@ defineProps({
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
   border-left: 1px solid #ffffff;
-  content: "";
+  content: '';
   height: 100%;
   left: -0.75rem;
   opacity: 0.5;
@@ -177,8 +174,8 @@ defineProps({
   padding: 0 1.5rem 0 1.33333333rem;
 }
 .m-nav-secondary .home-link .home-icon::before {
-  content: "\e6cb";
-  font-family: "iconfont" !important;
+  content: '\e6cb';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="m-bet-container"
-    :class="selection.changed ? 'm-change-item animated' : ''"
-  >
+  <div class="m-bet-container" :class="selection.changed ? 'm-change-item animated' : ''">
     <div data-op="betslip-multi-odds" class="m-outcomes-row">
       <div class="m-outcomes-opt" @click="removeSelection">
         <div class="m-outcomes-color"></div>
@@ -24,21 +21,17 @@
                 class="m-outcome-odds"
                 :class="{
                   'm-outcome-up': oddUp && !selectionIsUnavailable,
-                  'm-outcome-down': oddDown && !selectionIsUnavailable,
+                  'm-outcome-down': oddDown && !selectionIsUnavailable
                 }"
               >
-                <span v-if="!selectionIsUnavailable"
-                  >{{ getSelectionOdds(selection.odds) }}
-                </span>
+                <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
                 <div class="m-outcome-suspended" v-else>
                   {{ getUnavailabilityReason }}
                 </div>
               </div>
             </div>
             <div class="m-vs-wrapper">
-              <i v-if="selection.type == 'live'" class="m-icon-live"
-                ><span>Live</span></i
-              >
+              <i v-if="selection.type == 'live'" class="m-icon-live"><span>Live</span></i>
               <div>{{ selection.eventName }}</div>
             </div>
             <div class="m-market-desc-wrapper">
@@ -68,115 +61,103 @@
 </template>
 
 <script setup>
-import {
-  defineProps,
-  defineEmits,
-  computed,
-  ref,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-} from "vue";
-import { useRouter } from "vue-router";
-import { useCouponStore, useUtilsStore } from "@/stores";
-import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
-import emitter from "@/plugins/emitter";
+import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCouponStore, useUtilsStore } from '@/stores'
+import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
+import emitter from '@/plugins/emitter'
 
-const couponStore = useCouponStore();
-const utilsStore = useUtilsStore();
-const emit = defineEmits([
-  "toggle-betslip",
-  "on-selection-input",
-  "update-selection",
-]);
-const router = useRouter();
+const couponStore = useCouponStore()
+const utilsStore = useUtilsStore()
+const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection'])
+const router = useRouter()
 
-const keyboardVisible = ref(false);
-const oddUp = ref(false);
-const oddDown = ref(false);
-const previousOdds = ref(null);
+const keyboardVisible = ref(false)
+const oddUp = ref(false)
+const oddDown = ref(false)
+const previousOdds = ref(null)
 
 const props = defineProps({
   selection: Object,
   betSlipType: String,
   betType: String,
-  activeSelectionId: Number,
-});
+  activeSelectionId: Number
+})
 
 // Add a timer reference to clear on component unmount
-let arrowTimer = null;
+let arrowTimer = null
 
 // Watch for changes to selection.odds
 watch(
   () => props.selection.odds,
   (newValue, oldValue) => {
     if (previousOdds.value === null) {
-      previousOdds.value = newValue;
-      return;
+      previousOdds.value = newValue
+      return
     }
 
     // Only show arrows if there's an actual change in value
     if (newValue !== previousOdds.value) {
       if (parseFloat(newValue) > parseFloat(previousOdds.value)) {
-        oddUp.value = true;
-        oddDown.value = false;
+        oddUp.value = true
+        oddDown.value = false
       } else if (parseFloat(newValue) < parseFloat(previousOdds.value)) {
-        oddUp.value = false;
-        oddDown.value = true;
+        oddUp.value = false
+        oddDown.value = true
       }
 
       // Reset arrows after 5 seconds
       if (arrowTimer) {
-        clearTimeout(arrowTimer);
+        clearTimeout(arrowTimer)
       }
 
       arrowTimer = setTimeout(() => {
-        oddUp.value = false;
-        oddDown.value = false;
-      }, 5000);
+        oddUp.value = false
+        oddDown.value = false
+      }, 5000)
 
       // Update previous odds
-      previousOdds.value = newValue;
+      previousOdds.value = newValue
     }
-  },
-);
+  }
+)
 
 // Listen for acceptChanges event from BetListStake
 onMounted(() => {
   // Initialize previousOdds
-  previousOdds.value = props.selection.odds;
-});
+  previousOdds.value = props.selection.odds
+})
 
 // Clean up timers when component is unmounted
 onBeforeUnmount(() => {
   if (arrowTimer) {
-    clearTimeout(arrowTimer);
+    clearTimeout(arrowTimer)
   }
-});
+})
 
-const scores = ref();
+const scores = ref()
 
 const isKeyboardVisible = computed(() => {
-  return props.activeSelectionId === props.selection.matchId;
-});
+  return props.activeSelectionId === props.selection.matchId
+})
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name);
-};
+  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+}
 
 const selectionsLength = computed(() => {
-  return couponStore.coupon.selections.length;
-});
+  return couponStore.coupon.selections.length
+})
 
 const selectionIsUnavailable = computed(() => {
   // If explicitly marked as unavailable
   if (props.selection.unavailable) {
-    return true;
+    return true
   }
 
   // If suspended
   if (props.selection.suspended) {
-    return true;
+    return true
   }
 
   // // Check if expired based on time
@@ -186,18 +167,18 @@ const selectionIsUnavailable = computed(() => {
   // const hoursDifference = difference / (1000 * 60 * 60);
 
   // return hoursDifference >= 5;
-});
+})
 
 // Add a computed property to get the specific unavailability reason
 const getUnavailabilityReason = computed(() => {
   // If explicitly marked as unavailable
   if (props.selection.unavailable) {
-    return "unavailable";
+    return 'unavailable'
   }
 
   // If suspended
   if (props.selection.suspended) {
-    return "suspended";
+    return 'suspended'
   }
 
   // Check if expired based on time
@@ -211,95 +192,90 @@ const getUnavailabilityReason = computed(() => {
   // }
 
   // return "unavailable";
-});
+})
 
 const getImageSrc = (sportId, sport) => {
-  let imageUrl;
-  imageUrl = new URL(
-    `../../assets/images/sports/${sportId}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  let imageUrl
+  imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
+  return imageUrl
+}
 
 const getSelectionOdds = (odds) => {
-  if (typeof odds === "string") {
-    return odds;
+  if (typeof odds === 'string') {
+    return odds
   } else {
-    return odds.toFixed(2);
+    return odds.toFixed(2)
   }
-};
+}
 
 async function removeSelection() {
-  await couponStore.removeSelection(
-    props.selection.selectionId || props.selection.id,
-  );
+  await couponStore.removeSelection(props.selection.selectionId || props.selection.id)
 }
 
 function handleStakeChange(stake) {
   return couponStore.updateWinnings({
     stake: stake,
-    id: props.selection.selectionId,
-  });
+    id: props.selection.selectionId
+  })
 }
 
 function openKeyboard() {
-  emit("on-selection-input", props.selection.matchId);
+  emit('on-selection-input', props.selection.matchId)
 }
 
 function hideKeyboard() {
-  emit("on-selection-input", 0);
+  emit('on-selection-input', 0)
 }
 
 function onKeyClick(type, value) {
-  let stake = props.selection.stake.toString();
-  let finalStake;
+  let stake = props.selection.stake.toString()
+  let finalStake
   switch (type) {
-    case "number":
+    case 'number':
       if (stake.length < 7) {
-        if (typeof value === "number") {
-          if (stake === "") {
-            finalStake = value;
+        if (typeof value === 'number') {
+          if (stake === '') {
+            finalStake = value
           } else {
-            finalStake = parseFloat(stake) + value;
+            finalStake = parseFloat(stake) + value
           }
         } else {
-          finalStake = stake + value;
+          finalStake = stake + value
         }
-        handleStakeChange(finalStake);
+        handleStakeChange(finalStake)
       }
-      break;
-    case "dot":
-      if (stake.length < 6 && !stake.includes(".")) {
-        stake += ".";
-        handleStakeChange(stake);
+      break
+    case 'dot':
+      if (stake.length < 6 && !stake.includes('.')) {
+        stake += '.'
+        handleStakeChange(stake)
       }
-      break;
-    case "double-zero":
+      break
+    case 'double-zero':
       if (stake.length < 6) {
-        stake += "00";
-        handleStakeChange(stake);
+        stake += '00'
+        handleStakeChange(stake)
       }
-      break;
-    case "clear":
-      stake = "";
-      handleStakeChange(stake);
-      break;
-    case "delete":
-      stake = stake.toString().slice(0, -1);
-      handleStakeChange(stake);
-      break;
-    case "done":
-      hideKeyboard();
-      break;
+      break
+    case 'clear':
+      stake = ''
+      handleStakeChange(stake)
+      break
+    case 'delete':
+      stake = stake.toString().slice(0, -1)
+      handleStakeChange(stake)
+      break
+    case 'done':
+      hideKeyboard()
+      break
   }
 }
 
 function goToGame() {
-  emit("toggle-betslip");
-  let route_name = "fixtures-detail";
-  if (props.selection.type == "live") {
-    route_name = "live-fixtures-detail";
+  emit('toggle-betslip')
+  let route_name = 'fixtures-detail'
+  if (props.selection.type == 'live') {
+    route_name = 'live-fixtures-detail'
   }
   return router.push({
     name: route_name,
@@ -307,9 +283,9 @@ function goToGame() {
       sport: props.selection.sport,
       tournament_name: props.selection.tournament,
       event_name: props.selection.eventName,
-      event_id: props.selection.matchId,
-    },
-  });
+      event_id: props.selection.matchId
+    }
+  })
 }
 </script>
 
@@ -353,7 +329,7 @@ function goToGame() {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
   bottom: 0;
-  content: "";
+  content: '';
   height: 1px;
   position: absolute;
   right: 0;
@@ -386,8 +362,8 @@ function goToGame() {
   padding-top: 0.41667rem;
 }
 .m-bet-container .m-outcomes-row .m-outcomes-opt::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -446,17 +422,9 @@ function goToGame() {
   color: var(--text-type1-primary);
   display: block;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper,
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper,
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper,
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-market-desc-wrapper {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -479,12 +447,7 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .sim-unavailable-label,
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-vs-wrapper
-  .sim-unavailable-label,
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper .sim-unavailable-label,
 .m-bet-container
   .m-outcomes-row
   .m-team-row
@@ -496,19 +459,10 @@ function goToGame() {
   padding-left: 1rem;
   padding-right: 1rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper {
   font-size: 1.33333333rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper
-  .m-outcome-desc {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-desc {
   -webkit-box-flex: 1;
   -webkit-flex: 1 1 0%;
   -ms-flex: 1 1 0%;
@@ -527,12 +481,7 @@ function goToGame() {
   display: inline-block;
   padding-right: 0.41666667rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper
-  .m-outcome-odds {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-odds {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
@@ -545,8 +494,8 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .m-outcome-odds.m-outcome-up::before {
-  content: "\e609";
-  font-family: "iconfont" !important;
+  content: '\e609';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -569,8 +518,8 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .m-outcome-odds.m-outcome-down::before {
-  content: "\e605";
-  font-family: "iconfont" !important;
+  content: '\e605';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -604,14 +553,9 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .m-outcome-odds.m-outcome-del:before {
-  content: "";
+  content: '';
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper
-  .m-outcome-boost {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-boost {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
@@ -625,13 +569,7 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .number-grow-warp {
-  background: -webkit-gradient(
-    linear,
-    left top,
-    right top,
-    from(#40208c),
-    to(#1e0e53)
-  );
+  background: -webkit-gradient(linear, left top, right top, from(#40208c), to(#1e0e53));
   background: -webkit-linear-gradient(left, #40208c, #1e0e53);
   background: linear-gradient(to right, #40208c, #1e0e53);
   font-size: 1.33333333rem;
@@ -665,24 +603,14 @@ function goToGame() {
   line-height: 1.33333333rem;
   padding: 0 0.83333333rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-outcome-desc-wrapper
-  .m-status-fixed {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-status-fixed {
   height: 1.066rem;
   line-height: 1.066rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper {
   font-size: 1.066rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-vs-wrapper
-  .m-icon-live {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper .m-icon-live {
   background-color: var(--brand-secondary);
   filter: opacity(0.5);
   -webkit-box-sizing: border-box;
@@ -701,24 +629,14 @@ function goToGame() {
   padding: 0 0.25rem;
   position: relative;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-vs-wrapper
-  > div:nth-of-type(1) {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper > div:nth-of-type(1) {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   padding-right: 0.83333333rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-vs-wrapper
-  > div:last-child {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper > div:last-child {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -727,23 +645,14 @@ function goToGame() {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-market-desc-wrapper {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
   font-size: 1.066rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-market-desc-wrapper
-  .m-market-desc {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper .m-market-desc {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -765,12 +674,7 @@ function goToGame() {
   vertical-align: -10%;
   width: 1rem;
 }
-.m-bet-container
-  .m-outcomes-row
-  .m-team-row
-  .m-team-cell
-  .m-market-desc-wrapper
-  .m-desc {
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper .m-desc {
   color: #353a45;
   color: var(--text-type1-primary);
   display: inline-block;

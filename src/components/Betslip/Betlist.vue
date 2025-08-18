@@ -1,19 +1,13 @@
 <template>
   <div class="x-main-right" @click="closeBetslip($event)">
-    <div
-      id="betslip-container"
-      :class="betslipMode ? 'betslip-mode-sim' : 'betslip-mode-real'"
-    >
+    <div id="betslip-container" :class="betslipMode ? 'betslip-mode-sim' : 'betslip-mode-real'">
       <div
         class="m-betslips m-betslips-show"
         v-show="!isPlaceBetSuccessful && !isBookBetSuccessful"
         style="position: absolute"
         id="m-betslips-show"
       >
-        <div
-          class="m-betslip-header"
-          :class="betslipMode ? 'sim-theme' : 'real-theme'"
-        >
+        <div class="m-betslip-header" :class="betslipMode ? 'sim-theme' : 'real-theme'">
           <div class="head-container">
             <div class="wrapper separate-part">
               <div class="operate-button">
@@ -26,31 +20,18 @@
                           ? 'background-color: #ffd600; color: #000'
                           : 'background-color: var(--brand-secondary); color: #fff'
                       "
-                      style="
-                        font-size: 13px;
-                        height: 30px;
-                        width: 30px;
-                        border-radius: 50%;
-                      "
+                      style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%"
                       >{{ betslipSelections.length }}
                     </span>
                     <BetslipModeToggle />
                   </template>
-                  <span
-                    v-else
-                    style="
-                      font-weight: bold;
-                      font-size: 1.2rem;
-                      margin-right: 20px;
-                    "
+                  <span v-else style="font-weight: bold; font-size: 1.2rem; margin-right: 20px"
                     >Betslip</span
                   >
                 </div>
               </div>
               <div class="operate-button">
-                <span class="currency">{{
-                  SportsbookGlobalVariable.CurrencyCode
-                }}</span>
+                <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
                 <span> {{ usersStore.balance }}</span>
               </div>
             </div>
@@ -99,17 +80,9 @@
 
                   <span>Remove all</span>
                 </div>
-                <div
-                  class="wrapper separate-part"
-                  @click="showBetSettings = true"
-                >
+                <div class="wrapper separate-part" @click="showBetSettings = true">
                   <div class="bet-settings bet-settings operate-button flex">
-                    <div
-                      class="icon icon-font-base mr-1"
-                      style="font-size: 1.33333rem"
-                    >
-                      
-                    </div>
+                    <div class="icon icon-font-base mr-1" style="font-size: 1.33333rem"></div>
                     <span>Bet Settings</span>
                   </div>
                 </div>
@@ -119,19 +92,14 @@
         </div>
         <div v-if="betslipMode" class="betslip-notification">
           <div class="sim-operate-sync-to-real-tip">
-            <b>SIMULATE</b> allows you to play your selections in a virtual
-            format
+            <b>SIMULATE</b> allows you to play your selections in a virtual format
           </div>
         </div>
         <div class="m-bet-head" v-if="showBetHead">
           <div class="m-snap-nav-wrap m-list-bet-type" style="overflow: hidden">
             <ul class="m-snap-nav flex">
               <li
-                :class="
-                  betSlipType !== 'Combo' && betType === 'Single'
-                    ? 'active'
-                    : ''
-                "
+                :class="betSlipType !== 'Combo' && betType === 'Single' ? 'active' : ''"
                 @click="couponStore.setBetType('Single')"
                 class="m-list-bet-type-item m-snap-nav-item"
                 data-op="betslip-multi-tag-single"
@@ -139,11 +107,7 @@
                 <span data-cms-key="singles">Single</span>
               </li>
               <li
-                :class="
-                  betSlipType !== 'Combo' && betType === 'Multiple'
-                    ? 'active'
-                    : ''
-                "
+                :class="betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''"
                 @click="couponStore.setBetType('Multiple')"
                 class="flex flex-center m-list-bet-type-item m-snap-nav-item"
                 data-op="betslip-multi-tag-multi"
@@ -163,13 +127,8 @@
             <i class="controls right-controls"></i>
           </div>
           <!-- Odd Change Notification -->
-          <div
-            class="betslip-notification"
-            v-if="!couponStore.coupon.acceptChanges"
-          >
-            <div class="change-wrong-message">
-              Note: changes in odds or availability
-            </div>
+          <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
+            <div class="change-wrong-message">Note: changes in odds or availability</div>
           </div>
         </div>
         <div
@@ -229,10 +188,7 @@
                   <div class="blank-area"></div>
                 </div>
                 <div class="button-wrap">
-                  <button
-                    @click="toggleShow"
-                    class="af-button flexibet-cancel af-button--primary"
-                  >
+                  <button @click="toggleShow" class="af-button flexibet-cancel af-button--primary">
                     <span><span data-cms-key="cancel">Cancel </span></span>
                   </button>
                   <button
@@ -250,10 +206,7 @@
                   class="confirm-wrap"
                   :class="betslipMode ? 'sim-theme' : 'real-theme'"
                 >
-                  <div
-                    class="submit"
-                    :class="betslipMode ? 'sim-theme' : 'real-theme'"
-                  >
+                  <div class="submit" :class="betslipMode ? 'sim-theme' : 'real-theme'">
                     <span style="color: #fff"> Submitting </span>
                   </div>
                 </div>
@@ -265,10 +218,7 @@
         <BetlistBookingCode
           v-if="betslipSelections.length === 0 && !betslipMode"
         ></BetlistBookingCode>
-        <div
-          v-if="betslipSelections.length === 0 && betslipMode"
-          class="sim-selection-empty-panel"
-        >
+        <div v-if="betslipSelections.length === 0 && betslipMode" class="sim-selection-empty-panel">
           <p>Please add at least one outcome.</p>
         </div>
         <Simulation
@@ -316,210 +266,200 @@ import { useUtilsStore } from "@/stores";
 import VueToggles from "vue-toggles";
 import SystemBet from "./SystemBet.vue";
 
-const emit = defineEmits(["toggle-betslip", "update-betcount"]);
-const couponStore = useCouponStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
-const show = ref(false);
-const placeBetStatus = ref(false);
-const isPlaceBetSuccessful = ref(false);
-const isBookBetSuccessful = ref(false);
-const placeBetResponse = ref({});
-const bookBetResponse = ref({});
-const usersStore = useUsersStore();
-const activeSelectionInput = ref();
-const showBetSettings = ref(false);
-const simulationResults = ref(null);
+const emit = defineEmits(['toggle-betslip', 'update-betcount'])
+const couponStore = useCouponStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
+const show = ref(false)
+const placeBetStatus = ref(false)
+const isPlaceBetSuccessful = ref(false)
+const isBookBetSuccessful = ref(false)
+const placeBetResponse = ref({})
+const bookBetResponse = ref({})
+const usersStore = useUsersStore()
+const activeSelectionInput = ref()
+const showBetSettings = ref(false)
+const simulationResults = ref(null)
 
-const value = ref(false);
+const value = ref(false)
 
 const betSlipType = computed(() => {
-  return couponStore.coupon.betslip_type;
-});
+  return couponStore.coupon.betslip_type
+})
 
 console.log(couponStore.coupon)
 
 const betType = computed(() => {
-  return couponStore.coupon.bet_type;
-});
+  return couponStore.coupon.bet_type
+})
 
 const betslipSelections = computed(() => {
-  return couponStore.coupon.selections;
-});
+  return couponStore.coupon.selections
+})
 
 const totalStake = computed(() => {
-  return formatNumber(couponStore.coupon.totalStake);
-});
+  return formatNumber(couponStore.coupon.totalStake)
+})
 
 const betslipLoading = computed(() => {
-  return couponStore.isBetslipLoading;
-});
+  return couponStore.isBetslipLoading
+})
 
 const betslipMode = computed(() => {
-  return couponStore.betslipMode;
-});
+  return couponStore.betslipMode
+})
 
 const isSimulating = computed(() => {
-  return couponStore.isSimulating;
-});
+  return couponStore.isSimulating
+})
 
 const showBetHead = computed(() => {
-  return betslipSelections.value.length > 1 && !betslipMode.value;
-});
+  return betslipSelections.value.length > 1 && !betslipMode.value
+})
 
 const updateBetslipMode = () => {
-  couponStore.mode = betslipMode.value ? "real" : "sim";
-};
+  couponStore.mode = betslipMode.value ? 'real' : 'sim'
+}
 
 function closeBetslip(e) {
-  if (e && e.target.classList.contains("x-main-right")) {
-    if (betslipMode.value && isSimulating.value) return;
-    emit("toggle-betslip");
+  if (e && e.target.classList.contains('x-main-right')) {
+    if (betslipMode.value && isSimulating.value) return
+    emit('toggle-betslip')
   }
 }
 
 function toggleShow() {
-  show.value = !show.value;
+  show.value = !show.value
 }
 
 function bookBet(data) {
-  placeBetStatus.value = false;
-  isPlaceBetSuccessful.value = false;
-  placeBetResponse.value = {};
-  isBookBetSuccessful.value = true;
-  bookBetResponse.value = data;
+  placeBetStatus.value = false
+  isPlaceBetSuccessful.value = false
+  placeBetResponse.value = {}
+  isBookBetSuccessful.value = true
+  bookBetResponse.value = data
 }
 
 async function placeBet(e) {
-  if (couponStore.isBetslipLoading || couponStore.isSimulating) return;
+  if (couponStore.isBetslipLoading || couponStore.isSimulating) return
 
-  show.value = false;
-  couponStore.isBetslipLoading = true;
+  show.value = false
+  couponStore.isBetslipLoading = true
   let bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
-  if(bonusId){
+  if (bonusId) {
     try {
       const bonus = {
         bonusId: bonusId,
         amount: totalStake.value,
-        username: usersStore.currentUser.username,
-      };
+        username: usersStore.currentUser.username
+      }
       await awardBonus(bonus)
     } catch (error) {
-      emitter.emit("showErrorMessage", "Failed to activate Cashback!");
+      emitter.emit('showErrorMessage', 'Failed to activate Cashback!')
       return
     }
   }
 
-
   try {
-    const res = await couponStore.placeBet(e, "bet", bonusId);
-    couponStore.isBetslipLoading = false;
+    const res = await couponStore.placeBet(e, 'bet', bonusId)
+    couponStore.isBetslipLoading = false
 
     if (res?.success) {
       if (betslipMode.value) {
         try {
-          couponStore.isSimulating = true;
-          simulationResults.value = res.data;
-          document
-            .getElementById("m-betslips-show")
-            ?.classList.add("is-simulating");
+          couponStore.isSimulating = true
+          simulationResults.value = res.data
+          document.getElementById('m-betslips-show')?.classList.add('is-simulating')
         } catch (error) {
-          console.error("Error starting simulation:", error);
-          emitter.emit(
-            "showErrorMessage",
-            "Failed to start simulation. Please try again.",
-          );
-          couponStore.isSimulating = false;
-          simulationResults.value = null;
+          console.error('Error starting simulation:', error)
+          emitter.emit('showErrorMessage', 'Failed to start simulation. Please try again.')
+          couponStore.isSimulating = false
+          simulationResults.value = null
         }
       } else {
-        isPlaceBetSuccessful.value = true;
-        placeBetStatus.value = true;
-        placeBetResponse.value = res;
+        isPlaceBetSuccessful.value = true
+        placeBetStatus.value = true
+        placeBetResponse.value = res
       }
-      await usersStore.loadCurrentUser();
-      emit("update-betcount");
+      await usersStore.loadCurrentUser()
+      emit('update-betcount')
     } else {
-      emit("toggle-betslip");
-      emitter.emit("showErrorMessage", res?.message || "Failed to place bet");
+      emit('toggle-betslip')
+      emitter.emit('showErrorMessage', res?.message || 'Failed to place bet')
     }
   } catch (error) {
-    console.error("Error placing bet:", error);
-    couponStore.isBetslipLoading = false;
-    emit("toggle-betslip");
-    emitter.emit(
-      "showErrorMessage",
-      error?.message || "An unexpected error occurred",
-    );
+    console.error('Error placing bet:', error)
+    couponStore.isBetslipLoading = false
+    emit('toggle-betslip')
+    emitter.emit('showErrorMessage', error?.message || 'An unexpected error occurred')
   }
 }
 
 function handleSimulationExit() {
-  couponStore.isSimulating = false;
-  simulationResults.value = null;
+  couponStore.isSimulating = false
+  simulationResults.value = null
 }
 
 async function hideAll() {
-  placeBetStatus.value = false;
-  isPlaceBetSuccessful.value = false;
-  placeBetResponse.value = {};
-  couponStore.clearBetslip();
-  emit("toggle-betslip");
+  placeBetStatus.value = false
+  isPlaceBetSuccessful.value = false
+  placeBetResponse.value = {}
+  couponStore.clearBetslip()
+  emit('toggle-betslip')
 }
 
 async function rebet() {
-  placeBetStatus.value = false;
-  isPlaceBetSuccessful.value = false;
-  placeBetResponse.value = {};
-  emit("toggle-betslip");
+  placeBetStatus.value = false
+  isPlaceBetSuccessful.value = false
+  placeBetResponse.value = {}
+  emit('toggle-betslip')
 }
 
 function hideBookBetModal() {
-  isBookBetSuccessful.value = false;
-  bookBetResponse.value = {};
-  emit("toggle-betslip");
+  isBookBetSuccessful.value = false
+  bookBetResponse.value = {}
+  emit('toggle-betslip')
 }
 function clearBetslip() {
-  return couponStore.clearBetslip();
+  return couponStore.clearBetslip()
 }
 
 function setActiveSelectionInput(data) {
-  activeSelectionInput.value = data;
+  activeSelectionInput.value = data
 }
 
 const validateSimulationMarkets = (selections) => {
-  if (!betslipMode.value) return true;
+  if (!betslipMode.value) return true
 
   try {
     const invalidMarkets = selections.filter(
-      (selection) =>
-        !SIM_ALLOWED_MARKETS.includes(parseInt(selection.market_id)),
-    );
+      (selection) => !SIM_ALLOWED_MARKETS.includes(parseInt(selection.market_id))
+    )
 
     if (invalidMarkets.length > 0) {
-      const marketNames = invalidMarkets.map((m) => m.market_name).join(", ");
+      const marketNames = invalidMarkets.map((m) => m.market_name).join(', ')
       emitter.emit(
-        "showErrorMessage",
-        `The following markets are not supported in simulation mode: ${marketNames}`,
-      );
-      return false;
+        'showErrorMessage',
+        `The following markets are not supported in simulation mode: ${marketNames}`
+      )
+      return false
     }
-    return true;
+    return true
   } catch (error) {
-    console.error("Error validating simulation markets:", error);
-    emitter.emit("showErrorMessage", "Error validating markets for simulation");
-    return false;
+    console.error('Error validating simulation markets:', error)
+    emitter.emit('showErrorMessage', 'Error validating markets for simulation')
+    return false
   }
-};
+}
 
 defineComponent({
-  name: "bet-list",
-});
+  name: 'bet-list'
+})
 
-onMounted(() => {});
+onMounted(() => {})
 </script>
 
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
 .m-betslip-header {
   background: var(--background-type2-secondary);
@@ -575,7 +515,7 @@ onMounted(() => {});
   background-color: #fafd00;
   background-color: var(--sim-primary);
   color: #1b1e25;
-  font-family: "Roboto-Bold";
+  font-family: 'Roboto-Bold';
   font-size: 1rem;
   padding: 0.33333333rem 0.8rem;
 }
@@ -583,7 +523,7 @@ onMounted(() => {});
 .betslip-notification .sim-duplicated-match-error {
   background-color: #bf1420;
   color: #ffffff;
-  font-family: "Roboto-Bold";
+  font-family: 'Roboto-Bold';
   font-size: 1rem;
   line-height: 1.83333333rem;
   text-align: center;
@@ -759,8 +699,8 @@ onMounted(() => {});
 }
 
 #betslip-container .m-betslips .m-bet-head .m-sec-opt .remove-all::before {
-  content: "\e65d";
-  font-family: "iconfont" !important;
+  content: '\e65d';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -811,11 +751,7 @@ onMounted(() => {});
   padding: 0.33333333rem 0.41666667rem 0;
 }
 
-#betslip-container
-  .m-betslips
-  .m-bet-head
-  .m-list-bet-type
-  .m-list-bet-type-item {
+#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item {
   background-color: #50545f;
   background-color: var(--c-betslip-bet-type-nav-bg);
   border-top-left-radius: 0.33333333rem;
@@ -833,19 +769,11 @@ onMounted(() => {});
   color: var(--c-betslip-tab-text);
 }
 
-#betslip-container
-  .m-betslips
-  .m-bet-head
-  .m-list-bet-type
-  .m-list-bet-type-item:last-child {
+#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item:last-child {
   margin: 0;
 }
 
-#betslip-container
-  .m-betslips
-  .m-bet-head
-  .m-list-bet-type
-  .m-list-bet-type-item.active {
+#betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #353a45;
@@ -987,8 +915,8 @@ onMounted(() => {});
 }
 
 .submit::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1183,50 +1111,29 @@ onMounted(() => {});
   z-index: 10;
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .potential-win.sim-theme,
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .to-win.sim-theme {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme,
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.sim-theme {
   background-color: rgba(250, 253, 0, 0.2);
   background-color: var(--c-sim-win-bg);
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .potential-win.sim-theme {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.sim-theme {
   background-color: rgba(250, 253, 0, 0.2);
   background-color: var(--c-sim-win-bg);
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.sim-theme {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-theme {
   background-color: #fafd00;
   background-color: var(--sim-primary);
   color: #000000;
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.sim-disabled {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-disabled {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .sim-theme {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .sim-theme {
   background-color: #fafd00;
   background-color: var(--sim-primary);
   color: #000000;
@@ -1349,16 +1256,16 @@ onMounted(() => {});
 .m-error-info .m-deposit-link-wrapper {
   -webkit-box-align: center;
   -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: end;
   -webkit-justify-content: flex-end;
-      -ms-flex-pack: end;
-          justify-content: flex-end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
 }
 .m-error-info .m-deposit-link-wrapper .m-deposit-link {
   color: var(--brand-secondary);
@@ -1367,7 +1274,7 @@ onMounted(() => {});
   margin-right: 4px;
 }
 .m-error-info .m-deposit-link-wrapper .arrow-right {
-  color: #0D9737;
+  color: #0d9737;
   color: var(--brand-secondary);
   content: '\e608';
   font-size: 16px;
@@ -1378,5 +1285,4 @@ onMounted(() => {});
 .m-error-info .m-deposit-link-wrapper .arrow-right::before {
   font-size: 12px;
 }
-
 </style>

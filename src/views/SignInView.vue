@@ -78,13 +78,9 @@
               @click.prevent="login"
               class="af-button login-btn af-button--primary"
               :class="
-                authStore.loading || password === '' || phoneNumber === ''
-                  ? 'is-disabled'
-                  : ''
+                authStore.loading || password === '' || phoneNumber === '' ? 'is-disabled' : ''
               "
-              :disabled="
-                authStore.loading || password === '' || phoneNumber === ''
-              "
+              :disabled="authStore.loading || password === '' || phoneNumber === ''"
             >
               <span v-if="!authStore.loading"> Login </span>
               <span v-else> Loading... </span>
@@ -97,9 +93,7 @@
             </div>
             <div class="blank-block"></div>
             <div>
-              <router-link :to="{ name: 'sign-up' }">
-                Create New Account</router-link
-              >
+              <router-link :to="{ name: 'sign-up' }"> Create New Account</router-link>
             </div>
           </div>
         </div>
@@ -110,28 +104,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useAuthStore } from "@/stores";
-import VerifyUsernameBlock from "@/components/VerifyUsernameBlock.vue";
-import { CLIENT_ID, formattedPhoneNumber } from "../helpers";
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores'
+import VerifyUsernameBlock from '@/components/VerifyUsernameBlock.vue'
+import { CLIENT_ID, formattedPhoneNumber } from '../helpers'
 
-const authStore = useAuthStore();
-const phoneNumber = ref("");
-const password = ref("");
-const showPassword = ref(false);
+const authStore = useAuthStore()
+const phoneNumber = ref('')
+const password = ref('')
+const showPassword = ref(false)
 
 const togglePassword = () => {
-  return (showPassword.value = !showPassword.value);
-};
+  return (showPassword.value = !showPassword.value)
+}
 
-const isForgotPasswordView = ref(false);
+const isForgotPasswordView = ref(false)
 
 function showForgotPassword() {
-  isForgotPasswordView.value = true;
+  isForgotPasswordView.value = true
 }
 
 function restartProcess() {
-  isForgotPasswordView.value = false;
+  isForgotPasswordView.value = false
 }
 
 async function login() {
@@ -143,17 +137,17 @@ async function login() {
     let payload = {
       username: formattedPhoneNumber(String(phoneNumber.value).trim()),
       password: password.value,
-      clientId: CLIENT_ID,
-    };
-    await authStore.doLogin(payload);
+      clientId: CLIENT_ID
+    }
+    await authStore.doLogin(payload)
   } catch (err) {
-    authStore.authError = err.message || "Login failed";
+    authStore.authError = err.message || 'Login failed'
   }
 }
 
 onMounted(() => {
-  authStore.authError = "";
-});
+  authStore.authError = ''
+})
 </script>
 
 <style scoped>
@@ -176,8 +170,8 @@ onMounted(() => {
 }
 
 #loginStep .change-region-wrap .m-icon-right::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -191,8 +185,8 @@ onMounted(() => {
   float: right;
 }
 #loginStep .change-region-wrap .close::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -231,8 +225,8 @@ onMounted(() => {
   width: 100%;
 }
 #loginStep .login-container .verifyInputs .m-loading-circle-icon::before {
-  content: "\e654";
-  font-family: "iconfont" !important;
+  content: '\e654';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

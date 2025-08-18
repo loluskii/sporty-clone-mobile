@@ -10,7 +10,7 @@
       <ul class="teams">
         <li>
           ...(and {{ remainingMatchesCount }} other match{{
-            remainingMatchesCount > 1 ? "es" : ""
+            remainingMatchesCount > 1 ? 'es' : ''
           }})
         </li>
       </ul>
@@ -21,19 +21,19 @@
 <script>
 export default {
   props: {
-    matches: Array, // Your array of matches
+    matches: Array // Your array of matches
   },
   computed: {
     displayedMatches() {
       // Display the first two matches
-      return this.matches.slice(0, 2);
+      return this.matches.slice(0, 2)
     },
     remainingMatchesCount() {
       // Calculate the count of remaining matches
-      return Math.max(0, this.matches.length - 2);
-    },
-  },
-};
+      return Math.max(0, this.matches.length - 2)
+    }
+  }
+}
 </script>
 
 <style></style>

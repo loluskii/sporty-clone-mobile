@@ -13,85 +13,84 @@
 </template>
 
 <script setup>
-import { watch, ref, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { awardBonus, verifyDeposit } from "@/helpers";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useUsersStore } from "@/stores";
+import { watch, ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { awardBonus, verifyDeposit } from '@/helpers'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { useUsersStore } from '@/stores'
 
-const route = useRoute();
-const router = useRouter();
-const isPaymentSuccess = ref(false);
-const isPaymentFail = ref(false);
-const isLoading = ref(true);
-const usersStore = useUsersStore();
+const route = useRoute()
+const router = useRouter()
+const isPaymentSuccess = ref(false)
+const isPaymentFail = ref(false)
+const isLoading = ref(true)
+const usersStore = useUsersStore()
 
 watch(
   () => [route.params.method],
   async ([method]) => {
-    let ref;
+    let ref
 
     switch (method) {
-      case "paystack":
-        ref = route.query.trxref;
-        break;
-      case "monnify":
-        ref = route.query.paymentReference;
-        break;
-      case "flutterwave":
-        ref = route.query.tx_ref;
-        break;
-      case "korapay":
-        ref = route.query.reference;
-        break;
-      case "fidelity":
-        ref = route.query.txnRef;
-        break;
-      case "smileandpay":
+      case 'paystack':
+        ref = route.query.trxref
+        break
+      case 'monnify':
+        ref = route.query.paymentReference
+        break
+      case 'flutterwave':
+        ref = route.query.tx_ref
+        break
+      case 'korapay':
+        ref = route.query.reference
+        break
+      case 'fidelity':
+        ref = route.query.txnRef
+        break
+      case 'smileandpay':
         ref = route.query.orderReference
-        break;
+        break
     }
 
     if (!ref) {
       // No reference param in query — redirect
-      return router.push({ name: 'account-deposit' });
+      return router.push({ name: 'account-deposit' })
     }
 
-    await verifyPaymentRef(method, ref);
+    await verifyPaymentRef(method, ref)
   },
-  { immediate: true },
-);
-
+  { immediate: true }
+)
 
 const bonus = computed(() => {
-  return usersStore.bonus;
-});
+  return usersStore.bonus
+})
 
 async function verifyPaymentRef(method, ref) {
-  try{
-    isLoading.value = true;
-    const res = await verifyDeposit(method, ref);
-    isLoading.value = false;
+  try {
+    isLoading.value = true
+    const res = await verifyDeposit(method, ref)
+    isLoading.value = false
     if (res.success) {
-      isPaymentSuccess.value = true;
+      isPaymentSuccess.value = true
       if (bonus.value) {
         await awardBonus(bonus.value).then((res) => {
-          usersStore.setActiveBonus(null);
-        });
+          usersStore.setActiveBonus(null)
+        })
       }
-      router.push({ name: "account-transactions" });
+      router.push({ name: 'account-transactions' })
     } else {
-      isPaymentFail.value = true;
+      isPaymentFail.value = true
     }
-    isLoading.value = false;
-  }catch(error){
-    isLoading.value = false;
-    isPaymentFail.value = true;
+    isLoading.value = false
+  } catch (error) {
+    isLoading.value = false
+    isPaymentFail.value = true
   }
 }
 
 function goHome() {
-  return router.push({ name: "home" });
+  return router.push({ name: 'home' })
 }
 </script>
 

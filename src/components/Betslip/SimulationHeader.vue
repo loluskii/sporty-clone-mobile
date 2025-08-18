@@ -21,53 +21,53 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useUtilsStore } from "@/stores";
+import { computed } from 'vue'
+import { useUtilsStore } from '@/stores'
 
-const { SportsbookGlobalVariable } = useUtilsStore();
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 const props = defineProps({
   timerEnded: {
     type: Boolean,
-    required: true,
+    required: true
   },
   timerDisplay: {
     type: String,
-    required: true,
+    required: true
   },
   isWinner: {
     type: Boolean,
-    required: true,
+    required: true
   },
   simulationResults: {
     type: Object,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
 const formattedWinAmount = computed(() => {
-  const amount = props.simulationResults.possibleWin;
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString("en")}`;
-});
+  const amount = props.simulationResults.possibleWin
+  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`
+})
 
 const simulationHeaderStyles = computed(() => ({
-  "min-height": "100px",
-  "text-align": "center",
-  "background-color": "#ececec",
-  width: "100%",
-  display: "flex",
-  "align-items": "center",
-  "justify-content": "center",
-  color: "green",
-  "font-size": "20px",
+  'min-height': '100px',
+  'text-align': 'center',
+  'background-color': '#ececec',
+  width: '100%',
+  display: 'flex',
+  'align-items': 'center',
+  'justify-content': 'center',
+  color: 'green',
+  'font-size': '20px',
   ...(shouldShowCelebration.value && {
-    "background-image": "url('/confetti2.gif')",
-    "background-position": "center",
-    "background-size": "cover",
-  }),
-}));
+    'background-image': "url('/confetti2.gif')",
+    'background-position': 'center',
+    'background-size': 'cover'
+  })
+}))
 
 const shouldShowCelebration = computed(
-  () => props.timerEnded && props.simulationResults.statusCode === 2,
-);
+  () => props.timerEnded && props.simulationResults.statusCode === 2
+)
 </script>
