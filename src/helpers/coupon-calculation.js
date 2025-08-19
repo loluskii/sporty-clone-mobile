@@ -463,8 +463,9 @@ export default class CouponCalculation {
         return g.Stake > 0
       }).sort(function (a, b) {
         return a.minWin - b.minWin
-      })[0]
-      if (minWinGroup !== null) {
+      })[0];
+
+      if (minWinGroup) {
         return parseFloat((minWinGroup.minWin / minWinGroup.Stake).toFixed(2))
       }
     }

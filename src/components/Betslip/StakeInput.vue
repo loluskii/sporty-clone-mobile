@@ -84,9 +84,9 @@ const goToDeposit = () => {
 }
 
 const updateStake = (stake) => {
-  coupon.stake = stake;
+  // coupon.stake = stake;
   if(props.betSlipType === 'Combo') {
-    return couponStore.updateComboWinnings(stake, props.combo, props.tabindex);
+    return couponStore.updateComboWinnings(stake, props.combo);
   } else {
     return couponStore.updateWinnings({
       stake: stake,
@@ -100,9 +100,8 @@ const toggleKeyboard = () => {
 };
 
 function onKeyClick(type, value) {
-  let stake = props.stake.toString();
+  let stake = props.stake?.toString() || '';
   let finalStake;
-  console.log('OnKeyClick', type, value);
   switch (type) {
     case "number":
       // Append clicked number to the display

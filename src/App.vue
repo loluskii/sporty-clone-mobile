@@ -274,9 +274,9 @@ onMounted(async () => {
 
   await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
     .then((res) => {
-      couponStore.sportsbookBonusList = res[0].data.data
+      couponStore.sportsbookBonusList = res[0].data.data || []
       couponStore.SportsbookGlobalVariable = res[1].data.data
-      utilsStore.sportsbookBonusList = res[0].data.data
+      utilsStore.sportsbookBonusList = res[0].data.data || []
       utilsStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsMenu = res[2].sports // Update loading state after delay
 

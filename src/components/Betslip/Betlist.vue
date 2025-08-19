@@ -286,8 +286,6 @@ const betSlipType = computed(() => {
   return couponStore.coupon.betslip_type
 })
 
-console.log(couponStore.coupon)
-
 const betType = computed(() => {
   return couponStore.coupon.bet_type
 })
