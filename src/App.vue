@@ -16,7 +16,8 @@ import {
   CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
-  getUserCashbackBonus
+  getUserCashbackBonus,
+  getBanksList
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
@@ -243,10 +244,10 @@ onMounted(async () => {
   if (route.path !== '/') {
     isLoading.value = false
   }
-  
+
   const clickId = new URLSearchParams(window.location.search).get('clickid')
   if (clickId) {
-    Cookies.set('clickId', clickId, { expires: 30 }); // expires in 30 days
+    Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
   const res = await fetchBanners()
@@ -272,13 +273,14 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
+  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data.data || []
       couponStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsbookBonusList = res[0].data.data || []
       utilsStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsMenu = res[2].sports // Update loading state after delay
+      utilsStore.banksList = res[4].data
 
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
