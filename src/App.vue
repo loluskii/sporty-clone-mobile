@@ -16,7 +16,8 @@ import {
   CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
-  getUserCashbackBonus
+  getUserCashbackBonus,
+  getBanksList
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
@@ -272,13 +273,14 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
+  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()])
     .then((res) => {
       couponStore.sportsbookBonusList = res[0].data
       couponStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsbookBonusList = res[0].data
       utilsStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsMenu = res[2].sports // Update loading state after delay
+      utilsStore.banksList = res[4].data
 
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')

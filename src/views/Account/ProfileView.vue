@@ -5,19 +5,41 @@
     <form>
       <p style="font-size: 17px">Verify your account today and enjoy faster withdrawals and higher limits</p>
       <br />
-      <select v-model="documentType" style="width: 100%; padding: 10px 15px; border: 1px solid #ccc; margin-bottom: 10px;">
-        <option value="">Select a valid ID</option>
-        <option value="bvn">BVN</option>
-        <option value="nin">National Identification Number (NIN)</option>
-      </select>
-      <br />
-      <div class=" x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
+      <VueSelect
+        v-model="documentType"
+        :options="[
+          { label: 'International Passport', value: 'international_passport' },
+          { label: 'Drivers License', value: 'drivers_license' },
+          { label: 'Phone Number', value: 'phone_number' },
+          { label: 'Voters Card', value: 'voters_card' },
+          { label: 'National Identification Number', value: 'nin' },
+          { label: 'Bank Account', value: 'bank_account' },
+        ]"
+        placeholder="Select an valid ID"
+      />
+      <template v-if="documentType === 'bank_account'">
+        <div style="margin-top: 10px;"></div>
+        <VueSelect
+          v-model="bankCode"
+          :options="banksList"
+          :get-option-label="option => option.name"
+          :get-option-value="option => option.bank_id"
+          placeholder="Select Bank"
+        />
+      </template>
+      <!-- <br /> -->
+      <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend" v-if="['international_passport','drivers_license','phone_number','voters_card','nin','bank_account'].includes(documentType)">
         <input type="text" placeholder="ID Number" maxlength="10" class="x-input-wap fs-exclude"
           v-model="documentNumber" style="padding: 10px 15px;" />
       </div>
+
+      <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend" v-if="['international_passport'].includes(documentType)">
+        <input type="text" placeholder="Last Name" maxlength="10" class="x-input-wap fs-exclude"
+          v-model="lastName" style="padding: 10px 15px;" />
+      </div>
       <!---->
       <div class="m-btn-wrapper">
-        <button class="af-button af-button--success" :disabled="{'is-disabled': isLoading}"  :class="{'is-disabled': isLoading}" @click.prevent="submitKycRequest">
+        <button class="af-button af-button--success" :disabled="isLoading"  :class="{'is-disabled': isLoading}" @click.prevent="submitKycRequest">
           <span> Verify </span>
         </button>
       </div>
@@ -74,16 +96,19 @@
         <HeaderProfile :header-title="inputTitle" @back-to-profile="handleBackToProfile"></HeaderProfile>
         <form>
           <div tabindex="6" class="m-input-wrapper">
-            <input :type="textType" :placeholder="inputTitle" class="m-input fs-exclude"
-              style="width: calc(100% - 2rem); padding: 0rem 0.75rem" v-model="inputValue" v-if="!isPasswordUpdate" />
+            <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend"  v-if="!isPasswordUpdate" >
+              <input :type="textType" :placeholder="inputTitle" class="x-input-wap fs-exclude"
+                style="padding: 10px 15px;" v-model="inputValue"/>
+            </div>
             <template v-else>
-              <input type="password" placeholder="Old Password" class="m-input fs-exclude" style="
-                width: calc(100% - 2rem);
-                padding: 0rem 0.75rem;
-                margin-bottom: 15px;
-              " v-model="oldPassword" />
-              <input type="password" placeholder="New Password" class="m-input fs-exclude"
-                style="width: calc(100% - 2rem); padding: 0rem 0.75rem" v-model="newPassword" />
+              <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
+                <input type="password" placeholder="Old Password" class="x-input-wap fs-exclude"
+                  style="padding: 10px 15px;" v-model="oldPassword"/>
+              </div>
+              <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
+                <input type="password" placeholder="New Password" class="x-input-wap fs-exclude"
+                  style="padding: 10px 15px;" v-model="newPassword"/>
+              </div>
             </template>
           </div>
           <!---->
@@ -105,7 +130,13 @@ import { ref, computed } from "vue";
 import HeaderProfile from "../../components/HeaderProfile.vue";
 import { updateProfile, CLIENT_ID, updatePassword, processAccountVerification } from "@/helpers";
 import emitter from "../../plugins/emitter";
+import { useUtilsStore } from "../../stores";
+import VueSelect from "vue3-select-component";
+import { last } from "lodash";
+
+
 const usersStore = useUsersStore();
+const utilsStore = useUtilsStore()
 
 const currentUser = computed(() => {
   return usersStore.currentUser
@@ -113,6 +144,10 @@ const currentUser = computed(() => {
 
 const details = computed(() => {
   return usersStore.currentUser
+})
+
+const banksList = computed(() => {
+  return utilsStore.banksList
 })
 
 const inputTitle = ref("");
@@ -123,6 +158,8 @@ const isPasswordUpdate = ref(false);
 const isAccountVerification = ref(false)
 const documentNumber = ref('')
 const documentType = ref('')
+const bankCode = ref('')
+const lastName = ref('')
 const isLoading = ref(false)
 
 const oldPassword = ref('')
@@ -222,15 +259,30 @@ async function saveUpdate() {
 async function submitKycRequest(){
   try {
     isLoading.value = true
-    const res = await processAccountVerification({
+    if(documentType.value == '' || documentNumber.value == ''){
+      emitter.emit(
+        "showDialogueToaster",
+        'Please fill all fields!',
+      );
+      return
+    }
+    let payload = {
       documentType: documentType.value,
       documentNumber: documentNumber.value,
 			clientId: import.meta.env.VITE_CLIENT_ID
-    });
+    }
+    if(documentType.value === 'bank_account'){
+      payload.bankCode = bankCode.value
+    }
+    if(documentType.value === 'international_passport'){
+      payload.lastName = lastName.value
+    }
+
+    const res = await processAccountVerification(payload);
 		if(!res.success){
 			emitter.emit(
 	      "showDialogueToaster",
-	      res.message,
+	      res.message[0],
 	    );
 		}else{
 			emitter.emit(
@@ -243,14 +295,25 @@ async function submitKycRequest(){
 		}
     isLoading.value = false
   } catch (error) {
+    isLoading.value = false
     emitter.emit(
       "showDialogueToaster",
       error,
     );
   }
 }
+
 </script>
 <style scoped>
+.x-input-wap-wrapper {
+  border-radius: 3px !important;
+  margin-top: 10px;
+  border-color: #dcd8d8 !important;
+}
+.x-input-wap-wrapper .x-input-wap {
+  height: 38px !important;
+  border-radius: 3px !important;
+}
 .m-uc-wrapper {
   background-color: #fff;
 }

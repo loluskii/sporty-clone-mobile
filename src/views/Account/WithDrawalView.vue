@@ -436,7 +436,7 @@ import { CLIENT_ID } from '@/helpers'
 const showBanks = ref(false)
 const showBanksAssets = ref(false)
 const userStore = useUsersStore()
-const { SportsbookGlobalVariable } = useUtilsStore()
+const { SportsbookGlobalVariable, banksList } = useUtilsStore()
 const router = useRouter()
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
@@ -444,7 +444,6 @@ const withdrawalMethods = [
   { name: 'Transfer to Friend', key: 'transfer' }
 ]
 const activeMethod = ref('bank')
-const banksList = ref([])
 const bankAssets = ref([])
 const selectedBank = ref(null)
 const accountNumber = ref(null)
@@ -481,13 +480,6 @@ const balance = computed(() => {
   return userStore.balance
 })
 
-async function getBanks() {
-  isLoading.value = true
-  const res = await getBanksList()
-  isLoading.value = false
-  banksList.value = res.data
-}
-
 function toggleShowBanks() {
   searchQuery.value = ''
   showBanks.value = !showBanks.value
@@ -523,9 +515,9 @@ function selectBank(bank) {
 const filteredBanks = computed(() => {
   const query = searchQuery.value.toLowerCase()
   if (!query) {
-    return banksList.value // Return full list when search query is empty
+    return banksList // Return full list when search query is empty
   } else {
-    return banksList.value.filter((bank) => bank.name.toLowerCase().includes(query))
+    return banksList.filter((bank) => bank.name.toLowerCase().includes(query))
   }
 })
 
@@ -650,7 +642,7 @@ async function submitCashRequest() {
 
 onMounted(async () => {
   emitter.on('confirmWithdrawalAction', submitWithdrawalRequest)
-  Promise.all([checkUserBankAssets(), getBanks()])
+  Promise.all([checkUserBankAssets()])
 })
 </script>
 
