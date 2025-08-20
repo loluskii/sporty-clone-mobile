@@ -874,6 +874,7 @@ export const useCouponStore = defineStore({
       }
 
       if(!combo) {// update all combo stake
+        let total = 0
         coupondata.totalStake = stake;
         coupondata.exciseDuty = coupondata.totalStake * 0 / 100;
         coupondata.stake = coupondata.totalStake - coupondata.exciseDuty;
@@ -902,11 +903,16 @@ export const useCouponStore = defineStore({
               if (combo.Grouping === coupondata.Groupings[i].Grouping) {
                 combo.minWin = coupondata.Groupings[i].minWin;
                 combo.maxWin = coupondata.Groupings[i].maxWin;
-                combo.Stake = coupondata.Groupings[i].Stake;
+                combo.Stake = stake;
+                total += parseFloat(combo.Stake) * parseFloat(coupondata.Groupings[i].Combinations);
               }
             }
           });
         }
+
+        coupondata.totalStake = total;
+        coupondata.exciseDuty = coupondata.totalStake * 0 / 100;
+        coupondata.stake = coupondata.totalStake - coupondata.exciseDuty;
 
         this.coupon = coupondata;
 

@@ -146,12 +146,9 @@ const userStore = useUsersStore();
 const router = useRouter();
 const emit = defineEmits(["toggle-show", "toggle-betslip", "book-bet"]);
 
-
-
 const betlistStake = computed(() => {
   return couponStore.coupon.totalStake
 })
-
 
 const placeBetDisabled = computed(() => {
   return (

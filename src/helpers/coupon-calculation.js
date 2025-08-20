@@ -363,19 +363,28 @@ export default class CouponCalculation {
     return calculatedCoupon
   }
   bonusPercentageFromNumberOfEvents = function (bonusList, numberOfEvents) {
-    if (bonusList.length === 0) return 0.0
-    if (numberOfEvents < bonusList.min('ticket_length')) return 0.0
-    if (numberOfEvents > bonusList.max('ticket_length')) {
+    console.log('min/max bonus', bonusList.min('ticket_length'),  bonusList.max('ticket_length'))
+      console.log('no of events', numberOfEvents)
+    try {
+      if (bonusList.length === 0) return 0.0
+      if (numberOfEvents < bonusList.min('ticket_length')) return 0.0
+      if (numberOfEvents > bonusList.max('ticket_length')) {
+        return 0.0
+      }
+      const filteredBonus = bonusList.find(function (b) {
+        console.log(b.ticket_length, numberOfEvents)
+        return b.ticket_length == numberOfEvents
+      });
+      console.log('filtered bonus', filteredBonus);
+
+      if (filteredBonus) {
+        return filteredBonus.bonus / 100.0
+      }
+      return 0.0
+    } catch(e) {
+      console.log("Can't find the bonus percentage for " + numberOfEvents + ' events', e.message);
       return 0.0
     }
-    var filteredBonusList = bonusList.filter(function (b) {
-      return b.ticket_length === numberOfEvents
-    })
-    if (filteredBonusList.length > 0) {
-      var item = filteredBonusList[0]
-      return item.bonus / 100.0
-    }
-    throw new Error("Can't find the bonus percentage for " + numberOfEvents + ' events')
   }
   updateFromCalculatedCoupon = function (coupon, calculatedCoupon, globalVar, bonusList) {
     let betCoupon = { ...coupon }
