@@ -12,14 +12,14 @@
             }}</em></span>
         <span 
           :tabindex="tabindex"
-          type="text" 
+          type="textx" 
           disabled 
           class="m-keybord-input multiple-stake-input" 
           v-html="stake"
           v-if="canEdit"
           @click="toggleKeyboard">
         </span>
-        <span v-else type="text" class="text-right">{{  betlistStake }}</span>
+        <span v-else type="texts" class="text-right">{{ stake }}</span>
       </div>
       <div v-if="balanceLowerThanStake" class="m-error-info">
         <p>You need a balance of {{

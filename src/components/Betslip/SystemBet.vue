@@ -2,8 +2,8 @@
  <div class="m-betslips-stake-wrapper">
     <div class="m-betslips-stake" style="padding-bottom: 5px;">
       <StakeInput 
-        title="Play All"
-        :stake="betlistStake"
+        title="Play Alls"
+        :stake="coupon.totalStake"
         :bet-slip-type="betSlipType"
         :can-edit="true"
         :tabindex="-1"
@@ -35,11 +35,11 @@ import { displayComboName } from "@/helpers/utils";
 
 import StakeInput from "./StakeInput.vue";
 
-const { coupon } = useCouponStore();
+const couponStore = useCouponStore();
 
-const betlistStake = computed(() => {
-  return coupon.totalStake;
-});
+const coupon = computed(() => {
+  return couponStore.coupon
+})
 
 
 </script>
