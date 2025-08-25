@@ -5,7 +5,7 @@
           {{ title }}
         </span>
         
-        <span class="text-right" v-if="combo">{{ combo.Combinations }}</span>
+        <span class="text-right" v-if="combo">{{ combo.Combinations }}x</span>
         
         <span class="currency"><em>{{
           SportsbookGlobalVariable.CurrencyCode
