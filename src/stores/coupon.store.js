@@ -52,7 +52,7 @@ export const useCouponStore = defineStore({
       maxOdds: 1,
       wthTax: 0,
       exciseDuty: 0,
-      bonus_id: null,
+      bonusId: null,
       useBonus: false,
       useCashback: false,
       source: 'mobile'
@@ -740,7 +740,7 @@ export const useCouponStore = defineStore({
       })
       this.coupon.selections = newSelections
     },
-    async placeBet(e, type, bonus_id) {
+    async placeBet(e, type, bonusId) {
       let ele = e.target
       const coupondata = { ...this.coupon }
       const usersStore = useUsersStore()
@@ -758,8 +758,8 @@ export const useCouponStore = defineStore({
       if (type === 'bet') {
         this.isBetslipLoading = true
         coupondata.isBooking = this.mode === 'real' ? 0 : 2
-        if (bonus_id) {
-          coupondata.bonus_id = bonus_id
+        if (bonusId) {
+          coupondata.bonusId = bonusId
         }
 
         delete coupondata.combos
