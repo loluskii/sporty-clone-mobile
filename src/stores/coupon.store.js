@@ -518,6 +518,7 @@ export const useCouponStore = defineStore({
           wthTax: 0,
           exciseDuty: 0,
           useBonus: false,
+          useCashback: false,
           source: 'mobile'
         }
         this.coupon = coupon
@@ -819,6 +820,7 @@ export const useCouponStore = defineStore({
           wthTax: 0,
           exciseDuty: 0,
           useBonus: false,
+          useCashback: false,
           source: 'mobile'
         }
 
@@ -843,6 +845,7 @@ export const useCouponStore = defineStore({
           wthTax: 0,
           exciseDuty: 0,
           useBonus: false,
+          useCashback: false,
           source: 'mobile'
         }
         this.activeSubscriptions = []
