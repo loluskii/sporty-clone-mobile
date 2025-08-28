@@ -760,6 +760,7 @@ export const useCouponStore = defineStore({
         coupondata.isBooking = this.mode === 'real' ? 0 : 2
         if (bonusId) {
           coupondata.bonusId = bonusId
+          coupondata.useBonus = true
         }
 
         delete coupondata.combos
