@@ -342,8 +342,8 @@ async function placeBet(e) {
 
   show.value = false
   couponStore.isBetslipLoading = true
-  let bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
-  if (bonusId && couponStore.useCashback) {
+  if (couponStore.useCashback) {
+    let bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
     try {
       const bonus = {
         bonusId: bonusId,
