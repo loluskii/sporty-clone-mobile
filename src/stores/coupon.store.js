@@ -910,7 +910,7 @@ export const useCouponStore = defineStore({
           });
         }
 
-        coupondata.totalStake = parseFloat(stake);;
+        coupondata.totalStake = total;
         coupondata.exciseDuty = coupondata.totalStake * 0 / 100;
         coupondata.stake = coupondata.totalStake - coupondata.exciseDuty;
 
