@@ -70,7 +70,7 @@
       </div>
 
       <div
-        v-if="userStore.currentUser && userStore.activeCashback && !couponStore.betslipMode"
+        v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance === 0 && userStore.activeCashback && !couponStore.betslipMode"
         class="bonus mg-b-10"
       >
         <span>Use Cashback</span>
