@@ -79,7 +79,7 @@
       <div
         v-if="
           userStore.currentUser &&
-          !userStore.activeCashback &&
+          userStore.currentUser.sportBonusBalance > 0 &&
           !couponStore.betslipMode
         "
         class="bonus mg-b-10"
@@ -94,13 +94,13 @@
           />
           <span
             >{{ SportsbookGlobalVariable.Currency }}
-            {{ parseFloat(userStore.activeBonus.value) }}</span
+            {{ userStore.currentUser.sportBonusBalance }}</span
           >
         </div>
       </div>
 
       <div
-        v-if="userStore.currentUser && userStore.activeCashback && !couponStore.betslipMode"
+        v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance < 1 && userStore.activeCashback && !couponStore.betslipMode"
         class="bonus mg-b-10"
       >
         <span>Use Cashback</span>

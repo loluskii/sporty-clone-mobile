@@ -263,12 +263,17 @@ onMounted(async () => {
       safeLoad(getUserCashbackBonus()),
       safeLoad(getBetsData())
     ])
-    usersStore.activeCashback = cashbackData?.data
-    let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
-    if(bonusIsCasino){
-      usersStore.casinoActiveBonus = activeBonus?.data
+
+    if(activeBonus?.data){
+      let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
+      if(bonusIsCasino){
+        usersStore.casinoActiveBonus = activeBonus?.data
+      }else{
+        usersStore.activeBonus = activeBonus?.data
+      }
+      usersStore.activeCashback = null;
     }else{
-      usersStore.activeBonus = activeBonus?.data
+      usersStore.activeCashback = cashbackData?.data;
     }
 
     if (utilsStore.bonusModalShown === null) {
