@@ -264,9 +264,15 @@ onMounted(async () => {
       safeLoad(getBetsData())
     ])
     usersStore.activeCashback = cashbackData?.data
-    usersStore.casinoActiveBonus = activeBonus?.data
-    if (utilsStore.bonusModalShown === null && cashbackData?.data?.bonusType !== 'cashback') {
-      casinoGameData.value = cashbackData?.data
+    let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
+    if(bonusIsCasino){
+      usersStore.casinoActiveBonus = activeBonus?.data
+    }else{
+      usersStore.activeBonus = activeBonus?.data
+    }
+
+    if (utilsStore.bonusModalShown === null) {
+      casinoGameData.value = activeBonus?.data
       utilsStore.bonusModalShown = false
     }
     isLoading.value = false
