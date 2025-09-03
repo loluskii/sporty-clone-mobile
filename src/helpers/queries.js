@@ -65,7 +65,7 @@ export const getCombosData = async (payload) => {
 }
 
 export const login = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login/`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login?source=mobile`, payload))
 }
 
 export const register = async (payload) => {
