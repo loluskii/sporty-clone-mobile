@@ -14,6 +14,6 @@ export default ({ mode }) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
-    },
+    }
   })
 }
