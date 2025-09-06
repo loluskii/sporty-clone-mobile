@@ -31,9 +31,7 @@
       </div>
       <p>
         Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is
-        licensed by the Oyo State Gaming Board, according to the License No: OYSGB/SPB/232975 issued
-        by the Oyo State Gaming Board.
+        Betting is addictive and can be psychologically harmful.
       </p>
     </div>
     <div class="hr"></div>
