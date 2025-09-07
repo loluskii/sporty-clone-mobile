@@ -6,23 +6,24 @@
         <div class="m-input-wrapper">
           <span data-cms-key="total_stake">
             {{
-              betSlipType !== 'Multiple' && selectionsLength > 1
+              betSlipType == 'Single' && selectionsLength > 1
                 ? 'Stake per bet (' + selectionsLength + ' bets)'
                 : 'Total Stake'
             }}
           </span>
 
-          <span class="currency"
-            ><em>{{ SportsbookGlobalVariable.CurrencyCode }}</em></span
-          >
-          <span
-            tabindex="0"
-            type="text"
-            disabled
-            class="m-keybord-input multiple-stake-input"
-            v-html="betlistStake"
-            @click="toggleKeyboard"
-          ></span>
+          <span style="text-align: end;">
+            <span class="currency"
+              ><em>{{ SportsbookGlobalVariable.Currency }}</em></span
+            >
+            <span
+              tabindex="0"
+              :class="{'m-keybord-input multiple-stake-input': betSlipType !== 'Combo'}"
+              v-html="betlistStake"
+              @click="toggleKeyboard"
+            ></span>
+          </span>
+
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
