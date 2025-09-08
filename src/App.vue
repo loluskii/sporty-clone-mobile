@@ -272,7 +272,7 @@ onMounted(async () => {
       }else{
         usersStore.activeBonus = activeBonus?.data
       }
-      usersStore.activeCashback = null;
+      usersStore.activeCashback = usersStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
     }else{
       usersStore.activeCashback = cashbackData?.data;
     }

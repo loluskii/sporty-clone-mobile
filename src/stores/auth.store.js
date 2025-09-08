@@ -52,7 +52,7 @@ export const useAuthStore = defineStore({
             }else{
               userStore.activeBonus = activeBonus?.data
             }
-            userStore.activeCashback = null;
+            userStore.activeCashback = userStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
           }else{
             userStore.activeCashback = cashbackData?.data;
           }
