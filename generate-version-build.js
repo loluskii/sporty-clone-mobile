@@ -1,8 +1,8 @@
 // // Only run in production
-// if (process.env.NODE_ENV !== 'production') {
-//   console.log('Skipping version update in development mode');
-//   process.exit(0);
-// }
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Skipping version update in development mode');
+  process.exit(0);
+}
 
 // generate-build-version.js
 
