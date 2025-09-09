@@ -442,8 +442,7 @@ const { SportsbookGlobalVariable, banksList } = useUtilsStore()
 const router = useRouter()
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
-  { name: 'Shop', key: 'shop' },
-  { name: 'SmileandPay Cash', key: 'smileandpay' }
+  { name: 'Shop', key: 'shop' }
 ]
 const activeMethod = ref('bank')
 const bankAssets = ref([])
