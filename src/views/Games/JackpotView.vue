@@ -23,16 +23,9 @@
               v-for="(j, index) in jackpots"
               :key="index"
             >
-              <img
-                src="https://placehold.co/175"
-                class="card-img-top"
-                alt="..."
-              />
+              <img src="https://placehold.co/175" class="card-img-top" alt="..." />
               <div class="card-body d-flex flex-column p-2">
-                <div
-                  class="text-truncate fw-bold"
-                  style="color: var(--brand-highlight-text)"
-                >
+                <div class="text-truncate fw-bold" style="color: var(--brand-highlight-text)">
                   {{ j.name }}
                 </div>
               </div>
@@ -43,10 +36,7 @@
         <div v-if="currentView === 'single'" class="grouped-games-section">
           <div class="group">
             <div class="title-bg d-flex align-items-center mb-3">
-              <span
-                @click="currentView = 'list'"
-                class="m-icon m-icon--back mr-3"
-              ></span>
+              <span @click="currentView = 'list'" class="m-icon m-icon--back mr-3"></span>
 
               <h3 class="h4 text-white fw-bold text-capitalize">
                 {{ activeJackpot.name }}
@@ -70,33 +60,25 @@
               <tbody>
                 <tr v-for="(tier, t) in activeJackpot.tiers" :key="t">
                   <td>{{ tier.tier + 1 }}</td>
-                  <td>{{ tier.amount.toLocaleString("en") }}</td>
+                  <td>{{ tier.amount.toLocaleString('en') }}</td>
                 </tr>
               </tbody>
             </table>
             <h3 class="h4 text-white fw-bold text-capitalize my-3">Games</h3>
-            <div
-              class="row mb-3 pb-3"
-              v-if="jackpotGames.length"
-              ref="scrollComponent"
-            >
+            <div class="row mb-3 pb-3" v-if="jackpotGames.length" ref="scrollComponent">
               <div
                 class="col-6"
                 v-for="(game, index) in jackpotGames"
                 :key="index"
                 @click="redirectToGamePlay(game)"
               >
-                <GameCard
-                  :image="getImagePath(game)"
-                  :title="game.title"
-                  :type="game.type"
-                />
+                <GameCard :image="getImagePath(game)" :title="game.title" :type="game.type" />
               </div>
             </div>
             <div v-else-if="!jackpotGames.length" class="no-data">
               <div style="white-space: pre-line">
-                Sorry, there are no games currently<br />available in this
-                category. Please try later.<br />Thank you.
+                Sorry, there are no games currently<br />available in this category. Please try
+                later.<br />Thank you.
               </div>
             </div>
             <LoadingSpinner v-else></LoadingSpinner>
@@ -110,13 +92,8 @@
       <div class="games-grid mt-3">
         <div class="grouped-games-section">
           <div v-for="x in 4" :key="x" class="group">
-            <div
-              class="header d-flex justify-content-between align-items-center"
-            >
-              <h1
-                class="fw-normal placeholder h4 p-2 rounded"
-                style="width: 50px"
-              ></h1>
+            <div class="header d-flex justify-content-between align-items-center">
+              <h1 class="fw-normal placeholder h4 p-2 rounded" style="width: 50px"></h1>
               <span
                 style="width: 50px"
                 class="placeholder p-2 rounded text-decoration-none text-uppercase bg-dark small text-white px-2 py-1 rounded"
@@ -139,98 +116,92 @@
 </template>
 
 <script setup>
-import Winners from "../../components/Casino/Winners.vue";
-import HeaderCasino from "@/components/HeaderCasino.vue";
-import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, computed } from "vue";
-import { gamesByTopCategory } from "@/helpers";
-import router from "@/router";
-import { useAuthStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { getJackpots, slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import Game from "@/components/Casino/Game.vue";
-import HeaderOther from "../../components/HeaderOther.vue";
-import { useRoute } from "vue-router";
-import { useUtilsStore } from "@/stores";
-import GameCard from "@/components/Casino/GameCard.vue";
+import Winners from '../../components/Casino/Winners.vue'
+import HeaderCasino from '@/components/HeaderCasino.vue'
+import Carousel from '@/components/Home/Carousel.vue'
+import { ref, onBeforeMount, computed } from 'vue'
+import { gamesByTopCategory } from '@/helpers'
+import router from '@/router'
+import { useAuthStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { getJackpots, slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import Game from '@/components/Casino/Game.vue'
+import HeaderOther from '../../components/HeaderOther.vue'
+import { useRoute } from 'vue-router'
+import { useUtilsStore } from '@/stores'
+import GameCard from '@/components/Casino/GameCard.vue'
 
-const route = useRoute();
-const gamesList = ref([]);
-const jackpotGames = ref([]);
-const jackpots = ref([]);
-const activeJackpot = ref({});
-const currentView = ref("list");
-const isLoading = ref(false);
-const authStore = useAuthStore();
-const utilsStore = useUtilsStore();
+const route = useRoute()
+const gamesList = ref([])
+const jackpotGames = ref([])
+const jackpots = ref([])
+const activeJackpot = ref({})
+const currentView = ref('list')
+const isLoading = ref(false)
+const authStore = useAuthStore()
+const utilsStore = useUtilsStore()
 // const jId = ref(rout e.query?.jId)
 
 const getJK = async () => {
-  const res = await getJackpots();
-  jackpots.value = res.data.jackpots;
+  const res = await getJackpots()
+  jackpots.value = res.data.jackpots
   if (route.query?.jId) {
-    let jackpot = res.data.jackpots.find(
-      (j) => j.mainJackpotID == route.query?.jId,
-    );
+    let jackpot = res.data.jackpots.find((j) => j.mainJackpotID == route.query?.jId)
     if (jackpot) {
-      showJackpot(jackpot);
+      showJackpot(jackpot)
     }
   }
-};
+}
 
 const getAllGames = async () => {
   try {
-    const gamesResponse = await gamesByTopCategory();
-    gamesList.value = gamesResponse.data.sort(
-      (a, b) => b.priority - a.priority,
-    );
+    const gamesResponse = await gamesByTopCategory()
+    gamesList.value = gamesResponse.data.sort((a, b) => b.priority - a.priority)
   } catch (error) {
-    gamesList.value = [];
+    gamesList.value = []
   }
-};
+}
 
 const showJackpot = (j) => {
-  currentView.value = "single";
-  activeJackpot.value = j;
-  let activeJackpotGames = j.games.split(",");
-  const jackpotGamesSet = new Set(activeJackpotGames);
+  currentView.value = 'single'
+  activeJackpot.value = j
+  let activeJackpotGames = j.games.split(',')
+  const jackpotGamesSet = new Set(activeJackpotGames)
   jackpotGames.value = gamesList.value
     ? gamesList.value.filter((obj) => jackpotGamesSet.has(obj.gameId))
-    : [];
-};
+    : []
+}
 
 const getImagePath = (game) => {
   try {
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
-      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
-    )}.png?alt=media`;
+      game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+    )}.png?alt=media`
   } catch (error) {
-    console.error("Error generating image path:", error);
-    return `https://placehold.co/150x175?text=${encodeURIComponent(
-      game.title,
-    )}`;
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-};
+}
 
 const redirectToGamePlay = async (game) => {
   try {
     await router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
+      name: 'game-play',
+      params: { game_name: slugify(game.title), game_id: game.id }
+    })
   } catch (error) {
-    console.error("Error redirecting to game:", error);
+    console.error('Error redirecting to game:', error)
   }
-};
+}
 
 onBeforeMount(async () => {
-  Promise.all([getJK(), getAllGames()]);
-});
+  Promise.all([getJK(), getAllGames()])
+})
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 
 .m-icon {
   -webkit-box-align: center;
@@ -249,8 +220,8 @@ onBeforeMount(async () => {
   font-size: 1.33333333rem !important;
 }
 .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -258,8 +229,8 @@ onBeforeMount(async () => {
 }
 
 .x-icon-search::before {
-  content: "\e613";
-  font-family: "iconfont" !important;
+  content: '\e613';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

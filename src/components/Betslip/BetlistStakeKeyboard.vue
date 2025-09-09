@@ -7,46 +7,20 @@
   >
     <div class="save-prefer-row">
       <div class="plus-block">
-        <div @click="$emit('button-click', 'number', 100)" class="plus-cell">
-          +100
-        </div>
-        <div @click="$emit('button-click', 'number', 500)" class="plus-cell">
-          +500
-        </div>
-        <div @click="$emit('button-click', 'number', 1000)" class="plus-cell">
-          +1000
-        </div>
+        <div @click="$emit('button-click', 'number', 100)" class="plus-cell">+100</div>
+        <div @click="$emit('button-click', 'number', 500)" class="plus-cell">+500</div>
+        <div @click="$emit('button-click', 'number', 1000)" class="plus-cell">+1000</div>
       </div>
       <!---->
     </div>
     <div class="flexpad-wrap">
       <div class="left">
         <div class="m-keyboard-row">
-          <span
-            @click="$emit('button-click', 'number', '1')"
-            class="m-keyboard-key"
-            >1</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '2')"
-            class="m-keyboard-key"
-            >2</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '3')"
-            class="m-keyboard-key"
-            >3</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '4')"
-            class="m-keyboard-key"
-            >4</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '5')"
-            class="m-keyboard-key"
-            >5</span
-          >
+          <span @click="$emit('button-click', 'number', '1')" class="m-keyboard-key">1</span>
+          <span @click="$emit('button-click', 'number', '2')" class="m-keyboard-key">2</span>
+          <span @click="$emit('button-click', 'number', '3')" class="m-keyboard-key">3</span>
+          <span @click="$emit('button-click', 'number', '4')" class="m-keyboard-key">4</span>
+          <span @click="$emit('button-click', 'number', '5')" class="m-keyboard-key">5</span>
           <span
             @click="$emit('button-click', 'delete')"
             class="m-keyboard-key action m-keyboard-delete"
@@ -59,26 +33,11 @@
               xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink"
             >
-              <g
-                id="UI"
-                stroke="none"
-                stroke-width="1"
-                fill="none"
-                fill-rule="evenodd"
-              >
-                <g
-                  id="Betslip-Basic-input"
-                  transform="translate(-301.000000, -457.000000)"
-                >
-                  <g
-                    id="Icon/backspace_24px"
-                    transform="translate(301.000000, 454.000000)"
-                  >
+              <g id="UI" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Betslip-Basic-input" transform="translate(-301.000000, -457.000000)">
+                  <g id="Icon/backspace_24px" transform="translate(301.000000, 454.000000)">
                     <g id="ic_backspace_black_24px">
-                      <polygon
-                        id="Shape"
-                        points="0 0 24 0 24 24 0 24"
-                      ></polygon>
+                      <polygon id="Shape" points="0 0 24 0 24 24 0 24"></polygon>
                       <path
                         d="M22,3 L7,3 C6.31,3 5.77,3.35 5.41,3.88 L0,12 L5.41,20.11 C5.77,20.64 6.31,21 7,21 L22,21 C23.1,21 24,20.1 24,19 L24,5 C24,3.9 23.1,3 22,3 Z M19,15.59 L17.59,17 L14,13.41 L10.41,17 L9,15.59 L12.59,12 L9,8.41 L10.41,7 L14,10.59 L17.59,7 L19,8.41 L15.41,12 L19,15.59 Z"
                         id="Shape"
@@ -93,32 +52,12 @@
           </span>
         </div>
         <div class="m-keyboard-row">
-          <span
-            @click="$emit('button-click', 'number', '6')"
-            class="m-keyboard-key"
-            >6</span
-          >
+          <span @click="$emit('button-click', 'number', '6')" class="m-keyboard-key">6</span>
 
-          <span
-            @click="$emit('button-click', 'number', '7')"
-            class="m-keyboard-key"
-            >7</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '8')"
-            class="m-keyboard-key"
-            >8</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '9')"
-            class="m-keyboard-key"
-            >9</span
-          >
-          <span
-            @click="$emit('button-click', 'number', '0')"
-            class="m-keyboard-key"
-            >0</span
-          >
+          <span @click="$emit('button-click', 'number', '7')" class="m-keyboard-key">7</span>
+          <span @click="$emit('button-click', 'number', '8')" class="m-keyboard-key">8</span>
+          <span @click="$emit('button-click', 'number', '9')" class="m-keyboard-key">9</span>
+          <span @click="$emit('button-click', 'number', '0')" class="m-keyboard-key">0</span>
           <!-- <span @click="$emit('button-click', 'dot')" class="m-keyboard-key">.</span> -->
           <!-- <span @click="$emit('button-click', 'double-zero')" class="m-keyboard-key">00</span> -->
           <span
@@ -138,9 +77,9 @@
 
 <script setup>
 defineProps({
-  keyboardVisible: Boolean,
-});
-defineEmits(["button-click"]);
+  keyboardVisible: Boolean
+})
+defineEmits(['button-click'])
 </script>
 
 <style>
@@ -221,7 +160,7 @@ defineEmits(["button-click"]);
   border-radius: 3px;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  content: "";
+  content: '';
   display: inline-block;
   height: 16px;
   left: -24px;
@@ -235,8 +174,8 @@ defineEmits(["button-click"]);
   width: 16px;
 }
 .m-keyboard .save-prefer-row .m-icon-check--checked::before {
-  content: "\e611";
-  font-family: "iconfont" !important;
+  content: '\e611';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

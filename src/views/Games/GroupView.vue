@@ -27,11 +27,7 @@
                 @click="redirectToGamePlay(game)"
               >
                 <div class="h-100">
-                  <GameCard
-                    :image="getImagePath(game)"
-                    :title="game.title"
-                    :type="game.type"
-                  />
+                  <GameCard :image="getImagePath(game)" :title="game.title" :type="game.type" />
                 </div>
               </div>
             </div>
@@ -44,7 +40,7 @@
                 @click="loadMore"
                 :disabled="isLoadingMore"
               >
-                {{ isLoadingMore ? "Loading..." : "Load More" }}
+                {{ isLoadingMore ? 'Loading...' : 'Load More' }}
               </button>
             </div>
           </div>
@@ -53,80 +49,75 @@
     </div>
     <LoadingSpinner v-if="isLoading"></LoadingSpinner>
     <div
-      v-else-if="
-        !isLoading && !gamesList.length && viewMode === 'games-list-view'
-      "
+      v-else-if="!isLoading && !gamesList.length && viewMode === 'games-list-view'"
       class="no-data"
     >
       <div style="white-space: pre-line">
-        Sorry, there are no games currently<br />available in this category.
-        Please try later.<br />Thank you.
+        Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
+        you.
       </div>
     </div>
-    <div
-      v-else-if="!isLoading && !providers && viewMode === 'games-group-view'"
-      class="no-data"
-    >
+    <div v-else-if="!isLoading && !providers && viewMode === 'games-group-view'" class="no-data">
       <div style="white-space: pre-line">
-        Sorry, there are no {{ viewHeaderTitle }} currently<br />available.
-        Please try later.<br />Thank you.
+        Sorry, there are no {{ viewHeaderTitle }} currently<br />available. Please try later.<br />Thank
+        you.
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import GameByProviderCategory from "@/components/Casino/GameByProviderCategory.vue";
-import Providers from "../../components/Casino/Providers.vue";
-import Carousel from "@/components/Home/Carousel.vue";
-import { ref, onBeforeMount, watch, computed, onMounted, provide } from "vue";
-import Winners from "../../components/Casino/Winners.vue";
+import GameByProviderCategory from '@/components/Casino/GameByProviderCategory.vue'
+import Providers from '../../components/Casino/Providers.vue'
+import Carousel from '@/components/Home/Carousel.vue'
+import { ref, onBeforeMount, watch, computed, onMounted, provide } from 'vue'
+import Winners from '../../components/Casino/Winners.vue'
 import {
   getGamesByProviders,
   gamesByTopCategory,
   getProviders,
   getTopGameCategories,
-  getCasinoBonusGames,
-} from "@/helpers";
-import { useAuthStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import $ from "jquery";
-import { useRouter, useRoute } from "vue-router";
-import Categories from "../../components/Casino/Categories.vue";
-import HeaderCasino from "../../components/HeaderCasino.vue";
-import GameCard from "@/components/Casino/GameCard.vue";
-import { useUsersStore, useUtilsStore } from "../../stores";
+  getCasinoBonusGames
+} from '@/helpers'
+import { useAuthStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
+import $ from 'jquery'
+import { useRouter, useRoute } from 'vue-router'
+import Categories from '../../components/Casino/Categories.vue'
+import HeaderCasino from '../../components/HeaderCasino.vue'
+import GameCard from '@/components/Casino/GameCard.vue'
+import { useUsersStore, useUtilsStore } from '../../stores'
 
-const myElement = ref();
-const isLoading = ref(true);
-const route = useRoute();
-const router = useRouter();
-const viewMode = ref(null);
-const viewType = ref();
-const viewHeaderTitle = ref("Providers");
-const providers = ref([]);
-const categories = ref([]);
-const gamesList = ref([]);
-const categoryName = ref(null);
-const displayLimit = ref(50);
-const isLoadingMore = ref(false);
+const myElement = ref()
+const isLoading = ref(true)
+const route = useRoute()
+const router = useRouter()
+const viewMode = ref(null)
+const viewType = ref()
+const viewHeaderTitle = ref('Providers')
+const providers = ref([])
+const categories = ref([])
+const gamesList = ref([])
+const categoryName = ref(null)
+const displayLimit = ref(50)
+const isLoadingMore = ref(false)
 const userStore = useUsersStore()
 const utilsStore = useUtilsStore()
 const authStore = useAuthStore()
 
 const displayedGames = computed(() => {
-  return gamesList.value.slice(0, displayLimit.value);
-});
+  return gamesList.value.slice(0, displayLimit.value)
+})
 
 const hasMoreGames = computed(() => {
-  return displayLimit.value < gamesList.value.length;
-});
+  return displayLimit.value < gamesList.value.length
+})
 
 const activeBonus = computed(() => {
-  return userStore.casinoActiveBonus;
-});
+  return userStore.casinoActiveBonus
+})
 
 watch(
   () => [
@@ -135,180 +126,172 @@ watch(
     route.params.provider,
     route.query.category_id,
     route.query.providerId,
-    route.query.gameIds,
+    route.query.gameIds
   ],
-  async ([
-    routeName,
-    categoryName,
-    providerName,
-    gameCategoryId,
-    gameProviderId,
-    gameIds,
-  ]) => {
+  async ([routeName, categoryName, providerName, gameCategoryId, gameProviderId, gameIds]) => {
     // Check the route name
-    isLoading.value = true;
+    isLoading.value = true
     switch (routeName) {
-      case "casino-providers":
-        handleProvidersView();
-        break;
-      case "casino-category":
-        handleCategoriesView();
-        break;
-      case "games-by-category":
-        handleGamesByCategoryView(categoryName, gameCategoryId);
-        break;
-      case "games-by-provider":
-        handleGamesByProviderView(providerName, gameProviderId);
-        break;
-      case "casino-bonus":
-      case "bonus-games":
-        handleBonusGames(gameIds);
-        break;
-      case "casino-jackpots":
-        handleCasinoJackpots(gameIds);
-        break;
+      case 'casino-providers':
+        handleProvidersView()
+        break
+      case 'casino-category':
+        handleCategoriesView()
+        break
+      case 'games-by-category':
+        handleGamesByCategoryView(categoryName, gameCategoryId)
+        break
+      case 'games-by-provider':
+        handleGamesByProviderView(providerName, gameProviderId)
+        break
+      case 'casino-bonus':
+      case 'bonus-games':
+        handleBonusGames(gameIds)
+        break
+      case 'casino-jackpots':
+        handleCasinoJackpots(gameIds)
+        break
       default:
-        break;
+        break
     }
   },
-  { immediate: true }, // Trigger the watch callback immediately on component mount
-);
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
 
 async function handleProvidersView() {
   try {
-    viewType.value = "provider";
-    viewMode.value = "games-group-view";
-    viewHeaderTitle.value = "Providers";
-    const res = await getProviders();
-    providers.value = res.data;
-    isLoading.value = false;
+    viewType.value = 'provider'
+    viewMode.value = 'games-group-view'
+    viewHeaderTitle.value = 'Providers'
+    const res = await getProviders()
+    providers.value = res.data
+    isLoading.value = false
   } catch (error) {
-    isLoading.value = false;
-    providers.value = [];
+    isLoading.value = false
+    providers.value = []
   }
 }
 
 async function handleCategoriesView() {
   try {
-    viewMode.value = "games-group-view";
-    viewHeaderTitle.value = "Categories";
-    const res = await getTopGameCategories();
-    categories.value = res.data;
-    isLoading.value = false;
-    viewType.value = "category";
+    viewMode.value = 'games-group-view'
+    viewHeaderTitle.value = 'Categories'
+    const res = await getTopGameCategories()
+    categories.value = res.data
+    isLoading.value = false
+    viewType.value = 'category'
   } catch (error) {
-    categories.value = [];
-    isLoading.value = false;
+    categories.value = []
+    isLoading.value = false
   }
 }
 
 async function handleGamesView(name, id, fetchFunction, type) {
-  viewMode.value = "games-list-view";
-  viewHeaderTitle.value = name.replace(/_/g, " ");
-  categoryName.value = name.replace(/_/g, " ");
-  const res = await fetchFunction(id);
-  gamesList.value = res.data.sort((a, b) => b.priority - a.priority) || [];
-  viewType.value = type;
-  isLoading.value = false;
+  viewMode.value = 'games-list-view'
+  viewHeaderTitle.value = name.replace(/_/g, ' ')
+  categoryName.value = name.replace(/_/g, ' ')
+  const res = await fetchFunction(id)
+  gamesList.value = res.data.sort((a, b) => b.priority - a.priority) || []
+  viewType.value = type
+  isLoading.value = false
 }
 
 async function handleGamesByCategoryView(name, id) {
-  await handleGamesView(name, id, gamesByTopCategory, "category");
+  await handleGamesView(name, id, gamesByTopCategory, 'category')
 }
 
 async function handleGamesByProviderView(name, id) {
-  gamesList.value = []; // Ensure gamesList is cleared before fetching
-  await handleGamesView(name, id, getGamesByProviders, "provider");
+  gamesList.value = [] // Ensure gamesList is cleared before fetching
+  await handleGamesView(name, id, getGamesByProviders, 'provider')
 }
 
 async function handleFilteredGamesView(title) {
-  viewMode.value = "games-list-view";
-  viewHeaderTitle.value = title;
-  categoryName.value = title;
-  const res = await getCasinoBonusGames(userStore.currentUser.id);
-  gamesList.value = Object.values(res.data);
-    // ? res.data.filter((game) => gameIdSet.has(game.gameId))
-    // : [];
-  viewType.value = "category";
-  isLoading.value = false;
+  viewMode.value = 'games-list-view'
+  viewHeaderTitle.value = title
+  categoryName.value = title
+  const res = await getCasinoBonusGames(userStore.currentUser.id)
+  gamesList.value = Object.values(res.data)
+  // ? res.data.filter((game) => gameIdSet.has(game.gameId))
+  // : [];
+  viewType.value = 'category'
+  isLoading.value = false
 }
 
 async function handleBonusGames() {
-  await handleFilteredGamesView("Bonus Games");
+  await handleFilteredGamesView('Bonus Games')
 }
 
 async function handleCasinoJackpots(gameIds) {
-  await handleFilteredGamesView("Jackpot Games", gameIds);
+  await handleFilteredGamesView('Jackpot Games', gameIds)
 }
 
 const getImagePath = (game) => {
   try {
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
-      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
-    )}.png?alt=media`;
+      game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+    )}.png?alt=media`
   } catch (error) {
-    console.error("Error generating image path:", error);
-    return `https://placehold.co/150x175?text=${encodeURIComponent(
-      game.title,
-    )}`;
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-};
+}
 
 async function redirectToGamePlay(game) {
-  utilsStore.previousRoute = route.fullPath;
-  const gameIsBonus = activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)
+  utilsStore.previousRoute = route.fullPath
+  const gameIsBonus =
+    activeBonus.value && activeBonus.value.gameId && activeBonus.value.gameId.includes(game.gameId)
   // console.log(gameIsBonus)
   if (userStore.currentUser) {
-    if (route.name !== "casino-bonus" && route.name !== "bonus-games") {
-      if(gameIsBonus){
-        emitter.emit("showCasinoDialog", {
+    if (route.name !== 'casino-bonus' && route.name !== 'bonus-games') {
+      if (gameIsBonus) {
+        emitter.emit('showCasinoDialog', {
           bonus: activeBonus.value,
-          game: game,
-        });
+          game: game
+        })
       } else {
         return router.push({
-          name: "game-play",
+          name: 'game-play',
           params: {
             game_name: slugify(game.title),
-            game_id: game.id,
-          },
-        });
+            game_id: game.id
+          }
+        })
       }
     } else {
-      if(gameIsBonus){
-        emitter.emit("showCasinoDialog", {
+      if (gameIsBonus) {
+        emitter.emit('showCasinoDialog', {
           bonus: activeBonus.value,
-          game: game,
-        });
+          game: game
+        })
       } else {
         return router.push({
-          name: "game-play",
+          name: 'game-play',
           params: {
             game_name: slugify(game.title),
-            game_id: game.id,
-          },
-        });
+            game_id: game.id
+          }
+        })
       }
     }
-  } 
+  }
 }
 
 const loadMore = async () => {
-  isLoadingMore.value = true;
+  isLoadingMore.value = true
   // Simulate loading delay for better UX
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  displayLimit.value += 50;
-  isLoadingMore.value = false;
-};
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  displayLimit.value += 50
+  isLoadingMore.value = false
+}
 
 onMounted(() => {
-  $("body").removeClass("no-scroll");
+  $('body').removeClass('no-scroll')
   console.log('dfdf')
-});
+})
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 
 .title-bg {
   font-size: 28px;
@@ -329,7 +312,7 @@ onMounted(() => {
 }
 
 .title-bg:after {
-  content: "";
+  content: '';
   position: absolute;
   z-index: -1;
   top: 0;

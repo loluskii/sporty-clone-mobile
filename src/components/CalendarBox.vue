@@ -1,23 +1,10 @@
 <template>
-  <div
-    class="dialog-mask"
-    style="background-color: rgba(53, 58, 69, 0.4); z-index: 1000"
-  >
+  <div class="dialog-mask" style="background-color: rgba(53, 58, 69, 0.4); z-index: 1000">
     <div class="dialog-wrapper" style="align-items: center; inset: auto">
       <div class="dialog-container">
         <div class="calendar-container">
-          <div
-            class="close icon-font-base"
-            @click="$emit('hide')"
-            style="font-size: 1rem"
-          >
-            
-          </div>
-          <p
-            class="title"
-            data-cms-key="choose_date_range"
-            data-cms-page="page_transaction"
-          >
+          <div class="close icon-font-base" @click="$emit('hide')" style="font-size: 1rem"></div>
+          <p class="title" data-cms-key="choose_date_range" data-cms-page="page_transaction">
             Choose Date Range
           </p>
           <div class="m-select-option-wrapper"></div>
@@ -51,14 +38,9 @@
           </div>
 
           <div class="button-wrapper">
-            <button
-              class="af-button button-update af-button--primary"
-              @click.prevent="submit"
-            >
+            <button class="af-button button-update af-button--primary" @click.prevent="submit">
               <span
-                ><span data-cms-key="update" data-cms-page="common_functions"
-                  >Update</span
-                ></span
+                ><span data-cms-key="update" data-cms-page="common_functions">Update</span></span
               >
             </button>
           </div>
@@ -69,45 +51,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineEmits } from "vue";
-import VueDatePicker from "@vuepic/vue-datepicker";
-import moment from "moment";
+import { ref, computed, onMounted, defineEmits } from 'vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import moment from 'moment'
 
 // Reactive property to hold the selected date range
-const dateRange = ref("");
-const formattedStartDate = ref("");
-const formattedEndDate = ref("");
-const emit = defineEmits(["set-date", "hide"]);
+const dateRange = ref('')
+const formattedStartDate = ref('')
+const formattedEndDate = ref('')
+const emit = defineEmits(['set-date', 'hide'])
 
 // Function to disable dates before today
 function disableDates(date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to midnight to compare only the date
-  return date < today;
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Set time to midnight to compare only the date
+  return date < today
 }
 
 const onRangeStart = (value) => {
-  formattedStartDate.value = moment(value).format("YYYY-MM-DD");
-};
+  formattedStartDate.value = moment(value).format('YYYY-MM-DD')
+}
 
 const onRangeEnd = (value) => {
-  formattedEndDate.value = moment(value).format("YYYY-MM-DD");
-};
+  formattedEndDate.value = moment(value).format('YYYY-MM-DD')
+}
 
 const submit = () => {
-  emit("set-date", {
+  emit('set-date', {
     start: formattedStartDate.value,
-    end: formattedEndDate.value,
-  });
-};
+    end: formattedEndDate.value
+  })
+}
 
 onMounted(() => {
-  const startDate = new Date();
-  const endDate = new Date(new Date().setDate(startDate.getDate() + 7));
-  dateRange.value = [startDate, endDate];
-  formattedStartDate.value = moment(startDate).format("YYYY-MM-DD");
-  formattedEndDate.value = moment(endDate).format("YYYY-MM-DD");
-});
+  const startDate = new Date()
+  const endDate = new Date(new Date().setDate(startDate.getDate() + 7))
+  dateRange.value = [startDate, endDate]
+  formattedStartDate.value = moment(startDate).format('YYYY-MM-DD')
+  formattedEndDate.value = moment(endDate).format('YYYY-MM-DD')
+})
 </script>
 
 <style scoped>
@@ -456,16 +438,16 @@ onMounted(() => {
 }
 .calendar-container .m-select-date .subtract-date::before,
 .calendar-container .m-select-date .add-date::before {
-  content: "\e604";
-  font-family: "iconfont" !important;
+  content: '\e604';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .calendar-container .m-select-date .add-date::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

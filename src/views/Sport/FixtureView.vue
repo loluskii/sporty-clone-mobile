@@ -4,11 +4,7 @@
     <HeaderGame :SportsName="getActiveSport"></HeaderGame>
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
-      <div
-        v-show="marketsGroup?.length"
-        class="m-sanp-nav-container"
-        id="m-sanp-nav-container"
-      >
+      <div v-show="marketsGroup?.length" class="m-sanp-nav-container" id="m-sanp-nav-container">
         <div
           class="m-snap-nav-wrap m-sport-type has-live"
           :class="{ 'm-sport-type-fixed': isTop }"
@@ -56,288 +52,262 @@
 </template>
 
 <script setup>
-import {
-  defineComponent,
-  ref,
-  watch,
-  onMounted,
-  computed,
-  onUnmounted,
-} from "vue";
-import HeaderGame from "@/components/HeaderGame.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import LoadingError from "@/components/Loaders/LoadingError.vue";
-import { useRoute } from "vue-router";
-import _ from "lodash";
-import { useUtilsStore } from "@/stores";
-import ChooseBarPad from "@/components/ChooseBarPad.vue";
-import FixtureGroupingTournament from "@/components/FixtureGrouping/FixtureGroupingTournament.vue";
-import FixtureGroupingDefault from "@/components/FixtureGrouping/FixtureGroupingDefault.vue";
+import { defineComponent, ref, watch, onMounted, computed, onUnmounted } from 'vue'
+import HeaderGame from '@/components/HeaderGame.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import LoadingError from '@/components/Loaders/LoadingError.vue'
+import { useRoute } from 'vue-router'
+import _ from 'lodash'
+import { useUtilsStore } from '@/stores'
+import ChooseBarPad from '@/components/ChooseBarPad.vue'
+import FixtureGroupingTournament from '@/components/FixtureGrouping/FixtureGroupingTournament.vue'
+import FixtureGroupingDefault from '@/components/FixtureGrouping/FixtureGroupingDefault.vue'
 import {
   getFixturesByCategories,
   getFixturesByTournamentId,
   getSportUpcoming,
   getToday2,
   extractIdsFromURL,
-  getDateRange,
-} from "@/helpers";
-import emitter from "@/plugins/emitter";
+  getDateRange
+} from '@/helpers'
+import emitter from '@/plugins/emitter'
 
 const isEmptyResponse = computed(() => {
-  const list = fixturesList.value;
+  const list = fixturesList.value
   return (
     !isLoading.value &&
     (list === null ||
       (Array.isArray(list) && list.length === 0) ||
-      (typeof list === "object" && Object.keys(list).length === 0))
-  );
-});
+      (typeof list === 'object' && Object.keys(list).length === 0))
+  )
+})
 
-const utilsStore = useUtilsStore();
-const route = useRoute();
-const fixturesList = ref(null);
+const utilsStore = useUtilsStore()
+const route = useRoute()
+const fixturesList = ref(null)
 
-const marketsGroup = ref({});
-const activeMarket = ref({});
+const marketsGroup = ref({})
+const activeMarket = ref({})
 
-const isLoading = ref(false);
-const loadingError = ref(false);
+const isLoading = ref(false)
+const loadingError = ref(false)
 
-const page = ref(1);
-const isPaginated = ref(false);
-const fetchingMore = ref(false);
-const container = ref(null);
-const isLastPage = ref(false);
+const page = ref(1)
+const isPaginated = ref(false)
+const fetchingMore = ref(false)
+const container = ref(null)
+const isLastPage = ref(false)
 
 const fixtureGroupingType = computed(() => {
   return fixturesList.value !== null && !Array.isArray(fixturesList.value)
-    ? "tournament"
-    : "default";
-});
+    ? 'tournament'
+    : 'default'
+})
 
 // const filterQuery = ref()
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name);
-};
+  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+}
 
 const getActiveSport = computed(() => {
-  return getSportbyName(route.params.sport);
-});
+  return getSportbyName(route.params.sport)
+})
 
 watch(
-  () => [
-    route.name,
-    route.query.period,
-    route.query.startDate,
-    route.query.endDate,
-  ],
+  () => [route.name, route.query.period, route.query.startDate, route.query.endDate],
   async ([routeName, period, startDate, endDate]) => {
-    isLoading.value = true;
-    const { sportID } = getSportbyName(route.params.sport);
-    const { tournament_id } = route.params;
-    const { category_id } = route.params;
+    isLoading.value = true
+    const { sportID } = getSportbyName(route.params.sport)
+    const { tournament_id } = route.params
+    const { category_id } = route.params
     switch (routeName) {
-      case "fixtures-by-tournaments":
-        await getTournamentFixtures(sportID, tournament_id);
-        break;
+      case 'fixtures-by-tournaments':
+        await getTournamentFixtures(sportID, tournament_id)
+        break
 
-      case "fixtures-by-category":
-        await getCategoryFixtures(sportID, category_id);
-        break;
+      case 'fixtures-by-category':
+        await getCategoryFixtures(sportID, category_id)
+        break
 
-      case "today-fixtures":
-        await fetchTodayActiveSport(sportID);
-        break;
+      case 'today-fixtures':
+        await fetchTodayActiveSport(sportID)
+        break
 
-      case "fixtures-by-sports":
+      case 'fixtures-by-sports':
         if (period) {
           if (startDate && endDate) {
-            await fetchActiveSportByCustomRange(sportID, startDate, endDate);
+            await fetchActiveSportByCustomRange(sportID, startDate, endDate)
           } else {
-            await fetchActiveSportByPeriod(sportID, period);
+            await fetchActiveSportByPeriod(sportID, period)
           }
         } else {
-          await fixturesByActiveSport(sportID);
+          await fixturesByActiveSport(sportID)
         }
-        break;
+        break
 
       default:
         // Handle other routes or provide a default behavior
-        break;
+        break
     }
     // console.log(container.value.clientHeight)
   },
-  { immediate: true }, // Trigger the watch callback immediately on component mount
-);
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
 
 async function getTournamentFixtures(sid) {
-  const routeExtractedTIds = extractIdsFromURL(
-    route.params.tournaments,
-    "tournament",
-  );
+  const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
 
   try {
-    isLoading.value = true;
+    isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getFixturesByTournamentId(cat.tournamentID, sid, route.query?.period),
-      ),
-    );
+        getFixturesByTournamentId(cat.tournamentID, sid, route.query?.period)
+      )
+    )
     const fixtures = results.reduce((acc, res) => {
-      if (res.status === "fulfilled" && res.value.fixtures) {
-        let filteredData = res.value.fixtures.filter(
-          (f) => f.activeMarkets > 0,
-        );
-        acc = { ...acc, ..._.groupBy(filteredData, "tournament") };
+      if (res.status === 'fulfilled' && res.value.fixtures) {
+        let filteredData = res.value.fixtures.filter((f) => f.activeMarkets > 0)
+        acc = { ...acc, ..._.groupBy(filteredData, 'tournament') }
       }
-      return acc;
-    }, {});
+      return acc
+    }, {})
 
-    fixturesList.value = { ...fixtures };
+    fixturesList.value = { ...fixtures }
     marketsGroup.value =
-      results[0].status === "fulfilled" &&
-      Object.keys(results[0].value).length > 0
+      results[0].status === 'fulfilled' && Object.keys(results[0].value).length > 0
         ? results[0].value?.markets
-        : {};
-    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : [];
-    isLoading.value = false;
+        : {}
+    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+    isLoading.value = false
   } catch (error) {
-    console.error("Error fetching fixtures:", error);
-    isLoading.value = false;
+    console.error('Error fetching fixtures:', error)
+    isLoading.value = false
   }
 }
 
 async function getCategoryFixtures(sid, cid) {
   try {
-    const res = await getFixturesByCategories(sid, cid);
-    isPaginated.value =
-      res.lastPage !== undefined && res.remainingRecords !== undefined;
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0);
-    fixturesList.value = _.groupBy(filteredData, "tournament");
-    marketsGroup.value = res.markets;
-    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : [];
-    isLoading.value = false;
+    const res = await getFixturesByCategories(sid, cid)
+    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
+    fixturesList.value = _.groupBy(filteredData, 'tournament')
+    marketsGroup.value = res.markets
+    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+    isLoading.value = false
   } catch (error) {
-    isLoading.value = false;
-    loadingError.value = true;
-    console.error(error);
+    isLoading.value = false
+    loadingError.value = true
+    console.error(error)
   }
 }
 
 async function fetchActiveSportByPeriod(id, period) {
   try {
-    isLoading.value = true;
-    let selectedPeriod = getDateRange(period);
-    const res = await getSportUpcoming(id, selectedPeriod);
+    isLoading.value = true
+    let selectedPeriod = getDateRange(period)
+    const res = await getSportUpcoming(id, selectedPeriod)
     if (res.fixtures) {
-      isPaginated.value =
-        res.lastPage !== undefined && res.remainingRecords !== undefined;
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0);
-      fixturesList.value = _.groupBy(filteredData, "tournament");
-      isLastPage.value = res.lastPage === page.value;
-      marketsGroup.value = res.markets;
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : [];
-      isLoading.value = false;
+      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
+      fixturesList.value = _.groupBy(filteredData, 'tournament')
+      isLastPage.value = res.lastPage === page.value
+      marketsGroup.value = res.markets
+      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+      isLoading.value = false
     } else {
-      throw Error;
+      throw Error
     }
   } catch (error) {
-    isLoading.value = false;
-    isEmptyResponse.value = true;
-    console.error(error);
+    isLoading.value = false
+    isEmptyResponse.value = true
+    console.error(error)
   }
 }
 
 async function fetchActiveSportByCustomRange(sid, start, end) {
   try {
-    isLoading.value = true;
-    let selectedPeriod = { startDate: start, endDate: end };
-    const res = await getSportUpcoming(sid, selectedPeriod);
+    isLoading.value = true
+    let selectedPeriod = { startDate: start, endDate: end }
+    const res = await getSportUpcoming(sid, selectedPeriod)
     if (res.fixtures) {
-      isPaginated.value =
-        res.lastPage !== undefined && res.remainingRecords !== undefined;
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0);
-      fixturesList.value = _.groupBy(filteredData, "tournament");
-      isLastPage.value = res.lastPage === page.value;
-      marketsGroup.value = res.markets;
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : [];
-      isLoading.value = false;
+      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
+      fixturesList.value = _.groupBy(filteredData, 'tournament')
+      isLastPage.value = res.lastPage === page.value
+      marketsGroup.value = res.markets
+      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+      isLoading.value = false
     } else {
-      throw Error;
+      throw Error
     }
   } catch (error) {
-    isLoading.value = false;
-    isEmptyResponse.value = true;
-    console.error(error);
+    isLoading.value = false
+    isEmptyResponse.value = true
+    console.error(error)
   }
 }
 
 async function fixturesByActiveSport(id) {
   try {
-    let selectedPeriod = getDateRange("week");
-    const res = await getSportUpcoming(id, selectedPeriod);
+    let selectedPeriod = getDateRange('week')
+    const res = await getSportUpcoming(id, selectedPeriod)
     if (res.fixtures) {
-      isPaginated.value =
-        res.lastPage !== undefined && res.remainingRecords !== undefined;
-      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0);
-      isPaginated.value =
-        res.lastPage !== undefined && res.remainingRecords !== undefined;
-      isLastPage.value = res.lastPage === page.value;
-      marketsGroup.value = res.markets ? res.markets : [];
-      activeMarket.value = marketsGroup.value.length
-        ? marketsGroup.value[0]
-        : {};
+      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0)
+      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+      isLastPage.value = res.lastPage === page.value
+      marketsGroup.value = res.markets ? res.markets : []
+      activeMarket.value = marketsGroup.value.length ? marketsGroup.value[0] : {}
     } else {
-      throw Error;
+      throw Error
     }
-    isLoading.value = false;
+    isLoading.value = false
   } catch (error) {
-    isLoading.value = false;
-    isEmptyResponse.value = true;
-    console.error(error);
+    isLoading.value = false
+    isEmptyResponse.value = true
+    console.error(error)
   }
 }
 
 async function fetchTodayActiveSport(id) {
   try {
-    const res = await getToday2(id, page.value);
-    isPaginated.value =
-      res.lastPage !== undefined && res.remainingRecords !== undefined;
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0);
+    const res = await getToday2(id, page.value)
+    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
+    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
     // Update fixturesList.value
     fixturesList.value =
       fixturesList.value && fixturesList.value.length
         ? [...fixturesList.value, ...filteredData]
-        : [...filteredData];
-    isLastPage.value = res.lastPage === page.value;
+        : [...filteredData]
+    isLastPage.value = res.lastPage === page.value
     // Set markets and active market
-    marketsGroup.value = res.markets;
-    activeMarket.value = marketsGroup.value[0];
-    isLoading.value = false;
+    marketsGroup.value = res.markets
+    activeMarket.value = marketsGroup.value[0]
+    isLoading.value = false
   } catch (error) {
-    isLoading.value = false;
-    loadingError.value = true;
-    console.error(error);
+    isLoading.value = false
+    loadingError.value = true
+    console.error(error)
   }
 }
 
 async function selectMarket(market) {
-  activeMarket.value = market;
+  activeMarket.value = market
 }
 
-const isScrolled = ref(false);
-const isTop = ref(false);
-const divPosition = ref(null);
+const isScrolled = ref(false)
+const isTop = ref(false)
+const divPosition = ref(null)
 
-const observer = ref(null);
+const observer = ref(null)
 
 const handleScroll = async () => {
-  isScrolled.value = window.scrollY > 50;
-  const specificDiv = document.getElementById("m-sanp-nav-container");
-  divPosition.value = specificDiv ? specificDiv.getBoundingClientRect().top : 0;
-  isTop.value = divPosition.value <= 59;
-};
+  isScrolled.value = window.scrollY > 50
+  const specificDiv = document.getElementById('m-sanp-nav-container')
+  divPosition.value = specificDiv ? specificDiv.getBoundingClientRect().top : 0
+  isTop.value = divPosition.value <= 59
+}
 
 const observeElement = (element) => {
   // console.log('Initializing observer...')
@@ -350,13 +320,13 @@ const observeElement = (element) => {
       // console.log('Sentinel element is intersecting. Fetching more data...')
       fetchMoreData()
     }
-  });
+  })
   if (element) {
-    observer.value.observe(element);
+    observer.value.observe(element)
   } else {
     // console.log('Element not found:', element)
   }
-};
+}
 
 const fetchMoreData = async () => {
   if (fetchingMore.value || !isPaginated.value) return
@@ -364,39 +334,39 @@ const fetchMoreData = async () => {
   page.value++
   // console.log(`Fetching data for page ${page.value}...`)
   try {
-    const { sportID } = getSportbyName(route.params.sport);
-    const { period } = route.query;
+    const { sportID } = getSportbyName(route.params.sport)
+    const { period } = route.query
 
     // let newData = []
     switch (route.name) {
-      case "today-fixtures":
-        await fetchTodayActiveSport(sportID);
-        break;
+      case 'today-fixtures':
+        await fetchTodayActiveSport(sportID)
+        break
 
-      case "fixtures-by-sports":
+      case 'fixtures-by-sports':
         if (period) {
-          await fetchActiveSportByPeriod(sportID, period);
+          await fetchActiveSportByPeriod(sportID, period)
         } else {
-          await fixturesByActiveSport(sportID);
+          await fixturesByActiveSport(sportID)
         }
-        break;
+        break
 
       default:
         // Handle other routes or provide a default behavior
-        break;
+        break
     }
   } catch (error) {
-    console.error("Error fetching more data:", error);
+    console.error('Error fetching more data:', error)
   } finally {
-    fetchingMore.value = false;
+    fetchingMore.value = false
   }
-};
+}
 
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  const sentinel = document.querySelector("#scroll-sentinel");
-  localStorage.removeItem("categoryIds");
-  observeElement(sentinel);
+  window.addEventListener('scroll', handleScroll)
+  const sentinel = document.querySelector('#scroll-sentinel')
+  localStorage.removeItem('categoryIds')
+  observeElement(sentinel)
 
   // Add event listener for removing fixtures
   emitter.on('remove-fixture', (matchID) => {
@@ -404,33 +374,33 @@ onMounted(() => {
       if (Array.isArray(fixturesList.value)) {
         // For default grouping
         fixturesList.value = fixturesList.value.filter(
-          fixture => String(fixture.matchID) !== String(matchID)
-        );
+          (fixture) => String(fixture.matchID) !== String(matchID)
+        )
       } else {
         // For tournament grouping
-        Object.keys(fixturesList.value).forEach(tournament => {
+        Object.keys(fixturesList.value).forEach((tournament) => {
           fixturesList.value[tournament] = fixturesList.value[tournament].filter(
-            fixture => String(fixture.matchID) !== String(matchID)
-          );
+            (fixture) => String(fixture.matchID) !== String(matchID)
+          )
           // Remove empty tournament groups
           if (fixturesList.value[tournament].length === 0) {
-            delete fixturesList.value[tournament];
+            delete fixturesList.value[tournament]
           }
-        });
+        })
       }
     }
-  });
-});
+  })
+})
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  if (observer.value) observer.value.disconnect();
-});
+  window.removeEventListener('scroll', handleScroll)
+  if (observer.value) observer.value.disconnect()
+})
 
 defineComponent({
-  name: "fixture-view",
-  components: { HeaderGame, LoadingSpinner, LoadingError },
-});
+  name: 'fixture-view',
+  components: { HeaderGame, LoadingSpinner, LoadingError }
+})
 </script>
 
 <style>
@@ -444,14 +414,14 @@ defineComponent({
   font-size: 1.66666667rem;
 }
 .m-event-list .m-topnav .arrow-icon {
-  font-family: "iconfont";
+  font-family: 'iconfont';
   width: auto;
 }
 .m-event-list .m-topnav .arrow-icon:before {
-  content: "\e6A3";
+  content: '\e6A3';
   display: inline-block;
   font-size: 0.66666667rem;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   line-height: 1;
   position: relative;
   -webkit-transform: rotate(0);
@@ -494,12 +464,7 @@ defineComponent({
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title {
   display: none;
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-title
-  .af-select-input {
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title .af-select-input {
   display: hidden;
 }
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list {
@@ -518,12 +483,7 @@ defineComponent({
   border-top-color: var(--brand-border-type1);
 }
 
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item {
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   -webkit-box-sizing: border-box;
@@ -554,9 +514,9 @@ defineComponent({
   .af-select-list
   .af-select-item.active:after {
   color: var(--brand-secondary);
-  content: "\e611";
+  content: '\e611';
   float: right;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   font-size: 1.33333333rem;
   padding-right: 1.66666667rem;
 }
@@ -598,8 +558,8 @@ defineComponent({
   padding: 0 0.66666667rem 0 1.25rem;
 }
 .m-event-list .m-topnav .slot-container .search-icon::before {
-  content: "\e613";
-  font-family: "iconfont" !important;
+  content: '\e613';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -622,8 +582,8 @@ defineComponent({
   text-align: center;
 }
 .m-event-list .no-data::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

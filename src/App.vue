@@ -1,11 +1,11 @@
 <script setup>
-import AppFooter from "@/components/Footer.vue";
-import MobileFooter from "@/components/MobileFooter.vue";
-import { defineComponent, onMounted, ref, watch, provide } from "vue";
-import { useUtilsStore, useCouponStore } from "@/stores";
-import CasinoDialog from "@/components/CasinoDialog.vue";
-import CalendarBox from "@/components/CalendarBox.vue";
-import BookBetModal from "@/components/Betslip/BookBetModal.vue";
+import AppFooter from '@/components/Footer.vue'
+import MobileFooter from '@/components/MobileFooter.vue'
+import { defineComponent, onMounted, ref, watch, computed } from 'vue'
+import { useUtilsStore, useCouponStore } from '@/stores'
+import CasinoDialog from '@/components/CasinoDialog.vue'
+import CalendarBox from '@/components/CalendarBox.vue'
+import BookBetModal from '@/components/Betslip/BookBetModal.vue'
 import {
   fetchBonusList,
   fetchGlobalVars,
@@ -15,85 +15,87 @@ import {
   getUserActiveBonus,
   CLIENT_ID,
   validateBetslipSelections,
-  fetchBanners
-} from "@/helpers";
-import Betlist from "@/components//Betslip/Betlist.vue";
-import ErrorDialogue from "./components/ErrorDialogue.vue";
-import { useRoute, useRouter } from "vue-router";
-import emitter from "./plugins/emitter";
-import { useUsersStore, useAuthStore } from "./stores";
+  fetchBanners,
+  getUserCashbackBonus,
+  getBanksList
+} from '@/helpers'
+import Betlist from '@/components//Betslip/Betlist.vue'
+import ErrorDialogue from './components/ErrorDialogue.vue'
+import { useRoute, useRouter } from 'vue-router'
+import emitter from './plugins/emitter'
+import { useUsersStore, useAuthStore } from './stores'
+import Cookies from 'js-cookie'
 
-import HandleCache from '@/components/HandleCache.vue';
-import ImageDialog from "./components/ImageDialog.vue";
-const cacheBuster = ref();
+import HandleCache from '@/components/HandleCache.vue'
+import ImageDialog from './components/ImageDialog.vue'
+const cacheBuster = ref()
 
-const utilsStore = useUtilsStore();
-const couponStore = useCouponStore();
-const showBetslip = ref(false);
-const route = useRoute();
-const router = useRouter();
-const errorMessage = ref(null);
-const nextRoute = ref(null);
-const dialogueMessage = ref(null);
-const usersStore = useUsersStore();
+const utilsStore = useUtilsStore()
+const couponStore = useCouponStore()
+const showBetslip = ref(false)
+const route = useRoute()
+const router = useRouter()
+const errorMessage = ref(null)
+const nextRoute = ref(null)
+const dialogueMessage = ref(null)
+const usersStore = useUsersStore()
 const authStore = useAuthStore()
-const dialogueShown = ref(false);
-const dialogueType = ref("");
-const isLoading = ref(true);
-const openBets = ref(0);
-const casinoDailogShown = ref(false);
-const customDatePickerShown = ref(false);
-const dateRange = ref(null);
-const mqttClient = ref(false);
-const bookBetModalShown = ref(false);
-const bookBetResponse = ref(null);
-const casinoGameData = ref(null);
+const dialogueShown = ref(false)
+const dialogueType = ref('')
+const isLoading = ref(true)
+const openBets = ref(0)
+const casinoDailogShown = ref(false)
+const customDatePickerShown = ref(false)
+const dateRange = ref(null)
+const mqttClient = ref(false)
+const bookBetModalShown = ref(false)
+const bookBetResponse = ref(null)
+const casinoGameData = ref(null)
 const depositWithdrawalShown = ref(false)
 const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
 
-// const showLoadingOverlay = computed(() => {
-//   const specificPages = ['/'] // Define the routes where you want to show the loading overlay
-//   return specificPages.includes(route.path)
-// })
+const isAuthenticated = computed(() => {
+  return authStore.isAuthenticated
+})
 
 function toggleBetslip() {
-  showBetslip.value = !showBetslip.value;
+  showBetslip.value = !showBetslip.value
   if (showBetslip.value) {
-    document.body.style.overflowY = "hidden";
+    document.body.style.overflowY = 'hidden'
   } else {
-    document.body.style.overflowY = "scroll";
+    document.body.style.overflowY = 'scroll'
   }
 }
 
 function toggleDialogue() {
-  dialogueShown.value = false;
+  dialogueShown.value = false
 }
 
 function handleError(error) {
-  dialogueShown.value = true;
-  errorMessage.value = typeof error === "object" ? error.message : error;
-  nextRoute.value = error.next_route ? error.next_route : null;
-  dialogueType.value = "error";
+  dialogueShown.value = true
+  errorMessage.value = typeof error === 'object' ? error.message : error
+  nextRoute.value = error.next_route ? error.next_route : null
+  dialogueType.value = 'error'
 }
 
 function handleBetslipConfirmation(data) {
-  dialogueShown.value = true;
-  dialogueMessage.value = data;
-  dialogueType.value = "betslip";
+  dialogueShown.value = true
+  dialogueMessage.value = data
+  dialogueType.value = 'betslip'
 }
 
 function showDialogue(data) {
-  dialogueShown.value = true;
-  dialogueMessage.value = data;
-  dialogueType.value = "withdrawal";
+  dialogueShown.value = true
+  dialogueMessage.value = data
+  dialogueType.value = 'withdrawal'
 }
 
 function showToaster(data) {
-  dialogueShown.value = true;
-  dialogueMessage.value = data;
-  dialogueType.value = "toaster";
+  dialogueShown.value = true
+  dialogueMessage.value = data
+  dialogueType.value = 'toaster'
 }
 
 function showDepositWithdrawal(data) {
@@ -105,67 +107,67 @@ function showDepositWithdrawal(data) {
 
 async function loadBet(code) {
   try {
-    const res = await loadBetslipByCode(code);
+    const res = await loadBetslipByCode(code)
     if (res.success) {
       if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections;
-        couponStore.coupon.totalOdds = res.data.totalOdd;
-        couponStore.coupon.totalStake = res.data.stake;
-        couponStore.coupon.stake = res.data.stake;
-        couponStore.coupon.maxWin = res.data.possibleWin;
-        couponStore.coupon.source = "mobile";
+        couponStore.coupon.selections = res.data.selections
+        couponStore.coupon.totalOdds = res.data.totalOdd
+        couponStore.coupon.totalStake = res.data.stake
+        couponStore.coupon.stake = res.data.stake
+        couponStore.coupon.maxWin = res.data.possibleWin
+        couponStore.coupon.source = 'mobile'
         if (res.data.selections.length === 1) {
-          couponStore.coupon.bet_type = "Single";
-          couponStore.coupon.betslip_type = "Single";
+          couponStore.coupon.bet_type = 'Single'
+          couponStore.coupon.betslip_type = 'Single'
         } else {
-          couponStore.coupon.bet_type = "Multiple";
-          couponStore.coupon.betslip_type = "Multiple";
+          couponStore.coupon.bet_type = 'Multiple'
+          couponStore.coupon.betslip_type = 'Multiple'
         }
         // emitter.emit('openBetslip')
-        return router.push({ name: "home" });
+        return router.push({ name: 'home' })
       } else {
-        emitter.emit("showDialogueToaster", "All selections have expired");
+        emitter.emit('showDialogueToaster', 'All selections have expired')
       }
     } else {
-      throw Error;
+      throw Error
     }
   } catch (error) {
-    emitter.emit("showDialogueToaster", "Invalid booking code. ");
+    emitter.emit('showDialogueToaster', 'Invalid booking code. ')
   }
 }
 
 async function getBetsData() {
   let payload = {
     clientId: CLIENT_ID,
-    date: "",
+    date: '',
     status: 0,
-    userId: usersStore.currentUser.id,
-  };
-  const res = await getBets(payload);
+    userId: usersStore.currentUser.id
+  }
+  const res = await getBets(payload)
   if (res.bets) {
-    openBets.value = res.bets.length;
+    openBets.value = res.bets.length
   }
 }
 
 function showCasinoDialog(data = null) {
-  if (route.name === "home" || (data.bonus && data.game)) {
-    casinoDailogShown.value = true;
-    casinoGameData.value = data;
+  if (route.name === 'home' || (data.bonus && data.game)) {
+    casinoDailogShown.value = true
+    casinoGameData.value = data
   }
 }
 
 function toggleDatePicker() {
-  customDatePickerShown.value = !customDatePickerShown.value;
+  customDatePickerShown.value = !customDatePickerShown.value
 }
 
 function toggleBookBetModal(data) {
-  bookBetResponse.value = data;
-  bookBetModalShown.value = true;
+  bookBetResponse.value = data
+  bookBetModalShown.value = true
 }
 
 function handleCustomDatePicker(data) {
   // console.log(data)
-  emitter.emit("dateRangeSet", data);
+  emitter.emit('dateRangeSet', data)
 }
 
 function hideModal() {
@@ -176,19 +178,19 @@ function hideModal() {
 }
 
 async function validateSelections() {
-  if (!couponStore.coupon.selections.length) return;
+  if (!couponStore.coupon.selections.length) return
 
   const selections = couponStore.coupon.selections.map((event) => ({
     matchId: parseInt(event.matchId),
     marketId: event.marketId.toString(),
     outcomeId: event.outcomeId,
-    specifier: event.specifier,
-  }));
-  const res = await validateBetslipSelections({ events: selections });
+    specifier: event.specifier
+  }))
+  const res = await validateBetslipSelections({ events: selections })
 
   if (res.success) {
     // Convert response object to array of validated selections
-    const validatedSelections = Object.values(res.data);
+    const validatedSelections = Object.values(res.data)
 
     // Update each selection with the new odds and active status
     validatedSelections.forEach((validatedSelection) => {
@@ -196,123 +198,130 @@ async function validateSelections() {
         (sel) =>
           String(sel.matchId) === String(validatedSelection.matchId) &&
           String(sel.marketId) === validatedSelection.marketId &&
-          String(sel.outcomeId) === validatedSelection.outcomeId,
-      );
+          String(sel.outcomeId) === validatedSelection.outcomeId
+      )
 
       if (selection) {
-        selection.odds = validatedSelection.odds;
-        selection.suspended = !validatedSelection.active;
-        selection.unavailable = !validatedSelection.active;
-        selection.changed = true;
+        selection.odds = validatedSelection.odds
+        selection.suspended = !validatedSelection.active
+        selection.unavailable = !validatedSelection.active
+        selection.changed = true
 
         // Reset the changed flag after 5 seconds
         setTimeout(() => {
-          selection.changed = false;
-        }, 5000);
+          selection.changed = false
+        }, 5000)
       }
-    });
+    })
 
     // Recalculate winnings after updating all selections
     couponStore.updateWinnings({
       stake: couponStore.coupon.totalStake,
-      id: "all",
-    });
+      id: 'all'
+    })
   }
 }
+
+const safeLoad = (promise) =>
+  promise.catch((err) => {
+    console.error('Data loading failed:', err)
+    return null
+  })
 
 watch(
   () => route.query.shareCode,
   async (code) => {
     // get booking code
     if (code) {
-      await loadBet(code);
+      await loadBet(code)
     }
   },
-  { immediate: true }, // Trigger the watch callback immediately on component mount
-);
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
 
 onMounted(async () => {
-  if (route.path !== "/") {
-    isLoading.value = false;
+  if (route.path !== '/') {
+    isLoading.value = false
   }
 
-  const res = await fetchBanners();
-  if(res.data && Object.keys(res.data).length > 0){
-    utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile');
-  }else{
+  const clickId = new URLSearchParams(window.location.search).get('clickid')
+  if (clickId) {
+    Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
+  }
+
+  const res = await fetchBanners()
+  if (res.data && Object.keys(res.data).length > 0) {
+    utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile')
+  } else {
     utilsStore.banners = []
   }
 
-  // Check version and clear cache if needed
-  // await checkVersion();
+  if (isAuthenticated.value) {
+    const [, activeBonus, cashbackData] = await Promise.all([
+      safeLoad(usersStore.loadCurrentUser()),
+      safeLoad(getUserActiveBonus()),
+      safeLoad(getUserCashbackBonus()),
+      safeLoad(getBetsData())
+    ])
 
-  if (authStore.isAuthenticated) {
-    Promise.all([usersStore.loadCurrentUser(), getBetsData()])
-      .then((res) => {
-        console.log(res[2]);
-      })
-      .catch(() => {
-        isLoading.value = false;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    if(activeBonus?.data){
+      let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
+      if(bonusIsCasino){
+        usersStore.casinoActiveBonus = activeBonus?.data
+      }else{
+        usersStore.activeBonus = activeBonus?.data
+      }
+      usersStore.activeCashback = usersStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
+    }else{
+      usersStore.activeCashback = cashbackData?.data;
+    }
+
+    if (utilsStore.bonusModalShown === null) {
+      casinoGameData.value = activeBonus?.data
+      utilsStore.bonusModalShown = false
+    }
+    isLoading.value = false
   }
 
-  Promise.all([
-    fetchBonusList(),
-    fetchGlobalVars(),
-    getSportsMenu(),
-    getUserActiveBonus(),
-    validateSelections()
-  ])
+  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()])
     .then((res) => {
-      couponStore.sportsbookBonusList = res[0].data;
-      couponStore.SportsbookGlobalVariable = res[1].data.data;
-      utilsStore.sportsbookBonusList = res[0].data;
-      utilsStore.SportsbookGlobalVariable = res[1].data.data;
-      utilsStore.sportsMenu = res[2].sports; // Update loading state after delay
-      // Handle bonus response
-      if (res[3].data) {
-        utilsStore.casinoActiveBonus = bonusResponse.value.data;
-        if(utilsStore.bonusModalShown === null){
-          utilsStore.bonusModalShown = false
-          emitter.emit("showCasinoDialog", { bonus: utilsStore.casinoActiveBonus });
-        }
-      } else {
-        console.warn("Failed to fetch active bonus:", bonusResponse.reason);
-      }
-      
+      couponStore.sportsbookBonusList = res[0].data.data || []
+      couponStore.SportsbookGlobalVariable = res[1].data.data
+      utilsStore.sportsbookBonusList = res[0].data.data || []
+      utilsStore.SportsbookGlobalVariable = res[1].data.data
+      utilsStore.sportsMenu = res[2].sports // Update loading state after delay
+      utilsStore.banksList = res[4].data
+
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
-        if(popupBanner && utilsStore.popupDialogShown ===  null){
+        if (popupBanner && utilsStore.popupDialogShown === null) {
           popupData.value = popupBanner
-          utilsStore.popupDialogShown = false;
+          utilsStore.popupDialogShown = false
         }
       }, 1000)
-      // provide() implement gloabal store 
-      isLoading.value = false;
+      // provide() implement gloabal store
+      isLoading.value = false
     })
     .catch(() => {
-      isLoading.value = false;
-    });
+      isLoading.value = false
+    })
 
-  emitter.on("openBetslip", toggleBetslip);
-  emitter.on("showErrorMessage", handleError);
-  emitter.on("showBetslipConfirmation", handleBetslipConfirmation);
-  emitter.on("showDialogueMessage", showDialogue);
-  emitter.on("showDialogueToaster", showToaster);
-  emitter.on("hideDialogueToaster", toggleDialogue);
-  emitter.on("showCasinoDialog", showCasinoDialog);
-  emitter.on("showCustomDatePicker", toggleDatePicker);
-  emitter.on("showBookBetModal", toggleBookBetModal);
-  emitter.on('showDepositWithdrawalModal', showDepositWithdrawal);
-});
+  emitter.on('openBetslip', toggleBetslip)
+  emitter.on('showErrorMessage', handleError)
+  emitter.on('showBetslipConfirmation', handleBetslipConfirmation)
+  emitter.on('showDialogueMessage', showDialogue)
+  emitter.on('showDialogueToaster', showToaster)
+  emitter.on('hideDialogueToaster', toggleDialogue)
+  emitter.on('showCasinoDialog', showCasinoDialog)
+  emitter.on('showCustomDatePicker', toggleDatePicker)
+  emitter.on('showBookBetModal', toggleBookBetModal)
+  emitter.on('showDepositWithdrawalModal', showDepositWithdrawal)
+})
 
 defineComponent({
-  name: "app",
-  components: { AppFooter, MobileFooter },
-});
+  name: 'app',
+  components: { AppFooter, MobileFooter }
+})
 </script>
 
 <template>
@@ -340,10 +349,7 @@ defineComponent({
             <div class="x-main-mid x-has-bottom-nav">
               <RouterView />
               <AppFooter v-show="utilsStore.showFooter"></AppFooter>
-              <MobileFooter
-                @show-betslip="toggleBetslip"
-                :open-bet-count="openBets"
-              ></MobileFooter>
+              <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
               <ErrorDialogue
                 v-if="dialogueShown"
                 @hide-dialogue="toggleDialogue"
@@ -353,11 +359,13 @@ defineComponent({
                 :next-route="nextRoute"
               ></ErrorDialogue>
               <CasinoDialog
-                v-if="utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'"
+                v-if="
+                  utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
+                "
                 :data="casinoGameData"
                 @hide-dialogue="utilsStore.bonusModalShown = true"
               />
-              <ImageDialog 
+              <ImageDialog
                 v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
                 :image="popupData"
                 @hide-dialogue="utilsStore.popupDialogShown = true"
@@ -369,7 +377,7 @@ defineComponent({
               @update-betcount="getBetsData"
             ></Betlist>
           </div>
-      
+
           <!-- <transition name="move">
             <div class="loading-overlay" v-if="isLoading">
               <div class="loading-spinner">
@@ -393,10 +401,7 @@ defineComponent({
             v-if="bookBetModalShown"
             style="background-color: rgba(0, 0, 0, 0); z-index: 1000"
           >
-            <div
-              class="dialog-wrapper"
-              style="align-items: center; inset: auto; overflow: auto"
-            >
+            <div class="dialog-wrapper" style="align-items: center; inset: auto; overflow: auto">
               <div class="dialog-container" style="overflow: auto">
                 <BookBetModal
                   @hide-modal="bookBetModalShown = false"
@@ -414,7 +419,7 @@ defineComponent({
   </HandleCache>
 </template>
 <style>
-@import url("./assets/css/loading.css");
+@import url('./assets/css/loading.css');
 
 html,
 body {

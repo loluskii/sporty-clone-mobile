@@ -27,10 +27,7 @@
               </div>
             </div>
           </div>
-          <div
-            class="m-tabs-content"
-            style="transform: translateX(0%) translateZ(0px)"
-          >
+          <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
             <div v-if="activeMethod === 'bank'" class="bank-section">
               <form data-op="withdraw-bank-form">
                 <div class="withdraw-bank">
@@ -51,19 +48,13 @@
                         ></path>
                       </g>
                     </svg>
-                    <div
-                      class="bank-static-name"
-                      :class="selectedBank ? '' : 'blank'"
-                    >
-                      {{ selectedBank ? selectedBank.name : "Select a Bank" }}
+                    <div class="bank-static-name" :class="selectedBank ? '' : 'blank'">
+                      {{ selectedBank ? selectedBank.name : 'Select a Bank' }}
                     </div>
                     <i class="bank-static-arrow"></i>
                   </div>
                   <div class="error-msg"></div>
-                  <div
-                    class="withdraw-bank-number static"
-                    style="display: none"
-                  >
+                  <div class="withdraw-bank-number static" style="display: none">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="2 2 19 19"
@@ -93,9 +84,7 @@
                     :class="accountError ? 'm-input-wap-wrapper--error' : ''"
                     style=""
                   >
-                    <div
-                      class="m-input-wap-prepend m-input-wap-prepend--default"
-                    >
+                    <div class="m-input-wap-prepend m-input-wap-prepend--default">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="2 2 19 19"
@@ -113,9 +102,7 @@
                         </g>
                       </svg>
                     </div>
-                    <i
-                      class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
-                    ></i>
+                    <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
                     <div class="m-input-transform">
                       <input
                         type="tel"
@@ -127,11 +114,7 @@
                       />
                     </div>
                   </div>
-                  <div
-                    class="switch-container"
-                    v-if="bankAssets.length"
-                    @click="toggleBanksAssets"
-                  >
+                  <div class="switch-container" v-if="bankAssets.length" @click="toggleBanksAssets">
                     <div class="switch-bank">
                       <span>Switch Bank Account</span>
                       <i class="switch-icon"></i>
@@ -144,9 +127,7 @@
                   <div class="balance-container">
                     <p class="balance-text">
                       <span data-cms-key="balance">Balance</span>
-                      <span data-op="balance"
-                        >(NGN) {{ usersStore.balance }}</span
-                      >
+                      <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                     </p>
                     <div class="withdrawable-text-wrapper">
                       <i class="m-icon-help"></i>
@@ -160,18 +141,12 @@
                     class="withdraw-amount m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
                     :class="amountError ? 'm-input-wap-wrapper--error' : ''"
                   >
-                    <div
-                      class="m-input-wap-prepend m-input-wap-prepend--default"
-                    >
+                    <div class="m-input-wap-prepend m-input-wap-prepend--default">
                       <span class="amount-prepend"
-                        ><span>Amount</span> ({{
-                          SportsbookGlobalVariable.CurrencyCode
-                        }})
+                        ><span>Amount</span> ({{ SportsbookGlobalVariable.CurrencyCode }})
                       </span>
                     </div>
-                    <i
-                      class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"
-                    ></i>
+                    <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
                     <input
                       type="number"
                       v-model="withdrawalAmount"
@@ -184,35 +159,22 @@
                   <div class="error-msg">{{ amountErrorMessage }}</div>
                   <button
                     class="af-button withdraw-submit af-button--primary"
-                    :class="
-                      !isFormComplete || buttonLoader ? 'is-disabled' : ''
-                    "
+                    :class="!isFormComplete || buttonLoader ? 'is-disabled' : ''"
                     @click.prevent="submit"
                     :disabled="!isFormComplete || buttonLoader"
                   >
                     <span
                       ><span>
-                        {{ buttonLoader ? "Processing..." : "Continue" }}
+                        {{ buttonLoader ? 'Processing...' : 'Continue' }}
                       </span></span
                     >
                   </button>
                 </div>
               </form>
               <div id="popup-select" v-if="showBanks || showBanksAssets">
-                <div
-                  v-if="showBanks"
-                  class="popup-modal"
-                  @click="toggleShowBanks"
-                ></div>
-                <div
-                  v-if="showBanksAssets"
-                  class="popup-modal"
-                  @click="toggleBanksAssets"
-                ></div>
-                <div
-                  class="select-container"
-                  :style="showBanksAssets ? 'height: auto' : ''"
-                >
+                <div v-if="showBanks" class="popup-modal" @click="toggleShowBanks"></div>
+                <div v-if="showBanksAssets" class="popup-modal" @click="toggleBanksAssets"></div>
+                <div class="select-container" :style="showBanksAssets ? 'height: auto' : ''">
                   <div class="m-close">
                     <div>
                       <svg
@@ -231,10 +193,7 @@
                           fill-rule="evenodd"
                           transform="translate(564.000000, -37.000000) rotate(90)"
                         >
-                          <g
-                            id="Shape_Close"
-                            transform="translate(37.000000, 518.000000)"
-                          >
+                          <g id="Shape_Close" transform="translate(37.000000, 518.000000)">
                             <path
                               d="M22,0.360389693 L22,46 L1.61522369,26.0416306 C0.0531265221,24.4795334 0.0531265221,21.9468735 1.61522369,20.3847763 L22,0.360389693 Z"
                               id="Rectangle-34"
@@ -322,13 +281,13 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span>SSP {{ usersStore.balance }}</span>
                     </p>
                   </div>
                 </div>
@@ -388,18 +347,20 @@
                 </button>
               </div>
             </div>
-            <div v-else-if="activeMethod === 'shop'" class="transfer-section">
+            <div v-else-if="activeMethod === 'shop' || activeMethod === 'smileandpay'" class="transfer-section">
               <div style="padding: 1.3rem">
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span
+                        >{{ SportsbookGlobalVariable.CurrencyCode }} {{ usersStore.balance }}</span
+                      >
                     </p>
                   </div>
                 </div>
@@ -456,42 +417,40 @@
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import WithdrawalSuccess from "@/components/WithdrawalSuccess.vue";
+import HeaderOther from '@/components/HeaderOther.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import WithdrawalSuccess from '@/components/WithdrawalSuccess.vue'
 import {
   formatNumber,
   getBanksList,
   verifyAccount,
   withdrawalRequest,
   fetchBankAssets,
-  transferRequest
+  transferRequest, smileandpayPayout
 } from "@/helpers";
 import TransferSuccess from '@/components/Withdrawal/TransferSuccess.vue'
 import CashWithdrawalSuccess from '@/components/Withdrawal/CashWithdrawalSuccess.vue'
-import { ref, onMounted, computed } from "vue";
-import emitter from "@/plugins/emitter";
-import { useRouter } from "vue-router";
-import { useUsersStore, useUtilsStore } from "@/stores";
-import { CLIENT_ID } from "@/helpers";
-const showBanks = ref(false);
-const showBanksAssets = ref(false);
-const usersStore = useUsersStore();
-const { SportsbookGlobalVariable } = useUtilsStore()
-const router = useRouter();
+import { ref, onMounted, computed } from 'vue'
+import emitter from '@/plugins/emitter'
+import { useRouter } from 'vue-router'
+import { useUsersStore, useUtilsStore } from '@/stores'
+import { CLIENT_ID } from '@/helpers'
+const showBanks = ref(false)
+const showBanksAssets = ref(false)
+const usersStore = useUsersStore()
+const { SportsbookGlobalVariable, banksList } = useUtilsStore()
+const router = useRouter()
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
-  { name: 'Shop', key: 'shop' },
-  { name: 'Transfer to Friend', key: 'transfer' }
+  { name: 'Shop', key: 'shop' }
 ]
 const activeMethod = ref('bank')
-const banksList = ref([]);
-const bankAssets = ref([]);
-const selectedBank = ref(null);
-const accountNumber = ref(null);
-const withdrawalAmount = ref();
-const isLoading = ref(false);
-const buttonLoader = ref(false);
+const bankAssets = ref([])
+const selectedBank = ref(null)
+const accountNumber = ref(null)
+const withdrawalAmount = ref()
+const isLoading = ref(false)
+const buttonLoader = ref(false)
 
 const transferReceiver = ref('')
 const transferAmount = ref(0)
@@ -501,8 +460,8 @@ const transferError = ref(false)
 const transferErrorMessage = ref('')
 const transferSuccess = ref(false)
 
-const withdrawalSuccess = ref(false);
-const withdrawalSuccessData = ref({});
+const withdrawalSuccess = ref(false)
+const withdrawalSuccessData = ref({})
 
 const cashWithdrawalAmount = ref(0)
 const cashWithdrawalSuccess = ref(false)
@@ -510,32 +469,25 @@ const cashWithdrawalSuccessData = ref({})
 const cashRequestError = ref(false)
 const cashRequestErrorMessage = ref('')
 
-const accountError = ref(false);
-const accountErrorMessage = ref("");
+const accountError = ref(false)
+const accountErrorMessage = ref('')
 
-const amountError = ref(false);
-const amountErrorMessage = ref("");
+const amountError = ref(false)
+const amountErrorMessage = ref('')
 
-const searchQuery = ref("");
+const searchQuery = ref('')
 
 const balance = computed(() => {
-  return userStore.balance
+  return usersStore.balance
 })
 
-async function getBanks() {
-  isLoading.value = true;
-  const res = await getBanksList();
-  isLoading.value = false;
-  banksList.value = res.data;
-}
-
 function toggleShowBanks() {
-  searchQuery.value = "";
-  showBanks.value = !showBanks.value;
+  searchQuery.value = ''
+  showBanks.value = !showBanks.value
 }
 
 function toggleBanksAssets() {
-  showBanksAssets.value = !showBanksAssets.value;
+  showBanksAssets.value = !showBanksAssets.value
 }
 
 const isFormComplete = computed(() => {
@@ -543,72 +495,65 @@ const isFormComplete = computed(() => {
     selectedBank.value !== null &&
     accountNumber.value !== null &&
     withdrawalAmount.value !== undefined
-  );
-});
+  )
+})
 
 const checkWithdrawableAmount = () => {
   if (withdrawalAmount.value > usersStore.balance) {
-    amountError.value = true;
-    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${usersStore.balance}`;
+    amountError.value = true
+    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${usersStore.balance}`
   } else {
-    amountError.value = false;
-    amountErrorMessage.value = "";
+    amountError.value = false
+    amountErrorMessage.value = ''
   }
-};
+}
 
 function selectBank(bank) {
-  selectedBank.value = bank;
-  showBanks.value = !showBanks.value;
+  selectedBank.value = bank
+  showBanks.value = !showBanks.value
 }
 
 const filteredBanks = computed(() => {
-  const query = searchQuery.value.toLowerCase();
+  const query = searchQuery.value.toLowerCase()
   if (!query) {
-    return banksList.value; // Return full list when search query is empty
+    return banksList // Return full list when search query is empty
   } else {
-    return banksList.value.filter((bank) =>
-      bank.name.toLowerCase().includes(query),
-    );
+    return banksList.filter((bank) => bank.name.toLowerCase().includes(query))
   }
-});
+})
 
 async function submit() {
-  buttonLoader.value = true;
+  buttonLoader.value = true
   let payload = {
     accountNumber: accountNumber.value,
     bankCode: selectedBank.value.code,
-    clientId: CLIENT_ID,
-  };
+    clientId: CLIENT_ID
+  }
 
-  if (
-    bankAssets.value.length &&
-    bankAssets.value.filter((bank) => bank.bankCode === bankCode)
-  ) {
+  if (bankAssets.value.length && bankAssets.value.filter((bank) => bank.bankCode === bankCode)) {
     let data = {
       account_name: selectedBank.value.accountName,
       bank_name: selectedBank.value.name,
       account_number: accountNumber.value,
       amount: withdrawalAmount.value,
-      remaining_balance:
-        parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value),
-    };
-    emitter.emit("showDialogueMessage", data);
+      remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
+    }
+    emitter.emit('showDialogueMessage', data)
   } else {
-    const res = await verifyAccount(payload);
-    buttonLoader.value = false;
+    const res = await verifyAccount(payload)
+    buttonLoader.value = false
     if (res.success) {
       let data = {
         account_name: res.message,
         bank_name: selectedBank.value.name,
         account_number: accountNumber.value,
         amount: withdrawalAmount.value,
-        remaining_balance:
-          parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value),
-      };
-      emitter.emit("showDialogueMessage", data);
+        remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
+      }
+      emitter.emit('showDialogueMessage', data)
     } else {
-      accountError.value = true;
-      accountErrorMessage.value = res.message;
+      accountError.value = true
+      accountErrorMessage.value = res.message
     }
   }
 }
@@ -622,36 +567,36 @@ async function submitWithdrawalRequest(data) {
     bankCode: selectedBank.value.code,
     clientId: CLIENT_ID,
     // bank_id: selectedBank.value.bank_id,
-    type: "online",
-  };
-  document.querySelector(".layout.mask").click();
-  buttonLoader.value = true;
-  const res = await withdrawalRequest(payload);
-  buttonLoader.value = false;
+    type: 'online'
+  }
+  document.querySelector('.layout.mask').click()
+  buttonLoader.value = true
+  const res = await withdrawalRequest(payload)
+  buttonLoader.value = false
   if (res.success) {
-    withdrawalSuccessData.value = payload;
-    withdrawalSuccess.value = true;
+    withdrawalSuccessData.value = payload
+    withdrawalSuccess.value = true
   } else {
-    amountError.value = true;
-    amountErrorMessage.value = res.message;
+    amountError.value = true
+    amountErrorMessage.value = res.message
   }
 }
 
 async function checkUserBankAssets() {
   try {
-    const userAssetRes = await fetchBankAssets();
+    const userAssetRes = await fetchBankAssets()
     if (userAssetRes.data) {
-      bankAssets.value = res.data;
+      bankAssets.value = res.data
       selectedBank.value = {
         name: res.data[0].name,
         code: res.data[0].bankCode,
         accountName: res.data[0].accountName,
-        accountNumber: res.data[0].accountNumber,
-      };
-      accountNumber.value = res.data[0].accountNumber;
+        accountNumber: res.data[0].accountNumber
+      }
+      accountNumber.value = res.data[0].accountNumber
     }
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
 }
 
@@ -674,14 +619,24 @@ async function submitTransferRequest() {
 }
 
 async function submitCashRequest() {
-  let payload = {
-    amount: cashWithdrawalAmount.value.toString(),
-    clientId: CLIENT_ID,
-    type: 'cash'
-  }
+  let payload, res;
   buttonLoader.value = true
   try {
-    const res = await withdrawalRequest(payload)
+    if(activeMethod.value === 'smileandpay'){
+      payload = {
+        amount: cashWithdrawalAmount.value,
+        action: 'payouts',
+        type: 'cash'
+      }
+      res = await smileandpayPayout(payload)
+    }else{
+      payload = {
+        amount: cashWithdrawalAmount.value.toString(),
+        clientId: CLIENT_ID,
+        type: 'cash'
+      }
+      res = await withdrawalRequest(payload)
+    }
     buttonLoader.value = false
     if (res.success) {
       cashWithdrawalSuccessData.value = { amount: payload.amount, withdrawalCode: res.data.code }
@@ -697,9 +652,9 @@ async function submitCashRequest() {
 }
 
 onMounted(async () => {
-  emitter.on("confirmWithdrawalAction", submitWithdrawalRequest);
-  Promise.all([checkUserBankAssets(), getBanks()]);
-});
+  emitter.on('confirmWithdrawalAction', submitWithdrawalRequest)
+  Promise.all([checkUserBankAssets()])
+})
 </script>
 
 <style>
@@ -740,8 +695,8 @@ onMounted(async () => {
   padding: 0 0.625rem;
 }
 .ng-withdraw-nav.m-nav-secondary .icon-help::before {
-  content: "\e6cc";
-  font-family: "iconfont" !important;
+  content: '\e6cc';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -878,8 +833,8 @@ onMounted(async () => {
   margin: 0 1.33333333rem;
 }
 #withdraw .withdraw-bank .withdraw-bank-static .bank-static-arrow::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -936,11 +891,7 @@ onMounted(async () => {
   justify-content: space-between;
   padding: 8px 0;
 }
-#withdraw
-  .withdraw-bank
-  .withdraw-bank-number.static
-  .static-content
-  .static-label {
+#withdraw .withdraw-bank .withdraw-bank-number.static .static-content .static-label {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   font-size: 10px;
@@ -949,20 +900,12 @@ onMounted(async () => {
   margin-bottom: 4px;
   text-align: left;
 }
-#withdraw
-  .withdraw-bank
-  .withdraw-bank-number.static
-  .static-content
-  .static-input {
+#withdraw .withdraw-bank .withdraw-bank-number.static .static-content .static-input {
   font-size: 14px;
   height: 16px;
   line-height: 16px;
 }
-#withdraw
-  .withdraw-bank
-  .withdraw-bank-number.static
-  .static-content
-  .static-content-delete-icon {
+#withdraw .withdraw-bank .withdraw-bank-number.static .static-content .static-content-delete-icon {
   color: #dcdee5;
   color: var(--disable-brand-secondary);
   margin-right: 1.33333333rem;
@@ -972,8 +915,8 @@ onMounted(async () => {
   .withdraw-bank-number.static
   .static-content
   .static-content-delete-icon::before {
-  content: "\e602";
-  font-family: "iconfont" !important;
+  content: '\e602';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1010,8 +953,8 @@ onMounted(async () => {
   margin-left: 0.66666667rem;
 }
 #withdraw .withdraw-bank .switch-container .switch-bank .switch-icon::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1054,35 +997,19 @@ onMounted(async () => {
   color: #353a45;
   color: var(--text-type1-primary);
 }
-#withdraw
-  .withdraw-footer
-  .balance-container
-  .withdrawable-text-wrapper
-  .m-icon-help {
+#withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help {
   margin-right: 5px;
 }
-#withdraw
-  .withdraw-footer
-  .balance-container
-  .withdrawable-text-wrapper
-  .m-icon-help::before {
-  content: "\e686";
-  font-family: "iconfont" !important;
+#withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help::before {
+  content: '\e686';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-#withdraw
-  .withdraw-footer
-  .balance-container
-  .withdrawable-text-wrapper
-  .m-icon-help:active,
-#withdraw
-  .withdraw-footer
-  .balance-container
-  .withdrawable-text-wrapper
-  .m-icon-help:hover {
+#withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:active,
+#withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:hover {
   color: #0d9737;
   color: var(--brand-secondary);
 }
@@ -1232,25 +1159,15 @@ body {
   margin-right: 1.33333333rem;
   width: 1.5rem;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-left.selected::before {
-  content: "\e611";
-  font-family: "iconfont" !important;
+#popup-select .select-container .m-body .select-list .select-item .item-left.selected::before {
+  content: '\e611';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-left.selected::before {
+#popup-select .select-container .m-body .select-list .select-item .item-left.selected::before {
   color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.5rem;
@@ -1281,26 +1198,14 @@ body {
   border-bottom-color: #eaecef;
   border-bottom-color: var(--brand-border-type1);
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .item-icon {
+#popup-select .select-container .m-body .select-list .select-item .item-right .item-icon {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   height: 20px;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .item-main {
+#popup-select .select-container .m-body .select-list .select-item .item-right .item-main {
   -webkit-box-flex: 1;
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
@@ -1308,38 +1213,20 @@ body {
   margin-left: 0.66666667rem;
   margin-right: 1.41666667rem;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .item-title {
+#popup-select .select-container .m-body .select-list .select-item .item-right .item-title {
   color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1.066rem;
   line-height: 1;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .item-desc {
+#popup-select .select-container .m-body .select-list .select-item .item-right .item-desc {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   font-size: 1rem;
   line-height: 1;
   margin-top: 0.5rem;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .icon-delete {
+#popup-select .select-container .m-body .select-list .select-item .item-right .icon-delete {
   color: #e41827;
   color: var(--warning-primary);
   -webkit-box-flex: 0;
@@ -1348,27 +1235,15 @@ body {
   flex: 0 0 auto;
   margin-right: 1.08333333rem;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .icon-delete::before {
-  content: "\e602";
-  font-family: "iconfont" !important;
+#popup-select .select-container .m-body .select-list .select-item .item-right .icon-delete::before {
+  content: '\e602';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
-#popup-select
-  .select-container
-  .m-body
-  .select-list
-  .select-item
-  .item-right
-  .icon-delete:before {
+#popup-select .select-container .m-body .select-list .select-item .item-right .icon-delete:before {
   font-size: 1.066rem;
   line-height: 1;
 }

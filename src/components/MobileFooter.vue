@@ -11,13 +11,8 @@
     >
       <!-- <div class="bg"></div> -->
       <div class="count-wrapper">
-        <span class="count" v-if="betType !== 'Split'">{{
-          betslipCount > 0 ? totalOdds : 0
-        }}</span>
-        <span
-          v-if="betType === 'Split'"
-          style="display: flex; align-items: center"
-        >
+        <span class="count" v-if="betType !== 'Split'">{{ betslipCount > 0 ? totalOdds : 0 }}</span>
+        <span v-if="betType === 'Split'" style="display: flex; align-items: center">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -85,9 +80,7 @@
                 xmlns="http://www.w3.org/2000/svg"
                 class="icon"
               >
-                <path
-                  d="M0 23H26V18.4H0V23ZM0 0V4.6H26V0H0ZM0 13.8H26V9.2H0V13.8Z"
-                />
+                <path d="M0 23H26V18.4H0V23ZM0 0V4.6H26V0H0ZM0 13.8H26V9.2H0V13.8Z" />
               </svg>
             </section>
             <span class="label">AZ Menu</span>
@@ -112,9 +105,7 @@
         </div>
         <div class="m-btn-button active">
           <router-link :to="{ name: 'open-bets' }">
-            <span v-if="props.openBetCount > 0" class="open-bets">{{
-              props.openBetCount
-            }}</span>
+            <span v-if="props.openBetCount > 0" class="open-bets">{{ props.openBetCount }}</span>
             <section>
               <svg
                 width="28"
@@ -271,52 +262,52 @@
   </div>
 </template>
 <script setup>
-import { useUtilsStore, useCouponStore } from "@/stores";
-import { computed } from "vue";
-import { formatTotalOdds } from "@/helpers";
-import { useRoute } from "vue-router";
+import { useUtilsStore, useCouponStore } from '@/stores'
+import { computed } from 'vue'
+import { formatTotalOdds } from '@/helpers'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
-  openBetCount: Number,
-});
+  openBetCount: Number
+})
 
-const utilsStore = useUtilsStore();
-const couponStore = useCouponStore();
-const route = useRoute();
+const utilsStore = useUtilsStore()
+const couponStore = useCouponStore()
+const route = useRoute()
 
 const betslipCount = computed(() => {
-  return couponStore.coupon.selections.length;
-});
+  return couponStore.coupon.selections.length
+})
 
 const betslipMode = computed(() => {
-  return couponStore.betslipMode;
-});
+  return couponStore.betslipMode
+})
 
 const totalOdds = computed(() => {
-  return formatTotalOdds(couponStore.coupon.totalOdds);
-});
+  return formatTotalOdds(couponStore.coupon.totalOdds)
+})
 
-const emit = defineEmits(["show-betslip"]);
+const emit = defineEmits(['show-betslip'])
 const betType = computed(() => {
-  return couponStore.coupon.bet_type;
-});
+  return couponStore.coupon.bet_type
+})
 
 function showBetslip() {
-  return emit("show-betslip");
+  return emit('show-betslip')
 }
 
 const routeIsCasino = computed(() => {
   let route_names = [
-    "casino-games",
-    "casino-search",
-    "games-by-category",
-    "casino-providers",
-    "casino-category",
-    "games-by-provider",
-    "casino-bonus",
-  ];
-  return route_names.includes(route.name);
-});
+    'casino-games',
+    'casino-search',
+    'games-by-category',
+    'casino-providers',
+    'casino-category',
+    'games-by-provider',
+    'casino-bonus'
+  ]
+  return route_names.includes(route.name)
+})
 </script>
 <style scoped>
 .bottomNav-icon,

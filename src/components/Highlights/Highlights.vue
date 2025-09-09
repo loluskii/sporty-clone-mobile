@@ -2,19 +2,14 @@
   <div style="position: relative">
     <div class="m-bet-content">
       <div v-if="Object.keys(highlightsData).length" class="market-wrapper">
-        <div
-          class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation"
-          style="overflow: hidden"
-        >
+        <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
           <div class="m-tabs-nav" style="width:">
             <!-- <div class="m-tabs-ink-bar" style="display: block; width: 51.0469px; left: 0px"></div> -->
             <div
               v-for="(market, m) in marketsGroup"
               :key="m"
               class="m-tabs-tab"
-              :class="
-                market.marketID === activeMarket.marketID ? 'm-tab-active' : ''
-              "
+              :class="market.marketID === activeMarket.marketID ? 'm-tab-active' : ''"
               @click="selectMarket(market)"
             >
               {{ market.marketName }}
@@ -30,7 +25,7 @@
         >
           <div class="x-table-row m-date-row">
             <div class="x-table-cell m-date">
-              {{ formatDate(index, "DD/MM dddd") }}
+              {{ formatDate(index, 'DD/MM dddd') }}
             </div>
             <div class="x-table-cell market-title">
               <div
@@ -41,10 +36,7 @@
                 {{ activeMarket.specifier }}
               </div>
               <template
-                v-for="(market, m) in _.sortBy(
-                  activeMarket.outcomes,
-                  'outcomeID',
-                )"
+                v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
                 :key="m"
               >
                 <div>
@@ -63,8 +55,8 @@
       </template>
       <div v-else class="no-data">
         <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category.
-          Please try later.<br />Thank you.
+          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
+          you.
         </div>
       </div>
       <div class="view-all">
@@ -75,54 +67,51 @@
 </template>
 
 <script setup>
-import { defineComponent, computed, onMounted } from "vue";
-import { formatDate } from "@/helpers";
-import PrematchFixture from "@/components/Prematch/PrematchFixture.vue";
-import { defineEmits } from "vue";
-import _ from "lodash";
-import { useRouter } from "vue-router";
-import { useUtilsStore } from "@/stores";
-import { slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-
+import { defineComponent, computed, onMounted } from 'vue'
+import { formatDate } from '@/helpers'
+import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
+import { defineEmits } from 'vue'
+import _ from 'lodash'
+import { useRouter } from 'vue-router'
+import { useUtilsStore } from '@/stores'
+import { slugify } from '@/helpers'
+import emitter from '@/plugins/emitter'
 
 const props = defineProps({
   highlightsData: Object,
   marketsGroup: Object,
-  activeMarket: Object,
-});
+  activeMarket: Object
+})
 defineComponent({
-  name: "highlights-games",
-});
+  name: 'highlights-games'
+})
 
-const emits = defineEmits(["select-market"]);
-const router = useRouter();
-const utilsStore = useUtilsStore();
+const emits = defineEmits(['select-market'])
+const router = useRouter()
+const utilsStore = useUtilsStore()
 
 const getSportbyId = computed(() => {
-  return utilsStore.sportsMenu.find(
-    (sport) => sport.sportID == props.activeMarket.sportID,
-  );
-});
+  return utilsStore.sportsMenu.find((sport) => sport.sportID == props.activeMarket.sportID)
+})
 
 function viewMore() {
   return router.push({
-    name: "fixtures-by-sports",
-    params: { sport: slugify(getSportbyId.value.sportName) },
-  });
+    name: 'fixtures-by-sports',
+    params: { sport: slugify(getSportbyId.value.sportName) }
+  })
 }
 
 const selectMarket = (market) => {
-  emits("select-market", market);
-};
+  emits('select-market', market)
+}
 
 // In the parent component that renders the list of fixtures
 onMounted(() => {
   emitter.on('remove-fixture', (matchID) => {
     // Filter out the fixture with the given matchID
-    fixtures.value = fixtures.value.filter(fixture => fixture.matchID !== matchID);
-  });
-});
+    fixtures.value = fixtures.value.filter((fixture) => fixture.matchID !== matchID)
+  })
+})
 
 // onBeforeUnmount(() => {
 //   emitter.off('remove-fixture');

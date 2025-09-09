@@ -55,9 +55,7 @@
                     v-for="(market, m) in activeSportMarkets"
                     :key="m"
                     @click="selectMarket(market)"
-                    :class="
-                      market.marketID === activeMarket.marketID ? 'active' : ''
-                    "
+                    :class="market.marketID === activeMarket.marketID ? 'active' : ''"
                     class="m-sport-type-item m-snap-nav-item"
                   >
                     {{ market.marketName }}
@@ -73,10 +71,7 @@
                 <div class="m-table-cell m-name-cell">
                   <div class="m-name">
                     <template
-                      v-for="(market, m) in _.sortBy(
-                        activeMarket.outcomes,
-                        'outcomeID',
-                      )"
+                      v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
                       :key="m"
                     >
                       <div class="market-name">
@@ -90,9 +85,7 @@
             <template v-for="(fixture, index) in filteredLiveData" :key="index">
               <div class="m-league">
                 <div class="m-league-title">
-                  <span class="text"
-                    >{{ index }} - {{ fixture[0].tournament }}</span
-                  >
+                  <span class="text">{{ index }} - {{ fixture[0].tournament }}</span>
                   <span class="m-event-size"></span>
                 </div>
                 <div class="m-league-conent">
@@ -110,8 +103,8 @@
           </div>
           <div v-else class="no-data">
             <div style="white-space: pre-line">
-              Sorry, there are no games currently<br />available in this
-              category. Please try later.<br />Thank you.
+              Sorry, there are no games currently<br />available in this category. Please try
+              later.<br />Thank you.
             </div>
           </div>
         </template>
@@ -121,43 +114,33 @@
 </template>
 
 <script setup>
-import LiveFixture from "@/components/Live/LiveFixture.vue";
-import { useUtilsStore, useCouponStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { useQuery } from "vue-query";
-import { getLiveHighlights } from "@/helpers";
-import {
-  defineComponent,
-  onMounted,
-  ref,
-  computed,
-  watch,
-  onBeforeUnmount,
-} from "vue";
-import HeaderOther from "@/components/HeaderOther.vue";
-import _ from "lodash";
-import { useMqttService } from "@/composables/useMqtt";
+import LiveFixture from '@/components/Live/LiveFixture.vue'
+import { useUtilsStore, useCouponStore } from '@/stores'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { useQuery } from 'vue-query'
+import { getLiveHighlights } from '@/helpers'
+import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
+import HeaderOther from '@/components/HeaderOther.vue'
+import _ from 'lodash'
+import { useMqttService } from '@/composables/useMqtt'
 
-const isEmptyResponse = ref(false);
-const utilsStore = useUtilsStore();
-const couponStore = useCouponStore();
-const mqttService = useMqttService();
-const unsubscribeFunctions = ref([]);
-const activeSportID = ref(utilsStore.activeLiveSportID || 1);
+const isEmptyResponse = ref(false)
+const utilsStore = useUtilsStore()
+const couponStore = useCouponStore()
+const mqttService = useMqttService()
+const unsubscribeFunctions = ref([])
+const activeSportID = ref(utilsStore.activeLiveSportID || 1)
 
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(
-    `../assets/images/sports/${sportId}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  const imageUrl = new URL(`../assets/images/sports/${sportId}.png`, import.meta.url)
+  return imageUrl
+}
 
 const {
   data: completeLiveData,
   isLoading,
-  refetch,
-} = useQuery("liveData", getLiveHighlights, {
+  refetch
+} = useQuery('liveData', getLiveHighlights, {
   // Prevent automatic refetching which can cause recursive updates
   refetchOnWindowFocus: false,
   refetchOnMount: true,
@@ -171,18 +154,14 @@ const {
   // Add retry logic with exponential backoff
   retry: (failureCount, error) => {
     // Don't retry on 4xx errors
-    if (
-      error.response &&
-      error.response.status >= 400 &&
-      error.response.status < 500
-    ) {
-      return false;
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false
     }
-    return failureCount < 3; // retry up to 3 times
+    return failureCount < 3 // retry up to 3 times
   },
   retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   onError: (err) => {
-    console.error("Error fetching live data:", err);
+    console.error('Error fetching live data:', err)
   },
   onSuccess: (response) => {
     if (response.fixtures) {
@@ -191,50 +170,46 @@ const {
     } else {
       // Instead of setting isEmptyResponse, update existing fixtures to inactive state
       if (completeLiveData.value?.fixtures) {
-        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map(
-          (fixture) => ({
-            ...fixture,
-            outcomes: fixture.outcomes.map((outcome) => ({
-              ...outcome,
-              odds: 0,
-              active: false,
-            })),
-          }),
-        );
+        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map((fixture) => ({
+          ...fixture,
+          outcomes: fixture.outcomes.map((outcome) => ({
+            ...outcome,
+            odds: 0,
+            active: false
+          }))
+        }))
       }
-      isEmptyResponse.value = true;
+      isEmptyResponse.value = true
     }
-  },
-});
+  }
+})
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value) {
-    return [];
+    return []
   } else {
-    const sportCountMap = new Map();
+    const sportCountMap = new Map()
 
     completeLiveData.value?.fixtures?.forEach((fixture) => {
-      const key = fixture.sportName;
+      const key = fixture.sportName
       if (sportCountMap.has(key)) {
-        const sportData = sportCountMap.get(key);
-        sportData.count += 1;
+        const sportData = sportCountMap.get(key)
+        sportData.count += 1
       } else {
         sportCountMap.set(key, {
           sportID: fixture.sportID,
           sportName: fixture.sportName,
-          count: 1,
-        });
+          count: 1
+        })
       }
-    });
+    })
 
     // Convert Map to array and sort it by sportID
-    const uniqueList = Array.from(sportCountMap.values()).sort(
-      (a, b) => a.sportID - b.sportID,
-    );
+    const uniqueList = Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
 
-    return uniqueList;
+    return uniqueList
   }
-});
+})
 
 const filteredLiveData = computed(() => {
   let fixtures =
@@ -244,66 +219,64 @@ const filteredLiveData = computed(() => {
           .sort((a, b) => {
             // First sort by tournamentID
             if (a.tournamentID !== b.tournamentID) {
-              return a.tournamentID - b.tournamentID;
+              return a.tournamentID - b.tournamentID
             }
             // If same tournament, maintain original order
-            return 0;
+            return 0
           })
-      : [];
+      : []
 
-  return _.groupBy(fixtures, "categoryName");
-});
+  return _.groupBy(fixtures, 'categoryName')
+})
 
 const marketsGroup = computed(() => {
   let markets =
     completeLiveData.value?.fixtures && !isEmptyResponse.value
       ? completeLiveData.value?.markets
-      : [];
+      : []
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]
-  return markets;
-});
+  return markets
+})
 
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter(
-    (s) => s.sportID == activeSportID.value,
-  );
-  return activeMarkets ? _.sortBy(activeMarkets, "marketID") : [];
-});
+  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
+  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
+})
 
 const activeMarket = computed(() => {
-  return utilsStore.activeLiveMarkets;
-});
+  return utilsStore.activeLiveMarkets
+})
 
 watch(activeSportMarkets, (newValue) => {
   // Update activeMarket when activeSportMarkets changes
   if (newValue.length) {
-    utilsStore.activeLiveMarkets = newValue[0];
+    utilsStore.activeLiveMarkets = newValue[0]
   } else {
-    utilsStore.activeLiveMarkets = [];
+    utilsStore.activeLiveMarkets = []
   }
-});
+})
 
 function setActiveSport(sid) {
-  activeSportID.value = parseInt(sid);
+  activeSportID.value = parseInt(sid)
   // let markets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]
-  document.getElementById("live_" + sid).scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center",
-  });
+  document.getElementById('live_' + sid).scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 
 function selectMarket(market) {
-  utilsStore.activeLiveMarkets = market;
+  utilsStore.activeLiveMarkets = market
 }
 
 // Function to handle odds changes
 const handleOddsChange = (data) => {
   // console.log('⚙️ LiveView: Received odds change:', data)
-  
+
   if (!completeLiveData.value?.fixtures) {
     // console.log('⚙️ LiveView: No fixtures data available, skipping odds update')
     return
@@ -311,35 +284,33 @@ const handleOddsChange = (data) => {
 
   // Find and update the fixture with matching matchID
   const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(data.matchID),
-  );
+    (fixture) => String(fixture.matchID) === String(data.matchID)
+  )
 
   if (fixtureIndex !== -1) {
     // console.log(`⚙️ LiveView: Updating odds for match ID ${data.matchID}`)
-    
+
     // Update the fixture's outcomes
     completeLiveData.value.fixtures[fixtureIndex] = {
       ...completeLiveData.value.fixtures[fixtureIndex],
-      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map(
-        (outcome) => {
-          if (String(outcome.outcomeID) === String(data.outcomeID)) {
-            return {
-              ...outcome,
-              odds: data.odds,
-              active: data.active,
-            };
+      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map((outcome) => {
+        if (String(outcome.outcomeID) === String(data.outcomeID)) {
+          return {
+            ...outcome,
+            odds: data.odds,
+            active: data.active
           }
-          return outcome;
-        },
-      ),
-    };
+        }
+        return outcome
+      })
+    }
   }
-};
+}
 
 // Function to handle bet stops
 const handleBetStop = (data) => {
   // console.log('⚙️ LiveView: Received bet stop:', data)
-  
+
   if (!completeLiveData.value?.fixtures) {
     // console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
     return
@@ -347,30 +318,28 @@ const handleBetStop = (data) => {
 
   // Find and update the fixture with matching matchID
   const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(data.matchID),
-  );
+    (fixture) => String(fixture.matchID) === String(data.matchID)
+  )
 
   if (fixtureIndex !== -1) {
     // console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
-    
+
     // Update all outcomes to be inactive with odds 0
     completeLiveData.value.fixtures[fixtureIndex] = {
       ...completeLiveData.value.fixtures[fixtureIndex],
-      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map(
-        (outcome) => ({
-          ...outcome,
-          odds: 0,
-          active: false,
-        }),
-      ),
-    };
+      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map((outcome) => ({
+        ...outcome,
+        odds: 0,
+        active: false
+      }))
+    }
   }
-};
+}
 
 // Function to set up MQTT subscriptions
 const setupMqttSubscriptions = () => {
   // console.log('⚙️ LiveView: Setting up MQTT subscriptions')
-  
+
   if (!completeLiveData.value?.fixtures) {
     // console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
     return
@@ -378,63 +347,62 @@ const setupMqttSubscriptions = () => {
 
   // Get unique match IDs from fixtures
   const matchIds = [
-    ...new Set(
-      completeLiveData.value.fixtures.map((fixture) => String(fixture.matchID)),
-    ),
-  ];
+    ...new Set(completeLiveData.value.fixtures.map((fixture) => String(fixture.matchID)))
+  ]
 
   // Subscribe to odds changes and bet stops for each match
   matchIds.forEach((matchId) => {
-    const oddsChangeUnsubscribe = mqttService.subscribe(
-      `odds_change/${matchId}`,
-      handleOddsChange,
-    );
+    const oddsChangeUnsubscribe = mqttService.subscribe(`odds_change/${matchId}`, handleOddsChange)
 
-    const betStopUnsubscribe = mqttService.subscribe(
-      `bet_stop/${matchId}`,
-      handleBetStop,
-    );
+    const betStopUnsubscribe = mqttService.subscribe(`bet_stop/${matchId}`, handleBetStop)
 
-    unsubscribeFunctions.value.push(oddsChangeUnsubscribe, betStopUnsubscribe);
-  });
-};
+    unsubscribeFunctions.value.push(oddsChangeUnsubscribe, betStopUnsubscribe)
+  })
+}
 
 onMounted(async () => {
   if (completeLiveData.value && completeLiveData.value.fixtures.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID;
-    setupMqttSubscriptions();
+    activeSportID.value = completeLiveData.value.fixtures[0].sportID
+    setupMqttSubscriptions()
   }
-});
+})
 
 onBeforeUnmount(() => {
   // Clean up MQTT subscriptions
-  unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe());
-  unsubscribeFunctions.value = [];
-});
+  unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
+  unsubscribeFunctions.value = []
+})
 
 defineComponent({
   methods: {
     // Manually trigger a refetch without making a new network request
     handleManualRefetch() {
-      refetch();
-    },
-  },
-});
+      refetch()
+    }
+  }
+})
 
 // Add watcher for activeSportID to update store
 watch(activeSportID, (newValue) => {
-  utilsStore.activeLiveSportID = newValue;
-});
+  utilsStore.activeLiveSportID = newValue
+})
 
 // Add watcher for sportsListData to set activeSportID
-watch(sportsListData, (newSportsList) => {
-  if (newSportsList.length > 0) {
-    // Only set activeSportID if it's not already set or not in the list
-    if (!activeSportID.value || !newSportsList.some(sport => sport.sportID === activeSportID.value)) {
-      activeSportID.value = newSportsList[0].sportID;
+watch(
+  sportsListData,
+  (newSportsList) => {
+    if (newSportsList.length > 0) {
+      // Only set activeSportID if it's not already set or not in the list
+      if (
+        !activeSportID.value ||
+        !newSportsList.some((sport) => sport.sportID === activeSportID.value)
+      ) {
+        activeSportID.value = newSportsList[0].sportID
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+)
 </script>
 
 <style>
@@ -472,7 +440,7 @@ watch(sportsListData, (newSportsList) => {
   padding: 2.5rem 0 0.83333333rem;
 }
 .m-overview .m-live .no-live-virtual-data {
-  font-family: "Roboto-Regular";
+  font-family: 'Roboto-Regular';
   font-size: 1.066rem;
   padding: 10rem 1.33333333rem;
   text-align: center;
@@ -484,8 +452,8 @@ watch(sportsListData, (newSportsList) => {
   text-align: center;
 }
 .m-overview .m-live .no-data::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -557,11 +525,7 @@ watch(sportsListData, (newSportsList) => {
   border-bottom: 3px solid var(--brand-secondary);
   color: #ffffff;
 }
-.m-overview
-  .m-live
-  .m-sport-type
-  .m-sport-type-item.active
-  .m-sport-icon:before {
+.m-overview .m-live .m-sport-type .m-sport-type-item.active .m-sport-icon:before {
   color: #ffffff;
 }
 .m-overview .m-live .m-sport-type .m-sport-type-item .m-event-size {
@@ -659,13 +623,7 @@ watch(sportsListData, (newSportsList) => {
   padding-bottom: 0.33333333rem;
   padding-top: 0.83333333rem;
 }
-.m-overview
-  .m-live
-  .m-league
-  .m-league-conent
-  .m-live-table
-  .m-live-title-row
-  .m-market-size {
+.m-overview .m-live .m-league .m-league-conent .m-live-table .m-live-title-row .m-market-size {
   color: var(--brand-secondary);
   text-align: right;
 }
@@ -677,26 +635,15 @@ watch(sportsListData, (newSportsList) => {
   .m-live-title-row
   .m-market-size:after {
   color: var(--brand-secondary);
-  content: "\e608";
+  content: '\e608';
   display: inline-block;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   text-indent: 0.83333333rem;
 }
-.m-overview
-  .m-live
-  .m-league
-  .m-league-conent
-  .m-live-table
-  .m-live-title-row
-  .game-id {
+.m-overview .m-live .m-league .m-league-conent .m-live-table .m-live-title-row .game-id {
   color: #9ca0ab;
 }
-.m-overview
-  .m-live
-  .m-league
-  .m-league-conent
-  .m-live-table.tennis
-  .m-info-cell {
+.m-overview .m-live .m-league .m-league-conent .m-live-table.tennis .m-info-cell {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding-right: 0.83333333rem;

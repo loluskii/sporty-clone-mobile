@@ -13,12 +13,10 @@
           <div class="m-event-time-wrap">
             <div class="m-event-time-left">
               <span class="event-date">
-                {{ formatDate(eventDetail.date, "DD/MM dddd") }}
+                {{ formatDate(eventDetail.date, 'DD/MM dddd') }}
               </span>
               |
-              <span class="event-time">
-                {{ formatDate(eventDetail.date, "HH:mm") }}</span
-              >
+              <span class="event-time"> {{ formatDate(eventDetail.date, 'HH:mm') }}</span>
               <span class="live-in-play">Live In-Play Available</span>
               <span class="event-gameid">ID {{ eventDetail.matchID }}</span>
             </div>
@@ -46,10 +44,7 @@
           </ul>
         </div>
         <div v-show="!isH2HShowing" class="m-sub-tab">
-          <div
-            v-if="eventDetail.statusCode === 0"
-            class="m-market-group pre-match event-detail"
-          >
+          <div v-if="eventDetail.statusCode === 0" class="m-market-group pre-match event-detail">
             <div class="m-sport-market">
               <div
                 v-for="(marketGroup, index) in groupedMarkets"
@@ -67,22 +62,14 @@
                   <div class="m-table market-content">
                     <div
                       class="m-table-row"
-                      v-for="(market, m) in getChunks(
-                        marketGroup.markets[0].outcomes,
-                      )"
+                      v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
                       :key="m"
                     >
                       <template
-                        v-if="
-                          marketGroup.specifier !== undefined &&
-                          marketGroup.specifier === ''
-                        "
+                        v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
                       >
                         <template
-                          v-for="(selection, odd) in sortByKey(
-                            market,
-                            'outcomeID',
-                          )"
+                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
                           :key="odd"
                         >
                           <div
@@ -94,35 +81,27 @@
                                   eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name,
+                                  eventDetail.name
                                 ),
-                                couponStore.coupon,
+                                couponStore.coupon
                               ),
                               'm-outcome-two': market.length === 2,
                               'm-outcome-three': market.length === 3,
-                              'm-outcome--disabled': selection.odds < 1,
+                              'm-outcome--disabled': selection.odds < 1
                             }"
                             @click="addToBetslip(marketGroup, selection)"
                           >
                             <em style="text-transform: capitalize">{{
                               selection.displayName ?? selection.outcomeName
                             }}</em>
-                            <em
-                              :class="{ 'm-icon-lock': selection.odds < 1 }"
-                              >{{
-                                selection.odds > 1
-                                  ? selection.odds.toFixed(2)
-                                  : ""
-                              }}</em
-                            >
+                            <em :class="{ 'm-icon-lock': selection.odds < 1 }">{{
+                              selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                            }}</em>
                           </div>
                         </template>
                       </template>
                       <template v-else>
-                        <div
-                          v-if="isTotalOrHandicap(marketGroup)"
-                          class="m-table"
-                        >
+                        <div v-if="isTotalOrHandicap(marketGroup)" class="m-table">
                           <!-- <div class="m-table-row">
                             <div
                               class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
@@ -148,9 +127,7 @@
                             </div>
                           </div> -->
                           <div
-                            v-for="(mg, idx) in uniqueMarkets(
-                              marketGroup.markets,
-                            )"
+                            v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)"
                             class="m-table-row"
                             :key="idx"
                           >
@@ -158,20 +135,13 @@
                             <div
                               class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
                               :class="{
-                                'm-outcome-three':
-                                  uniqueOutcomes(mg.outcomes).length + 1 === 3,
-                                'm-outcome-four':
-                                  uniqueOutcomes(mg.outcomes).length + 1 === 4,
+                                'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                                'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4
                               }"
                             >
                               <em>{{ getSpecifierValue(mg.specifier) }}</em>
                             </div>
-                            <template
-                              v-for="(outcome, o) in uniqueOutcomes(
-                                mg.outcomes,
-                              )"
-                              :key="o"
-                            >
+                            <template v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)" :key="o">
                               <div
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
                                 @click="addToBetslip(mg, outcome)"
@@ -182,37 +152,25 @@
                                       eventDetail.matchID,
                                       outcome.outcomeName,
                                       outcome.oddID,
-                                      eventDetail.name,
+                                      eventDetail.name
                                     ),
-                                    couponStore.coupon,
+                                    couponStore.coupon
                                   ),
-                                  'm-outcome-three':
-                                    uniqueOutcomes(mg.outcomes).length + 1 ===
-                                    3,
-                                  'm-outcome-four':
-                                    uniqueOutcomes(mg.outcomes).length + 1 ===
-                                    4,
-                                  'm-outcome--disabled': outcome.odds < 1,
+                                  'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
+                                  'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
+                                  'm-outcome--disabled': outcome.odds < 1
                                 }"
                               >
-                                <em
-                                  :class="{ 'm-icon-lock': outcome.odds <= 1 }"
-                                  >{{
-                                    outcome.odds > 1
-                                      ? outcome.odds.toFixed(2)
-                                      : ""
-                                  }}</em
-                                >
+                                <em :class="{ 'm-icon-lock': outcome.odds <= 1 }">{{
+                                  outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
+                                }}</em>
                               </div>
                             </template>
                           </div>
                         </div>
                         <template
                           v-else
-                          v-for="(selection, odd) in sortByKey(
-                            market,
-                            'outcomeID',
-                          )"
+                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
                           :key="odd"
                         >
                           <!-- {{ market }} -->
@@ -225,27 +183,22 @@
                                   eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name,
+                                  eventDetail.name
                                 ),
-                                couponStore.coupon,
+                                couponStore.coupon
                               ),
                               'm-outcome-two': market.length === 2,
                               'm-outcome-three': market.length === 3,
-                              'm-outcome--disabled': selection.odds < 1,
+                              'm-outcome--disabled': selection.odds < 1
                             }"
                             @click="addToBetslip(marketGroup, selection)"
                           >
                             <em style="text-transform: capitalize">{{
                               getMarketCode(selection.outcomeName)
                             }}</em>
-                            <em
-                              :class="{ 'm-icon-lock': selection.odds < 1 }"
-                              >{{
-                                selection.odds > 1
-                                  ? selection.odds.toFixed(2)
-                                  : ""
-                              }}</em
-                            >
+                            <em :class="{ 'm-icon-lock': selection.odds < 1 }">{{
+                              selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                            }}</em>
                           </div>
                         </template>
                       </template>
@@ -257,8 +210,8 @@
           </div>
           <div v-else class="m-sport-market-no-data">
             <div style="white-space: pre-line">
-              Sorry, this game is no longer available. Betting has closed.
-              Please choose other games.
+              Sorry, this game is no longer available. Betting has closed. Please choose other
+              games.
             </div>
           </div>
         </div>
@@ -271,105 +224,97 @@
     </div>
   </div>
   <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-  <ErrorDialogue
-    v-else-if="!isLoading && !eventDetail"
-    :message="errorMessage"
-  ></ErrorDialogue>
+  <ErrorDialogue v-else-if="!isLoading && !eventDetail" :message="errorMessage"></ErrorDialogue>
 </template>
 
 <script setup>
-import HeaderOther from "@/components/HeaderOther.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
-import {
-  getFixtureMarkets,
-  chunks,
-  formatDate,
-  createID,
-  isSelected,
-} from "@/helpers";
+import HeaderOther from '@/components/HeaderOther.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
+import { getFixtureMarkets, chunks, formatDate, createID, isSelected } from '@/helpers'
 // import _ from 'lodash'
-import ErrorDialogue from "@/components/ErrorDialogue.vue";
-import { useCouponStore } from "@/stores";
-import emitter from "@/plugins/emitter";
-import { SIM_ALLOWED_MARKETS } from "@/helpers";
-import { useMqttService } from "@/composables/useMqtt";
+import ErrorDialogue from '@/components/ErrorDialogue.vue'
+import { useCouponStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { SIM_ALLOWED_MARKETS } from '@/helpers'
+import { useMqttService } from '@/composables/useMqtt'
 
-const { subscribe } = useMqttService();
+const { subscribe } = useMqttService()
 
-const eventMarkets = ref();
-const eventDetail = ref(null);
-const groupedMarkets = ref([]);
-const isLoading = ref(false);
-const route = useRoute();
-const errorMessage = ref();
-const couponStore = useCouponStore();
-const homeTeam = ref();
-const awayTeam = ref();
-const isH2HShowing = ref(false);
-const updatedOutcomes = ref({});
-const updatePending = ref(false);
-const unsubscribeFunctions = ref([]);
-const refetchInterval = ref(null);
-const REFETCH_INTERVAL_MS = 60000; // 60 seconds
+const eventMarkets = ref()
+const eventDetail = ref(null)
+const groupedMarkets = ref([])
+const isLoading = ref(false)
+const route = useRoute()
+const errorMessage = ref()
+const couponStore = useCouponStore()
+const homeTeam = ref()
+const awayTeam = ref()
+const isH2HShowing = ref(false)
+const updatedOutcomes = ref({})
+const updatePending = ref(false)
+const unsubscribeFunctions = ref([])
+const refetchInterval = ref(null)
+const REFETCH_INTERVAL_MS = 60000 // 60 seconds
 
 watch(
   () => [route.params.event_id, route.name],
   async ([event_id, route_name]) => {
-    if (route_name === "fixtures-detail") {
-      await getEventDetail(event_id);
+    if (route_name === 'fixtures-detail') {
+      await getEventDetail(event_id)
     }
   },
-  { immediate: true },
-);
+  { immediate: true }
+)
 
 function setupMqttSubscriptions(matchId) {
-  const componentId = `fixture-detail-${matchId}-${Date.now()}`;
+  const componentId = `fixture-detail-${matchId}-${Date.now()}`
 
   // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`;
+  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
   const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
     // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
-    handleOddsChange(data);
-  });
+    handleOddsChange(data)
+  })
 
   // Subscribe to bet stop
-  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`;
+  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
   const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
     // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
-    handleBetStop(data);
-  });
+    handleBetStop(data)
+  })
 
   // Store unsubscribe functions in ref
-  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop];
+  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop]
 }
 
 function setupPeriodicRefetch(matchId) {
   // Clear any existing interval
   if (refetchInterval.value) {
-    clearInterval(refetchInterval.value);
+    clearInterval(refetchInterval.value)
   }
 
   // Set up new interval
   refetchInterval.value = setInterval(async () => {
-    if (eventDetail.value?.statusCode === 0) { // Only refetch if match is still available
+    if (eventDetail.value?.statusCode === 0) {
+      // Only refetch if match is still available
       // console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
-        const res = await getFixtureMarkets(matchId);
+        const res = await getFixtureMarkets(matchId)
         if (Object.keys(res).length && res.markets) {
           eventMarkets.value = res.markets
           groupedMarkets.value = groupByMarketID(res.markets)
           // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
         }
       } catch (error) {
-        console.error(`❌ Error during periodic refetch:`, error);
+        console.error(`❌ Error during periodic refetch:`, error)
       }
     } else {
       // console.log(`⏹️ Match no longer available, stopping periodic refetch for match ID: ${matchId}`)
       clearInterval(refetchInterval.value)
     }
-  }, REFETCH_INTERVAL_MS);
+  }, REFETCH_INTERVAL_MS)
 
   // console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS/1000} seconds for match ID: ${matchId}`)
 }
@@ -378,7 +323,7 @@ onBeforeUnmount(() => {
   // Clean up any active subscriptions
   if (unsubscribeFunctions.value.length > 0) {
     // console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
-    unsubscribeFunctions.value.forEach(unsubscribe => unsubscribe())
+    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
     unsubscribeFunctions.value = []
   }
 
@@ -388,169 +333,165 @@ onBeforeUnmount(() => {
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
   }
-});
+})
 
 async function getEventDetail(id) {
-  isLoading.value = true;
+  isLoading.value = true
   try {
-    const res = await getFixtureMarkets(id);
+    const res = await getFixtureMarkets(id)
     if (Object.keys(res).length && res.markets) {
-      eventDetail.value = res;
-      eventMarkets.value = res.markets;
-      groupedMarkets.value = groupByMarketID(res.markets);
-      homeTeam.value = res.competitor1;
-      awayTeam.value = res.competitor2;
+      eventDetail.value = res
+      eventMarkets.value = res.markets
+      groupedMarkets.value = groupByMarketID(res.markets)
+      homeTeam.value = res.competitor1
+      awayTeam.value = res.competitor2
 
       // Set up MQTT subscriptions after we have the event details
       if (res.matchID) {
-        setupMqttSubscriptions(res.matchID);
-        setupPeriodicRefetch(res.matchID);
+        setupMqttSubscriptions(res.matchID)
+        setupPeriodicRefetch(res.matchID)
       }
     } else {
-      emitter.emit("showErrorMessage", {
-        message: "This event is no longer available",
-        next_route: "/",
-      });
+      emitter.emit('showErrorMessage', {
+        message: 'This event is no longer available',
+        next_route: '/'
+      })
     }
   } catch (error) {
-    eventDetail.value = null;
-    emitter.emit("showErrorMessage", {
-      message: error.message || "Failed to load event details",
-      next_route: "home",
-    });
+    eventDetail.value = null
+    emitter.emit('showErrorMessage', {
+      message: error.message || 'Failed to load event details',
+      next_route: 'home'
+    })
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
 function isTotalOrHandicap(market) {
   return (
-    (market.specifier.includes("total") &&
+    (market.specifier.includes('total') &&
       uniqueOutcomes(market.markets[0].outcomes).length === 2) ||
-    market.specifier.includes("hcp")
-  );
+    market.specifier.includes('hcp')
+  )
 }
 
 const getMarketCode = (name) => {
-  const homeTeamRegex = new RegExp(homeTeam.value, "gi");
-  const awayTeamRegex = new RegExp(awayTeam.value, "gi");
-  const drawRegex = /draw/gi;
-  const orRegex = /or/gi;
+  const homeTeamRegex = new RegExp(homeTeam.value, 'gi')
+  const awayTeamRegex = new RegExp(awayTeam.value, 'gi')
+  const drawRegex = /draw/gi
+  const orRegex = /or/gi
 
   // Replace home team name with '1'
-  name = name.replace(homeTeamRegex, "1");
+  name = name.replace(homeTeamRegex, '1')
 
   // Replace away team name with '2'
-  name = name.replace(awayTeamRegex, "2");
+  name = name.replace(awayTeamRegex, '2')
 
   // Replace 'draw' with 'X'
-  name = name.replace(drawRegex, "X");
+  name = name.replace(drawRegex, 'X')
 
   // Replace 'or' with '/'
-  name = name.replace(orRegex, "/");
+  name = name.replace(orRegex, '/')
 
-  return name.trim();
-};
+  return name.trim()
+}
 
 function getSpecifierValue(specifier) {
   // Check if the specifier includes 'total=', 'hcp=', 'nr=' or 'variant=' and contains a numeric value after the '='
-  if (!specifier.includes("|") && /total=|hcp=|nr=|variant=/.test(specifier)) {
-    const value = specifier.split("=").pop();
-    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2);
+  if (!specifier.includes('|') && /total=|hcp=|nr=|variant=/.test(specifier)) {
+    const value = specifier.split('=').pop()
+    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2)
   }
 
   // Check if specifier contains 'total' and includes '|'
-  if (specifier.includes("|") && specifier.includes("total")) {
-    const value = specifier.split("|")[0].split("=").pop();
-    return !isNaN(parseFloat(value)) ? value : specifier.split("=")[1];
+  if (specifier.includes('|') && specifier.includes('total')) {
+    const value = specifier.split('|')[0].split('=').pop()
+    return !isNaN(parseFloat(value)) ? value : specifier.split('=')[1]
   }
 
   // Handle combined specifier
-  const specs = specifier.split("|");
+  const specs = specifier.split('|')
   if (specs.length > 1) {
-    const combo2 = specs[1].split("=").pop();
-    return combo2;
+    const combo2 = specs[1].split('=').pop()
+    return combo2
   }
 
   // Default case
-  return specifier.split("=")[0];
+  return specifier.split('=')[0]
 }
 
 function sortByKey(array, key, ascending = true) {
   return array.slice().sort((a, b) => {
-    const valA = parseInt(a[key], 10);
-    const valB = parseInt(b[key], 10);
+    const valA = parseInt(a[key], 10)
+    const valB = parseInt(b[key], 10)
 
     if (isNaN(valA) || isNaN(valB)) {
       // Handle cases where parsing fails
-      return 0;
+      return 0
     }
 
-    return ascending ? valA - valB : valB - valA;
-  });
+    return ascending ? valA - valB : valB - valA
+  })
 }
 
 const getChunks = (outcomes) => {
-  let x = uniqueOutcomes(outcomes);
-  return chunks(x);
-};
+  let x = uniqueOutcomes(outcomes)
+  return chunks(x)
+}
 
 const uniqueMarkets = (markets) => {
   // console.log(markets);
   let x = markets.filter(
     (market, index, self) =>
       index ===
-      self.findIndex(
-        (o) =>
-          o.marketID === market.marketID && o.specifier === market.specifier,
-      ),
-  );
-  return x;
-};
+      self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
+  )
+  return x
+}
 
 const uniqueOutcomes = (outcomes) => {
   let x = outcomes.filter(
-    (outcome, index, self) =>
-      index === self.findIndex((o) => o.outcomeID === outcome.outcomeID),
-  );
-  return x;
-};
+    (outcome, index, self) => index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
+  )
+  return x
+}
 
 function groupByMarketID(data) {
-  const groupedMarkets = {};
+  const groupedMarkets = {}
   data.forEach((marketGroup) => {
-    const { marketID, marketName, specifier } = marketGroup;
+    const { marketID, marketName, specifier } = marketGroup
     if (!groupedMarkets[marketID]) {
       groupedMarkets[marketID] = {
         marketID,
         marketName,
         specifier,
-        markets: [marketGroup],
-      };
+        markets: [marketGroup]
+      }
     } else {
-      groupedMarkets[marketID].markets.push(marketGroup);
+      groupedMarkets[marketID].markets.push(marketGroup)
     }
-  });
-  return Object.values(groupedMarkets);
+  })
+  return Object.values(groupedMarkets)
 }
 
 function addToBetslip(market, outcome) {
-  if (outcome.odds <= 1) return;
-  let marketId = parseInt(market.marketID);
+  if (outcome.odds <= 1) return
+  let marketId = parseInt(market.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
-      "showErrorMessage",
-      "This market is not supported in simulation mode. Exit Simulation mode to add to betslip",
-    );
-    return;
+      'showErrorMessage',
+      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
+    )
+    return
   }
   const id = createID(
     eventDetail.value.gameID,
     eventDetail.value.matchID,
     outcome.outcomeName,
     outcome.oddID,
-    eventDetail.value.name,
-  );
+    eventDetail.value.name
+  )
   const data = {
     fixture: eventDetail.value,
     market_name: market.marketName,
@@ -560,106 +501,100 @@ function addToBetslip(market, outcome) {
     odds: outcome.odds,
     odd_id: outcome.oddID,
     odd_name: outcome.outcomeName,
-    type: "prematch",
+    type: 'prematch',
     event_id: eventDetail.value.gameID,
-    specifier: market.specifier,
-  };
+    specifier: market.specifier
+  }
   // return couponStore.addToCoupon(data)
-  const existsInBetslip = isSelected(id, couponStore.coupon);
-  return existsInBetslip
-    ? couponStore.removeSelection(id)
-    : couponStore.addToCoupon(data);
+  const existsInBetslip = isSelected(id, couponStore.coupon)
+  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
 }
 
-const showFixtureAnalysis = (id, widgetName = "headToHead.standalone") => {
-  isH2HShowing.value = true;
-  const statWrapper = document.getElementById("sr-widget");
-  window.SIR("addWidget", "#sr-widget", "headToHead.standalone", {
+const showFixtureAnalysis = (id, widgetName = 'headToHead.standalone') => {
+  isH2HShowing.value = true
+  const statWrapper = document.getElementById('sr-widget')
+  window.SIR('addWidget', '#sr-widget', 'headToHead.standalone', {
     gamePulseBtnEnable: true,
-    matchId: `${eventDetail.value.matchID}`,
-  });
-};
+    matchId: `${eventDetail.value.matchID}`
+  })
+}
 
 function handleOddsChange(data) {
-  if (!data || !data.markets) return;
+  if (!data || !data.markets) return
 
-  const matchId = eventDetail.value.matchID;
-  const dataMatchId = data.event_id || data.match_id;
+  const matchId = eventDetail.value.matchID
+  const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    return;
+    return
   }
 
   if (!updatePending.value) {
-    updatePending.value = true;
+    updatePending.value = true
 
     requestAnimationFrame(() => {
-      const markets = data.markets || [];
+      const markets = data.markets || []
 
       if (markets.length > 0) {
-        const updatedOutcomesCopy = { ...updatedOutcomes.value };
+        const updatedOutcomesCopy = { ...updatedOutcomes.value }
 
         markets.forEach((market) => {
           if (market.outcomes) {
             market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${
-                market.specifiers || ""
-              }`;
+              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
               updatedOutcomesCopy[key] = {
                 odds: outcome.odds,
                 active: outcome.active ? 1 : 0,
-                timestamp: Date.now(),
-              };
-            });
+                timestamp: Date.now()
+              }
+            })
           }
-        });
+        })
 
-        updatedOutcomes.value = updatedOutcomesCopy;
+        updatedOutcomes.value = updatedOutcomesCopy
 
         if (eventMarkets.value.length > 0) {
           eventMarkets.value = eventMarkets.value.map((market) => {
             const updatedMarket = markets.find(
-              (m) =>
-                m.id === market.marketID &&
-                (m.specifiers || "") === (market.specifier || ""),
-            );
+              (m) => m.id === market.marketID && (m.specifiers || '') === (market.specifier || '')
+            )
 
             if (updatedMarket && updatedMarket.outcomes) {
               market.outcomes = market.outcomes.map((outcome) => {
                 const newOutcome = updatedMarket.outcomes.find(
-                  (o) => String(o.id) === String(outcome.outcomeID),
-                );
+                  (o) => String(o.id) === String(outcome.outcomeID)
+                )
 
                 if (newOutcome) {
                   return {
                     ...outcome,
                     odds: newOutcome.odds,
-                    active: newOutcome.active ? 1 : 0,
-                  };
+                    active: newOutcome.active ? 1 : 0
+                  }
                 }
-                return outcome;
-              });
+                return outcome
+              })
             }
-            return market;
-          });
+            return market
+          })
 
           // Update grouped markets
-          groupedMarkets.value = groupByMarketID(eventMarkets.value);
+          groupedMarkets.value = groupByMarketID(eventMarkets.value)
         }
       }
 
-      updatePending.value = false;
-    });
+      updatePending.value = false
+    })
   }
 }
 
 function handleBetStop(data) {
-  const matchId = eventDetail.value.matchID;
-  const dataMatchId = data.event_id || data.match_id;
+  const matchId = eventDetail.value.matchID
+  const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
     // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
-    return;
+    return
   }
 
   // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
@@ -671,30 +606,30 @@ function handleBetStop(data) {
       outcomes: market.outcomes.map((outcome) => ({
         ...outcome,
         odds: 0,
-        active: 0,
-      })),
-    }));
+        active: 0
+      }))
+    }))
 
     // Update grouped markets
-    groupedMarkets.value = groupByMarketID(eventMarkets.value);
+    groupedMarkets.value = groupByMarketID(eventMarkets.value)
   }
 
   // Check if match time has passed
-  const matchTime = new Date(eventDetail.value.date);
-  const currentTime = new Date();
+  const matchTime = new Date(eventDetail.value.date)
+  const currentTime = new Date()
 
   if (matchTime < currentTime) {
     // console.log('Match time has passed, showing unavailable message')
-    eventDetail.value.statusCode = 1; // This will trigger the "no longer available" message
+    eventDetail.value.statusCode = 1 // This will trigger the "no longer available" message
   }
 }
 
 defineComponent({
-  name: "fixture-detail",
-});
+  name: 'fixture-detail'
+})
 
 onMounted(() => {
-  let script = document.createElement("script");
+  let script = document.createElement('script')
   script.text = `
     (function(a,b,c,d,e,f,g,h,i){a[e]||(i=a[e]=function(){(a[e].q=a[e].q||[]).push(arguments)},i.l=1*new Date,i.o=f,
     g=b.createElement(c),h=b.getElementsByTagName(c)[0],g.async=1,g.src=d,g.setAttribute("n",e),h.parentNode.insertBefore(g,h)
@@ -702,13 +637,13 @@ onMounted(() => {
         theme: false, // using custom theme
         language: "en"
     });
-    `;
+    `
   // // script.type = 'text/javascript';
   // script.id = 'sr-tracker'
   // // script.src = 'https://widgets.sir.sportradar.com/sportradar/widgetloader';
 
-  document.body.appendChild(script);
-});
+  document.body.appendChild(script)
+})
 </script>
 
 <style scoped>
@@ -726,8 +661,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-market::before {
-  content: "\e66e";
-  font-family: "iconfont" !important;
+  content: '\e66e';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -735,8 +670,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-stat::before {
-  content: "\e64a";
-  font-family: "iconfont" !important;
+  content: '\e64a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -744,8 +679,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-comment::before {
-  content: "\e669";
-  font-family: "iconfont" !important;
+  content: '\e669';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -805,8 +740,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
-  content: "\e64e";
-  font-family: "iconfont" !important;
+  content: '\e64e';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -847,11 +782,7 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.x-prematch-detail
-  .m-sport-market
-  .m-market
-  .market-content
-  .m-outcome.m-outcome--disabled {
+.x-prematch-detail .m-sport-market .m-market .market-content .m-outcome.m-outcome--disabled {
   background-color: #dcdee5;
   background-color: var(--disable-brand-secondary);
   color: #9ca0ab;
@@ -875,8 +806,8 @@ onMounted(() => {
 }
 
 .m-sport-market-no-data::before {
-  content: "\e624";
-  font-family: "iconfont" !important;
+  content: '\e624';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

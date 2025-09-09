@@ -6,11 +6,10 @@ $away: #F1F1F1;
 $cl: #FFFFFF;
 $base: #000825;
 */
-@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&subset=latin,latin-ext");
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&subset=latin,latin-ext');
 
 .sr-bb {
-  font-family:
-    "Roboto", "Noto", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  font-family: 'Roboto', 'Noto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   text-align: left;
   background: #000825;
 }

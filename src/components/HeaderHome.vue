@@ -13,24 +13,14 @@
             <img src="/logo-2.png" alt="" />
           </a>
           <div class="mobile-navbar-right">
-            <span
-              class="x-icon-search"
-              @click="$router.push({ name: 'search' })"
-            ></span>
+            <span class="x-icon-search" @click="$router.push({ name: 'search' })"></span>
             <span v-if="authStore.isAuthenticated" class="x-login-yes">
               <span class="x-btn-deposit">
-                <span
-                  class="x-btn-text"
-                  @click="$router.push({ name: 'account-deposit' })"
+                <span class="x-btn-text" @click="$router.push({ name: 'account-deposit' })"
                   >Deposit</span
                 >
-                <div
-                  class="avatar-box"
-                  @click="$router.push({ name: 'account-me' })"
-                >
-                  <span class="currency">{{
-                    SportsbookGlobalVariable.CurrencyCode
-                  }}</span>
+                <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
+                  <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
                   <span> {{ usersStore.balance }}</span>
                 </div>
               </span>
@@ -54,40 +44,40 @@
 </template>
 
 <script setup>
-import { useAuthStore, useUsersStore } from "@/stores";
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { useUtilsStore } from "../stores";
+import { useAuthStore, useUsersStore } from '@/stores'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useUtilsStore } from '../stores'
 
-const authStore = useAuthStore();
-const usersStore = useUsersStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
-const myHeader = ref();
-const headerHeight = ref("48px");
+const authStore = useAuthStore()
+const usersStore = useUsersStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
+const myHeader = ref()
+const headerHeight = ref('48px')
 // Create a ResizeObserver to dynamically track header height
 const resizeObserver = new ResizeObserver(() => {
   if (myHeader.value) {
-    headerHeight.value = `${myHeader.value.offsetHeight}px`;
+    headerHeight.value = `${myHeader.value.offsetHeight}px`
   }
-});
+})
 
 onMounted(() => {
   // Observe the header element
   if (myHeader.value) {
-    resizeObserver.observe(myHeader.value);
+    resizeObserver.observe(myHeader.value)
   }
 
   // Load user data if authenticated
   if (authStore.isAuthenticated) {
-    usersStore.loadCurrentUser();
+    usersStore.loadCurrentUser()
   }
-});
+})
 
 onBeforeUnmount(() => {
   // Disconnect the observer when the component is unmounted
-  resizeObserver.disconnect();
-});
+  resizeObserver.disconnect()
+})
 </script>
 
 <style scoped>
-@import "@/assets/css/header-home.css";
+@import '@/assets/css/header-home.css';
 </style>

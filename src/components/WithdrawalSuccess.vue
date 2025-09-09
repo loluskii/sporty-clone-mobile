@@ -14,7 +14,7 @@
         ></path>
       </svg>
     </div>
-    <p class="success-msg">Withdrawal Succeeded!</p>
+    <p class="success-msg">Withdrawal Request Recieved!</p>
 
     <div class="success-line"></div>
     <div class="success-form amount">
@@ -27,11 +27,7 @@
       </div>
     </div>
     <div class="success-form withdraw">
-      <div
-        class="form-label"
-        data-cms-key="withdraw_to"
-        data-cms-page="page_withdraw"
-      >
+      <div class="form-label" data-cms-key="withdraw_to" data-cms-page="page_withdraw">
         Withdraw To
         <img
           src="//s.sporty.net/global/main/common/images/card/default-card.e8dea6abcc.png"
@@ -43,32 +39,21 @@
         <span data-op="withdraw-success-bank-name" class="form-value name">{{
           userData.bankName
         }}</span>
-        <span
-          data-op="withdraw-success-bank-account-number"
-          class="form-value"
-          >{{ formatString(userData.accountNumber, "pre") }}</span
-        >
+        <span data-op="withdraw-success-bank-account-number" class="form-value">{{
+          formatString(userData.accountNumber, 'pre')
+        }}</span>
       </div>
     </div>
     <div class="success-form">
-      <div
-        class="form-label"
-        data-cms-key="account_name"
-        data-cms-page="page_withdraw"
-      >
+      <div class="form-label" data-cms-key="account_name" data-cms-page="page_withdraw">
         Account Name
       </div>
-      <div
-        data-op="withdraw-success-bank-account-name"
-        class="form-value fs-exclude"
-      >
-        {{ formatString(userData.accountName, "post") }}
+      <div data-op="withdraw-success-bank-account-name" class="form-value fs-exclude">
+        {{ formatString(userData.accountName, 'post') }}
       </div>
     </div>
 
-    <div class="static-button" @click="$router.push({ name: 'home' })">
-      Continue Betting
-    </div>
+    <div class="static-button" @click="$router.push({ name: 'home' })">Continue Betting</div>
     <div
       class="check-transaction-container"
       @click="$router.push({ name: 'account-transactions' })"
@@ -85,19 +70,19 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { formatNumber, formatString } from "@/helpers";
-import { useUsersStore, useUtilsStore } from "@/stores";
-const userStore = useUsersStore();
-const { SportsbookGlobalVariable } = useUtilsStore();
+import { onMounted } from 'vue'
+import { formatNumber, formatString } from '@/helpers'
+import { useUsersStore, useUtilsStore } from '@/stores'
+const userStore = useUsersStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
 
 defineProps({
-  userData: Object,
-});
+  userData: Object
+})
 
 onMounted(async () => {
-  await userStore.loadCurrentUser();
-});
+  await userStore.loadCurrentUser()
+})
 </script>
 
 <style scoped>
@@ -118,7 +103,7 @@ onMounted(async () => {
 .withdraw-success .success-msg {
   color: #353a45;
   color: var(--text-type1-primary);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   line-height: 27px;
   margin-bottom: 1.66666667rem;
@@ -259,8 +244,8 @@ onMounted(async () => {
   margin-left: 0.83333333rem;
 }
 .withdraw-success .check-transaction-container .icon-right::before {
-  content: "\e608";
-  font-family: "iconfont" !important;
+  content: '\e608';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

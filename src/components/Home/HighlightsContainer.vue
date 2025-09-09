@@ -109,212 +109,196 @@
   </div>
 </template>
 <script setup>
-import { useUtilsStore } from "@/stores/utils.store";
-import Highlights from "@/components/Highlights/Highlights.vue";
-import Today from "@/components/Highlights/Today.vue";
-import Countries from "@/components/Highlights/Countries.vue";
-import LoadingError from "@/components/Loaders/LoadingError.vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { useUtilsStore } from '@/stores/utils.store'
+import Highlights from '@/components/Highlights/Highlights.vue'
+import Today from '@/components/Highlights/Today.vue'
+import Countries from '@/components/Highlights/Countries.vue'
+import LoadingError from '@/components/Loaders/LoadingError.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getHighlights2, getToday2, getCategoriesBySport } from "@/helpers";
-import { defineComponent, onMounted, ref, onUnmounted, computed } from "vue";
-import _ from "lodash";
-import emitter from "@/plugins/emitter";
+import { getHighlights2, getToday2, getCategoriesBySport } from '@/helpers'
+import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
+import _ from 'lodash'
+import emitter from '@/plugins/emitter'
 
-const utilsStore = useUtilsStore();
+const utilsStore = useUtilsStore()
 
-const highlightsData = ref([]);
-const todaysData = ref([]);
-const countriesData = ref([]);
+const highlightsData = ref([])
+const todaysData = ref([])
+const countriesData = ref([])
 
 // const sportsListData = ref([])
-const prevSportID = ref(1);
-const activeSportID = ref(1);
+const prevSportID = ref(1)
+const activeSportID = ref(1)
 
-const marketsGroup = ref({});
-const activeMarket = ref({});
+const marketsGroup = ref({})
+const activeMarket = ref({})
 
-const todayActiveTab = ref(false);
-const highlightsActiveTab = ref(true);
-const countriesActiveTab = ref(false);
+const todayActiveTab = ref(false)
+const highlightsActiveTab = ref(true)
+const countriesActiveTab = ref(false)
 
-const isLoading = ref(false);
-const loadingError = ref(false);
+const isLoading = ref(false)
+const loadingError = ref(false)
 
 function setActiveTab(tab) {
   switch (tab) {
-    case "highlights":
-      highlightsActiveTab.value = true;
-      todayActiveTab.value = false;
-      countriesActiveTab.value = false;
-      getHighlightGames();
-      break;
-    case "today":
-      todayActiveTab.value = true;
-      countriesActiveTab.value = false;
-      highlightsActiveTab.value = false;
-      getTodayGames();
-      break;
-    case "countries":
-      countriesActiveTab.value = true;
-      highlightsActiveTab.value = false;
-      todayActiveTab.value = false;
-      break;
+    case 'highlights':
+      highlightsActiveTab.value = true
+      todayActiveTab.value = false
+      countriesActiveTab.value = false
+      getHighlightGames()
+      break
+    case 'today':
+      todayActiveTab.value = true
+      countriesActiveTab.value = false
+      highlightsActiveTab.value = false
+      getTodayGames()
+      break
+    case 'countries':
+      countriesActiveTab.value = true
+      highlightsActiveTab.value = false
+      todayActiveTab.value = false
+      break
 
     default:
-      break;
+      break
   }
 }
 
 const sportsListData = computed(() => {
-  return utilsStore.sportsMenu;
-});
+  return utilsStore.sportsMenu
+})
 const getImageSrc = (sportId) => {
-  const imageUrl = new URL(
-    `../../assets/images/sports/${sportId}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
+  return imageUrl
+}
 
 async function setActiveSport(sid) {
   // set the active sport id
-  isLoading.value = true;
-  prevSportID.value = activeSportID.value;
-  activeSportID.value = sid;
-  await getHomeData();
-  document.getElementById("highlights_" + sid).scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center",
-  });
+  isLoading.value = true
+  prevSportID.value = activeSportID.value
+  activeSportID.value = sid
+  await getHomeData()
+  document.getElementById('highlights_' + sid).scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 
 async function getHighlightGames() {
-  isLoading.value = true;
-  if (
-    !Object.keys(highlightsData.value).length ||
-    prevSportID.value !== activeSportID.value
-  ) {
-    const response = await getHighlights2(activeSportID.value, 1);
+  isLoading.value = true
+  if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
+    const response = await getHighlights2(activeSportID.value, 1)
     if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0);
-      highlightsData.value = _.groupBy(
-        filteredData,
-        (fixture) => fixture.date.split(" ")[0],
-      );
-      marketsGroup.value = response.markets;
-      setMarkets();
+      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
+      highlightsData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
+      marketsGroup.value = response.markets
+      setMarkets()
     } else {
-      highlightsData.value = [];
-      marketsGroup.value = [];
+      highlightsData.value = []
+      marketsGroup.value = []
     }
   }
-  isLoading.value = false;
+  isLoading.value = false
 }
 
 async function getTodayGames() {
-  isLoading.value = true;
-  if (
-    !Object.keys(todaysData.value).length ||
-    prevSportID.value !== activeSportID.value
-  ) {
-    const response = await getToday2(activeSportID.value, 1);
+  isLoading.value = true
+  if (!Object.keys(todaysData.value).length || prevSportID.value !== activeSportID.value) {
+    const response = await getToday2(activeSportID.value, 1)
     if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0);
-      todaysData.value = _.groupBy(
-        filteredData,
-        (fixture) => fixture.date.split(" ")[0],
-      );
-      marketsGroup.value = response.markets;
-      setMarkets();
+      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
+      todaysData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
+      marketsGroup.value = response.markets
+      setMarkets()
     } else {
-      todaysData.value = [];
+      todaysData.value = []
       // marketsGroup.value = []
     }
   }
-  isLoading.value = false;
+  isLoading.value = false
 }
 
 async function getCountriesList() {
-  countriesData.value =
-    (await getCategoriesBySport(activeSportID.value)).sports || [];
+  countriesData.value = (await getCategoriesBySport(activeSportID.value)).sports || []
 }
 
 function setMarkets() {
   // marketsGroup.value = sportsListData.value.find((obj) => obj.sport_id === activeSportID.value)
-  activeMarket.value = marketsGroup.value[0];
+  activeMarket.value = marketsGroup.value[0]
 }
 
 function getFixturesByMarkets(market) {
-  activeMarket.value = market;
+  activeMarket.value = market
 }
 
 async function getHomeData() {
-  isLoading.value = true;
-  loadingError.value = false;
+  isLoading.value = true
+  loadingError.value = false
   Promise.all([getHighlightGames(), getCountriesList()])
     .then(() => {
-      isLoading.value = false;
+      isLoading.value = false
     })
     .catch((error) => {
       // Handle errors for any of the promises
-      isLoading.value = false;
-      loadingError.value = true;
-      console.error("An error occurred:", error);
-    });
+      isLoading.value = false
+      loadingError.value = true
+      console.error('An error occurred:', error)
+    })
 }
 
-const isScrolled = ref(false);
-const isTop = ref(false);
-const divPosition = ref(null);
+const isScrolled = ref(false)
+const isTop = ref(false)
+const divPosition = ref(null)
 
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50;
-  const specificDiv = document.getElementById("m-sports");
-  divPosition.value = specificDiv ? specificDiv.getBoundingClientRect().top : 0;
+  isScrolled.value = window.scrollY > 50
+  const specificDiv = document.getElementById('m-sports')
+  divPosition.value = specificDiv ? specificDiv.getBoundingClientRect().top : 0
 
   if (divPosition.value <= 59) {
-    isTop.value = true;
+    isTop.value = true
   } else {
-    isTop.value = false;
+    isTop.value = false
   }
-};
+}
 
 onMounted(async () => {
-  window.addEventListener("scroll", handleScroll);
-  await getHomeData();
+  window.addEventListener('scroll', handleScroll)
+  await getHomeData()
 
   // Add event listener for removing fixtures
   emitter.on('remove-fixture', (matchID) => {
     // Remove from highlights data
-    Object.keys(highlightsData.value).forEach(date => {
+    Object.keys(highlightsData.value).forEach((date) => {
       highlightsData.value[date] = highlightsData.value[date].filter(
-        fixture => String(fixture.matchID) !== String(matchID)
-      );
+        (fixture) => String(fixture.matchID) !== String(matchID)
+      )
       // Remove empty date groups
       if (highlightsData.value[date].length === 0) {
-        delete highlightsData.value[date];
+        delete highlightsData.value[date]
       }
-    });
+    })
 
     // Remove from today's data
-    Object.keys(todaysData.value).forEach(date => {
+    Object.keys(todaysData.value).forEach((date) => {
       todaysData.value[date] = todaysData.value[date].filter(
-        fixture => String(fixture.matchID) !== String(matchID)
-      );
+        (fixture) => String(fixture.matchID) !== String(matchID)
+      )
       // Remove empty date groups
       if (todaysData.value[date].length === 0) {
-        delete todaysData.value[date];
+        delete todaysData.value[date]
       }
-    });
-  });
-});
+    })
+  })
+})
 
 onUnmounted(() => {
   // Remove scroll event listener when the component is unmounted
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 
 defineComponent({
   components: {
@@ -322,9 +306,9 @@ defineComponent({
     Highlights,
     Countries,
     LoadingError,
-    LoadingSpinner,
-  },
-});
+    LoadingSpinner
+  }
+})
 </script>
 
 <style scoped>

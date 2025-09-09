@@ -1,17 +1,14 @@
 <template>
   <div id="bonus-progress-bar" class="real-theme">
-    <div
-      class="progress"
-      :style="`width: ${(coupon.selections.length / 50) * 100}%`"
-    ></div>
+    <div class="progress" :style="`width: ${(coupon.selections.length / 50) * 100}%`"></div>
     <p>Add more qualifying selections to boost your bonus</p>
   </div>
 </template>
 
 <script setup>
-import { useCouponStore } from "@/stores";
+import { useCouponStore } from '@/stores'
 
-const { coupon } = useCouponStore();
+const { coupon } = useCouponStore()
 </script>
 <style>
 #bonus-progress-bar {

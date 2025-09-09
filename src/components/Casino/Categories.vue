@@ -4,30 +4,20 @@
       <h3 class="h3 text-white fw-bold mb-0">{{ titleText }}</h3>
     </div>
     <div class="row mt-3 mb-5 pb-2">
-      <div
-        class="col-12 mb-3"
-        v-for="category in props.categories"
-        :key="category.name"
-      >
+      <div class="col-12 mb-3" v-for="category in props.categories" :key="category.name">
         <div
           class="provider-card"
           @click="
             $router.push({
               name: 'games-by-category',
               params: { category: slugify(category.name) },
-              query: { category_id: category.id },
+              query: { category_id: category.id }
             })
           "
         >
           <div class="card rounded-0 border-0">
             <div class="card-body p-2">
-              <img
-                :src="getImageSrc(category.slug)"
-                class="mr-3"
-                alt=""
-                srcset=""
-                height="25"
-              />
+              <img :src="getImageSrc(category.slug)" class="mr-3" alt="" srcset="" height="25" />
               <span class="provider-name">{{ category.name }}</span>
             </div>
           </div>
@@ -38,29 +28,26 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { slugify } from "@/helpers";
+import { ref } from 'vue'
+import { slugify } from '@/helpers'
 
-const props = defineProps(["categories"]);
+const props = defineProps(['categories'])
 
-const titleText = ref("Categories");
+const titleText = ref('Categories')
 
 const getImageSrc = (prov) => {
-  let name = prov.split("-");
-  let imageName = name[0];
-  if (name[1] !== "games") {
-    imageName = prov;
+  let name = prov.split('-')
+  let imageName = name[0]
+  if (name[1] !== 'games') {
+    imageName = prov
   }
-  const imageUrl = new URL(
-    `../../assets/images/casino/${imageName}.png`,
-    import.meta.url,
-  );
-  return imageUrl;
-};
+  const imageUrl = new URL(`../../assets/images/casino/${imageName}.png`, import.meta.url)
+  return imageUrl
+}
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 
 .title-bg {
   font-size: 28px;
@@ -82,7 +69,7 @@ const getImageSrc = (prov) => {
 }
 
 .title-bg:after {
-  content: "";
+  content: '';
   position: absolute;
   z-index: -1;
   top: 0;

@@ -3,13 +3,20 @@
     <div class="layout mask" style="z-index: 1000; position: fixed"></div>
     <div class="es-dialog m-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div v-if="route.name === 'casino-bonus' || route.name === 'bonus-games'" class="es-dialog-main m-dialog-main"
-          style="height: auto; color: white">
+        <div
+          v-if="route.name === 'casino-bonus' || route.name === 'bonus-games'"
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white"
+        >
           <div>
             {{ gamePlayModalText }}
           </div>
         </div>
-        <div v-else class="es-dialog-main m-dialog-main" style="height: auto; color: white; text-align: center">
+        <div
+          v-else
+          class="es-dialog-main m-dialog-main"
+          style="height: auto; color: white; text-align: center"
+        >
           <img src="@/assets/images/party-popper.png" alt="congratulation" style="height: 30px" />
           <div>
             {{ modalText }}
@@ -26,8 +33,11 @@
           </div>
         </div>
         <div v-else class="button-row">
-          <div v-if="props.data.bonus.type === 'casino' && props.data.bonus.gameId !== undefined" class="real-money-btn"
-            @click="goToCasino">
+          <div
+            v-if="props.data.bonus.type === 'casino' && props.data.bonus.gameId !== undefined"
+            class="real-money-btn"
+            @click="goToCasino"
+          >
             <div class="real-money-btn-text">Go to Casino</div>
           </div>
           <div class="bonus-btn" @click="goToBonus">
@@ -45,76 +55,74 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useUsersStore } from "@/stores";
-import emitter from "@/plugins/emitter";
-import { slugify } from "@/helpers";
-import { useUtilsStore } from "../stores";
+import { defineProps, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useUsersStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { slugify } from '@/helpers'
+import { useUtilsStore } from '../stores'
 
-const emits = defineEmits(["hide-dialogue"]);
+const emits = defineEmits(['hide-dialogue'])
 const props = defineProps({
-  data: Object,
-});
+  data: Object
+})
 
-const route = useRoute();
-const router = useRouter();
-const { SportsbookGlobalVariable } = useUtilsStore();
-const utilsStore = useUtilsStore();
+const route = useRoute()
+const router = useRouter()
+const { SportsbookGlobalVariable } = useUtilsStore()
+const utilsStore = useUtilsStore()
 
 const modalText = computed(() => {
-  return props.data.bonus.bonusType === "free_rounds" &&
-    props.data.bonus.freeSpins
+  return props.data.bonus.bonusType === 'free_rounds' && props.data.bonus.freeSpins
     ? `Congratulations! You have been gifted ${props.data.bonus.freeSpins} free spins.`
     : `Congratulations! You have been awarded a ${props.data.bonus.bonusType} bonus. You now have a bonus of
             ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value}!
-    `;
-});
+    `
+})
 
 const gamePlayModalText = computed(() => {
-  return props.data.bonus.bonusType === "free_rounds" &&
-    props.data.bonus.freeSpins
+  return props.data.bonus.bonusType === 'free_rounds' && props.data.bonus.freeSpins
     ? `You have ${props.data.bonus.freeSpins} free spins on this game. Choose the balance to use for
             this session.`
     : `You have an active casino bonus of ${SportsbookGlobalVariable.Currency} ${props.data.bonus.value} for this game. Choose the balance to use for
             this session.
-            `;
-});
+            `
+})
 
 const setBalanceType = (type) => {
-  emits("hide-dialogue");
+  emits('hide-dialogue')
   return router.push({
-    name: "game-play",
+    name: 'game-play',
     params: {
       game_name: slugify(props.data.game.title),
-      game_id: props.data.game.id,
+      game_id: props.data.game.id
     },
     query: {
       bonusId: props.data.bonus.bonusId,
       balanceType: type,
-      bonusType: props.data.bonus.bonusType,
-    },
-  });
-};
+      bonusType: props.data.bonus.bonusType
+    }
+  })
+}
 
 const goToCasino = () => {
-  emits("hide-dialogue");
+  emits('hide-dialogue')
   return router.push({
-    name: "casino-bonus"
-  });
-};
+    name: 'casino-bonus'
+  })
+}
 
 const goToBonus = () => {
-  emits("hide-dialogue");
-  return router.push("/Account/Bonus");
-};
+  emits('hide-dialogue')
+  return router.push('/Account/Bonus')
+}
 
 const hideDialog = () => {
-  emits("hide-dialogue");
-  utilsStore.casinoBonusShown = true;
-};
+  emits('hide-dialogue')
+  utilsStore.casinoBonusShown = true
+}
 
-onMounted(() => { });
+onMounted(() => {})
 </script>
 
 <style scoped>
@@ -170,7 +178,7 @@ onMounted(() => { });
     0 0 24px 0 rgba(0, 0, 0, 0.25),
     0 0 24px 0 rgba(112, 76, 76, 0.25);
   color: #353a45;
-  font-family: "Roboto", "Microsoft Yahei", "simsun";
+  font-family: 'Roboto', 'Microsoft Yahei', 'simsun';
   font-size: 1rem;
   line-height: 2rem;
   overflow: hidden;
@@ -196,8 +204,8 @@ onMounted(() => { });
 }
 
 .es-dialog-close em::before {
-  content: "\e69a";
-  font-family: "iconfont" !important;
+  content: '\e69a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -270,7 +278,7 @@ onMounted(() => { });
 
 .es-dialog .es-dialog-head .es-dialog-close {
   background: none;
-  font-family: "Microsoft YaHei", arial, simsun, SimHei;
+  font-family: 'Microsoft YaHei', arial, simsun, SimHei;
   position: absolute;
   right: 5px;
   top: 1px;

@@ -17,11 +17,7 @@
           :key="index"
           @click="redirectToGamePlay(game)"
         >
-          <GameCard
-            :image="getImagePath(game)"
-            :title="game.title"
-            :type="game.type"
-          />
+          <GameCard :image="getImagePath(game)" :title="game.title" :type="game.type" />
         </div>
       </div>
     </div>
@@ -29,116 +25,105 @@
     <!-- Load More section with increased height to overlap games -->
     <div class="load-more-container" v-if="hasMoreGames">
       <div class="load-more-overlay"></div>
-      <button
-        class="btn btn-primary load-more-btn"
-        @click="loadMore"
-        :disabled="isLoading"
-      >
-        {{ isLoading ? "Loading..." : "Load More" }}
+      <button class="btn btn-primary load-more-btn" @click="loadMore" :disabled="isLoading">
+        {{ isLoading ? 'Loading...' : 'Load More' }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import CategoryProvider from "./CategoryProvider.vue";
-import { useUsersStore, useUtilsStore } from "@/stores";
-import Game from "@/components/Casino/Game.vue";
-import { useRouter } from "vue-router";
-import GameCard from "@/components/Casino/GameCard.vue";
+import { ref, onMounted, computed } from 'vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import CategoryProvider from './CategoryProvider.vue'
+import { useUsersStore, useUtilsStore } from '@/stores'
+import Game from '@/components/Casino/Game.vue'
+import { useRouter } from 'vue-router'
+import GameCard from '@/components/Casino/GameCard.vue'
 
-const props = defineProps(["games", "titleText", "type"]);
+const props = defineProps(['games', 'titleText', 'type'])
 
-const isLoading = ref(false);
-const myElement = ref(null);
-const currentView = ref("providers");
-const usersStore = useUsersStore();
-const router = useRouter();
-const { previousRoute } = useUtilsStore();
+const isLoading = ref(false)
+const myElement = ref(null)
+const currentView = ref('providers')
+const usersStore = useUsersStore()
+const router = useRouter()
+const { previousRoute } = useUtilsStore()
 
-const itemsPerLoad = 35;
-const displayLimit = ref(itemsPerLoad);
+const itemsPerLoad = 35
+const displayLimit = ref(itemsPerLoad)
 
 // Computed property for displayed games
 const displayedGames = computed(() => {
-  return props.games.slice(0, displayLimit.value);
-});
+  return props.games.slice(0, displayLimit.value)
+})
 
 const goBack = () => {
-  if (props.type === "provider") {
-    router.push({ name: "casino-providers" });
+  if (props.type === 'provider') {
+    router.push({ name: 'casino-providers' })
   } else {
-    router.push(previousRoute);
+    router.push(previousRoute)
   }
-};
+}
 
 // Check if more games are available
 const hasMoreGames = computed(() => {
-  return displayLimit.value < props.games.length;
-});
+  return displayLimit.value < props.games.length
+})
 
 // Load more function
 const loadMore = async () => {
-  isLoading.value = true;
+  isLoading.value = true
   // Simulate loading delay for better UX
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  displayLimit.value += itemsPerLoad;
-  isLoading.value = false;
-};
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  displayLimit.value += itemsPerLoad
+  isLoading.value = false
+}
 
 const updateCSSVar = () => {
   // console.log(myElement.value);
   if (myElement.value) {
     const distanceFromTop =
-      myElement.value.getBoundingClientRect().top +
-      document.documentElement.scrollTop;
+      myElement.value.getBoundingClientRect().top + document.documentElement.scrollTop
     // Assign the distance to a CSS variable
-    document.documentElement.style.setProperty(
-      "--distance-from-top",
-      `${distanceFromTop}px`,
-    );
+    document.documentElement.style.setProperty('--distance-from-top', `${distanceFromTop}px`)
   } else {
-    console.log("sdfsdf");
+    console.log('sdfsdf')
   }
-};
+}
 
 onMounted(() => {
-  updateCSSVar();
+  updateCSSVar()
   // document.body.classList.add("no-scroll");
-});
+})
 
 // Add the getImagePath function
 const getImagePath = (game) => {
   try {
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
-      game.title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
-    )}.png?alt=media`;
+      game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+    )}.png?alt=media`
   } catch (error) {
-    console.error("Error generating image path:", error);
-    return `https://placehold.co/150x175?text=${encodeURIComponent(
-      game.title,
-    )}`;
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-};
+}
 
 // Add redirectToGamePlay function
 const redirectToGamePlay = async (game) => {
   try {
-
     await router.push({
-      name: "game-play",
-      params: { game_name: slugify(game.title), game_id: game.id },
-    });
+      name: 'game-play',
+      params: { game_name: slugify(game.title), game_id: game.id }
+    })
   } catch (error) {
-    console.error("Error redirecting to game:", error);
+    console.error('Error redirecting to game:', error)
   }
-};
+}
 </script>
 
 <style scoped>
-@import url("@/assets/css/casino.css");
+@import url('@/assets/css/casino.css');
 .m-icon {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -156,8 +141,8 @@ const redirectToGamePlay = async (game) => {
   font-size: 1.33333333rem !important;
 }
 .m-icon.m-icon--back::before {
-  content: "\e620";
-  font-family: "iconfont" !important;
+  content: '\e620';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
