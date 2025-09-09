@@ -16,7 +16,8 @@ import {
   CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
-  getUserCashbackBonus
+  getUserCashbackBonus,
+  getBanksList
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
@@ -262,22 +263,34 @@ onMounted(async () => {
       safeLoad(getUserCashbackBonus()),
       safeLoad(getBetsData())
     ])
-    usersStore.activeCashback = cashbackData?.data
-    usersStore.casinoActiveBonus = activeBonus?.data
-    if (utilsStore.bonusModalShown === null && cashbackData?.data?.bonusType !== 'cashback') {
-      casinoGameData.value = cashbackData?.data
+
+    if(activeBonus?.data){
+      let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
+      if(bonusIsCasino){
+        usersStore.casinoActiveBonus = activeBonus?.data
+      }else{
+        usersStore.activeBonus = activeBonus?.data
+      }
+      usersStore.activeCashback = usersStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
+    }else{
+      usersStore.activeCashback = cashbackData?.data;
+    }
+
+    if (utilsStore.bonusModalShown === null) {
+      casinoGameData.value = activeBonus?.data
       utilsStore.bonusModalShown = false
     }
     isLoading.value = false
   }
 
-  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections()])
+  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()])
     .then((res) => {
-      couponStore.sportsbookBonusList = res[0].data
+      couponStore.sportsbookBonusList = res[0].data.data || []
       couponStore.SportsbookGlobalVariable = res[1].data.data
-      utilsStore.sportsbookBonusList = res[0].data
+      utilsStore.sportsbookBonusList = res[0].data.data || []
       utilsStore.SportsbookGlobalVariable = res[1].data.data
       utilsStore.sportsMenu = res[2].sports // Update loading state after delay
+      utilsStore.banksList = res[4].data
 
       setTimeout(() => {
         let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')

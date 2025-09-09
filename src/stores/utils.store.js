@@ -30,7 +30,8 @@ export const useUtilsStore = defineStore({
     featuredIsLoading: false,
     featuredError: null,
     activeFeaturedTournament: null,
-    isFetchingTournamentGames: false
+    isFetchingTournamentGames: false,
+    banksList: []
   }),
 
   getters: {

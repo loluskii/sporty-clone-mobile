@@ -26,6 +26,19 @@
             <img src="@/assets/images/casino/bonus.png" class="img-fluid" alt="" srcset="" />
             <span>Bonus Games</span>
           </div>
+          <div
+            class="category"
+            @click="openQtechLobby()"
+            id="qtech_games"
+          >
+            <img
+              src="@/assets/images/casino/bonus.png"
+              class="img-fluid"
+              alt=""
+              srcset=""
+            />
+            <span>QTech Lobby</span>
+          </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
@@ -253,6 +266,10 @@
     <div v-if="errorState.gamesError" class="error-message">
       Failed to load games. Please try again later.
     </div>
+
+    <div v-if="errorState.qtechLobbyError" class="error-message">
+      Failed to load QTech Lobby
+    </div>
   </div>
 </template>
 
@@ -265,17 +282,17 @@ import { ref, onBeforeMount, computed } from 'vue'
 import {
   getTopGameCategories,
   gamesByTopCategory,
-  getJackpotWinners,
-  getProviders
-} from '@/helpers'
-import router from '@/router'
-import { useAuthStore, useUsersStore, useUtilsStore } from '@/stores'
-import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { getJackpots, slugify } from '@/helpers'
-import emitter from '@/plugins/emitter'
-import { useRoute } from 'vue-router'
-import GameCard from '@/components/Casino/GameCard.vue'
-import { getCasinoBonusGames } from '@/helpers'
+  getGameLobbyUrl,
+  getProviders,
+} from "@/helpers";
+import router from "@/router";
+import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
+import { getJackpots, slugify } from "@/helpers";
+import emitter from "@/plugins/emitter";
+import { useRoute } from "vue-router";
+import GameCard from "@/components/Casino/GameCard.vue";
+import { getCasinoBonusGames } from "@/helpers";
 
 const topGameCategories = ref([])
 const gamesList = ref({})
@@ -294,10 +311,11 @@ const utilsStore = useUtilsStore()
 const errorState = ref({
   categoriesError: false,
   gamesError: false,
-  jackpotsError: false
-})
-const providers = ref([])
-const isLoadingProviders = ref(false)
+  jackpotsError: false,
+  qtechLobbyError: false
+});
+const providers = ref([]);
+const isLoadingProviders = ref(false);
 
 // Intersection Observer directive
 const vIntersection = {
@@ -339,6 +357,33 @@ const getImageSrc = (prov) => {
   } catch (error) {
     console.error('Error loading category image:', error)
     return new URL(`../../assets/images/casino/virtuals.png`, import.meta.url)
+  }
+}
+
+const openQtechLobby = async () => {
+  isLoading.value = true
+  try {
+    const { username, id, authCode } = userStore.currentUser || {};
+    let payload = {
+      gameId: 0,
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      username: username || 'Demo',
+      userId: id || 0,
+      demo: id ? false : true,
+      isMobile: true,
+      homeUrl: import.meta.env.VITE_SITE_URL,
+      authCode: authCode || '111111',
+      balanceType: "real",
+      type: 'lobby'
+    };
+
+    const res = await getGameLobbyUrl(payload);
+    isLoading.value = false
+    window.location.href = res.url
+  } catch (error) {
+    console.error(error);
+    isLoading.value = false
+    errorState.qtechLobbyError = true
   }
 }
 
