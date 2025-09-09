@@ -153,6 +153,11 @@
               </div>
             </div>
 
+            <SystemBet 
+              v-if="betSlipType === 'Combo'" 
+              :betSlipType="betSlipType"
+            />
+
             <BetListStake
               @toggle-show="toggleShow"
               @toggle-betslip="$emit('toggle-betslip')"
@@ -245,20 +250,21 @@
 </template>
 
 <script setup>
-import BetListEvent from '@/components/Betslip/BetListEvent.vue'
-import BetListStake from '@/components/Betslip/BetListStake.vue'
-import BookBetModal from '@/components/Betslip/BookBetModal.vue'
-import SuccessBet from '@/components/Betslip/SuccessBet.vue'
-import { computed, ref, defineComponent, onMounted } from 'vue'
-import { useCouponStore, useUsersStore } from '@/stores'
-import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from '@/helpers'
-import emitter from '@/plugins/emitter'
-import BetlistBookingCode from './BetlistBookingCode.vue'
-import BetSettings from './BetSettings.vue'
-import Simulation from './Simulation.vue'
-import BetslipModeToggle from './BetslipModeToggle.vue'
-import { useUtilsStore } from '@/stores'
-import VueToggles from 'vue-toggles'
+import BetListEvent from "@/components/Betslip/BetListEvent.vue";
+import BetListStake from "@/components/Betslip/BetListStake.vue";
+import BookBetModal from "@/components/Betslip/BookBetModal.vue";
+import SuccessBet from "@/components/Betslip/SuccessBet.vue";
+import { computed, ref, defineComponent, onMounted } from "vue";
+import { useCouponStore, useUsersStore } from "@/stores";
+import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from "@/helpers";
+import emitter from "@/plugins/emitter";
+import BetlistBookingCode from "./BetlistBookingCode.vue";
+import BetSettings from "./BetSettings.vue";
+import Simulation from "./Simulation.vue";
+import BetslipModeToggle from "./BetslipModeToggle.vue";
+import { useUtilsStore } from "@/stores";
+import VueToggles from "vue-toggles";
+import SystemBet from "./SystemBet.vue";
 
 const emit = defineEmits(['toggle-betslip', 'update-betcount'])
 const couponStore = useCouponStore()
@@ -336,8 +342,9 @@ async function placeBet(e) {
 
   show.value = false
   couponStore.isBetslipLoading = true
-  let bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
-  if (bonusId) {
+  let bonusId = null
+  if (couponStore.coupon.useCashback) {
+    bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
     try {
       const bonus = {
         bonusId: bonusId,

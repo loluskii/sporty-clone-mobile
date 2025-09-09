@@ -51,7 +51,7 @@ export const fetchBanners = async () => {
 }
 
 export const fetchBonusList = async () => {
-  return fetchWrapper.get(`${BASE_API}/api/utilities/bonuslist?section=onliners`)
+  return fetchWrapper.get(`${NEW_BASE_API}/bonus/acca-bonus?section=onliners`)
 }
 
 export const getSplitPropsData = async (payload) => {
@@ -63,6 +63,12 @@ export const getCombosData = async (payload) => {
     selections: payload.selections
   })
 }
+
+export const getGameLobbyUrl = async (payload) => {
+  return parseData(
+    fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/lobby-url`, payload),
+  );
+};
 
 export const login = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login?source=mobile`, payload))
@@ -91,6 +97,13 @@ export const resetPassword = async (payload) => {
 export const updateProfile = async (payload) => {
   return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/details`, payload))
 }
+
+export const processAccountVerification = async (payload) => {
+  return parseData(
+    fetchWrapper.post(`${NEW_BASE_API}/auth/kyc`, payload),
+  );
+};
+
 
 export const getUserDetailsByToken = async () => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/auth/details/${CLIENT_ID}`))
@@ -400,6 +413,10 @@ export const verifyDeposit = async (channel, ref) => {
 
 export const withdrawalRequest = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/user/wallet/withdraw?source=mobile`, payload))
+}
+
+export const smileandpayPayout = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/user/wallet/smileandpay/payout/${CLIENT_ID}?source=mobile`, payload))
 }
 
 export const transferRequest = async (payload) => {

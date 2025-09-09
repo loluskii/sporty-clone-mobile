@@ -1,5 +1,5 @@
 <template>
-  <div id="me-container" style="height: 55%">
+  <div id="me-container" style="min-height: 55%">
     <div class="me-main">
       <div class="header-container">
         <div class="header">

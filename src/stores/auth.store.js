@@ -39,14 +39,24 @@ export const useAuthStore = defineStore({
               return null
             })
 
-          const [, , cashbackData] = await Promise.all([
+          const [, activeBonus, cashbackData] = await Promise.all([
             safeLoad(userStore.loadCurrentUser()),
             safeLoad(getUserActiveBonus()),
             safeLoad(getUserCashbackBonus())
           ])
-          if (cashbackData?.data) {
-            userStore.activeCashback = cashbackData.data
+
+          if(activeBonus?.data){
+            let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
+            if(bonusIsCasino){
+              userStore.casinoActiveBonus = activeBonus?.data
+            }else{
+              userStore.activeBonus = activeBonus?.data
+            }
+            userStore.activeCashback = userStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
+          }else{
+            userStore.activeCashback = cashbackData?.data;
           }
+
           this.loading = false
           return router.push(this.returnUrl || '/')
         } else {

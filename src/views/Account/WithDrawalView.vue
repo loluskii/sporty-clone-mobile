@@ -281,13 +281,13 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span>SSP {{ usersStore.balance }}</span>
                     </p>
                   </div>
                 </div>
@@ -347,18 +347,20 @@
                 </button>
               </div>
             </div>
-            <div v-else-if="activeMethod === 'shop'" class="transfer-section">
+            <div v-else-if="activeMethod === 'shop' || activeMethod === 'smileandpay'" class="transfer-section">
               <div style="padding: 1.3rem">
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span
+                        >{{ SportsbookGlobalVariable.CurrencyCode }} {{ usersStore.balance }}</span
+                      >
                     </p>
                   </div>
                 </div>
@@ -424,8 +426,8 @@ import {
   verifyAccount,
   withdrawalRequest,
   fetchBankAssets,
-  transferRequest
-} from '@/helpers'
+  transferRequest, smileandpayPayout
+} from "@/helpers";
 import TransferSuccess from '@/components/Withdrawal/TransferSuccess.vue'
 import CashWithdrawalSuccess from '@/components/Withdrawal/CashWithdrawalSuccess.vue'
 import { ref, onMounted, computed } from 'vue'
@@ -436,15 +438,14 @@ import { CLIENT_ID } from '@/helpers'
 const showBanks = ref(false)
 const showBanksAssets = ref(false)
 const usersStore = useUsersStore()
-const { SportsbookGlobalVariable } = useUtilsStore()
+const { SportsbookGlobalVariable, banksList } = useUtilsStore()
 const router = useRouter()
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
   { name: 'Shop', key: 'shop' },
-  { name: 'Transfer to Friend', key: 'transfer' }
+  { name: 'SmileandPay Cash', key: 'smileandpay' }
 ]
 const activeMethod = ref('bank')
-const banksList = ref([])
 const bankAssets = ref([])
 const selectedBank = ref(null)
 const accountNumber = ref(null)
@@ -478,15 +479,8 @@ const amountErrorMessage = ref('')
 const searchQuery = ref('')
 
 const balance = computed(() => {
-  return userStore.balance
+  return usersStore.balance
 })
-
-async function getBanks() {
-  isLoading.value = true
-  const res = await getBanksList()
-  isLoading.value = false
-  banksList.value = res.data
-}
 
 function toggleShowBanks() {
   searchQuery.value = ''
@@ -523,9 +517,9 @@ function selectBank(bank) {
 const filteredBanks = computed(() => {
   const query = searchQuery.value.toLowerCase()
   if (!query) {
-    return banksList.value // Return full list when search query is empty
+    return banksList // Return full list when search query is empty
   } else {
-    return banksList.value.filter((bank) => bank.name.toLowerCase().includes(query))
+    return banksList.filter((bank) => bank.name.toLowerCase().includes(query))
   }
 })
 
@@ -626,14 +620,24 @@ async function submitTransferRequest() {
 }
 
 async function submitCashRequest() {
-  let payload = {
-    amount: cashWithdrawalAmount.value.toString(),
-    clientId: CLIENT_ID,
-    type: 'cash'
-  }
+  let payload, res;
   buttonLoader.value = true
   try {
-    const res = await withdrawalRequest(payload)
+    if(activeMethod.value === 'smileandpay'){
+      payload = {
+        amount: cashWithdrawalAmount.value,
+        action: 'payouts',
+        type: 'cash'
+      }
+      res = await smileandpayPayout(payload)
+    }else{
+      payload = {
+        amount: cashWithdrawalAmount.value.toString(),
+        clientId: CLIENT_ID,
+        type: 'cash'
+      }
+      res = await withdrawalRequest(payload)
+    }
     buttonLoader.value = false
     if (res.success) {
       cashWithdrawalSuccessData.value = { amount: payload.amount, withdrawalCode: res.data.code }
@@ -650,7 +654,7 @@ async function submitCashRequest() {
 
 onMounted(async () => {
   emitter.on('confirmWithdrawalAction', submitWithdrawalRequest)
-  Promise.all([checkUserBankAssets(), getBanks()])
+  Promise.all([checkUserBankAssets()])
 })
 </script>
 
