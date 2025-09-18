@@ -285,6 +285,7 @@ import {
   gamesByTopCategory,
   getGameLobbyUrl,
   getProviders,
+  FEED_TOGGLE
 } from "@/helpers";
 import router from "@/router";
 import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";

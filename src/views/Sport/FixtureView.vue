@@ -68,7 +68,8 @@ import {
   getSportUpcoming,
   getToday2,
   extractIdsFromURL,
-  getDateRange
+  getDateRange,
+  FEED_TOGGLE
 } from '@/helpers'
 import emitter from '@/plugins/emitter'
 
@@ -117,7 +118,6 @@ const getActiveSport = computed(() => {
 watch(
   () => [route.name, route.query.period, route.query.startDate, route.query.endDate],
   async ([routeName, period, startDate, endDate]) => {
-    isLoading.value = true
     const { sportID } = getSportbyName(route.params.sport)
     const { tournament_id } = route.params
     const { category_id } = route.params
@@ -156,6 +156,7 @@ watch(
 )
 
 async function getTournamentFixtures(sid) {
+  if(!FEED_TOGGLE) return;
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
 
   try {
@@ -187,6 +188,7 @@ async function getTournamentFixtures(sid) {
 }
 
 async function getCategoryFixtures(sid, cid) {
+  if(!FEED_TOGGLE) return;
   try {
     const res = await getFixturesByCategories(sid, cid)
     isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
@@ -203,6 +205,7 @@ async function getCategoryFixtures(sid, cid) {
 }
 
 async function fetchActiveSportByPeriod(id, period) {
+  if(!FEED_TOGGLE) return;
   try {
     isLoading.value = true
     let selectedPeriod = getDateRange(period)
@@ -226,6 +229,7 @@ async function fetchActiveSportByPeriod(id, period) {
 }
 
 async function fetchActiveSportByCustomRange(sid, start, end) {
+  if(!FEED_TOGGLE) return;
   try {
     isLoading.value = true
     let selectedPeriod = { startDate: start, endDate: end }
@@ -249,6 +253,7 @@ async function fetchActiveSportByCustomRange(sid, start, end) {
 }
 
 async function fixturesByActiveSport(id) {
+  if(!FEED_TOGGLE) return;
   try {
     let selectedPeriod = getDateRange('week')
     const res = await getSportUpcoming(id, selectedPeriod)
@@ -271,6 +276,7 @@ async function fixturesByActiveSport(id) {
 }
 
 async function fetchTodayActiveSport(id) {
+  if(!FEED_TOGGLE) return;
   try {
     const res = await getToday2(id, page.value)
     isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined

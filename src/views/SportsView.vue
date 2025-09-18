@@ -108,7 +108,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUtilsStore } from '../stores'
-import { getCategoriesBySport, getTournamentsByCategories, slugify, unslugify } from '../helpers'
+import { FEED_TOGGLE, getCategoriesBySport, getTournamentsByCategories, slugify, unslugify } from '../helpers'
 
 const utilsStore = useUtilsStore()
 const route = useRoute()
@@ -149,6 +149,7 @@ const showChild = async (index, country) => {
 }
 
 const getCountriesList = async () => {
+  if(!FEED_TOGGLE)return
   isLoading.value = true
   const sports = await getCategoriesBySport(activeSport.value.sportID)
   countriesData.value = sports.sports || []
@@ -177,6 +178,7 @@ const navigateTo = (routeName, query = {}) => {
 }
 
 const getSportCategories = async () => {
+  if(!FEED_TOGGLE)return
   isLoading.value = true
   try {
     const sports = await getCategoriesBySport(activeSport.value.sportID)
