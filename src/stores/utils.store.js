@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getFixturesByTournamentId } from '@/helpers'
+import { getTopBets, getFixturesByTournamentId,FEED_TOGGLE } from '@/helpers'
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -45,6 +45,7 @@ export const useUtilsStore = defineStore({
 
   actions: {
     async fetchFeaturedGames() {
+      if(!FEED_TOGGLE) return;
       // If we have fresh data, don't fetch again
       if (this.hasFeaturedData && !this.isFeaturedStale) {
         return

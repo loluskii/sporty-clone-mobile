@@ -214,7 +214,8 @@ import {
   getTopGameCategories,
   gamesByTopCategory,
   getCodeHubItems,
-  getNext7Days
+  getNext7Days,
+  FEED_TOGGLE
 } from '@/helpers'
 import { useQuery } from 'vue-query'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -291,6 +292,7 @@ const setActiveCategory = async (category) => {
 }
 
 async function getCasinoGames() {
+  if(!FEED_TOGGLE) return;
   const res = await getTopGameCategories()
   featuredCasino.value = res.data
   activeCasinoCategory.value = res.data[0].id
@@ -299,6 +301,7 @@ async function getCasinoGames() {
 }
 
 async function getCodes() {
+  if(!FEED_TOGGLE) return;
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
@@ -393,7 +396,8 @@ const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 60000,
-    cacheTime: 300000
+    cacheTime: 300000,
+    enabled: FEED_TOGGLE
   }
 )
 
@@ -412,7 +416,8 @@ const { data: codesData, isLoading: isCodesLoading } = useQuery(
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 60000,
-    cacheTime: 300000
+    cacheTime: 300000,
+    enabled: FEED_TOGGLE
   }
 )
 
@@ -448,6 +453,7 @@ watch(
 
 // Update the getFeaturedGames function
 async function getFeaturedGames() {
+  if(!FEED_TOGGLE) return;
   if (!topBetsData.value) return
 
   // Use Set for faster unique tournament filtering

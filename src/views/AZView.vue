@@ -74,7 +74,7 @@ const selectTournaments = ref(false)
 const utilsStore = useUtilsStore()
 
 const page = ref()
-const isLoading = ref(true)
+const isLoading = ref(false)
 
 const activeCategory = ref(null)
 
@@ -84,6 +84,7 @@ const activeSport = reactive({
 })
 
 async function getCountriesList() {
+if(!FEED_TOGGLE)return
   isLoading.value = true
   const sports = await getCategoriesBySport(activeSport.sportID)
   const existingIndex = utilsStore.categoriesList.findIndex(
