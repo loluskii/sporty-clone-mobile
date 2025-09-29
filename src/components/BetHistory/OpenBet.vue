@@ -79,7 +79,7 @@ export default {}
 }
 
 .m-openBet--suc.es-dialog .es-dialog-btn {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   color: #ffffff;
   height: 4rem;
   line-height: 4rem;
@@ -113,11 +113,11 @@ export default {}
 
 .m-uc-nav .m-nav-item--active {
   font-weight: bold;
-  border-bottom: 0.25rem solid #0d9737;
+  border-bottom: 0.25rem solid var(--brand-highlight-text);
 }
 
 .m-btn--text {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 
 .m-btn--text + .m-btn {
@@ -632,7 +632,7 @@ export default {}
 }
 
 .m-sportsBet--bets .m-title .actions {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-weight: 700;
 }
 
@@ -651,7 +651,7 @@ export default {}
 }
 
 .m-sportsBet--bets .m-title .actions .icon-share {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   display: inline-block;
 }
 
@@ -708,7 +708,7 @@ export default {}
 }
 
 .m-sportsBet--bets .m-more .m-icon-more {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   display: inline-block;
   margin-left: 0.66666667rem;
   -webkit-transform: translateY(0.16666667rem);
@@ -785,7 +785,7 @@ export default {}
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -853,7 +853,7 @@ export default {}
 }
 
 .m-sportsBet--bets .auto-set > span {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 
 .m-sportsBet--bets .auto-set.disabled > span {
@@ -1046,7 +1046,7 @@ export default {}
 }
 
 .m-sportBets .m-t-green {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 
 .m-sportBets .m-t-dgreen {
@@ -1153,7 +1153,7 @@ export default {}
 }
 
 .m-bet-sel .m-l-left.m-i-suc {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 
 .m-bet-sel .m-l-left.m-i-suc:before {
@@ -1238,7 +1238,7 @@ export default {}
 }
 
 .m-bet-sel .m-live-odds .m-odds--up {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   line-height: 1;
   margin-left: 0.33333333rem;
 }

@@ -163,7 +163,7 @@ function formatDate(date) {
 }
 
 .m-tran-detail-wrap .request-details {
-  color: #0d9737 !important;
+  color: var(--brand-highlight-text) !important;
   color: var(--brand-secondary) !important;
 }
 
@@ -255,7 +255,7 @@ function formatDate(date) {
 }
 
 .m-tran-detail-wrap .m-my-dl-part2 dd.trans-detail-order-id.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 
@@ -354,7 +354,7 @@ function formatDate(date) {
 .m-tran-detail-wrap .m-tran-tips {
   background-color: #ffffff;
   background-color: var(--background-general-secondary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 0.83333333rem;
   height: 2.33333333rem;
@@ -420,7 +420,7 @@ function formatDate(date) {
 }
 
 .m-tran-detail-wrap .f-link {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   display: block;
   font-size: 1rem;
@@ -535,7 +535,7 @@ function formatDate(date) {
 }
 
 .transaction-detail-v2-container .transaction-detail-v2-contact .link {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1rem;
   font-weight: 400;

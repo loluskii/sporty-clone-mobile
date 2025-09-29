@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/default.png" />
+      <img src="/logo.svg" />
     </div>
     <div></div>
     <div class="payment-methods">
@@ -32,9 +32,8 @@
       </div>
       <p>
         Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is
-        licensed by the Oyo State Gaming Board, according to the License No: OYSGB/SPB/232975 issued
-        by the Oyo State Gaming Board.
+        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
+        licensed by the National Lottery Regulatory Commission.
       </p>
     </div>
     <div class="hr"></div>

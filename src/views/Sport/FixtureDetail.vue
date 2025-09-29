@@ -699,7 +699,7 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-league.link {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   text-decoration: underline;
 }
 

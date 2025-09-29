@@ -332,9 +332,9 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-ac-info-wrap .verify-btn {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   border-radius: 4px;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-size: 1.066rem;
   font-weight: 500;
   margin-left: 10px;
@@ -426,7 +426,7 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-ac-info-wrap li>span.unverified {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   color: #ffffff !important;
   font-size: 0.66666667rem;
   height: 1.33333333rem;
@@ -504,12 +504,12 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover+.m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
@@ -542,22 +542,22 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-wrapper.m-input-wrapper--active .m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-wrapper:nth-of-type(2).m-input-wrapper--active .m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-group--prepend {
-  border: 1px solid #0d9737 !important;
+  border: 1px solid var(--brand-highlight-text) !important;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 0.33333333rem 0.5rem;
-  border-color: #0d9737 !important;
+  border-color: var(--brand-highlight-text) !important;
   border-color: var(--brand-secondary) !important;
 }
 
@@ -572,8 +572,8 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-group--prepend.m-input-wrapper--active {
-  border: 1px solid #0d9737 !important;
-  border-color: #0d9737 !important;
+  border: 1px solid var(--brand-highlight-text) !important;
+  border-color: var(--brand-highlight-text) !important;
   border-color: var(--brand-secondary) !important;
 }
 
@@ -632,7 +632,7 @@ async function submitKycRequest(){
 }
 
 .selected {
-  color: #0d9737 !important;
+  color: var(--brand-highlight-text) !important;
 }
 
 .edit {
@@ -681,7 +681,7 @@ async function submitKycRequest(){
 }
 
 .m-ac-form-wrap form.m-psw-wrap .m-link-awrap a {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-size: 1.33333333rem;
 }
 

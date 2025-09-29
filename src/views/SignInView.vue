@@ -178,7 +178,7 @@ onMounted(() => {
   font-style: normal;
 }
 #loginStep .change-region-wrap .m-icon-right::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #loginStep .change-region-wrap .close {

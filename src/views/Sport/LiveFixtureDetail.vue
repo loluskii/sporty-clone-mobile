@@ -1207,8 +1207,8 @@ defineComponent({
   font-size: 1rem;
 }
 .event-detail .m-group .m-sport-group-item.active {
-  border-bottom: 4px solid #0d9737;
-  border-color: #0d9737;
+  border-bottom: 4px solid var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 .event-detail .m-sport-market-no-data {

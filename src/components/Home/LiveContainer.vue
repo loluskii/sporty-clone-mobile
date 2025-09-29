@@ -377,7 +377,7 @@ onBeforeUnmount(() => {
 }
 
 .live-container .m-market-tab .m-tabs-nav .m-tabs-ink-bar {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
 }
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab {
   color: #ffffff;
@@ -451,7 +451,7 @@ onBeforeUnmount(() => {
   display: flex;
 }
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell {
-  background-color: #3a3c42;
+  background-color: #000e21;
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   display: -webkit-box;

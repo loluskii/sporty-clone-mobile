@@ -426,7 +426,7 @@ onMounted(() => {
 }
 
 #enterMobile .change-region-wrap .m-icon-right::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 
@@ -488,7 +488,7 @@ onMounted(() => {
 }
 
 #enterMobile .enter-mobile-container .m-input-wap-wrapper--active {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
 }
 
 #enterMobile .enter-mobile-container .verifyInputs {
@@ -544,7 +544,7 @@ onMounted(() => {
 }
 
 #enterMobile .enter-mobile-container .action-label {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1.066rem;
   margin-top: 1.75rem;

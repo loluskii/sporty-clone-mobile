@@ -376,7 +376,7 @@ defineComponent({
 }
 
 .me-main .body .list-wrap .item .status {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-weight: 500;
   margin-right: 0.33333333rem;
 }
@@ -406,7 +406,7 @@ defineComponent({
 }
 
 .me-main .body .list-wrap .item .kyc.bg {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   border-radius: 0.16666667rem;
   color: #ffffff;
 }

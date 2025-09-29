@@ -100,7 +100,7 @@ onMounted(async () => {})
 }
 
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   font-weight: bold;
 }

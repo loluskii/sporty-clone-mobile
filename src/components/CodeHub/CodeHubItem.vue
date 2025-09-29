@@ -245,7 +245,7 @@ function shareCode(data) {
 }
 .booking-code-action-bar .share-button {
   background-color: #f2f3f5;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -287,8 +287,7 @@ function shareCode(data) {
   padding: 0;
 }
 .booking-code-action-bar .add-to-betslip-button {
-  background-color: #0d9737;
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   color: #ffffff;
 
   max-width: 11.08333333rem;

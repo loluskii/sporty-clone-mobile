@@ -744,7 +744,7 @@ onMounted(async () => {
   border-bottom-color: var(--brand-border-type1);
 }
 #withdraw .m-tabs-nav .m-tabs-ink-bar {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   background-color: var(--brand-secondary);
   bottom: 0;
   height: 0.33333333rem;
@@ -940,7 +940,7 @@ onMounted(async () => {
   margin-top: 0.75rem;
 }
 #withdraw .withdraw-bank .switch-container .switch-bank {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -1010,7 +1010,7 @@ onMounted(async () => {
 }
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:active,
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #withdraw .withdraw-footer .withdraw-amount {
@@ -1052,15 +1052,15 @@ onMounted(async () => {
 #withdraw .select-prepend .new-pay {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   font-size: 14px;
   font-weight: bold;
   line-height: 3.5rem;
   text-align: center;
   width: 100%;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 #withdraw .p-x-16 {
@@ -1120,7 +1120,7 @@ body {
   overflow-y: auto;
 }
 #popup-select .select-container .m-head .action {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 16px;
   height: 19px;
@@ -1168,7 +1168,7 @@ body {
   font-style: normal;
 }
 #popup-select .select-container .m-body .select-list .select-item .item-left.selected::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1.5rem;
   line-height: 1;
