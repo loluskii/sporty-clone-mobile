@@ -167,11 +167,7 @@
                           </span>
                         </div>
                         <div
-                          v-if="
-                            event.matchStatus
-                              ? event.matchStatus.toLowerCase() === 'not started'
-                              : ''
-                          "
+                          v-if="new Date(event.eventDate) > new Date()"
                           class="m-score"
                         >
                           <span class="m-t-12 capitalize m-t-gray">

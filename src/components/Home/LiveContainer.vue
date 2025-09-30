@@ -93,7 +93,7 @@ import { useCouponStore } from '@/stores'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights } from '@/helpers'
+import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
 import {
   defineComponent,
   onMounted,
@@ -119,6 +119,7 @@ const {
   isLoading,
   refetch: refetchLiveData
 } = useQuery('liveData', getLiveHighlights, {
+  enabled: FEED_TOGGLE,
   // Prevent automatic refetching which can cause recursive updates
   refetchOnWindowFocus: false,
   refetchOnMount: true,
@@ -141,6 +142,7 @@ const {
   onError: (err) => {
     console.error('Error fetching live data:', err)
     loadingError.value = true
+    isEmptyResponse.value = true
   },
   onSuccess: (response) => {
     loadingError.value = false
@@ -191,6 +193,15 @@ const {
     }, 0)
   }
 })
+
+watch(
+  () => [FEED_TOGGLE],
+  async ([feed_toggle]) => {
+    isEmptyResponse.value = !feed_toggle
+  },
+  { immediate: true } // Trigger the watch callback immediately on component mount
+)
+
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value || !completeLiveData.value?.fixtures) {

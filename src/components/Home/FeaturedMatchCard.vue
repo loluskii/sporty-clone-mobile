@@ -100,6 +100,13 @@ const props = defineProps({
 })
 
 const getMatchOdds = computed(() => {
+  // Get unique outcomes by outcomeID first
+  const uniqueOutcomes = props.matchDetails?.outcomes
+    .filter((x) => x.marketID == props.markets[0].marketID)
+    .filter((outcome, index, self) => 
+      index === self.findIndex(o => o.outcomeID === outcome.outcomeID)
+    )
+
   // Get the latest odds from the coupon store if available
   const matchSelections = couponStore.coupon.selections.filter(
     (sel) => String(sel.matchId) === String(props.matchDetails.matchID)
@@ -107,24 +114,22 @@ const getMatchOdds = computed(() => {
 
   if (matchSelections.length > 0) {
     // If we have selections in the betslip, use their updated odds
-    return props.matchDetails?.outcomes
-      .filter((x) => x.marketID == props.markets[0].marketID)
-      .map((outcome) => {
-        const selection = matchSelections.find(
-          (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
-        )
-        return selection
-          ? {
-              ...outcome,
-              odds: selection.odds,
-              active: !selection.suspended && !selection.unavailable
-            }
-          : outcome
-      })
+    return uniqueOutcomes.map((outcome) => {
+      const selection = matchSelections.find(
+        (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
+      )
+      return selection
+        ? {
+            ...outcome,
+            odds: selection.odds,
+            active: !selection.suspended && !selection.unavailable
+          }
+        : outcome
+    })
   }
 
-  // Otherwise use the original odds
-  return props.matchDetails?.outcomes.filter((x) => x.marketID == props.markets[0].marketID)
+  // Otherwise use the original unique odds
+  return uniqueOutcomes
 })
 
 function getEncodedURI(name) {

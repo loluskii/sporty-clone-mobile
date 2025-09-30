@@ -264,15 +264,15 @@ onMounted(async () => {
       safeLoad(getBetsData())
     ])
 
-    if(activeBonus?.data){
+    if (activeBonus?.data) {
       let bonusIsCasino = ["feature_trigger", "free_rounds"].includes(activeBonus?.data?.bonusType)
-      if(bonusIsCasino){
+      if (bonusIsCasino) {
         usersStore.casinoActiveBonus = activeBonus?.data
-      }else{
+      } else {
         usersStore.activeBonus = activeBonus?.data
       }
       usersStore.activeCashback = usersStore.currentUser.sportBonusBalance > 0 ? null : cashbackData
-    }else{
+    } else {
       usersStore.activeCashback = cashbackData?.data;
     }
 
@@ -283,28 +283,26 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await Promise.all([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()])
-    .then((res) => {
-      couponStore.sportsbookBonusList = res[0].data.data || []
-      couponStore.SportsbookGlobalVariable = res[1].data.data
-      utilsStore.sportsbookBonusList = res[0].data.data || []
-      utilsStore.SportsbookGlobalVariable = res[1].data.data
-      utilsStore.sportsMenu = res[2].sports // Update loading state after delay
-      utilsStore.banksList = res[4].data
+  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(),
+  ]).then((results) => {
+    couponStore.sportsbookBonusList =
+      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
 
-      setTimeout(() => {
-        let popupBanner = utilsStore.banners.find((b) => b.position === 'popup')
-        if (popupBanner && utilsStore.popupDialogShown === null) {
-          popupData.value = popupBanner
-          utilsStore.popupDialogShown = false
-        }
-      }, 1000)
-      // provide() implement gloabal store
-      isLoading.value = false
-    })
-    .catch(() => {
-      isLoading.value = false
-    })
+    couponStore.SportsbookGlobalVariable =
+      results[1].status === "fulfilled" ? results[1].value.data.data : null
+
+    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
+    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+
+    utilsStore.sportsMenu =
+      results[2].status === "fulfilled" ? results[2].value.sports : []
+
+    utilsStore.banksList =
+      results[4].status === "fulfilled" ? results[4].value.data : []
+
+    isLoading.value = false
+  })
+
 
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
@@ -350,32 +348,15 @@ defineComponent({
               <RouterView />
               <AppFooter v-show="utilsStore.showFooter"></AppFooter>
               <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
-              <ErrorDialogue
-                v-if="dialogueShown"
-                @hide-dialogue="toggleDialogue"
-                :dialogue-message="dialogueMessage"
-                :error-message="errorMessage"
-                :dialogue-type="dialogueType"
-                :next-route="nextRoute"
-              ></ErrorDialogue>
-              <CasinoDialog
-                v-if="
-                  utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
-                "
-                :data="casinoGameData"
-                @hide-dialogue="utilsStore.bonusModalShown = true"
-              />
-              <ImageDialog
-                v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
-                :image="popupData"
-                @hide-dialogue="utilsStore.popupDialogShown = true"
-              />
+              <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
+                :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
+              <CasinoDialog v-if="
+                utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
+              " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
+              <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
+                :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
             </div>
-            <Betlist
-              @toggle-betslip="toggleBetslip"
-              v-if="showBetslip"
-              @update-betcount="getBetsData"
-            ></Betlist>
+            <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
           </div>
 
           <!-- <transition name="move">
@@ -403,10 +384,7 @@ defineComponent({
           >
             <div class="dialog-wrapper" style="align-items: center; inset: auto; overflow: auto">
               <div class="dialog-container" style="overflow: auto">
-                <BookBetModal
-                  @hide-modal="bookBetModalShown = false"
-                  :betDetails="bookBetResponse"
-                ></BookBetModal>
+                <BookBetModal @hide-modal="bookBetModalShown = false" :betDetails="bookBetResponse"></BookBetModal>
               </div>
             </div>
           </div>
@@ -501,7 +479,7 @@ body {
   opacity: 0;
 }
 
-.x-layout-main > * {
+.x-layout-main>* {
   min-height: 100%;
 }
 
@@ -563,9 +541,7 @@ body {
 }
 
 .move-enter,
-.move-leave-to
-
-/* .fade-leave-active in <2.1.8 */ {
+.move-leave-to{
   transform: translateX(0);
 }
 </style>
