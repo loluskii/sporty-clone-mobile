@@ -3,7 +3,7 @@
   <div v-else>
     <HeaderOther :header-title="pageTitle"></HeaderOther>
     <div class="body">
-      <div v-html="html"></div>
+      <div v-html="html" style="overflow-x: scroll;"></div>
     </div>
   </div>
 </template>
