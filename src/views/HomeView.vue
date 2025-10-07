@@ -41,7 +41,8 @@ onMounted(async () => {})
 </script>
 
 <style>
-.m-sports {
+
+.m-sports, .home {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
@@ -101,7 +102,7 @@ onMounted(async () => {})
 
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
   color: var(--brand-highlight-text);
-  color: var(--brand-quaternary);
+  /* color: var(--brand-quaternary); */
   font-weight: bold;
 }
 
@@ -269,8 +270,7 @@ onMounted(async () => {})
 .m-sports .m-pre-opts.m-tabs {
   position: relative;
   width: 100%;
-  background-color: #fafafa;
-  background-color: var(--background-type1-secondary);
+  /* background-color: rgb(6,0,25); */
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-nav {
@@ -279,8 +279,7 @@ onMounted(async () => {})
   border-color: var(--c-prematch-tab-border);
   margin: 0 auto;
 
-  background-color: #fafafa;
-  background-color: var(--background-type1-secondary);
+  background-color: rgb(0,14,34);
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab {
@@ -299,7 +298,7 @@ onMounted(async () => {})
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab.m-tabs-tab-active {
   color: #1b1e25;
   color: var(--c-prematch-tab-name-active);
-  border-bottom: 0.23333333rem solid #001041;
+  border-bottom: 0.23333333rem solid var(--brand-primary);
   font-weight: bold;
 }
 

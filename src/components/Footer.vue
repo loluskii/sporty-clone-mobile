@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="partnership-wrap text-center">
-      <img src="/logo.svg" />
+      <img src="/logo.png" />
     </div>
     <div></div>
     <div class="payment-methods">

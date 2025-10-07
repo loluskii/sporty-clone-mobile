@@ -182,8 +182,8 @@ function addToBetslip(event, odd) {
 
 <style scoped>
 .featuredMatchCard {
-  background-color: #ffffff;
-  background-color: var(--c-featured-match-card-bg);
+  /* background-color: #ffffff; */
+  background-color: rgb(28, 39, 69);
   -webkit-box-shadow:
     0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);

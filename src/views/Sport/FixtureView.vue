@@ -623,6 +623,8 @@ defineComponent({
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
+  background-color: var(--background-type1-primary);
+  color: #eaecef;
 }
 .m-event-list .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
@@ -631,7 +633,7 @@ defineComponent({
   /* border-radius: 30px; */
 }
 .m-event-list .m-sport-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--c-prematch-tab-name-active);
+  border-bottom: 3px solid var(--brand-primary);
 }
 .m-event-list .m-sport-type .m-sport-type-item:first-child {
   margin-left: 0.83333333rem;
@@ -649,7 +651,6 @@ defineComponent({
   -webkit-transition: top 0.3s;
   transition: top 0.3s;
   z-index: 100;
-  padding: 10px 0;
   border-bottom: 1px solid #eaecef;
 }
 /* .m-event-list .m-sport-type.m-sport-type-fixed.has-live {

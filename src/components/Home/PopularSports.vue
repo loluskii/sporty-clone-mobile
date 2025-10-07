@@ -145,7 +145,7 @@
             </a>
           </div>
         </div>
-        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch bg-white">
+        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch">
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
@@ -689,7 +689,7 @@ onDeactivated(() => {
   flex-direction: column;
   font-family: 'roboto', sans-serif;
   background-color: #ffffff;
-  background-color: var(--c-featured-match-bg);
+  background-color: var(--background-type1-secondary);
 }
 .featured-widget.with-nav {
   height: 18.91666667rem;

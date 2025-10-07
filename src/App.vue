@@ -330,7 +330,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="/logo.svg"
+                src="/logo.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
@@ -507,11 +507,12 @@ body {
   top: 0px;
   width: 100%;
   z-index: 2;
+  background-color: var(--background-type1-secondary);
 }
 
 .x-layout-main .x-main-mid.has-bg-color {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
 }
 
 .x-layout-main .x-main-mid.x-has-bottom-nav .x-footer {

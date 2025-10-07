@@ -13,8 +13,8 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#0D9737',
 
-    prematchOddBackgroundColor: 'rgb(222, 226 ,230)',
-    prematchOddTextColor: '#121212',
+    prematchOddBackgroundColor: 'rgb(60,71,113)',
+    prematchOddTextColor: '#f1f1f1',
     activePrematchOddBackground: 'rgb(217, 37, 29)',
     activePrematchOddTextColor: '#fff',
 

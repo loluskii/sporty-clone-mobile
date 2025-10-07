@@ -391,9 +391,9 @@ onBeforeUnmount(() => {
   padding: 1.33333333rem 0.83333333rem;
 }
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
-  color: #ffffff;
+  color: var(--brand-highlight-text);
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--brand-live-odds-text);
+  border-bottom: 0.23333333rem solid var(--brand-highlight-text)
 }
 .live-container .m-bet-tab {
   /* background-color: var(--brand-background-live); */
@@ -441,7 +441,7 @@ onBeforeUnmount(() => {
   line-height: 1;
 }
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item.active {
-  color: var(--brand-live-odds-text);
+  color: var(--brand-highlight-text);
   font-weight: bold;
 }
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row {

@@ -86,6 +86,7 @@
 .x-table {
   display: block;
   width: 100%;
+  background-color: rgb(29,40,70);
 }
 
 .x-table .x-table-row {
@@ -579,7 +580,7 @@
 /* Tabs */
 .m-tabs {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   overflow: hidden;

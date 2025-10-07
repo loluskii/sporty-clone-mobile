@@ -49,7 +49,7 @@
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/transaction.4d2d40c644.svg"
               class="transaction-wrap-item-img"
-            /><span>Transactions</span>
+            /><span style="color: #eaecef;">Transactions</span>
           </div>
           <div class="transaction-wrap-item gift" @click="$router.push({ name: 'account-bonus' })">
             <img
@@ -114,8 +114,8 @@ defineComponent({
   /* background: rgb(233, 45, 45); */
   background: linear-gradient(
     188deg,
-    var(--brand-primary) 0%,
-    var(--brand-background-secondary) 100%
+    var(--background-type1-secondary) 100%,
+    var(--brand-primary) 0%
   );
 }
 
@@ -312,7 +312,7 @@ defineComponent({
   -ms-flex-pack: justify;
   justify-content: space-between;
   padding: 1.33333333rem;
-  filter: invert(1);
+  /* filter: invert(1); */
 }
 
 .me-main .body .transaction-wrap-item {
