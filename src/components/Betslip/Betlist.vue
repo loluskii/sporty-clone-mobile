@@ -114,14 +114,14 @@
               >
                 <span data-cms-key="multiple">Multiple</span>
               </li>
-              <li
+              <!-- <li
                 :class="betSlipType === 'Combo' ? 'active' : ''"
                 @click="couponStore.setBetType('Combo')"
                 class="m-list-bet-type-item m-snap-nav-item"
                 data-op="betslip-multi-tag-system"
               >
                 <span data-cms-key="system">System</span>
-              </li>
+              </li> -->
             </ul>
             <i class="controls left-controls"></i>
             <i class="controls right-controls"></i>
@@ -153,10 +153,10 @@
               </div>
             </div>
 
-            <SystemBet 
+            <!-- <SystemBet 
               v-if="betSlipType === 'Combo'" 
               :betSlipType="betSlipType"
-            />
+            /> -->
 
             <BetListStake
               @toggle-show="toggleShow"

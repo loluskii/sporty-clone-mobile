@@ -339,16 +339,16 @@ onMounted(() => {
         (fixture) => String(fixture.matchID) !== String(matchId)
       )
 
-      // Update the data through Vue Query's refetch
-      refetchLiveData().then(() => {
-        // After refetch, update the fixtures if needed
-        if (completeLiveData.value) {
-          completeLiveData.value = {
-            ...completeLiveData.value,
-            fixtures: updatedFixtures
-          }
-        }
-      })
+      // // Update the data through Vue Query's refetch
+      // refetchLiveData().then(() => {
+      //   // After refetch, update the fixtures if needed
+      //   if (completeLiveData.value) {
+      //     completeLiveData.value = {
+      //       ...completeLiveData.value,
+      //       fixtures: updatedFixtures
+      //     }
+      //   }
+      // })
     }
   })
 })
