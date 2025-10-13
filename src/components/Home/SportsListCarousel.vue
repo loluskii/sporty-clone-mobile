@@ -174,7 +174,7 @@ function openVirtual() {
 async function playAviator() {
   return router.push({
     name: 'game-play',
-    params: { game_name: slugify('Aviator'), game_id: 1583 }
+    params: { game_name: slugify('Aviator'), game_id: 1838 }
   })
 }
 
