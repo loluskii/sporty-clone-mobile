@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.2...v1.0.3) (2025-10-23)
+
+
+### Bug Fixes
+
+* remove nginx volume mount and obsolete version field ([c973aec](https://github.com/zoroplay/sporty-clone-mobile/commit/c973aec951527537f70a2a6aa0e5076ac12a83b4))
+
 ## [1.0.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.1...v1.0.2) (2025-10-23)
 
 
