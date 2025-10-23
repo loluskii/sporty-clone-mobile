@@ -475,7 +475,7 @@ defineComponent({
 <style scoped>
 @import url('@/assets/css/bet-history.css');
 .m-btn--text {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 .m-btn--text + .m-btn {
   margin-top: 1.66666667rem;

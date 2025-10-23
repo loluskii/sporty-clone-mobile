@@ -124,7 +124,7 @@ async function loadBet() {
   box-sizing: border-box;
 }
 .m-main-info .m-form-wrap .m-input-container .m-input-wrapper--active .m-input {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
@@ -333,7 +333,7 @@ async function loadBet() {
   padding-right: 30px;
 }
 .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   cursor: pointer;
 }

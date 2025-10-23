@@ -43,8 +43,7 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #e41827;
-  background-color: var(--brand-primary);
+  background-color: rgb(222, 226 ,230);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;

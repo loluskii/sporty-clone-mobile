@@ -752,7 +752,7 @@ onMounted(() => {
   .m-submit
   .m-share-btn
   .m-icon-share:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1.33333333rem;
 }
@@ -783,7 +783,7 @@ onMounted(() => {
   -ms-flex-pack: center;
   justify-content: center;
   text-align: center;
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-secondary);
   color: #ffffff;
 }
@@ -800,7 +800,7 @@ onMounted(() => {
   .m-betslips-stake
   .m-submit
   .place-bet.bet-accept-change {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-secondary);
   color: #ffffff;
 }
@@ -814,7 +814,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-quaternary);
   color: #ffffff;
   color: var(--brand-tertiary);
@@ -1000,7 +1000,7 @@ onMounted(() => {
   text-align: center;
   vertical-align: middle;
   width: 34px;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--c-betslip-flexibet-action);
 }
 
@@ -1205,7 +1205,7 @@ onMounted(() => {
   padding-top: 3px;
   border-color: #eaecef;
   border-color: var(--background-type1-tertiary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 

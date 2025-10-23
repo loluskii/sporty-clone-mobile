@@ -182,8 +182,8 @@ function addToBetslip(event, odd) {
 
 <style scoped>
 .featuredMatchCard {
-  background-color: #ffffff;
-  background-color: var(--c-featured-match-card-bg);
+  /* background-color: #ffffff; */
+  background-color: rgb(28, 39, 69);
   -webkit-box-shadow:
     0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
@@ -232,7 +232,7 @@ function addToBetslip(event, odd) {
   width: 18px;
 }
 .featuredMatchCard .top .tournamentLink {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-highlight-text);
   font-size: 0.83333333rem;
   margin-left: 0.5rem;
@@ -491,7 +491,7 @@ function addToBetslip(event, odd) {
   line-height: 1;
 }
 .outcomes .m-outcome--checked {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }

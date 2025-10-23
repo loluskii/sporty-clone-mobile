@@ -125,7 +125,7 @@
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                color="#0D9737"
+                color="var(--brand-highlight-text)"
                 class="svg-icon-base"
                 style="height: 1.66667rem; width: 1.66667rem"
               >
@@ -145,7 +145,7 @@
             </a>
           </div>
         </div>
-        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch bg-white">
+        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch">
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
@@ -559,7 +559,7 @@ onDeactivated(() => {
   background: #e41827;
 }
 .home .m-popular .m-popular-item .m-color-bar--green {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
 }
 .home .m-popular .m-popular-item a img {
   width: 100%;
@@ -689,7 +689,7 @@ onDeactivated(() => {
   flex-direction: column;
   font-family: 'roboto', sans-serif;
   background-color: #ffffff;
-  background-color: var(--c-featured-match-bg);
+  background-color: var(--background-type1-secondary);
 }
 .featured-widget.with-nav {
   height: 18.91666667rem;
@@ -792,7 +792,7 @@ onDeactivated(() => {
   color: var(--c-prematch-sport-item-text);
 }
 .featured-nav-item .feature-nav-span.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-weight: bold;
 }
 .featured-active {
@@ -817,7 +817,7 @@ onDeactivated(() => {
   display: flex;
 }
 .feature-list.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   font-weight: bold;
 }

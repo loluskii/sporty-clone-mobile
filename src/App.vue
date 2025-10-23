@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, computed, nextTick } from 'vue'
+import { defineComponent, onMounted, ref, watch, computed } from 'vue'
 import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
@@ -23,10 +23,9 @@ import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
 import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
-import { useAuthStore, useUsersStore } from './stores'
-import { checkVersion } from '@/utils/version'
-import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
+import { useUsersStore, useAuthStore } from './stores'
 import Cookies from 'js-cookie'
+
 import HandleCache from '@/components/HandleCache.vue'
 import ImageDialog from './components/ImageDialog.vue'
 const cacheBuster = ref()
@@ -331,7 +330,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="/default.png"
+                src="/logo.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
@@ -378,13 +377,6 @@ defineComponent({
             @hide="toggleDatePicker"
             @set-date="handleCustomDatePicker"
           />
-          <template v-if="route.name === 'account-deposit' || route.name === 'account-withdraw'">
-            <DepositWithdrawalCode
-              v-if="depositWithdrawalShown"
-              :data="depositWithdrawalData"
-              @hide-modal="hideModal"
-            />
-          </template>
           <div
             class="dialog-mask"
             v-if="bookBetModalShown"
@@ -515,11 +507,12 @@ body {
   top: 0px;
   width: 100%;
   z-index: 2;
+  background-color: var(--background-type1-secondary);
 }
 
 .x-layout-main .x-main-mid.has-bg-color {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
 }
 
 .x-layout-main .x-main-mid.x-has-bottom-nav .x-footer {

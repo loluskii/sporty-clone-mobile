@@ -286,9 +286,9 @@ const liveSports = computed(() => {
   margin-bottom: 1.25rem;
 }
 .m-search .m-error-wrapper .m-btn {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   border-radius: 0.25rem;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   display: inline-block;
   height: 3rem;
   line-height: 3rem;
@@ -411,7 +411,7 @@ const liveSports = computed(() => {
   color: #33ea6a !important;
 }
 .m-search--bar .m-input-wap-wrapper .m-input-wap-icon--clickable:active {
-  color: #0d9737 !important;
+  color: var(--brand-highlight-text) !important;
 }
 .m-search--bar .m-icon-back {
   color: #ffffff;

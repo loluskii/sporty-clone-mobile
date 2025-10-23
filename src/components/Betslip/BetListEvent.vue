@@ -507,7 +507,7 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .m-outcome-odds.m-outcome-up:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   display: inline-block;
   padding-right: 0.83333333rem;

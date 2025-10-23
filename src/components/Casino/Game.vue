@@ -36,11 +36,14 @@ const utilsStore = useUtilsStore()
 const activeBonus = computed(() => {
   return userStore.casinoActiveBonus
 })
+
 const getImagePath = () => {
-  // https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2Fhouseofdoom2thecrypt.png?alt=media
-  return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${props.game.title
-    .replace(/\s/g, '')
-    .toLowerCase()}.png?alt=media`
+  try {
+    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(props.game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())}.png?alt=media`
+  } catch (error) {
+    console.error('Error generating image path:', error)
+    return `https://placehold.co/150x175?text=${encodeURIComponent(props.game.title)}`
+  }
 }
 
 const handleImageError = (event) => {

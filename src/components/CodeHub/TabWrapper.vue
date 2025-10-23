@@ -95,7 +95,7 @@ defineEmits(['set-active'])
 .tab-wrapper .nav-tab-item.active {
   border-bottom-width: 4px;
   border-bottom-style: solid;
-  border-bottom-color: #0d9737;
+  border-bottom-color: var(--brand-highlight-text);
   border-bottom-color: var(--brand-secondary);
   font-weight: bold;
 }
@@ -126,7 +126,7 @@ defineEmits(['set-active'])
 .tab-wrapper .tab-item.router-link-active {
   border-bottom-width: 4px;
   border-bottom-style: solid;
-  border-bottom-color: #0d9737;
+  border-bottom-color: var(--brand-highlight-text);
   border-bottom-color: var(--brand-secondary);
   font-weight: bold;
 }
@@ -181,7 +181,7 @@ defineEmits(['set-active'])
   width: 0.08333333rem;
 }
 .code-hub-header-right .custom-codes-icon {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   cursor: pointer;
 }

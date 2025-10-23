@@ -98,7 +98,7 @@ onMounted(async () => {
   text-align: center;
 }
 .withdraw-success .manual-text {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-text-secondary);
   font-size: 16px;
   line-height: 18px;
@@ -211,7 +211,7 @@ onMounted(async () => {
   justify-content: center;
 }
 .withdraw-success .check-transaction-container .check-transaction {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   -webkit-box-flex: 0;
   -webkit-flex: 0;

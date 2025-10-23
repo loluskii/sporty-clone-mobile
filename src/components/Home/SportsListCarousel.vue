@@ -36,7 +36,7 @@
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="playAviator"
           ><div class="sport-icon">
-            <img src="@/assets/images/aviator.png" loading="eager" width="24" height="24" />
+            <img src="@/assets/images/-aviator.png" loading="eager" width="24" height="24" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
@@ -231,7 +231,7 @@ onMounted(() => {
 }
 .home .m-sports-choose {
   min-height: 5rem;
-  background-color: #ffffff;
+  background-color: var(--background-type1-primary);
 }
 .home .m-sports-choose .m-sports-choose-item {
   -webkit-box-sizing: border-box;
@@ -276,6 +276,7 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon img {
   vertical-align: top;
+  filter: invert(1)
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon:before {
   color: #353a45;

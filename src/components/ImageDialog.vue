@@ -209,7 +209,7 @@ span.close:before {
 }
 
 .m-dialog .m-dialog-footer .m-dialog-btn {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   cursor: pointer;
   display: inline-block;

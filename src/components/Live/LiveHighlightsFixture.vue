@@ -388,9 +388,7 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(
-    //   `📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`,
-    // );
+    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
     return
   }
 

@@ -264,7 +264,7 @@ onMounted(() => {
   width: 100%;
 }
 .es-dialog .es-dialog-footer .es-dialog-btn {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   cursor: pointer;
   display: inline-block;

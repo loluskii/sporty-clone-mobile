@@ -553,7 +553,7 @@ defineComponent({
   color: var(--brand-prematch-odds-text);
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--checked:before {
@@ -685,7 +685,7 @@ defineComponent({
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
 }
 .af-select-item.hover {

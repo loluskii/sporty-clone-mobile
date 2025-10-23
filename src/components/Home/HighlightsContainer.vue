@@ -22,12 +22,12 @@
             :id="'highlights_' + sport.sportID"
             class="m-sport-type-item m-snap-nav-item"
           >
-            <img
+            <!-- <img
               :src="getImageSrc(sport.sportID)"
               style="height: 20px; margin-right: 0.4rem"
               alt=""
               srcset=""
-            />
+            /> -->
             <Transition name="bounce">
               <span>{{ sport.sportName }}</span>
             </Transition>
@@ -318,7 +318,8 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: #f1f1f1;
+  /* background-color: #f1f1f1; */
+  background-color: rgb(0,14,34);
   /* z-index: 220; */
 }
 
@@ -331,8 +332,8 @@ defineComponent({
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
   padding: 5px 15px;
   /* border: 1px solid; */
-  border-radius: 25px;
-  background-color: #fff;
+  /* border-radius: 25px; */
+  /* background-color: rgb(6,0,25,0.8); */
 }
 
 .bounce-enter-active {

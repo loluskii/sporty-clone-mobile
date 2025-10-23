@@ -8,7 +8,7 @@
     "build": "npm run generate-version-build && vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
-    "lint": "eslint . --ext .vue,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
     "analyze": "vite-bundle-visualizer"
   },
