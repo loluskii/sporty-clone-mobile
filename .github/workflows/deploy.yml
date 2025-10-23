@@ -2,9 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ west-bet24-mobile ]
+    branches: [ west-bet24 ]
   pull_request:
-    branches: [ west-bet24-mobile ]
+    branches: [ west-bet24 ]
 
 permissions:
   contents: write
