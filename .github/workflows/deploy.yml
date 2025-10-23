@@ -101,7 +101,7 @@ jobs:
   release:
     needs: [version, build]
     runs-on: [self-hosted, linux, x64]
-    if: github.ref == 'refs/heads/west-bet24-mobile' 
+    if: github.ref == 'refs/heads/west-bet24' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -153,7 +153,7 @@ jobs:
     needs: [version, build, release]
     runs-on: [self-hosted, linux, x64]
     environment: GCP CI
-    if: github.ref == 'refs/heads/west-bet24-mobile' 
+    if: github.ref == 'refs/heads/west-bet24' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
