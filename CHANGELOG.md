@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.1.0...v1.1.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* copy all source files to server for local Docker build ([1a200a4](https://github.com/zoroplay/sporty-clone-mobile/commit/1a200a43d8b70b45438bc43c9bf9c1d2be91263b))
+* use tar instead of rsync to copy source files ([5661302](https://github.com/zoroplay/sporty-clone-mobile/commit/56613020d4c5b42d085055b97be797ab7d6e4bf0))
+
 # [1.1.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.4...v1.1.0) (2025-10-23)
 
 
