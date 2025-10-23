@@ -23,8 +23,12 @@ docker ps
 # Verify environment variables in built files
 echo "Verifying environment variables in Docker image..."
 if docker ps | grep -q sporty-clone-mobile; then
-    docker exec sporty-clone-mobile grep -r "api\." /usr/share/nginx/html/assets/ || echo "No API URLs found in built files"
-    docker exec sporty-clone-mobile grep -r "cubebet\|bwinners\|sportsbookengine" /usr/share/nginx/html/assets/ || echo "No specific API domains found"
+    echo "Checking for API URLs in built files:"
+    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -l "https://api" {} \; | head -3
+    echo "Sample API URLs found:"
+    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -o "https://api[^\"']*" {} \; | head -5
+    echo "Checking for specific domains:"
+    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -o "[^\"']*cubebet[^\"']*\|[^\"']*bwinners[^\"']*\|[^\"']*sportsbookengine[^\"']*" {} \; | head -5
 else
     echo "Container sporty-clone-mobile is not running"
 fi
