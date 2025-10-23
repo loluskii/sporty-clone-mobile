@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.1.1...v1.1.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* create tar file in /tmp to avoid self-inclusion ([385dcb9](https://github.com/zoroplay/sporty-clone-mobile/commit/385dcb9b195fb39e39e669fa8d11b21a42bd58ca))
+
 ## [1.1.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.1.0...v1.1.1) (2025-10-23)
 
 
