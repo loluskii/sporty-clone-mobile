@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.1...v1.2.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* pass environment variables as Docker build arguments ([1035f02](https://github.com/zoroplay/sporty-clone-mobile/commit/1035f02e527e3b56bda9464564f88ba3d0ce3e7f))
+
 ## [1.2.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.0...v1.2.1) (2025-10-23)
 
 
