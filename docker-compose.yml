@@ -6,8 +6,6 @@ services:
       - "3002:80"
     environment:
       - NODE_ENV=production
-    env_file:
-      - .env
     restart: unless-stopped
 
     networks:
