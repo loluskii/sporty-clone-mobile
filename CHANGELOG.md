@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.1...v1.0.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* remove invalid backticks from .env file ([e7db5d5](https://github.com/zoroplay/sporty-clone-mobile/commit/e7db5d5181a45dd6cdf083736bb34016d9914922))
+
 ## [1.0.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.0...v1.0.1) (2025-10-23)
 
 
