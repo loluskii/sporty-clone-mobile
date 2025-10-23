@@ -184,10 +184,8 @@ jobs:
           # Create directory on server
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
           
-          # Copy files to server
-          scp -o StrictHostKeyChecking=no .env ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
-          scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
-          scp -o StrictHostKeyChecking=no deploy.sh ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
+          # Copy all source files to server for local build
+          rsync -avz --exclude='.git' --exclude='node_modules' --exclude='dist' . ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
           
           # Login to GitHub Container Registry on server and execute deployment
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} '
