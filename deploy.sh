@@ -23,12 +23,15 @@ docker ps
 # Verify environment variables in built files
 echo "Verifying environment variables in Docker image..."
 if docker ps | grep -q sporty-clone-mobile; then
-    echo "Checking for API URLs in built files:"
-    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -l "https://api" {} \; | head -3
-    echo "Sample API URLs found:"
-    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -o "https://api[^\"']*" {} \; | head -5
-    echo "Checking for specific domains:"
-    docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "*.js" -exec grep -o "[^\"']*cubebet[^\"']*\|[^\"']*bwinners[^\"']*\|[^\"']*sportsbookengine[^\"']*" {} \; | head -5
+    echo "Checking main JS bundle for environment variables:"
+    MAIN_JS=$(docker exec sporty-clone-mobile find /usr/share/nginx/html/assets -name "index-*.js" | head -1)
+    echo "Main JS file: $MAIN_JS"
+    echo "Sample content from main JS (first 500 chars):"
+    docker exec sporty-clone-mobile head -c 500 "$MAIN_JS" 2>/dev/null || echo "Could not read main JS file"
+    echo "\nSearching for 'api' in main JS:"
+    docker exec sporty-clone-mobile grep -o "[a-zA-Z0-9:/.-]*api[a-zA-Z0-9:/.-]*" "$MAIN_JS" 2>/dev/null | head -5 || echo "No API references found"
+    echo "\nSearching for 'cubebet' in all files:"
+    docker exec sporty-clone-mobile grep -r "cubebet" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No cubebet references found"
 else
     echo "Container sporty-clone-mobile is not running"
 fi
