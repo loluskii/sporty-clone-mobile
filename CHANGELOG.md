@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.4...v1.1.0) (2025-10-23)
+
+
+### Features
+
+* build Docker image locally with server's .env file ([b91d583](https://github.com/zoroplay/sporty-clone-mobile/commit/b91d583a9729dc9914b61cf5486adf5bc762f69d))
+
 ## [1.0.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.3...v1.0.4) (2025-10-23)
 
 
