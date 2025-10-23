@@ -185,7 +185,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
           
           # Copy all source files to server for local build
-          rsync -avz --exclude='.git' --exclude='node_modules' --exclude='dist' . ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
+          tar --exclude='.git' --exclude='node_modules' --exclude='dist' -czf source.tar.gz .
+          scp -o StrictHostKeyChecking=no source.tar.gz ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/west-bet24-mobile/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'cd ~/west-bet24-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
           
           # Login to GitHub Container Registry on server and execute deployment
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} '
