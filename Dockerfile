@@ -2,14 +2,30 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arguments
+ARG VITE_BASE_URL
+ARG VITE_NEW_BASE_API
+ARG VITE_APP_KEY
+ARG VITE_CLIENT_ID
+ARG VITE_CURRENCY
+ARG VITE_MQTT_URI
+
+# Set environment variables for build
+ENV VITE_BASE_URL=$VITE_BASE_URL
+ENV VITE_NEW_BASE_API=$VITE_NEW_BASE_API
+ENV VITE_APP_KEY=$VITE_APP_KEY
+ENV VITE_CLIENT_ID=$VITE_CLIENT_ID
+ENV VITE_CURRENCY=$VITE_CURRENCY
+ENV VITE_MQTT_URI=$VITE_MQTT_URI
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source code and .env file
+# Copy source code
 COPY . .
 
-# Build with environment variables from .env file
+# Build with environment variables
 RUN npm run build
 
 FROM nginx:alpine

@@ -3,6 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_BASE_URL=${VITE_BASE_URL}
+        - VITE_NEW_BASE_API=${VITE_NEW_BASE_API}
+        - VITE_APP_KEY=${VITE_APP_KEY}
+        - VITE_CLIENT_ID=${VITE_CLIENT_ID}
+        - VITE_CURRENCY=${VITE_CURRENCY}
+        - VITE_MQTT_URI=${VITE_MQTT_URI}
     container_name: sporty-clone-mobile
     ports:
       - "3002:80"
