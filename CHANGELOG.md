@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.1.2...v1.2.0) (2025-10-23)
+
+
+### Features
+
+* improve environment variable verification in deploy script ([f5dad00](https://github.com/zoroplay/sporty-clone-mobile/commit/f5dad006eeaa400d519d4f4ac78f46741995c3fb))
+
 ## [1.1.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.1.1...v1.1.2) (2025-10-23)
 
 
