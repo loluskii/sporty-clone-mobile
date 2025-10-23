@@ -1,6 +1,8 @@
 services:
   sporty-clone-mobile:
-    image: ghcr.io/zoroplay/west-bet24-mobile:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: sporty-clone-mobile
     ports:
       - "3002:80"

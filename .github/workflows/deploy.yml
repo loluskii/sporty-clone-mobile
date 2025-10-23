@@ -149,7 +149,7 @@ jobs:
         run: npx semantic-release
 
   deploy:
-    needs: [version, build, release]
+    needs: [version]
     runs-on: [self-hosted, linux, x64]
     environment: GCP CI
     if: github.ref == 'refs/heads/west-bet24' 
@@ -177,8 +177,7 @@ jobs:
           # Copy repository .env file
           cp .env .env.backup 2>/dev/null || echo "No existing .env file to backup"
           
-          # Update docker-compose with new image version
-          sed -i "s|image: ghcr.io.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$NEXT_VERSION|g" docker-compose.yml
+          # Note: Building locally, no need to update image version
 
       - name: Deploy to GCP server
         run: |
