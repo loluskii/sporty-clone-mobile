@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.3...v1.0.4) (2025-10-23)
+
+
+### Bug Fixes
+
+* remove env_file reference since Vite uses build-time environment variables ([3a9fa5b](https://github.com/zoroplay/sporty-clone-mobile/commit/3a9fa5b8013e2a65b338f8cfe41060093f6a03d6))
+
 ## [1.0.3](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.0.2...v1.0.3) (2025-10-23)
 
 
