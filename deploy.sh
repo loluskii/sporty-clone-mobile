@@ -10,7 +10,12 @@ echo "Building Docker image with server's .env file"
 echo "Checking .env file contents:"
 head -5 .env || echo "No .env file found"
 echo "Setting environment variables for build:"
-export $(grep -v '^#' .env | xargs)
+set -a
+source .env
+set +a
+echo "Environment variables set:"
+echo "VITE_BASE_URL=$VITE_BASE_URL"
+echo "VITE_NEW_BASE_API=$VITE_NEW_BASE_API"
 
 # Create network if it doesn't exist,
 docker network create sbenet || true
