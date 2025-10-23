@@ -124,8 +124,7 @@ jobs:
           cat > release.config.js << 'EOF'
           export default {
             branches: [
-              { name: 'west-bet24-mobile' },
-              
+              { name: 'west-bet24' }
             ],
             repositoryUrl: 'https://github.com/${{ github.repository }}.git',
             tagFormat: 'v${version}',
