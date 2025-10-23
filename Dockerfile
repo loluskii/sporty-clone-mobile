@@ -6,8 +6,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy source code and build
+# Copy source code and .env file
 COPY . .
+
+# Build with environment variables from .env file
 RUN npm run build
 
 FROM nginx:alpine

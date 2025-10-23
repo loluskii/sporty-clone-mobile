@@ -7,6 +7,10 @@ cd ~/west-bet24-mobile
 
 # Build image locally with server's .env file
 echo "Building Docker image with server's .env file"
+echo "Checking .env file contents:"
+head -5 .env || echo "No .env file found"
+echo "Setting environment variables for build:"
+export $(grep -v '^#' .env | xargs)
 
 # Create network if it doesn't exist,
 docker network create sbenet || true
@@ -32,6 +36,8 @@ if docker ps | grep -q sporty-clone-mobile; then
     docker exec sporty-clone-mobile grep -o "[a-zA-Z0-9:/.-]*api[a-zA-Z0-9:/.-]*" "$MAIN_JS" 2>/dev/null | head -5 || echo "No API references found"
     echo "\nSearching for 'cubebet' in all files:"
     docker exec sporty-clone-mobile grep -r "cubebet" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No cubebet references found"
+    echo "\nSearching for server's API URL in built files:"
+    docker exec sporty-clone-mobile grep -r "api.cubebet.ng" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
 else
     echo "Container sporty-clone-mobile is not running"
 fi
