@@ -538,7 +538,7 @@ async function submit() {
       amount: withdrawalAmount.value,
       remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
     }
-    emitter.emit('showDialogueMessage', data)
+    emitter.emit('showWithdrawalDialogueMessage', data)
   } else {
     const res = await verifyAccount(payload)
     buttonLoader.value = false
@@ -550,7 +550,7 @@ async function submit() {
         amount: withdrawalAmount.value,
         remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
       }
-      emitter.emit('showDialogueMessage', data)
+      emitter.emit('showWithdrawalDialogueMessage', data)
     } else {
       accountError.value = true
       accountErrorMessage.value = res.message

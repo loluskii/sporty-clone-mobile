@@ -51,6 +51,11 @@
       @close-modal="$emit('hide-dialogue')"
       :user-data="dialogueMessage"
     ></WithdrawalModal>
+    <ManualDepositModal
+      v-if="dialogIsDepositMessage"
+      @close-modal="$emit('hide-dialogue')"
+      :deposit-data="dialogueMessage"
+    ></ManualDepositModal>
     <div
       v-if="dialogIsToast"
       class="es-dialog-toast es-dialog m-dialog"
@@ -71,6 +76,7 @@ import WithdrawalModal from '@/components/WithdrawalModal.vue'
 import { useRouter } from 'vue-router'
 import { useCouponStore } from '../stores'
 import emitter from '@/plugins/emitter'
+import ManualDepositModal from './ManualDepositModal.vue'
 
 const emits = defineEmits(['hide-dialogue'])
 const props = defineProps({
@@ -84,6 +90,7 @@ const dialogIsError = ref(false)
 const dialogIsWithdrawal = ref(false)
 const dialogIsToast = ref(false)
 const dialogIsBetslip = ref(false)
+const dialogIsDepositMessage = ref(false)
 const router = useRouter()
 const couponStore = useCouponStore()
 
@@ -100,6 +107,9 @@ const dialogueType = () => {
       break
     case 'betslip':
       dialogIsBetslip.value = true
+      break
+    case 'manual-deposit':
+      dialogIsDepositMessage.value = true
       break
 
     default:

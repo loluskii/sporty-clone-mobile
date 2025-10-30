@@ -86,10 +86,16 @@ function handleBetslipConfirmation(data) {
   dialogueType.value = 'betslip'
 }
 
-function showDialogue(data) {
+function showWithdrawalDialogue(data) {
   dialogueShown.value = true
   dialogueMessage.value = data
   dialogueType.value = 'withdrawal'
+}
+
+function showManualDepositDialogue(data) {
+  dialogueShown.value = true
+  dialogueMessage.value = data
+  dialogueType.value = 'manual-deposit'
 }
 
 function showToaster(data) {
@@ -307,13 +313,14 @@ onMounted(async () => {
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
   emitter.on('showBetslipConfirmation', handleBetslipConfirmation)
-  emitter.on('showDialogueMessage', showDialogue)
+  emitter.on('showWithdrawalDialogueMessage', showWithdrawalDialogue)
   emitter.on('showDialogueToaster', showToaster)
   emitter.on('hideDialogueToaster', toggleDialogue)
   emitter.on('showCasinoDialog', showCasinoDialog)
   emitter.on('showCustomDatePicker', toggleDatePicker)
   emitter.on('showBookBetModal', toggleBookBetModal)
   emitter.on('showDepositWithdrawalModal', showDepositWithdrawal)
+  emitter.on('showManualDepositDialogueMessage', showManualDepositDialogue)
 })
 
 defineComponent({

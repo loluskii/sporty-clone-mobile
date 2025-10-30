@@ -238,6 +238,9 @@ async function beginDeposit() {
           type: 'Deposit',
           code: res.data.transactionRef
         })
+      }else if(activeTab.value === 'payonus'){
+        isDepositing.value = false;
+        emitter.emit('showManualDepositDialogueMessage', JSON.parse(res.data.link))
       } else {
         isDepositing.value = false
         if (res.data.link === 'ACCEPTED') {
