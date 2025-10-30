@@ -50,6 +50,9 @@ watch(
       case 'smileandpay':
         ref = route.query.orderReference
         break
+      case 'payonus':
+        ref = route.query.onusReference
+        break
     }
 
     if (!ref) {
