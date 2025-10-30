@@ -78,7 +78,7 @@ const props = defineProps({
 const emits = defineEmits(['close-modal'])
 
 function confirmDeposit() {
-  return window.location.href = '/payment-verification/payonus?onusReference'+props.depositData.onusReference
+  return window.location.href = '/payment-verification/payonus?onusReference='+props.depositData.onusReference
 }
 </script>
 
