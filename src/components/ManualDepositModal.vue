@@ -80,6 +80,7 @@ const props = defineProps({
 const emits = defineEmits(['close-modal'])
 
 function confirmDeposit() {
+  emits("close-modal");
   return push({name: 'account-transactions'});
 }
 </script>
