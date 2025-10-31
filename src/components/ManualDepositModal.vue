@@ -69,7 +69,9 @@
 import { formatNumber, formatString } from '@/helpers'
 import emitter from '@/plugins/emitter'
 import { useUtilsStore } from '@/stores'
+import { useRouter } from 'vue-router'
 const { SportsbookGlobalVariable } = useUtilsStore()
+const {push} = useRouter()
 
 const props = defineProps({
   depositData: Object
@@ -78,7 +80,7 @@ const props = defineProps({
 const emits = defineEmits(['close-modal'])
 
 function confirmDeposit() {
-  return window.location.href = '/payment-verification/payonus?onusReference='+props.depositData.onusReference
+  return push({name: 'account-transactions'});
 }
 </script>
 
