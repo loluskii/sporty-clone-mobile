@@ -18,6 +18,11 @@ ENV VITE_CLIENT_ID=$VITE_CLIENT_ID
 ENV VITE_CURRENCY=$VITE_CURRENCY
 ENV VITE_MQTT_URI=$VITE_MQTT_URI
 
+# Debug: Show environment variables during build
+RUN echo "Build-time environment variables:"
+RUN echo "VITE_BASE_URL=$VITE_BASE_URL"
+RUN echo "VITE_NEW_BASE_API=$VITE_NEW_BASE_API"
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install
