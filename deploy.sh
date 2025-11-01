@@ -14,7 +14,7 @@ set -a
 source .env
 set +a
 echo "All environment variables loaded:"
-env | grep ^VITE_
+env | grep ^VITE_ || echo "No VITE environment variables found"
 
 # Create network if it doesn't exist
 docker network create sbenet || true
