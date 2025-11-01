@@ -21,6 +21,10 @@ env | grep ^VITE_ || echo "No VITE environment variables found"
 # Create network if it doesn't exist
 docker network create sbenet || true
 
+# Stop conflicting container on port 3002
+docker stop sporty-clone-mobile || true
+docker rm sporty-clone-mobile || true
+
 # Stop existing containers
 docker compose down || true
 
