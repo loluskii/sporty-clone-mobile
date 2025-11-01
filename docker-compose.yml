@@ -5,6 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_BASE_URL=${VITE_BASE_URL}
+        - VITE_NEW_BASE_API=${VITE_NEW_BASE_API}
+        - VITE_CLIENT_ID=${VITE_CLIENT_ID}
+        - VITE_CURRENCY=${VITE_CURRENCY}
     ports:
       - "3002:3002"
     environment:
