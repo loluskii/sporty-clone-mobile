@@ -10,6 +10,8 @@ echo "Building Docker image with server's .env file"
 echo "Checking .env file contents:"
 head -5 .env || echo "No .env file found"
 echo "Setting environment variables for build:"
+# Clean .env file of any invalid characters
+sed -i 's/^`//g' .env
 set -a
 source .env
 set +a
