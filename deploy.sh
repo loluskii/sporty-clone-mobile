@@ -47,7 +47,7 @@ if docker ps | grep -q gcp-staging; then
     echo "\nSearching for 'bet24' in all files:"
     docker exec gcp-staging-mobile-sportsbook-web-1 grep -r "bet24" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No bet24 references found"
     echo "\nSearching for server's API URL in built files:"
-    docker exec gcp-staging-mobile-sportsbook-web-1 grep -r "api.prod.sportsbookengine.com" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
+    docker exec gcp-staging-mobile-sportsbook-web-1 grep -r "https://fixture.staging.sportsbookengine.com/docs//index.html#/" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
 else
     echo "Container gcp-staging-mobile-sportsbook-web-1 is not running"
 fi
