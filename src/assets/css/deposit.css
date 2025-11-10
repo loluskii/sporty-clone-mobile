@@ -53,7 +53,7 @@
 }
 
 #deposit .m-tabs-nav .m-tabs-ink-bar {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
   bottom: 0;
   height: 0.33333333rem;
@@ -225,7 +225,7 @@
 }
 
 #deposit .deposit-bank .deposit-bank-number.static .static-content .static-label {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 10px;
   height: 12px;
@@ -259,7 +259,7 @@
 }
 
 #deposit .deposit-bank .switch-container .switch-bank {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -330,7 +330,7 @@
 }
 
 #deposit .deposit-footer .balance-container .m-icon-help {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
 }
 
@@ -507,15 +507,15 @@
 #deposit .select-prepend .new-pay {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  border: 1px solid var(--brand-highlight-text);
+  border: 1px solid #0d9737;
   font-size: 14px;
   font-weight: bold;
   line-height: 3.5rem;
   text-align: center;
   width: 100%;
-  border-color: var(--brand-highlight-text);
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
 }
 
@@ -532,7 +532,7 @@
 }
 
 #deposit .refresh-container .refresh-banks {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
   border: none;
   margin-top: 3.33333333rem;
@@ -540,8 +540,8 @@
 }
 
 #deposit .refresh-container .m-input-wap-wrapper--active {
-  border: 1px solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 1px solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
 }
 
@@ -702,7 +702,7 @@
 }
 
 #card-fields-container .expiryAndCvv .help-container .cvv-help {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
 }
 

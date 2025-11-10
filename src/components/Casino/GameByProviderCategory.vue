@@ -50,7 +50,7 @@ const usersStore = useUsersStore()
 const router = useRouter()
 const { previousRoute } = useUtilsStore()
 
-const itemsPerLoad = 35
+const itemsPerLoad = 15
 const displayLimit = ref(itemsPerLoad)
 
 // Computed property for displayed games
@@ -258,7 +258,7 @@ const redirectToGamePlay = async (game) => {
   right: 0;
   height: 150px; /* Increased height to overlap more of the games */
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   padding-bottom: 20px;
   z-index: 10;

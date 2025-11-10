@@ -148,7 +148,7 @@ onMounted(() => {
 }
 
 .live-container .m-market-tab .m-tabs-nav .m-tabs-ink-bar {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
 }
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab {
   color: #ffffff;
@@ -162,9 +162,9 @@ onMounted(() => {
   padding: 1.33333333rem 0.83333333rem;
 }
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
-  color: var(--brand-highlight-text);
+  color: #ffffff;
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--brand-highlight-text)
+  border-bottom: 0.23333333rem solid var(--c-event-normal-text);
 }
 .live-container .m-bet-tab {
   margin-top: 0rem !important;
@@ -211,7 +211,7 @@ onMounted(() => {
   line-height: 1;
 }
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item.active {
-  color: var(--brand-highlight-text);
+  color: var(--c-event-normal-text);
   font-weight: bold;
 }
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row {
@@ -221,7 +221,7 @@ onMounted(() => {
   display: flex;
 }
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell {
-  background-color: #000e21;
+  background-color: #3a3c42;
   background-color: var(--c-live-section-market-indicated-bar);
   color: #9ca0ab;
   color: var(--text-type1-secondary);

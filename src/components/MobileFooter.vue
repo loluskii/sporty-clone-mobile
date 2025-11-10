@@ -352,7 +352,7 @@ a {
 }
 
 .m-bottom-nav .m-bottom-fixed {
-  background-color: var(--background-type1-primary);
+  background-color: #313131;
   padding-top: 10px;
   padding-bottom: 10px;
   bottom: 0;

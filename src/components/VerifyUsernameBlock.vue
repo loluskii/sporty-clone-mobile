@@ -380,7 +380,7 @@ function restartProcess() {}
   color: var(--text-type1-primary);
 }
 #findAccount .find-account-container .m-input-wap-wrapper--active {
-  border: 1px solid var(--brand-highlight-text);
+  border: 1px solid #0d9737;
 }
 #findAccount .find-account-container .action-label {
   width: 100%;
@@ -431,7 +431,7 @@ function restartProcess() {}
   padding-right: 1px;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
   border: none;
   height: 3.95833333rem;
@@ -460,7 +460,8 @@ function restartProcess() {}
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: rgb(222, 226 ,230);
+  background-color: #e41827;
+  background-color: var(--brand-primary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -669,7 +670,7 @@ function restartProcess() {}
   width: 100%;
 }
 .enter-mobile-container .m-input-wap-wrapper--active {
-  border: 1px solid var(--brand-highlight-text);
+  border: 1px solid #0d9737;
 }
 .enter-mobile-container .verifyInputs {
   -webkit-box-sizing: border-box;
@@ -719,7 +720,7 @@ function restartProcess() {}
   width: 100%;
 }
 .enter-mobile-container .action-label {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.066rem;
   margin-top: 1.75rem;

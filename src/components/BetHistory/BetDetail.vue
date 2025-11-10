@@ -172,7 +172,7 @@ defineProps({
   line-height: normal;
 }
 .ticket-selection-list .tracker-comments-warp .tracker {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 0.83333333rem;
   padding-right: 1.66666667rem;
@@ -192,7 +192,7 @@ defineProps({
   vertical-align: middle;
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 0.83333333rem;
 }
@@ -208,7 +208,7 @@ defineProps({
   font-style: normal;
 }
 .ticket-selection-list .tracker-comments-warp .to-prematch .arrow::before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   display: inline-block;
   font-size: 1.066rem;
@@ -291,7 +291,7 @@ defineProps({
   font-style: normal;
 }
 .ticket-selection-list .pick-info .pick-right:before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1rem;
   margin-left: 0.41666667rem;
@@ -308,11 +308,11 @@ defineProps({
   padding-left: 0.66666667rem;
 }
 .ticket-selection-list .not-seperate .banker {
-  border: solid 0.08333333rem var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: solid 0.08333333rem #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
   border-radius: 0.66666667rem;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   display: inline-block;
   font-weight: bold;
@@ -323,11 +323,11 @@ defineProps({
   width: 1.33333333rem;
 }
 .ticket-selection-list .to-live {
-  border: 0.08333333rem solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 0.08333333rem solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
   border-radius: 0.16666667rem;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   height: 2.83333333rem;
   line-height: 2.83333333rem;
@@ -342,7 +342,7 @@ defineProps({
   font-style: normal;
 }
 .ticket-selection-list .to-live .arrow::before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.33333333rem;
   left: 0.83333333rem;

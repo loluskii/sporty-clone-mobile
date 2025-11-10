@@ -45,6 +45,17 @@
             >
           </div>
           <div
+            role="button"
+            tabindex="0"
+            class="button loading-button-container edit-button"
+            aria-label="edit booking code 1C92348 in multi maker"
+          >
+            <div class="loading-icon-container"></div>
+            <span class="loading-button-click-area"
+              ><div class="icon-font-base" style="font-size: 12px"></div></span
+            >
+          </div>
+          <div
             data-op="add-to-betslip"
             role="button"
             tabindex="0"
@@ -245,7 +256,7 @@ function shareCode(data) {
 }
 .booking-code-action-bar .share-button {
   background-color: #f2f3f5;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -287,7 +298,8 @@ function shareCode(data) {
   padding: 0;
 }
 .booking-code-action-bar .add-to-betslip-button {
-  background-color: var(--brand-primary);
+  background-color: #0d9737;
+  background-color: var(--brand-secondary);
   color: #ffffff;
 
   max-width: 11.08333333rem;

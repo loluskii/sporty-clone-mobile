@@ -8,7 +8,7 @@
         <div class="enter-mobile-container" v-if="activeStep === 1">
           <form>
             <div class="enter-mobile-label">
-              <p>Join {{ brandName }} with your mobile number</p>
+              <p>Join {{ utils.brandName }} with your mobile number</p>
             </div>
             <div
               class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
@@ -70,7 +70,7 @@
             <div class="enter-mobile-label">
               <p>Verify Your Number</p>
               <span style="font-size: 15px; font-weight: 400"
-                >We've sent you a 6-digit code to +234 {{ formData.phone_no }}</span
+                >We've sent you a 6-digit code to {{ utils.dialCode }} {{ formData.phone_no }}</span
               >
             </div>
             <div id="verify-otp-container" class="text-center">
@@ -139,11 +139,12 @@ import {
   verifyOTP
 } from '../helpers'
 import { useAuthStore, useUtilsStore } from '../stores'
+import { useGlobalUtils } from '../composables/useGlobalUtils'
 import Cookies from 'js-cookie'
 
 // Use ref for reactive data properties
 const authStore = useAuthStore()
-const { brandName, SportsbookGlobalVariable } = useUtilsStore()
+const utils = useGlobalUtils()
 const utilsStore = useUtilsStore()
 const formData = ref({
   phone_no: null,
@@ -190,7 +191,7 @@ const registerUser = async () => {
   }
   isLoading.value = true
   let phoneNumber = String(formData.value.phone_no).trim().replace(/^0/, '')
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utils.dialCode}${phoneNumber}`
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber
@@ -204,7 +205,7 @@ const registerUser = async () => {
 const resendOtp = async () => {
   if (!isDisabled.value && remainingTime.value === 0) {
     let phoneNumber = String(formData.value.phone_no).replace(/^0/, '')
-    const internationalNumber = `234${phoneNumber}`
+    const internationalNumber = `${utils.dialCode}${phoneNumber}`
     let payload = {
       clientID: CLIENT_ID,
       phoneNumber: internationalNumber
@@ -224,7 +225,7 @@ const storeOTP = async (data) => {
 const verifyOTPRequest = async () => {
   isLoading.value = true
   let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utils.dialCode}${phoneNumber}`
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber,
@@ -246,7 +247,7 @@ const doRegistration = async () => {
   registerError.value = false
   registerErrorMessage.value = ''
   let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utils.dialCode}${phoneNumber}`
 
   const payload = {
     username: phoneNumber,
@@ -417,7 +418,7 @@ onMounted(() => {
 }
 
 #enterMobile .change-region-wrap .m-icon-right::before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
 }
 
@@ -479,7 +480,7 @@ onMounted(() => {
 }
 
 #enterMobile .enter-mobile-container .m-input-wap-wrapper--active {
-  border: 1px solid var(--brand-highlight-text);
+  border: 1px solid #0d9737;
 }
 
 #enterMobile .enter-mobile-container .verifyInputs {
@@ -491,6 +492,7 @@ onMounted(() => {
   padding-right: 1px;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
   content: '\e654';
   font-family: 'iconfont' !important;
@@ -535,7 +537,7 @@ onMounted(() => {
 }
 
 #enterMobile .enter-mobile-container .action-label {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.066rem;
   margin-top: 1.75rem;

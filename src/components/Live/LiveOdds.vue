@@ -55,7 +55,7 @@ defineComponent({
 </script>
 <!-- <style scoped>
 .m-outcome-odds.m-outcome-up:before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   /* color: var(--brand-text-secondary); */
   display: inline-block;
   padding-right: 0.83333333rem;

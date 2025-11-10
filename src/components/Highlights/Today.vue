@@ -113,7 +113,7 @@ const selectMarket = (market) => {
 }
 
 .m-sports .market-wrapper {
-  /* padding: 10px 0px !important; */
+  padding: 10px 0px !important;
 }
 
 .m-sports .nav-fixed .market-wrapper {

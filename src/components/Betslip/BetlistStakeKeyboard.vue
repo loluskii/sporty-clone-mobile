@@ -182,10 +182,10 @@ defineEmits(['button-click'])
   font-style: normal;
 }
 .m-keyboard .save-prefer-row .m-icon-check--checked::before {
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   background: var(--brand-text-secondary);
-  border: 1px solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 1px solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
@@ -215,7 +215,7 @@ defineEmits(['button-click'])
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   background: var(--brand-secondary);
   color: #ffffff;
   display: -webkit-box;
@@ -279,7 +279,7 @@ defineEmits(['button-click'])
   font-size: 1rem;
 }
 .m-keyboard .m-keyboard-row .m-keyboard-done {
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   background: var(--brand-text-secondary);
   -webkit-box-flex: 2;
   -webkit-flex: 2;

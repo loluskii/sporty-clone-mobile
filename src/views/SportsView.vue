@@ -231,8 +231,8 @@ onMounted(getSportCategories)
   margin-right: 0.83333333rem;
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item.active {
-  border-bottom: 0.25rem solid var(--brand-highlight-text);
-  border-bottom-color: var(--brand-highlight-text);
+  border-bottom: 0.25rem solid #0d9737;
+  border-bottom-color: #0d9737;
   border-bottom-color: var(--c-sport-menu-tab-active);
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item .sport-text {

@@ -148,7 +148,7 @@ function redirectToPlatform(platform) {
   font-style: normal;
 }
 .booking-code .m-holding-icon:before {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-text-secondary);
   font-size: 30px;
   line-height: 1;
@@ -313,7 +313,7 @@ function redirectToPlatform(platform) {
   .desc-content
   .content-share-code
   #content-copy {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   height: 100%;
   left: 100%;
   margin-left: 4px;

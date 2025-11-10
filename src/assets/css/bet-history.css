@@ -315,7 +315,7 @@
 
 .m-order .m-scroll .only-win .outter,
 .m-order .m-scroll .only-win .inner {
-  border: 0.08333333rem solid var(--brand-highlight-text);
+  border: 0.08333333rem solid #0d9737;
   display: inline-block;
 }
 
@@ -555,7 +555,7 @@
 }
 
 .m-order .m-scroll .view-more .view-more-btn {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
   padding-bottom: 1.25rem;
 }
@@ -947,12 +947,12 @@
 }
 
 .m-cashout-pop .m-btn-wrapper .m-btn-item {
-  border: 0.08333333rem solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 0.08333333rem solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   display: inline-block;
   height: 4rem;
@@ -1041,7 +1041,7 @@
 }
 
 .m-cashout-pop .m-slider-bar .m-slider-process {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
 }
 
@@ -1076,7 +1076,7 @@
 }
 
 .m-cashout-pop .m-cashout-tips {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   margin-top: 1.066rem;
 }
@@ -1180,13 +1180,13 @@
 }
 
 .m-cashout-nav .m-cashout-nav-item.active {
-  border-bottom: 4px solid var(--brand-highlight-text);
-  border-bottom-color: var(--brand-highlight-text);
+  border-bottom: 4px solid #0d9737;
+  border-bottom-color: #0d9737;
   border-bottom-color: var(--brand-secondary);
 }
 
 .m-cashout-nav .m-cashout-nav-item.highlight {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
 }
 
@@ -1226,10 +1226,10 @@
 }
 
 .instant-dialog.es-dialog .es-dialog-footer .es-dialog-btn {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
-  border: 1px solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 1px solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
   border-radius: 2px;
   color: #ffffff;
@@ -1243,7 +1243,7 @@
 .instant-dialog.es-dialog .es-dialog-footer .es-dialog-btn:first-of-type {
   background-color: #ffffff;
   background-color: var(--background-type1-quaternary);
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   margin: 0;
 }

@@ -53,6 +53,7 @@
           </template>
         </div>
       </div>
+
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
         <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
           <!-- Jackpots -->

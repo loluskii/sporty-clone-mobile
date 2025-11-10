@@ -817,7 +817,7 @@ export const useCouponStore = defineStore({
           }
         })
 
-        // console.log('📊 Betslip: Successfully resubscribed to all selections')
+        console.log('📊 Betslip: Successfully resubscribed to all selections')
       } catch (error) {
         console.error('📊 Betslip: Error resubscribing to selections:', error)
       }
