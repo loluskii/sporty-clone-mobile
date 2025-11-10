@@ -949,7 +949,7 @@ onMounted(() => {})
 }
 
 .submit.real-theme {
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
@@ -1039,7 +1039,7 @@ onMounted(() => {})
 }
 
 .button-wrap .flexibet-confirm-edit {
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   background: var(--brand-text-secondary);
   border: none;
   border-radius: 0;
@@ -1273,9 +1273,8 @@ onMounted(() => {})
   margin-right: 4px;
 }
 .m-error-info .m-deposit-link-wrapper .arrow-right {
+  color: #0d9737;
   color: var(--brand-secondary);
-}
-.m-error-info .m-deposit-link-wrapper .arrow-right::before {
   content: '\e608';
   font-size: 16px;
   -webkit-font-smoothing: antialiased;

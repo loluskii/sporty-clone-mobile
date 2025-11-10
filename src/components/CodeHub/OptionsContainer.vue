@@ -177,14 +177,14 @@
   color: #9ca0ab;
 }
 .code-hub-list-filter .select-container .select.active .icon[data-v-51a6e872] {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
   -webkit-transform: rotate(0deg);
   -ms-transform: rotate(0deg);
   transform: rotate(0deg);
 }
 .code-hub-list-filter .select-container .select.isInSearch[data-v-51a6e872] {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
 }
 .code-hub-list-filter .options-container[data-v-51a6e872] {

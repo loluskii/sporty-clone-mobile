@@ -108,29 +108,11 @@
                   
                 </div>
               </div>
-              <span v-else class="loading-button-click-area share-button-click-area mr-auto">
-                <div class="mr-8 icon-font-base" style="font-size: 12px"></div>
-                <span>Share</span>
-              </span>
-
-              <div
-                data-op="add-to-betslip"
-                role="button"
-                tabindex="0"
-                class="button loading-button-container add-to-betslip-button"
-                @click="addToBetslip(code)"
+              <span v-else class="loading-button-click-area"
+                ><span data-cms-key="add_to_betslip" data-cms-page="page_code_hub"
+                  >Add to Betslip</span
+                ></span
               >
-                <div v-if="addToBetslipLoading" class="loading-icon-container">
-                  <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px">
-                    
-                  </div>
-                </div>
-                <span v-else class="loading-button-click-area"
-                  ><span data-cms-key="add_to_betslip" data-cms-page="page_code_hub"
-                    >Add to Betslip</span
-                  ></span
-                >
-              </div>
             </div>
           </div>
         </div>
@@ -590,7 +572,7 @@ function shareCode(data) {
 }
 .booking-code-action-bar .share-button {
   background-color: #f2f3f5;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -632,7 +614,8 @@ function shareCode(data) {
   padding: 0;
 }
 .booking-code-action-bar .add-to-betslip-button {
-  background-color: var(--brand-primary);
+  background-color: #0d9737;
+  background-color: var(--brand-secondary);
   color: #ffffff;
 
   max-width: 11.08333333rem;

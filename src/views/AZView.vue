@@ -63,7 +63,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useUtilsStore } from '../stores/utils.store'
-import { getCategoriesBySport, FEED_TOGGLE } from '../helpers'
+import { getCategoriesBySport } from '../helpers'
 const { sportsMenu } = useUtilsStore()
 // import { useRouter } from 'vue-router'
 import AZTournmentSelect from '@/components/AZTournmentSelect.vue'
@@ -133,7 +133,7 @@ onMounted(async () => {
   background: #ffffff;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #eaecef;
+  color: #353a45;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -169,7 +169,7 @@ onMounted(async () => {
 }
 .m-azmenu .tab-pane-left {
   border-right: solid 1px #eaecef;
-  color: #eaecef;
+  color: #353a45;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -185,7 +185,7 @@ onMounted(async () => {
   width: 40%;
 }
 .m-azmenu .tab-pane-right {
-  color: #eaecef;
+  color: #353a45;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -445,7 +445,7 @@ onMounted(async () => {
 .m-azmenu .tab-wrap .az-tabs.m-tabs .m-tabs-nav .m-tabs-tab {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #eaecef;
+  color: #353a45;
   font-size: 1.066rem;
   font-weight: 500;
   line-height: 3.66666667rem;

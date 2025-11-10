@@ -311,7 +311,7 @@ onMounted(() => {
   margin-top: 1.33333333rem;
 }
 .calendar-container .announcement-wrapper .text-customer-service {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   text-decoration: none;
 }
@@ -465,7 +465,7 @@ onMounted(() => {
   position: relative;
 }
 .calendar-container .option .date-com .date-bottom span {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   display: inline-block;
   font-size: 1.066rem;
@@ -484,8 +484,8 @@ onMounted(() => {
   color: var(--text-type1-primary);
 }
 .calendar-container .active {
-  border: 1px solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border: 1px solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
 }
 </style>

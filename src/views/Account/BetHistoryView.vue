@@ -298,8 +298,8 @@ defineComponent({
 } */
 /* .m-uc-nav .m-nav-item--active {
   font-weight: bold;
-  border-bottom: 0.25rem solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
+  border-bottom: 0.25rem solid #0d9737;
+  border-color: #0d9737;
   border-color: var(--brand-secondary);
 } */
 
@@ -327,7 +327,7 @@ defineComponent({
   display: inline-block;
 }
 .m-order .m-scroll .only-win .outter {
-  border: 0.08333333rem solid var(--brand-highlight-text);
+  border: 0.08333333rem solid #0d9737;
   height: 1.66666667rem;
   line-height: 1.66666667rem;
   text-align: left;
@@ -335,7 +335,7 @@ defineComponent({
 }
 .m-order .m-scroll .only-win .outter .inner {
   background: #ffffff;
-  border: 0.08333333rem solid var(--brand-highlight-text);
+  border: 0.08333333rem solid #0d9737;
   height: 1.33333333rem;
   margin: 0.08333333rem 0.08333333rem 0 0.08333333rem;
   width: 1.33333333rem;
@@ -458,7 +458,7 @@ defineComponent({
   position: relative;
 }
 .m-order .m-scroll .ticket-list .list .win {
-  background: var(--brand-highlight-text);
+  background: #0d9737;
   color: #ffffff;
 }
 .m-order .m-scroll .ticket-list .list .win .status i.arrow::before {
@@ -500,7 +500,7 @@ defineComponent({
   padding: 0 0.75rem;
 }
 .m-order .m-scroll .ticket-list .list .total_info .green {
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-quaternary);
   font-size: 1.66666667rem;
 }
@@ -643,7 +643,7 @@ defineComponent({
 }
 .m-order .edit-bet-button {
   bottom: 1.66666667rem;
-  color: var(--brand-highlight-text);
+  color: #0d9737;
   color: var(--brand-secondary);
   position: absolute;
   right: 0px;

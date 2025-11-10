@@ -90,16 +90,19 @@ defineComponent({
 </script>
 
 <style scoped>
-
+.arrow-icon {
+  color: #fffff0;
+}
 .m-nav-secondary {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: rgb(222, 226 ,230);
+  background-color: #e41827;
+  background-color: var(--brand-primary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #121212;
+  color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -136,7 +139,7 @@ defineComponent({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #121212;
+  color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -173,7 +176,7 @@ defineComponent({
 .m-nav-secondary a:active,
 .m-nav-secondary a:link,
 .m-nav-secondary a:hover {
-  color: #121212;
+  color: #ffffff;
   color: var(--text-type2-primary);
   text-decoration: none;
 }
@@ -227,7 +230,7 @@ defineComponent({
   height: 100%;
 }
 .m-nav-secondary .m-nav-right .m-icon-search {
-  color: #121212;
+  color: #ffffff;
   color: var(--brand-tertiary);
   height: 2rem;
   line-height: 2rem;

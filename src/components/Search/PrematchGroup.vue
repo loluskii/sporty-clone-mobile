@@ -181,7 +181,7 @@ onMounted(() => {
   padding: 5px 15px;
   border: 1px solid;
   border-radius: 25px;
-  /* background-color: #ffffff; */
+  background-color: #ffffff;
 }
 
 .bounce-enter-active {

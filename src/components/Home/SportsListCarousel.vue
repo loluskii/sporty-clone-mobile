@@ -231,7 +231,7 @@ onMounted(() => {
 }
 .home .m-sports-choose {
   min-height: 5rem;
-  background-color: var(--background-type1-primary);
+  background-color: #ffffff;
 }
 .home .m-sports-choose .m-sports-choose-item {
   -webkit-box-sizing: border-box;
@@ -276,7 +276,6 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon img {
   vertical-align: top;
-  filter: invert(1)
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon:before {
   color: #353a45;

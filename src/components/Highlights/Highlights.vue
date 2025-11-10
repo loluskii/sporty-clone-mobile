@@ -135,7 +135,7 @@ onMounted(() => {
 }
 
 .m-sports .market-wrapper {
-  /* padding: 10px 0px !important; */
+  padding: 10px 0px !important;
 }
 
 .m-sports .nav-fixed .market-wrapper {
@@ -160,6 +160,6 @@ onMounted(() => {
   margin-right: 0px !important;
 }
 .m-tab-active {
-  border-bottom: 3px solid var(--brand-primary);
+  border-bottom: 3px solid var(--c-prematch-tab-name-active);
 }
 </style>
