@@ -69,6 +69,26 @@
         Responsible Gaming
       </h5>
     </div>
+    <div class="t_c-about_us">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'privacy_policy' }
+          })
+        "
+      >
+        Privacy Policy
+      </h5>
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'refund_policy' } })"
+      >
+        Refund Policy
+      </h5>
+    </div>
     <div class="btn" @click="handleClick">
       <button>
         {{ route.name == 'account-me' && authStore.isAuthenticated ? 'Logout' : 'Back to Top' }}
