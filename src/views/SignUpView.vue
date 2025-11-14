@@ -140,12 +140,10 @@ import {
   verifyOTP
 } from '../helpers'
 import { useAuthStore, useUtilsStore } from '../stores'
-import { useGlobalUtils } from '../composables/useGlobalUtils'
 import Cookies from 'js-cookie'
 
 // Use ref for reactive data properties
 const authStore = useAuthStore()
-const utils = useGlobalUtils()
 const utilsStore = useUtilsStore()
 const formData = ref({
   phone_no: null,
