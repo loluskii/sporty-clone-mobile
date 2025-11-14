@@ -8,14 +8,14 @@
         <div class="enter-mobile-container" v-if="activeStep === 1">
           <form>
             <div class="enter-mobile-label">
-              <p>Join {{ brandName }} with your mobile number</p>
+              <p>Join {{ utilsStore.brandName }} with your mobile number</p>
             </div>
             <div
               class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
               :class="registerError ? 'm-input-wap-wrapper--error' : ''"
             >
               <div class="m-input-wap-prepend m-input-wap-prepend--default">
-                <div>+{{ SportsbookGlobalVariable.dialCode }}</div>
+                <div>{{ utilsStore.SportsbookGlobalVariable.DialCode }}</div>
               </div>
               <i
                 @click="clear"
@@ -44,6 +44,7 @@
                 type="text"
                 v-model="formData.promoCode"
                 placeholder="Promo code (optional)"
+                :readonly="promoCodeDisabled"
                 class="m-input-wap fs-exclude data-hj-suppress"
               />
             </div>
@@ -70,7 +71,7 @@
             <div class="enter-mobile-label">
               <p>Verify Your Number</p>
               <span style="font-size: 15px; font-weight: 400"
-                >We've sent you a 6-digit code to +234 {{ formData.phone_no }}</span
+                >We've sent you a 6-digit code to {{ utilsStore.SportsbookGlobalVariable.DialCode }} {{ formData.phone_no }}</span
               >
             </div>
             <div id="verify-otp-container" class="text-center">
@@ -160,7 +161,8 @@ const activeStep = ref(1)
 const OTP = ref('')
 const isDisabled = ref(false)
 const remainingTime = ref(60)
-let timer
+let timer;
+const promoCodeDisabled = ref(false)
 
 // Define methods using the Composition API
 const clear = () => {
@@ -190,7 +192,7 @@ const registerUser = async () => {
   }
   isLoading.value = true
   let phoneNumber = String(formData.value.phone_no).trim().replace(/^0/, '')
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utilsStore.SportsbookGlobalVariable.DialCode}${phoneNumber}`
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber
@@ -213,7 +215,7 @@ const registerUser = async () => {
 const resendOtp = async () => {
   if (!isDisabled.value && remainingTime.value === 0) {
     let phoneNumber = String(formData.value.phone_no).replace(/^0/, '')
-    const internationalNumber = `234${phoneNumber}`
+    const internationalNumber = `${utilsStore.SportsbookGlobalVariable.DialCode}${phoneNumber}`
     let payload = {
       clientID: CLIENT_ID,
       phoneNumber: internationalNumber
@@ -233,7 +235,7 @@ const storeOTP = async (data) => {
 const verifyOTPRequest = async () => {
   isLoading.value = true
   let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utilsStore.SportsbookGlobalVariable.DialCode}${phoneNumber}`
   let payload = {
     clientID: CLIENT_ID,
     phoneNumber: internationalNumber,
@@ -255,7 +257,7 @@ const doRegistration = async () => {
   registerError.value = false
   registerErrorMessage.value = ''
   let phoneNumber = formattedPhoneNumber(formData.value.phone_no)
-  const internationalNumber = `234${phoneNumber}`
+  const internationalNumber = `${utilsStore.SportsbookGlobalVariable.DialCode}${phoneNumber}`
 
   const payload = {
     username: phoneNumber,
@@ -322,6 +324,11 @@ const toLogin = () => {
 onMounted(() => {
   if (route.query.clickid || route.query.token) {
     Cookies.set('clickId', route.query.clickid || route.query.token)
+  }
+
+  if(route.name === 'ref-signup' && route.params.code){
+    formData.value.promoCode = route.params.code;
+    promoCodeDisabled.value = true
   }
 })
 </script>
