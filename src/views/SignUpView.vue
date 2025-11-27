@@ -10,55 +10,32 @@
             <div class="enter-mobile-label">
               <p>Join {{ brandName }} with your mobile number</p>
             </div>
-            <div
-              class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
-              :class="registerError ? 'm-input-wap-wrapper--error' : ''"
-            >
+            <div class="verifyInputs mb-4 m-input-wap-wrapper m-input-wap-group m-input-wap-group--prepend"
+              :class="registerError ? 'm-input-wap-wrapper--error' : ''">
               <div class="m-input-wap-prepend m-input-wap-prepend--default">
                 <div>{{ SportsbookGlobalVariable.DialCode }}</div>
               </div>
-              <i
-                @click="clear"
-                v-if="formData.phone_no != ''"
-                class="m-input-wap-icon m-input-wap-icon--clickable m-input-wap-icon--show m-icon-delete"
-              ></i>
-              <input
-                type="number"
-                v-model="formData.phone_no"
-                placeholder="Mobile Number"
-                maxlength="11"
-                @blur="validateUsername($event)"
-                class="m-input-wap fs-exclude data-hj-suppress"
-              />
+              <i @click="clear" v-if="formData.phone_no != ''"
+                class="m-input-wap-icon m-input-wap-icon--clickable m-input-wap-icon--show m-icon-delete"></i>
+              <input type="number" v-model="formData.phone_no" placeholder="Mobile Number" maxlength="11"
+                @blur="validateUsername($event)" class="m-input-wap fs-exclude data-hj-suppress" />
             </div>
             <div class="verifyInputs mb-4 m-input-wap-wrapper">
-              <input
-                type="password"
-                v-model="formData.password"
-                placeholder="Password"
-                class="m-input-wap fs-exclude data-hj-suppress"
-              />
+              <input type="password" v-model="formData.password" placeholder="Password"
+                class="m-input-wap fs-exclude data-hj-suppress" />
             </div>
             <div class="verifyInputs m-input-wap-wrapper">
-              <input
-                type="text"
-                v-model="formData.promoCode"
-                placeholder="Promo code (optional)"
-                class="m-input-wap fs-exclude data-hj-suppress"
-              />
+              <input type="text" v-model="formData.promoCode" placeholder="Promo code (optional)"
+                class="m-input-wap fs-exclude data-hj-suppress" />
             </div>
             <div v-if="registerError" class="error-message">
               <p>
                 {{ registerErrorMessage }}
               </p>
             </div>
-            <button
-              :class="!formData.phone_no || !formData.password || isLoading ? 'is-disabled' : ''"
-              class="af-button enter-mobile-btn af-button--primary"
-              type="button"
-              @disabled="!formData.phone_no || !formData.password || isLoading"
-              @click.prevent="registerUser"
-            >
+            <button :class="!formData.phone_no || !formData.password || isLoading ? 'is-disabled' : ''"
+              class="af-button enter-mobile-btn af-button--primary" type="button"
+              @disabled="!formData.phone_no || !formData.password || isLoading" @click.prevent="registerUser">
               <span v-if="!isLoading"> Continue </span>
               <span v-else> Loading... </span>
             </button>
@@ -69,39 +46,24 @@
           <form>
             <div class="enter-mobile-label">
               <p>Verify Your Number</p>
-              <span style="font-size: 15px; font-weight: 400"
-                >We've sent you a 6-digit code to +234 {{ formData.phone_no }}</span
-              >
+              <span style="font-size: 15px; font-weight: 400">We've sent you a 6-digit code to +234 {{ formData.phone_no
+                }}</span>
             </div>
             <div id="verify-otp-container" class="text-center">
               <div class="m-pin-code-wrapper mg-b-16">
                 <form>
-                  <v-otp-input
-                    ref="otpInput"
-                    v-model:value="bindModal"
-                    input-classes="m-pin-code-input fs-exclude"
-                    separator="  "
-                    :num-inputs="6"
-                    :should-auto-focus="true"
-                    input-type="number"
-                    :placeholder="['*', '*', '*', '*', '*', '*']"
-                    @on-complete="storeOTP"
-                  />
+                  <v-otp-input ref="otpInput" v-model:value="bindModal" input-classes="m-pin-code-input fs-exclude"
+                    separator="  " :num-inputs="6" :should-auto-focus="true" input-type="number"
+                    :placeholder="['*', '*', '*', '*', '*', '*']" @on-complete="storeOTP" />
                 </form>
               </div>
               <div style="position: relative">
-                <span
-                  class="grey pointer"
-                  :class="{ disabled: isDisabled }"
-                  @click="resendOtp"
-                  :disabled="isDisabled"
+                <span class="grey pointer" :class="{ disabled: isDisabled }" @click="resendOtp" :disabled="isDisabled"
                   :style="{
                     fontWeight: 'bold',
                     color: isDisabled ? '#aaa' : ''
-                  }"
-                >
-                  {{ isDisabled ? `Send Again in ${remainingTime}s` : 'Send Again' }} </span
-                >&nbsp;
+                  }">
+                  {{ isDisabled ? `Send Again in ${remainingTime}s` : 'Send Again' }} </span>&nbsp;
               </div>
             </div>
             <div v-if="registerError" class="error-message" style="text-align: center">
@@ -109,13 +71,8 @@
                 {{ registerErrorMessage }}
               </p>
             </div>
-            <button
-              :class="isLoading ? 'is-disabled' : ''"
-              class="af-button enter-mobile-btn af-button--primary"
-              type="button"
-              @disabled="isLoading"
-              @click.prevent="verifyOTPRequest"
-            >
+            <button :class="isLoading ? 'is-disabled' : ''" class="af-button enter-mobile-btn af-button--primary"
+              type="button" @disabled="isLoading" @click.prevent="verifyOTPRequest">
               <span v-if="!isLoading"> Continue </span>
               <span v-else> Please wait... </span>
             </button>
@@ -198,7 +155,7 @@ const registerUser = async () => {
 
   await doRegistration()
 
-  
+
 }
 
 const resendOtp = async () => {
@@ -491,6 +448,7 @@ onMounted(() => {
   padding-right: 1px;
   width: 100%;
 }
+
 #enterMobile .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
   content: '\e654';
   font-family: 'iconfont' !important;
