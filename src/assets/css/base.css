@@ -3603,7 +3603,7 @@ ins {
   width: 100%;
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #000000;
+  color: #fafafa;
   border-radius: 8px;
 }
 
