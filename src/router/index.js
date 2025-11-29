@@ -174,7 +174,7 @@ export const router = createRouter({
       path: '/Account/Me/Profile',
       name: 'account-profile',
       component: ProfileView,
-      meta: { showFooter: true }
+      meta: { showFooter: false }
     },
     {
       path: '/Account/Transactions',

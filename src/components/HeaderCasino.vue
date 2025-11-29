@@ -33,7 +33,7 @@ defineProps({
   background-color: rgb(222, 226 ,230);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #ffffff;
+  color: #1c2485;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;

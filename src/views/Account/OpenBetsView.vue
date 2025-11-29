@@ -217,7 +217,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout ${SportsbookGlobalVariable.Currency} ${bet.cashOutAmount.toFixed(2)}`
                         : 'Cashout Unavailable'
                     }}</span>
                     <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
@@ -265,7 +265,7 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          {{ SportsbookGlobalVariable.CurrencyCode }}
+                          {{ SportsbookGlobalVariable.Currency }}
                           {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>

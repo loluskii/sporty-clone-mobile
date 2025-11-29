@@ -31,7 +31,7 @@
                 </div>
               </div>
               <div class="operate-button">
-                <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
+                <span class="currency">{{ SportsbookGlobalVariable.Currency }}</span>
                 <span> {{ usersStore.balance }}</span>
               </div>
             </div>
@@ -180,7 +180,7 @@
                     <span>Confirm to Pay</span><span>&nbsp;</span>
                     <div>
                       <div class="stake-num">
-                        {{ SportsbookGlobalVariable.CurrencyCode }}
+                        {{ SportsbookGlobalVariable.Currency }}
                         {{ totalStake }}
                       </div>
                     </div>

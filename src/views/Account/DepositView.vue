@@ -52,7 +52,7 @@
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
                   ><span data-cms-key="balance">Balance</span> ({{
-                    utilsStore.SportsbookGlobalVariable.CurrencyCode
+                    utilsStore.SportsbookGlobalVariable.Currency
                   }}) {{ usersStore.balance }}
                 </span>
               </div>
@@ -64,7 +64,7 @@
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
                   <span class="amount-prepend"
                     ><span data-cms-key="amount">Amount</span> ({{
-                      utilsStore.SportsbookGlobalVariable.CurrencyCode
+                      utilsStore.SportsbookGlobalVariable.Currency
                     }})
                   </span>
                 </div>
@@ -107,15 +107,15 @@
               <ul class="m-payment-tips f-count">
                 <li class="l-item">
                   1. Minimum deposit amount is
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }}
                   {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} - you can deposit at least
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }}
                   {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} in one transaction.
                 </li>
                 <li class="l-item">
                   2. Maximum per transaction is
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }} 9,999,999.00 - you can
-                  deposit up to {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }} 9,999,999.00
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }} 9,999,999.00 - you can
+                  deposit up to {{ utilsStore.SportsbookGlobalVariable.Currency }} 9,999,999.00
                   in one transaction.
                 </li>
                 <li class="l-item">3. If you have any issues, please contact customer service.</li>

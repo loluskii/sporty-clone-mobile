@@ -70,7 +70,7 @@
 
                         <div class="title">
                           <span data-op="history-stake-text" data-cms-key="total_stake_vcurrency"
-                            >Total Stake({{ SportsbookGlobalVariable.CurrencyCode }})</span
+                            >Total Stake({{ SportsbookGlobalVariable.Currency }})</span
                           >
                           <span data-op="history-return-text" data-cms-key="total_return"
                             >Total Return</span

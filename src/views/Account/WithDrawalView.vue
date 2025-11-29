@@ -143,7 +143,7 @@
                   >
                     <div class="m-input-wap-prepend m-input-wap-prepend--default">
                       <span class="amount-prepend"
-                        ><span>Amount</span> ({{ SportsbookGlobalVariable.CurrencyCode }})
+                        ><span>Amount</span> ({{ SportsbookGlobalVariable.Currency }})
                       </span>
                     </div>
                     <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
@@ -359,7 +359,7 @@
                     <p>
                       <span>Withdrawable Balance </span>
                       <span
-                        >{{ SportsbookGlobalVariable.CurrencyCode }} {{ usersStore.balance }}</span
+                        >{{ SportsbookGlobalVariable.Currency }} {{ usersStore.balance }}</span
                       >
                     </p>
                   </div>

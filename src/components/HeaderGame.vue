@@ -99,7 +99,7 @@ defineComponent({
   background-color: rgb(222, 226 ,230);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #121212;
+  color: #1c2485;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;

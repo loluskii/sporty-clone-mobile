@@ -27,7 +27,7 @@
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
-            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ betlistStake }} to
+            You need a balance of {{ SportsbookGlobalVariable.Currency }} {{ betlistStake }} to
             place this bet. Please deposit an additional {{ amountNeededToStake }}
           </p>
           <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
@@ -213,7 +213,7 @@ const balanceLowerThanStake = computed(() => {
 })
 
 const amountNeededToStake = computed(() => {
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
+  return `${SportsbookGlobalVariable.Currency} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
 })
 
 const acceptedChanges = computed(() => {
