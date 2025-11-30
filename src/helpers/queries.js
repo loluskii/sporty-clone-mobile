@@ -1,5 +1,5 @@
 import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API } from './constants'
+import { BASE_API, CLIENT_ID, NEW_BASE_API, NEW_FIXTURES_API } from './constants'
 import moment from 'moment'
 
 function today() {
@@ -118,7 +118,7 @@ export const getCodeHubItems = async (data) => {
 }
 
 export const getSportsMenu = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`))
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/sports`))
 }
 
 export const getCategoriesBySport = async (sportID, period) => {
@@ -220,10 +220,10 @@ export const getLiveCountBySport = async (sid) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/live/games/count/${sid}`))
 }
 
-export const getSportHighlights = async (sid, hours, page) => {
+export const getSportHighlights = async (sid) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/highlight/prematch/${sid}?upcoming=1&page=${page}&perPage=15&timeoffset=${sign}${offsetHours}`
+      `${NEW_FIXTURES_API}/v1/fixtures/highlights/${sid}?page=1&per_page=20&order_type=priority`
     )
   )
 }
@@ -269,7 +269,13 @@ export const getFixturesByTournamentId = async (id, sid, period = null) => {
 
 export const getFixtureMarkets = async (id) => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/match/${id}?timeoffset=${sign}${offsetHours}`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/game/${id}`)
+  )
+}
+
+export const getMarketsGrouping = async (sid) => {
+  return parseData(
+    fetchWrapper.get(`${NEW_FIXTURES_API}/markets/groups?sport_id=${sid}`)
   )
 }
 

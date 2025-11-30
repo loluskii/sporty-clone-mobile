@@ -1,6 +1,7 @@
 // let baseApi = import.meta.env.VITE_BASE_API;
 export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
+export const NEW_FIXTURES_API = import.meta.env.VITE_NEW_FIXTURES_API|| 'https://fixture.staging.sportsbookengine.com'
 
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
@@ -11,7 +12,7 @@ export const SIM_ALLOWED_MARKETS = [
 ];
 export const SIM_ENABLED = false;
 export const DEPOSIT_ALLOWED = true
-export const FEED_TOGGLE = true
+export const FEED_TOGGLE = true;
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage

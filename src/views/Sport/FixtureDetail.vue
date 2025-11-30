@@ -5,92 +5,125 @@
       <div v-if="eventDetail && !isLoading">
         <div class="m-event-title">
           <div class="m-event-league link">
-            {{ `${eventDetail.categoryName} - ` }} {{ eventDetail.tournament }}
+            {{ route.params.sport }} - {{ eventDetail.country }} - {{ eventDetail.tournament }}
           </div>
-          <div class="m-event-title-team">
-            <div class="homeTeamName">{{ eventDetail.name }}</div>
+          <div class="m-event-title-team-horizontal">
+            <div class="watermark">
+              <div><img src="https://s.sporty.net/common/main/res/b23e1f9533506aa3254c05a8820213a5.png"
+                  draggable="false" class="home" style=""></div>
+              <div class="switch-button-left"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  height="10px" width="10px" class="svg-icon-base">
+                  <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
+                    fill="currentColor"></path>
+                </svg></div>
+            </div>
+            <div class="team">
+              <div class="team-icon"><img
+                  src="https://s.sporty.net/common/main/res/b23e1f9533506aa3254c05a8820213a5.png" draggable="false"
+                  style=""></div>
+              <div class="team-name">{{ eventDetail.homeTeam }}</div>
+            </div>
+            <div class="date-time">
+              <div class="date">
+                <div>{{ formatDate(eventDetail.date, 'DD/MM dddd') }}</div>
+              </div>
+              <div class="time">
+                {{ formatDate(eventDetail.date, 'HH:mm') }}
+              </div>
+            </div>
+            <div class="team">
+              <div class="team-icon"><img
+                  src="https://s.sporty.net/common/main/res/354ed7ff5d3e3d227f609616fe844b50.png" draggable="false"
+                  style=""></div>
+              <div class="team-name">{{ eventDetail.awayTeam }}</div>
+            </div>
+            <div class="watermark">
+              <div><img src="https://s.sporty.net/common/main/res/354ed7ff5d3e3d227f609616fe844b50.png"
+                  draggable="false" class="away" style=""></div>
+              <div class="switch-button-right"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  height="10px" width="10px" class="svg-icon-base">
+                  <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
+                    fill="currentColor"></path>
+                </svg></div>
+            </div>
           </div>
           <div class="m-event-time-wrap">
-            <div class="m-event-time-left">
-              <span class="event-date">
-                {{ formatDate(eventDetail.date, 'DD/MM dddd') }}
-              </span>
-              |
-              <span class="event-time"> {{ formatDate(eventDetail.date, 'HH:mm') }}</span>
-              <span class="live-in-play">Live In-Play Available</span>
-              <span class="event-gameid">ID {{ eventDetail.matchID }}</span>
-            </div>
+            <div class="m-event-time-left"><span class="event-date"><span class="event-gameid">Game ID {{
+              eventDetail.matchID }}</span>
+
+              </span></div>
           </div>
         </div>
         <div style="position: relative"></div>
         <div class="m-tab-navs-wrap">
           <ul class="m-tab-navs">
-            <li
-              class="m-nav-item"
-              @click="isH2HShowing = false"
-              :class="isH2HShowing ? '' : 'active'"
-            >
+            <li class="m-nav-item" @click="isH2HShowing = false" :class="isH2HShowing ? '' : 'active'">
               <i class="m-icon m-icon-market"></i>
               <span class="m-text">Markets</span>
             </li>
-            <li
-              class="m-nav-item"
-              :class="!isH2HShowing ? '' : 'active'"
-              @click="showFixtureAnalysis(eventDetail.matchID)"
-            >
+            <li class="m-nav-item" :class="!isH2HShowing ? '' : 'active'"
+              @click="showFixtureAnalysis(eventDetail.matchID)">
               <i class="m-icon m-icon-stat"></i>
               <span class="m-text">Stats</span>
             </li>
           </ul>
         </div>
+
+
         <div v-show="!isH2HShowing" class="m-sub-tab">
-          <div v-if="eventDetail.statusCode === 0" class="m-market-group pre-match event-detail">
-            <div class="m-sport-market">
-              <div
-                v-for="(marketGroup, index) in groupedMarkets"
-                :key="index"
-                :data-key="'market-' + marketGroup.marketID"
-              >
+          <div class="m-snap-nav-wrap m-group" style="overflow: hidden;">
+            <ul class="m-snap-nav flex"
+              style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); width: 645.388px;">
+              <li class="m-sport-group-item m-snap-nav-item" :class="{ active: selectedGroupId === null }"
+                @click="selectedGroupId = null">
+                <span>All</span>
+              </li>
+              <li v-for="group in sortedMarketGroups" :key="group.id" class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: selectedGroupId === group.id }" @click="selectedGroupId = group.id">
+                <span>{{ group.name }}</span>
+              </li>
+            </ul> <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+          </div>
+          <div v-if="eventDetail.status === 0" class="m-market-group pre-match event-detail">
+            <div v-if="hasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
+              <div style="white-space: pre-line">
+                Sorry, there are no markets available in this category.
+              </div>
+            </div>
+            <div v-else-if="displayGroupedMarkets.length === 0" class="m-sport-market-no-data">
+              <div style="white-space: pre-line">
+                Sorry, there are no markets available in this category.
+              </div>
+            </div>
+            <div v-else class="m-sport-market">
+              <div v-for="(marketGroup, index) in displayGroupedMarkets" :key="index"
+                :data-key="'market-' + marketGroup.marketID">
                 <div class="m-market m-detail-market-default">
                   <div class="m-market-title" style="flex-basis: 100%">
                     <span class="dis-icon"></span>
-                    <span class="text" style="text-transform: capitalize"
-                      >{{ marketGroup.marketName }}
+                    <span class="text" style="text-transform: capitalize">{{ marketGroup.marketName }}
                     </span>
                     <span class="m-icon-tips"></span>
                   </div>
                   <div class="m-table market-content">
-                    <div
-                      class="m-table-row"
-                      v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
-                      :key="m"
-                    >
-                      <template
-                        v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
-                      >
-                        <template
-                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
-                          :key="odd"
-                        >
-                          <div
-                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
-                            :class="{
-                              'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.gameID,
-                                  eventDetail.matchID,
-                                  selection.outcomeName,
-                                  selection.oddID,
-                                  eventDetail.name
-                                ),
-                                couponStore.coupon
+                    <div class="m-table-row" v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)" :key="m">
+                      <template v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''">
+                        <template v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd">
+                          <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
+                            'm-outcome--checked': isSelected(
+                              createID(
+                                eventDetail.gameID,
+                                eventDetail.matchID,
+                                selection.outcomeName,
+                                selection.oddID,
+                                eventDetail.name
                               ),
-                              'm-outcome-two': market.length === 2,
-                              'm-outcome-three': market.length === 3,
-                              'm-outcome--disabled': selection.odds < 1
-                            }"
-                            @click="addToBetslip(marketGroup, selection)"
-                          >
+                              couponStore.coupon
+                            ),
+                            'm-outcome-two': market.length === 2,
+                            'm-outcome-three': market.length === 3,
+                            'm-outcome--disabled': selection.odds < 1
+                          }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               selection.displayName ?? selection.outcomeName
                             }}</em>
@@ -102,50 +135,20 @@
                       </template>
                       <template v-else>
                         <div v-if="isTotalOrHandicap(marketGroup)" class="m-table">
-                          <!-- <div class="m-table-row">
-                            <div
-                              class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
-                              :class="{
-                                'm-outcome-row-three':
-                                  (marketGroup.markets[0].outcomes).length + 1 === 3,
-                                'm-outcome-row-four':
-                                  (marketGroup.markets[0].outcomes).length + 1 === 4
-                              }"
-                            ></div>
-                            <div
-                              v-for="(name, index) in uniqueOutcomes(marketGroup.markets[0].outcomes)"
-                              :key="index"
-                              class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
-                              :class="{
-                                'm-outcome-row-three':
-                                  marketGroup.markets[0].outcomes.length + 1 === 3,
-                                'm-outcome-row-four':
-                                  marketGroup.markets[0].outcomes.length + 1 === 4
-                              }"
-                            >
-                              {{ getOutcomeName(name.displayName) }}
-                            </div>
-                          </div> -->
-                          <div
-                            v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)"
-                            class="m-table-row"
-                            :key="idx"
-                          >
-                            <!-- {{ mg }} -->
+                          
+                          <div v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)" class="m-table-row" :key="idx">
                             <div
                               class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
                               :class="{
                                 'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
                                 'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4
-                              }"
-                            >
+                              }">
                               <em>{{ getSpecifierValue(mg.specifier) }}</em>
                             </div>
                             <template v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)" :key="o">
                               <div
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
-                                @click="addToBetslip(mg, outcome)"
-                                :class="{
+                                @click="addToBetslip(mg, outcome)" :class="{
                                   'm-outcome--checked': isSelected(
                                     createID(
                                       eventDetail.gameID,
@@ -159,8 +162,7 @@
                                   'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
                                   'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
                                   'm-outcome--disabled': outcome.odds < 1
-                                }"
-                              >
+                                }">
                                 <em :class="{ 'm-icon-lock': outcome.odds <= 1 }">{{
                                   outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
                                 }}</em>
@@ -168,31 +170,22 @@
                             </template>
                           </div>
                         </div>
-                        <template
-                          v-else
-                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
-                          :key="odd"
-                        >
-                          <!-- {{ market }} -->
-                          <div
-                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
-                            :class="{
-                              'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.gameID,
-                                  eventDetail.matchID,
-                                  selection.outcomeName,
-                                  selection.oddID,
-                                  eventDetail.name
-                                ),
-                                couponStore.coupon
+                        <template v-else v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd">
+                          <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
+                            'm-outcome--checked': isSelected(
+                              createID(
+                                eventDetail.gameID,
+                                eventDetail.matchID,
+                                selection.outcomeName,
+                                selection.oddID,
+                                eventDetail.name
                               ),
-                              'm-outcome-two': market.length === 2,
-                              'm-outcome-three': market.length === 3,
-                              'm-outcome--disabled': selection.odds < 1
-                            }"
-                            @click="addToBetslip(marketGroup, selection)"
-                          >
+                              couponStore.coupon
+                            ),
+                            'm-outcome-two': market.length === 2,
+                            'm-outcome-three': market.length === 3,
+                            'm-outcome--disabled': selection.odds < 1
+                          }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               getMarketCode(selection.outcomeName)
                             }}</em>
@@ -230,20 +223,23 @@
 <script setup>
 import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
+import { defineComponent, watch, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFixtureMarkets, chunks, formatDate, createID, isSelected } from '@/helpers'
+import { getFixtureMarkets, getMarketsGrouping, chunks, formatDate, createID, isSelected } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
+import { useUtilsStore } from '../../stores'
 
 const { subscribe } = useMqttService()
+const { sportsMenu } = useUtilsStore()
 
 const eventMarkets = ref()
 const eventDetail = ref(null)
+const marketGroups = ref([]);
 const groupedMarkets = ref([])
 const isLoading = ref(false)
 const route = useRoute()
@@ -257,6 +253,86 @@ const updatePending = ref(false)
 const unsubscribeFunctions = ref([])
 const refetchInterval = ref(null)
 const REFETCH_INTERVAL_MS = 60000 // 60 seconds
+const selectedGroupId = ref(null) // null means "All"
+
+// Group markets by their group IDs
+const groupedMarketsByTab = computed(() => {
+  if (!eventMarkets.value || !marketGroups.value) {
+    return {}
+  }
+
+  const grouped = {}
+
+  // Initialize groups
+  marketGroups.value.forEach(group => {
+    grouped[group.id] = {
+      ...group,
+      markets: []
+    }
+  })
+
+  // Group markets
+  eventMarkets.value.forEach(market => {
+    marketGroups.value.forEach(group => {
+      if (group.marketIDs.includes(market.marketID)) {
+        if (!grouped[group.id]) {
+          grouped[group.id] = {
+            ...group,
+            markets: []
+          }
+        }
+        grouped[group.id].markets.push(market)
+      }
+    })
+  })
+
+  return grouped
+})
+
+// Get markets for the selected tab
+const filteredMarkets = computed(() => {
+  if (!eventMarkets.value) {
+    return []
+  }
+
+  // If "All" is selected (selectedGroupId is null), return all markets
+  if (selectedGroupId.value === null) {
+    return eventMarkets.value
+  }
+
+  // Otherwise, return markets for the selected group
+  const group = groupedMarketsByTab.value[selectedGroupId.value]
+  return group ? group.markets : []
+})
+
+// Group filtered markets by marketID for display
+const displayGroupedMarkets = computed(() => {
+  return groupByMarketID(filteredMarkets.value)
+})
+
+// Get sorted market groups for display (sorted by priority)
+const sortedMarketGroups = computed(() => {
+  if (!marketGroups.value) {
+    return []
+  }
+  return [...marketGroups.value].sort((a, b) => b.priority - a.priority)
+})
+
+// Check if the selected group has no markets (only [0] in marketIDs)
+const hasNoMarketsInSelectedGroup = computed(() => {
+  if (selectedGroupId.value === null) {
+    return false // "All" tab always shows markets if they exist
+  }
+  
+  const group = marketGroups.value.find(g => g.id === selectedGroupId.value)
+  if (!group) {
+    return false
+  }
+  
+  // Check if marketIDs only contains [0] or is empty
+  return group.marketIDs.length === 0 || 
+         (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
+})
 
 watch(
   () => [route.params.event_id, route.name],
@@ -301,10 +377,11 @@ function setupPeriodicRefetch(matchId) {
       // Only refetch if match is still available
       // console.log(`🔄 Periodic refetch for match ID: ${matchId}`);
       try {
-        const res = await getFixtureMarkets(matchId)
-        if (Object.keys(res).length && res.markets) {
-          eventMarkets.value = res.markets
+        const res = await Promise.all([getFixtureMarkets(matchId), getMarketsGrouping(sport_id)])
+        if (Object.keys(res[0]).length && res[0].markets) {
+          eventMarkets.value = res[0].markets
           groupedMarkets.value = groupByMarketID(res.markets)
+          marketGroups.value = res[1]
           // console.log(
           //   `✅ Successfully refetched markets for match ID: ${matchId}`,
           // );
@@ -345,20 +422,22 @@ onBeforeUnmount(() => {
 
 async function getEventDetail(id) {
   isLoading.value = true
+  const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
   try {
-    const res = await getFixtureMarkets(id)
-    if (Object.keys(res).length && res.markets) {
-      eventDetail.value = res
-      eventMarkets.value = res.markets
-      groupedMarkets.value = groupByMarketID(res.markets)
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
+    const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
+    if (res[0] && res[0].market) {
+      eventDetail.value = res[0]
+      eventMarkets.value = res[0].market
+      // groupedMarkets.value = groupByMarketID(res.market)
+      marketGroups.value = res[1].data
+      homeTeam.value = res[0].homeTeam
+      awayTeam.value = res[0].awayTeam
 
       // Set up MQTT subscriptions after we have the event details
-      if (res.matchID) {
-        setupMqttSubscriptions(res.matchID)
-        setupPeriodicRefetch(res.matchID)
-      }
+      // if (res.matchID) {
+      //   setupMqttSubscriptions(res.matchID)
+      //   setupPeriodicRefetch(res.matchID)
+      // }
     } else {
       emitter.emit('showErrorMessage', {
         message: 'This event is no longer available',
@@ -657,7 +736,7 @@ onMounted(() => {
 <style scoped>
 .x-prematch-detail {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  /* background-color: var(--background-general-primary); */
 }
 
 .x-prematch-detail .prematch-detail-loading {
@@ -666,124 +745,6 @@ onMounted(() => {
 
 .x-prematch-detail .m-tab-navs {
   padding-bottom: 0.41666667rem;
-}
-
-.x-prematch-detail .m-tab-navs .m-icon-market::before {
-  content: '\e66e';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-
-.x-prematch-detail .m-tab-navs .m-icon-stat::before {
-  content: '\e64a';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-
-.x-prematch-detail .m-tab-navs .m-icon-comment::before {
-  content: '\e669';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-
-.x-prematch-detail .m-event-title {
-  margin: 0 0.83333333rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-league {
-  color: #353a45;
-  font-size: 0.83333333rem;
-  line-height: normal;
-  padding-top: 0.33333333rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-league.link {
-  color: #0d9737;
-  text-decoration: underline;
-}
-
-.x-prematch-detail .m-event-title .m-event-league.more-top-space {
-  padding-top: 0.66666667rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-title-team {
-  color: #353a45;
-  color: var(--text-default-dark);
-  margin-top: 0.75rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-title-team > div {
-  font-size: 1rem;
-  font-weight: bold;
-  line-height: 1.066rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap {
-  color: #353a45;
-  color: var(--text-default-dark);
-  font-size: 0.83333333rem;
-  line-height: 0.91666667rem;
-  padding: 0.33333333rem 0;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap > span {
-  margin-right: 0.66666667rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .event-gameid {
-  opacity: 0.5;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play {
-  margin: 0 0.33333333rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
-  content: '\e64e';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
-  font-size: 1rem;
-  margin-right: 0.16666667rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .event-date .stv-icon {
-  height: 1.41666667rem;
-  width: 1.41666667rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .event-date::before {
-  font-size: 0.83333333rem;
-  margin-right: 0.16666667rem;
-}
-
-.x-prematch-detail .m-event-title .m-event-time-wrap .event-date .sfm-icon {
-  -webkit-transform: translateY(-1px);
-  -ms-transform: translateY(-1px);
-  transform: translateY(-1px);
-}
-
-.x-prematch-detail .m-event-title .m-h2h {
-  margin: 0 1.25rem;
-  padding: 0.83333333rem 0;
-}
-
-.x-prematch-detail .m-event-title .event-labels {
-  margin: 0.5rem 0 0 -0.83333333rem;
 }
 
 .x-prematch-detail .m-sport-market {
@@ -868,7 +829,7 @@ onMounted(() => {
   width: 100%;
 }
 
-.m-tab-navs > li {
+.m-tab-navs>li {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
   border-radius: 0.16666667rem;
@@ -887,18 +848,18 @@ onMounted(() => {
   width: 33.33%;
 }
 
-.m-tab-navs > li:last-child {
+.m-tab-navs>li:last-child {
   margin-right: 0;
 }
 
-.m-tab-navs > li.active {
+.m-tab-navs>li.active {
   background-color: #1b1e25;
   background-color: var(--c-prematch-active-tab-bg);
   color: #ffffff;
   color: var(--c-prematch-active-tab-text);
 }
 
-.m-tab-navs > li.active .m-icon:before {
+.m-tab-navs>li.active .m-icon:before {
   color: #ffffff;
   color: var(--c-prematch-active-tab-text);
 }
@@ -928,5 +889,514 @@ onMounted(() => {
   right: 0.41666667rem;
   text-align: center;
   top: -0.54166667rem;
+}
+
+.x-prematch-detail .m-tab-navs .m-icon-market::before {
+  content: "\e66e";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.x-prematch-detail .m-tab-navs .m-icon-stat::before {
+  content: "\e64a";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.x-prematch-detail .m-tab-navs .m-icon-comment::before {
+  content: "\e669";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.x-prematch-detail .h-team-wrap {
+  -webkit-box-align: baseline;
+  -webkit-align-items: baseline;
+  -ms-flex-align: baseline;
+  align-items: baseline;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.x-prematch-detail .h-team-wrap .spacer {
+  font-size: 1.16666667rem;
+  font-weight: normal;
+  padding: 0 0.33333333rem;
+}
+
+.x-prematch-detail .h-team-wrap .team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.x-prematch-detail .h-team-wrap .team-name.home {
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  max-width: 8.33333333rem;
+}
+
+.x-prematch-detail .m-event-title {
+  min-height: 9.33333333rem !important;
+  overflow-x: hidden;
+  padding: 0.33333333rem 0.66666667rem;
+  position: relative;
+}
+
+.x-prematch-detail .m-event-title .m-event-league {
+  color: #353a45;
+  font-size: 0.83333333rem;
+  line-height: normal;
+  padding-top: 0;
+  text-align: center;
+}
+
+.x-prematch-detail .m-event-title .m-event-league.link {
+  color: #0D9737;
+  text-decoration: underline;
+}
+
+.x-prematch-detail .m-event-title .m-event-league.more-top-space {
+  padding-top: 0.66666667rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team {
+  color: #353A45;
+  color: var(--text-default-dark);
+  margin-top: 0.75rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team>div {
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1.16666667rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal {
+  color: #353A45;
+  color: var(--text-default-dark);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  min-height: 5.83333333rem;
+  padding: 8px 0;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark img {
+  height: 9.16666667rem;
+  opacity: 0.1;
+  position: absolute;
+  top: 2.08333333rem;
+  -webkit-user-drag: none;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .away {
+  right: -4.08333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .home {
+  left: -4.08333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .switch-button {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  border-radius: 50%;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 1.66666667rem;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  justify-self: center;
+  position: relative;
+  width: 1.66666667rem;
+  color: #9CA0AB;
+  color: var(--text-type1-secondary);
+  background-color: #FAFAFA;
+  background-color: var(--background-general-tertiary);
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .switch-button-left {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  border-radius: 50%;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 1.66666667rem;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  justify-self: center;
+  position: relative;
+  width: 1.66666667rem;
+  color: #9CA0AB;
+  color: var(--text-type1-secondary);
+  background-color: #FAFAFA;
+  background-color: var(--background-general-tertiary);
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .switch-button-right {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  border-radius: 50%;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 1.66666667rem;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  justify-self: center;
+  position: relative;
+  width: 1.66666667rem;
+  color: #9CA0AB;
+  color: var(--text-type1-secondary);
+  background-color: #FAFAFA;
+  background-color: var(--background-general-tertiary);
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .switch-button-right svg {
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .team {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  font-size: 1rem;
+  font-weight: 700;
+  -webkit-box-pack: start;
+  -webkit-justify-content: start;
+  -ms-flex-pack: start;
+  justify-content: start;
+  line-height: 1.16666667rem;
+  padding: 0.33333333rem 0;
+  text-align: center;
+  width: 7.66666667rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .team .team-icon {
+  height: 2.75rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .team .team-icon img {
+  height: 2.75rem;
+  -webkit-user-drag: none;
+  width: 2.75rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .team .team-name {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .date-time {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  font-size: 0.83333333rem;
+  font-weight: 700;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  line-height: 0.91666667rem;
+  padding: 0 12px;
+  text-align: center;
+  width: 4.58333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .date-time .date {
+  font-size: 0.83333333rem;
+  font-weight: 400;
+  padding-bottom: 0.33333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-title-team-horizontal .date-time .time {
+  background-color: #EAECEF;
+  background-color: var(--background-type1-tertiary);
+  border-radius: 2px;
+  padding: 0 0.16666667rem;
+  width: 2.33333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap {
+  color: #353A45;
+  color: var(--text-default-dark);
+  bottom: 0rem;
+  font-size: 0.66666667rem;
+  height: 0.91666667rem;
+  line-height: 0.91666667rem;
+  padding: 2px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap>span {
+  margin-right: 0.66666667rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .event-gameid {
+  opacity: 0.5;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
+  content: "\e64e";
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
+  font-size: 0.66666667rem;
+  margin-right: 0.16666667rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .event-date {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .event-date span {
+  margin-right: 0.33333333rem;
+}
+
+.x-prematch-detail .m-event-title .m-event-time-wrap .event-date::before {
+  font-size: 0.83333333rem;
+  margin-right: 0.16666667rem;
+}
+
+.x-prematch-detail .m-event-title .event-delay {
+  color: #353A45;
+  color: var(--text-default-dark);
+}
+
+.x-prematch-detail .m-event-title .event-delay img {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.x-prematch-detail .m-event-title .m-h2h {
+  margin: 0 1.25rem;
+  padding: 0.83333333rem 0;
+}
+
+.x-prematch-detail .m-event-title .labels {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  height: 1.5rem;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding-bottom: 0.33333333rem;
+}
+
+.x-prematch-detail .m-event-title .labels .label-group .event-labels {
+  margin: 0.33333333rem 0 0 -0.83333333rem;
+}
+
+.x-prematch-detail .m-event-title .labels .switch-match-btn-list {
+  background-color: #EAECEF;
+  background-color: var(--background-type1-tertiary);
+  color: #353A45;
+  color: var(--text-default-dark);
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 40px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 0.83333333rem;
+  font-weight: 700;
+  height: 1.33333333rem;
+  padding: 0 0.33333333rem;
+}
+
+.x-prematch-detail .m-event-title .labels .switch-match-btn-list .list-icon {
+  padding-left: 0.33333333rem;
+}
+
+.x-prematch-detail .m-sport-market .m-market .market-content .m-outcome.m-outcome--disabled {
+  color: #9CA0AB !important;
+  color: var(--c-outcome-text-disabled) !important;
+  background-color: #DCDEE5 !important;
+  background-color: var(--c-outcome-background-disabled) !important;
+}
+
+.x-prematch-detail .m-footer--preMatch {
+  padding-bottom: 3.66666667rem;
+}
+
+.x-prematch-detail .m-nav-left {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.x-prematch-detail .m-outcome.in-range {
+  border: 0.08333333rem solid #0D9737 !important;
+}
+
+
+.m-group {
+  background-color: #FAFAFA;
+  background-color: var(--background-general-primary);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0 0.33333333rem 0 0;
+  width: 100%;
+}
+
+.m-group .m-sport-group-item {
+  cursor: pointer;
+  font-weight: 700;
+  height: 4rem;
+  line-height: 4rem;
+  margin-bottom: -1px;
+  padding: 0 0.91666667rem;
+}
+
+.m-group .m-sport-group-item .text {
+  color: #353A45;
+  color: var(--text-type1-primary);
+  font-size: 1rem;
+}
+
+.m-group .m-sport-group-item.no-border {
+  border-bottom: none !important;
+}
+
+.m-group .m-sport-group-item.active {
+  border-bottom: 4px solid #0D9737;
+  border-color: #0D9737;
+  border-color: var(--brand-secondary);
 }
 </style>

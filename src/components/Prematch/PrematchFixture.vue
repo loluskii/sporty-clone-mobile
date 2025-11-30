@@ -3,24 +3,16 @@
     <div data-op="label-prematch" class="m-event-sport m-sports-row">
       <div class="m-event-meta">
         <div>
-          <span class="m-time" style="margin-right: 5px">{{ eventData.eventTime }}</span>
+          <span class="m-time"
+            style="margin-right: 5px">{{ new Date(eventData.date).toLocaleTimeString('en-US') }}</span>
           <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span>
-          <span class="m-league-name"
-            >{{ eventData.tournament }} - {{ eventData.categoryName }}</span
-          >
+          <span class="m-league-name">{{ eventData.categoryName }} - {{ eventData.tournament }}</span>
         </div>
-        <img
-          src="@/assets/images/chart.png"
-          style="height: 12px"
-          alt=""
-          @click="showFixtureAnalysis(eventData.matchID)"
-          srcset=""
-        />
+        <img src="@/assets/images/chart.png" style="height: 12px" alt=""
+          @click="showFixtureAnalysis(eventData.match_id)" srcset="" />
       </div>
       <div class="x-table-row m-sports-table">
-        <div
-          class="x-table-cell m-info-cell"
-          @click="
+        <div class="x-table-cell m-info-cell" @click="
             $router.push({
               name: 'fixtures-detail',
               params: {
@@ -30,20 +22,16 @@
                 event_id: eventData.matchID
               }
             })
-          "
-        >
+          ">
           <div class="team">{{ eventData.homeTeam }}</div>
           <div class="team">{{ eventData.awayTeam }}</div>
         </div>
         <div class="x-table-cell m-market-cell">
           <div class="m-market m-event-market-default market-id-1" style="position: relative">
-            <template v-if="eventData.outcomes && eventData.activeMarkets > 0">
+            <template v-if="eventData.outcomes">
               <template v-if="outcomes.length">
-                <div
-                  v-if="activeMarket.specifier !== ''"
-                  class="m-outcome m-event-outcome-default specifiers-select"
-                  @click="toggleList"
-                >
+                <div v-if="activeMarket.specifier !== ''" class="m-outcome m-event-outcome-default specifiers-select"
+                  @click="toggleList">
                   <div tabindex="0" class="grid-specifier-select">
                     <div class="grid-specifier-select-label">
                       {{ activeSpecifier }}
@@ -54,26 +42,14 @@
                     <!---->
                   </div>
                 </div>
-                <div
-                  class="af-select-list m-event-specifiers-order"
-                  v-if="specifierOpen"
+                <div class="af-select-list m-event-specifiers-order" v-if="specifierOpen"
                   :class="'af-select-list-' + eventData.matchID"
-                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0"
-                >
-                  <span
-                    class="af-select-item"
-                    @click="setActiveSpecifier(item)"
-                    v-for="(item, i) in getSpecifiers"
-                    :key="i"
-                    >{{ item.value }}</span
-                  >
+                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0">
+                  <span class="af-select-item" @click="setActiveSpecifier(item)" v-for="(item, i) in getSpecifiers"
+                    :key="i">{{ item.value }}</span>
                 </div>
-                <Odds
-                  @click="addToBetslip(eventData, odd)"
-                  v-for="(odd, index) in uniqueOutcomes(outcomes)"
-                  :key="index"
-                  :odds="odd"
-                  :selectionClass="
+                <Odds @click="addToBetslip(eventData, odd)" v-for="(odd, index) in uniqueOutcomes(outcomes)"
+                  :key="index" :odds="odd" :selectionClass="
                     isSelected(
                       createID(
                         eventData.gameID,
@@ -86,14 +62,11 @@
                     )
                       ? 'm-outcome--checked'
                       : ''
-                  "
-                ></Odds>
+                  "></Odds>
               </template>
               <template v-else>
-                <div
-                  v-if="activeMarket.specifier !== ''"
-                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock"
-                >
+                <div v-if="activeMarket.specifier !== ''"
+                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock">
                   <span data-op="prematch-lock" class="m-icon-lock"></span>
                 </div>
                 <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index"></EmptyOdds>
@@ -112,7 +85,7 @@
 </template>
 <script setup>
 import { defineComponent, computed, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { createID, isSelected, sortArr, slugify } from '@/helpers'
+import { createID, isSelected, sortArr, formatDate, slugify } from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
 import { useCouponStore } from '@/stores'
@@ -198,7 +171,7 @@ const setActiveSpecifier = (spec) => {
 
       // Apply any updates we've received from MQTT
       uniqueFiltered = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
+        const key = `${outcome.marketID}-${outcome.outcom_id}-${outcome.specifier}`
         if (updatedOutcomes.value[key]) {
           return {
             ...outcome,
@@ -229,42 +202,46 @@ function showFixtureAnalysis(id) {
 }
 
 const getOdds = () => {
-  // Find and return the odds based on marketID and outcomeID
-  if (props.activeMarket && props.eventData.activeMarkets > 0) {
-    if (props.eventData.outcomes) {
-      // Always start with the original data from props
-      const odds = props.eventData.outcomes
-      let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
-      let uniqueFiltered = uniqueOutcomes(filtered)
+  // Find and return the odds based on marketID and outcom_id
+  // if (props.activeMarket && props.eventData.activeMarkets > 0) {
+  if (props.eventData.outcomes) {
+    // Always start with the original data from props
+    const odds = props.eventData.outcomes
+    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+    let uniqueFiltered = filtered
 
-      // Apply any updates we've received from MQTT
-      uniqueFiltered = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
-        if (updatedOutcomes.value[key]) {
-          return {
-            ...outcome,
-            odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active
-          }
-        }
-        return outcome
-      })
+    console.log(filtered)
 
-      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = uniqueFiltered[0]?.specifier
-        if (defaultSpecifier) {
-          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
-          activeSpecifier.value = defaultSpecifier.split('=')[1]
+    // Apply any updates we've received from MQTT
+    uniqueFiltered = filtered.map((outcome) => {
+      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
+      if (updatedOutcomes.value[key]) {
+        return {
+          ...outcome,
+          odds: updatedOutcomes.value[key].odds,
+          active: updatedOutcomes.value[key].active
         }
       }
-      if (uniqueFiltered.length) {
-        // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
-        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
-      } else {
-        outcomes.value = []
+      return outcome
+    })
+
+    if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+      let defaultSpecifier = uniqueFiltered[0]?.specifier
+      if (defaultSpecifier) {
+        uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
+        activeSpecifier.value = defaultSpecifier.split('=')[1]
       }
     }
+    if (uniqueFiltered.length) {
+      outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+      // outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+    } else {
+      outcomes.value = []
+    }
+
+    console.log(outcomes.value)
   }
+  // }
 }
 
 watch(
@@ -365,7 +342,7 @@ function handleOddsChange(data) {
 
             if (market && market.outcomes) {
               const newOutcome = market.outcomes.find(
-                (o) => String(o.id) === String(outcome.outcomeID)
+                (o) => String(o.id) === String(outcome.outcom_id)
               )
 
               if (newOutcome) {
@@ -406,7 +383,7 @@ function handleBetStop(data) {
   }))
 
   outcomes.value.forEach((outcome) => {
-    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+    const key = `${outcome.marketID}-${outcome.outcom_id}-${outcome.specifier || ''}`
     updatedOutcomes.value[key] = {
       odds: 0,
       active: 0,
@@ -436,7 +413,7 @@ function addToBetslip(event, odd) {
   const data = {
     fixture: event,
     market_name: props.activeMarket.marketName,
-    market_id: odd.marketID,
+    marketID: odd.marketID,
     ele_id: id,
     outcome: odd,
     odds: odd.odds,
@@ -466,11 +443,13 @@ defineComponent({
   display: block;
   padding: 0.66666667rem 0;
 }
+
 .m-event-sport:hover,
 .m-event-sport:active,
 .m-event-sport:visited {
   text-decoration: none;
 }
+
 .m-event-sport .m-event-meta {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -488,12 +467,15 @@ defineComponent({
   justify-content: space-between;
   line-height: 1.25rem;
 }
-.m-event-sport .m-event-meta > span {
+
+.m-event-sport .m-event-meta>span {
   margin-right: 0.83333333rem;
 }
-.m-event-sport .m-event-meta > span:last-child {
+
+.m-event-sport .m-event-meta>span:last-child {
   margin-right: 0;
 }
+
 .m-event-sport .m-event-meta .m-event-icon {
   display: inline-block;
   -webkit-box-flex: 0;
@@ -502,11 +484,13 @@ defineComponent({
   flex: 0;
   margin: 0 0.33333333rem 0 -0.83333333rem;
 }
+
 .m-event-sport .m-event-meta .m-event-icon svg,
 .m-event-sport .m-event-meta .m-event-icon img {
   height: 1.066rem;
   vertical-align: top;
 }
+
 .m-event-sport .m-event-meta .m-time {
   color: #353a45;
   color: var(--c-event-sport-time-text);
@@ -516,6 +500,7 @@ defineComponent({
   flex: 0;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .m-game-id {
   -webkit-box-flex: 0;
   -webkit-flex: 0;
@@ -523,6 +508,7 @@ defineComponent({
   flex: 0;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .m-league-name {
   display: inline-block;
   vertical-align: top;
@@ -530,9 +516,11 @@ defineComponent({
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .event-labels {
   margin: 0 0.91666667rem 0 -0.83333333rem;
 }
+
 .m-event-sport .m-sports-table {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -540,6 +528,7 @@ defineComponent({
   align-items: center;
   margin-top: 0.66666667rem;
 }
+
 .m-event-sport .m-market-cell {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -547,33 +536,40 @@ defineComponent({
   flex: 0 0 auto;
   width: 55%;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome {
   background: #d6ebdc;
   background: var(--brand-prematch-odds-bg);
   color: var(--brand-prematch-odds-text);
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
   background-color: var(--brand-secondary);
   color: #ffffff;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--checked:before {
   color: #ffffff !important;
   color: var(--brand-tertiary) !important;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--disabled {
   background-color: #dcdee5;
   background-color: var(--c-prematch-outcome-disabled-bg);
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--up:before,
 .m-event-sport .m-market-cell .m-market .m-outcome--down:before {
   color: #096b27;
   color: var(--brand-secondary);
 }
-.m-event-sport .m-info-cell > div {
+
+.m-event-sport .m-info-cell>div {
   line-height: 1.4;
 }
+
 .m-event-sport .m-info-cell .team {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -584,6 +580,7 @@ defineComponent({
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-footer {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -599,21 +596,26 @@ defineComponent({
   justify-content: space-between;
   margin-top: 0.41666667rem;
 }
+
 .m-event-sport .m-event-footer .m-event-comment {
   color: #9ca0ab;
   font-size: 0.83333333rem;
 }
+
 .m-event-sport .m-market-size {
   color: #9ca0ab;
   font-size: 0.83333333rem;
   width: 45%;
 }
+
 .m-event-sport .m-market-size .media-icon {
   margin-left: 0.25rem;
 }
-.m-event-sport .m-market-size .media-icon + .media-icon {
+
+.m-event-sport .m-market-size .media-icon+.media-icon {
   margin-left: 0.41666667rem;
 }
+
 .m-event-sport .m-market-size .sfm-icon {
   -webkit-transform: translateY(-1px);
   -ms-transform: translateY(-1px);
@@ -635,11 +637,13 @@ defineComponent({
   padding: 0 0.83333333rem;
   z-index: 25 !important;
 }
+
 .m-sports-table .m-date-row .m-date {
   color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1rem;
 }
+
 .m-sports-table .m-date-row .market-title {
   display: -webkit-box;
   display: -webkit-flex;
@@ -651,7 +655,8 @@ defineComponent({
   flex: 0 1 auto;
   width: 55%;
 }
-.m-sports-table .m-date-row .market-title > div {
+
+.m-sports-table .m-date-row .market-title>div {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   -webkit-box-flex: 1;
@@ -661,17 +666,21 @@ defineComponent({
   font-size: 0.83333333rem;
   text-align: center;
 }
+
 .m-sports-table .m-date-row .market-title .specifier-cell {
   min-width: 0;
   overflow: hidden;
 }
+
 .m-sports-table .m-sports-row {
   margin: 0 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads {
   display: block;
   margin: 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads img {
   display: block;
   width: 100%;
@@ -682,12 +691,14 @@ defineComponent({
   text-align: center;
   width: 100%;
 }
+
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #0d9737;
   color: var(--brand-quaternary);
 }
+
 .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);

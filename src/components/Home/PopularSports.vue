@@ -52,7 +52,7 @@
       </template>
     </div>
 
-    <div class="featured-match-placeholder">
+    <!-- <div class="featured-match-placeholder">
       <div class="featured-widget with-nav" style="">
         <div role="tablist" aria-label="featured widgets tabs" class="featured-nav-list">
           <div class="featured-header-left">
@@ -197,7 +197,7 @@
         ></FeaturedGamesContainer>
         <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup>
@@ -378,11 +378,11 @@ onBeforeUnmount(() => {
 // Update onMounted
 onMounted(async () => {
   // Only fetch if we don't have data or it's stale
-  if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames().then(() => {
-      setActiveTournament(featuredTournaments.value[0])
-    })
-  }
+  // if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
+  //   await utilsStore.fetchFeaturedGames().then(() => {
+  //     setActiveTournament(featuredTournaments.value[0])
+  //   })
+  // }
 })
 
 const { data: casinoData, isLoading: isCasinoLoading } = useQuery(

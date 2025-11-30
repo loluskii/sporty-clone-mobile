@@ -16,10 +16,10 @@
         >
           <li
             v-for="(sport, index) in sportsListData"
-            :class="sport.sportID === activeSportID ? 'active' : ''"
-            @click="setActiveSport(sport.sportID)"
+            :class="sport.sport_id === activeSportID ? 'active' : ''"
+            @click="setActiveSport(sport.sport_id)"
             :key="index"
-            :id="'highlights_' + sport.sportID"
+            :id="'highlights_' + sport.sport_id"
             class="m-sport-type-item m-snap-nav-item"
           >
             <img
@@ -29,7 +29,7 @@
               srcset=""
             />
             <Transition name="bounce">
-              <span>{{ sport.sportName }}</span>
+              <span>{{ sport.sport_name }}</span>
             </Transition>
           </li>
         </ul>
@@ -86,7 +86,7 @@
             <LoadingError v-show="loadingError"></LoadingError>
           </div>
         </div>
-        <div v-show="todayActiveTab" class="m-tabs-tabpane">
+        <!-- <div v-show="todayActiveTab" class="m-tabs-tabpane">
           <Today
             v-if="!isLoading && !loadingError"
             :todaysData="todaysData"
@@ -103,7 +103,7 @@
             :countriesData="countriesData"
             :activeSportID="activeSportID"
           ></Countries>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
@@ -116,7 +116,7 @@ import Countries from '@/components/Highlights/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getHighlights2, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
+import { getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
@@ -190,11 +190,11 @@ async function getHighlightGames() {
   if(!FEED_TOGGLE) return;
   isLoading.value = true
   if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
-    const response = await getHighlights2(activeSportID.value, 1)
-    if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
-      highlightsData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
-      marketsGroup.value = response.markets
+    const response = await getSportHighlights(1)
+    if (response.data.fixtures.length && response.data.markets.length) {
+      // let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
+      highlightsData.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
+      marketsGroup.value = response.data.markets
       setMarkets()
     } else {
       highlightsData.value = []
@@ -229,6 +229,7 @@ async function getCountriesList() {
 
 function setMarkets() {
   // marketsGroup.value = sportsListData.value.find((obj) => obj.sport_id === activeSportID.value)
+  let markets =
   activeMarket.value = marketsGroup.value[0]
 }
 
@@ -318,7 +319,6 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: #f1f1f1;
   /* z-index: 220; */
 }
 
@@ -328,28 +328,9 @@ defineComponent({
   top: 0px;
 }
 
-.m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  padding: 5px 15px;
-  /* border: 1px solid; */
-  border-radius: 25px;
-  background-color: #fff;
-}
-
-.bounce-enter-active {
-  animation: bounce-in 0.3s;
-}
-/* .bounce-leave-active {
-  animation: bounce-in 0.2s reverse;
-} */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 </style>
+
+
+
+
+

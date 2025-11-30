@@ -29,6 +29,7 @@ import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 import Cookies from 'js-cookie'
 import HandleCache from '@/components/HandleCache.vue'
 import ImageDialog from './components/ImageDialog.vue'
+import { result } from 'lodash'
 const cacheBuster = ref()
 
 const utilsStore = useUtilsStore()
@@ -295,8 +296,9 @@ onMounted(async () => {
     utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
     utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
 
+    console.log(results[2])
     utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.sports : []
+      results[2].status === "fulfilled" ? results[2].value.filter((x) => x.games > 0) : []
 
     utilsStore.banksList =
       results[4].status === "fulfilled" ? results[4].value.data : []

@@ -205,7 +205,7 @@ const isLeagueActive = computed(() => {
 })
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+  return utilsStore.sportsMenu.find((x) => x.sport_name == name)
 }
 
 const getActiveSport = computed(() => {
