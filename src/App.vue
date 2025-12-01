@@ -298,7 +298,7 @@ onMounted(async () => {
 
     console.log(results[2])
     utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.filter((x) => x.games > 0) : []
+      results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []
 
     utilsStore.banksList =
       results[4].status === "fulfilled" ? results[4].value.data : []

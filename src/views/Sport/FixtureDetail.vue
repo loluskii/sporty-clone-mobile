@@ -9,8 +9,10 @@
           </div>
           <div class="m-event-title-team-horizontal">
             <div class="watermark">
-              <div><img src="https://s.sporty.net/common/main/res/b23e1f9533506aa3254c05a8820213a5.png"
-                  draggable="false" class="home" style=""></div>
+              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+                encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
+                '.png?alt=media'
+                " draggable="false" class="home" style=""></div>
               <div class="switch-button-left"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
                   <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
@@ -18,9 +20,10 @@
                 </svg></div>
             </div>
             <div class="team">
-              <div class="team-icon"><img
-                  src="https://s.sporty.net/common/main/res/b23e1f9533506aa3254c05a8820213a5.png" draggable="false"
-                  style=""></div>
+              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+                encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
+                '.png?alt=media'
+                " draggable="false" style=""></div>
               <div class="team-name">{{ eventDetail.homeTeam }}</div>
             </div>
             <div class="date-time">
@@ -32,14 +35,17 @@
               </div>
             </div>
             <div class="team">
-              <div class="team-icon"><img
-                  src="https://s.sporty.net/common/main/res/354ed7ff5d3e3d227f609616fe844b50.png" draggable="false"
-                  style=""></div>
+              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+                encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
+                '.png?alt=media'
+                " draggable="false" style=""></div>
               <div class="team-name">{{ eventDetail.awayTeam }}</div>
             </div>
             <div class="watermark">
-              <div><img src="https://s.sporty.net/common/main/res/354ed7ff5d3e3d227f609616fe844b50.png"
-                  draggable="false" class="away" style=""></div>
+              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+                encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
+                '.png?alt=media'
+                " draggable="false" class="away" style=""></div>
               <div class="switch-button-right"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
                   <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
@@ -135,7 +141,7 @@
                       </template>
                       <template v-else>
                         <div v-if="isTotalOrHandicap(marketGroup)" class="m-table">
-                          
+
                           <div v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)" class="m-table-row" :key="idx">
                             <div
                               class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
@@ -323,15 +329,15 @@ const hasNoMarketsInSelectedGroup = computed(() => {
   if (selectedGroupId.value === null) {
     return false // "All" tab always shows markets if they exist
   }
-  
+
   const group = marketGroups.value.find(g => g.id === selectedGroupId.value)
   if (!group) {
     return false
   }
-  
+
   // Check if marketIDs only contains [0] or is empty
-  return group.marketIDs.length === 0 || 
-         (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
+  return group.marketIDs.length === 0 ||
+    (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
 })
 
 watch(
@@ -425,9 +431,10 @@ async function getEventDetail(id) {
   const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
   try {
     const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
-    if (res[0] && res[0].market) {
-      eventDetail.value = res[0]
-      eventMarkets.value = res[0].market
+    console.log(res)
+    if (res[0].data && res[0].data.market) {
+      eventDetail.value = res[0].data
+      eventMarkets.value = res[0].data.market
       // groupedMarkets.value = groupByMarketID(res.market)
       marketGroups.value = res[1].data
       homeTeam.value = res[0].homeTeam

@@ -6,21 +6,21 @@
         <ul class="m-snap-nav flex">
           <li
             v-for="(sport, index) in sportsMenu"
-            :class="{ active: sport.sportID === activeSport.sportID }"
+            :class="{ active: sport.sport_id === activeSport.sport_id}"
             @click="setActiveSport(sport)"
             :key="index"
-            :id="'sports_list_' + sport.sportID"
+            :id="'sports_list_' + sport.sport_id"
             class="m-sports-choose-item m-snap-nav-item"
           >
             <div class="sprot-icon">
               <img
-                :src="getImageSrc(sport.sportID)"
+                :src="getImageSrc(sport.sport_id)"
                 style="height: 20px; margin-right: 0.4rem"
                 alt=""
               />
             </div>
             <div class="sport-text">
-              {{ sport.sportName }}
+              {{ sport.sport_name }}
             </div>
           </li>
         </ul>
@@ -38,7 +38,7 @@
         >
           Today Games
         </a>
-        <a href="#" class="m-menu-item"> All {{ activeSport.sportName }} </a>
+        <a href="#" class="m-menu-item"> All {{ activeSport.sport_name }} </a>
       </div>
 
       <div class="m-countries-panel m-sports-countries" style="position: relative">
@@ -71,7 +71,7 @@
                         href="#"
                         @click.prevent="
                           navigateTo('fixtures-by-tournaments', {
-                            sport: activeSport.sportName,
+                            sport: activeSport.sport_name,
                             categories: `sr:category:${country.categoryID}`,
                             tournaments: `sr:tournament:${tournament.tournamentID}`
                           })
@@ -115,8 +115,8 @@ const route = useRoute()
 const router = useRouter()
 
 const activeSport = ref({
-  sportName: 'Soccer',
-  sportID: 1
+  sport_name: 'Soccer',
+  sport_id: 1
 })
 
 const countriesData = ref([])
@@ -125,11 +125,11 @@ const isLoading = ref(false)
 const isTournamentsLoading = ref(false)
 
 // const getActiveSport = computed(() => {
-//   return sportsMenu.value.find((sport) => sport.sportID === activeSport.value.sportID)
+//   return sportsMenu.value.find((sport) => sport.sport_id === activeSport.value.sport_id)
 // })
 
-const getImageSrc = (sportID) => {
-  return new URL(`../assets/images/sports/${sportID}.png`, import.meta.url).href
+const getImageSrc = (sport_id) => {
+  return new URL(`../assets/images/sports/${sport_id}.png`, import.meta.url).href
 }
 
 const showChild = async (index, country) => {
@@ -151,16 +151,16 @@ const showChild = async (index, country) => {
 const getCountriesList = async () => {
   if(!FEED_TOGGLE)return
   isLoading.value = true
-  const sports = await getCategoriesBySport(activeSport.value.sportID)
+  const sports = await getCategoriesBySport(activeSport.value.sport_id)
   countriesData.value = sports.sports || []
   isLoading.value = false
 }
 
 const setActiveSport = async (sport) => {
   activeSport.value = sport
-  router.replace({ query: { sport: slugify(sport.sportName) } })
+  router.replace({ query: { sport: slugify(sport.sport_name) } })
   await getCountriesList()
-  document.getElementById(`sports_list_${sport.sportID}`)?.scrollIntoView({
+  document.getElementById(`sports_list_${sport.sport_id}`)?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
     inline: 'center'
@@ -171,7 +171,7 @@ const navigateTo = (routeName, query = {}) => {
   router.push({
     name: routeName,
     params: {
-      sport: slugify(activeSport.value.sportName),
+      sport: slugify(activeSport.value.sport_name),
       ...query
     }
   })
@@ -181,11 +181,11 @@ const getSportCategories = async () => {
   if(!FEED_TOGGLE)return
   isLoading.value = true
   try {
-    const sports = await getCategoriesBySport(activeSport.value.sportID)
+    const sports = await getCategoriesBySport(activeSport.value.sport_id)
     countriesData.value = sports.sports || []
     if (route.query.sport) {
       setActiveSport(
-        sportsMenu.value.find((sport) => sport.sportName === unslugify(route.query.sport))
+        sportsMenu.value.find((sport) => sport.sport_name === unslugify(route.query.sport))
       )
     }
   } catch (error) {
