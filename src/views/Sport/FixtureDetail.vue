@@ -131,7 +131,7 @@
                             'm-outcome--disabled': selection.odds < 1
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
-                              selection.displayName ?? selection.outcomeName
+                              selection.displayName 
                             }}</em>
                             <em :class="{ 'm-icon-lock': selection.odds < 1 }">{{
                               selection.odds > 1 ? selection.odds.toFixed(2) : ''
@@ -193,7 +193,7 @@
                             'm-outcome--disabled': selection.odds < 1
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
-                              getMarketCode(selection.outcomeName)
+                              getMarketCode(selection.displayName)
                             }}</em>
                             <em :class="{ 'm-icon-lock': selection.odds < 1 }">{{
                               selection.odds > 1 ? selection.odds.toFixed(2) : ''
@@ -471,22 +471,22 @@ function isTotalOrHandicap(market) {
 }
 
 const getMarketCode = (name) => {
-  const homeTeamRegex = new RegExp(homeTeam.value, 'gi')
-  const awayTeamRegex = new RegExp(awayTeam.value, 'gi')
-  const drawRegex = /draw/gi
-  const orRegex = /or/gi
+  // const homeTeamRegex = new RegExp(homeTeam.value, 'gi')
+  // const awayTeamRegex = new RegExp(awayTeam.value, 'gi')
+  // const drawRegex = /draw/gi
+  // const orRegex = /or/gi
 
-  // Replace home team name with '1'
-  name = name.replace(homeTeamRegex, '1')
+  // // Replace home team name with '1'
+  // name = name.replace(homeTeamRegex, '1')
 
-  // Replace away team name with '2'
-  name = name.replace(awayTeamRegex, '2')
+  // // Replace away team name with '2'
+  // name = name.replace(awayTeamRegex, '2')
 
-  // Replace 'draw' with 'X'
-  name = name.replace(drawRegex, 'X')
+  // // Replace 'draw' with 'X'
+  // name = name.replace(drawRegex, 'X')
 
-  // Replace 'or' with '/'
-  name = name.replace(orRegex, '/')
+  // // Replace 'or' with '/'
+  // name = name.replace(orRegex, '/')
 
   return name.trim()
 }

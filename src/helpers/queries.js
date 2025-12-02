@@ -134,17 +134,13 @@ export const getCategoriesBySport = async (sportID, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod ?
-    'period=today' :
-    isTomorrowPeriod ?
-    'period=24hour' :
-    period ?
-    `start=${period?.startDate}&end=${period?.endDate}` :
-    'period=all'
+  const periodParam = isTodayPeriod ? 'startDate='+todayDate+'&endDate='+todayDate
+                      : isTomorrowPeriod ? 'startDate='+tomorrowDate+'&endDate='+tomorrowDate :
+                      `start=${period?.startDate}&end=${period?.endDate}`
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
-      `${NEW_FIXTURES_API}/categories/${sportID}?source=mobile`
+      `${NEW_FIXTURES_API}/categories/${sportID}${period ? periodParam :''}&source=mobile`
     )
   )
 }

@@ -63,6 +63,7 @@ import ChooseBarPad from '@/components/ChooseBarPad.vue'
 import FixtureGroupingTournament from '@/components/FixtureGrouping/FixtureGroupingTournament.vue'
 import FixtureGroupingDefault from '@/components/FixtureGrouping/FixtureGroupingDefault.vue'
 import {
+  getSportHighlights,
   getFixturesByCategories,
   getFixturesByTournamentId,
   getSportUpcoming,
@@ -108,7 +109,7 @@ const fixtureGroupingType = computed(() => {
 // const filterQuery = ref()
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+  return utilsStore.sportsMenu.find((x) => x.sport_name == name)
 }
 
 const getActiveSport = computed(() => {
@@ -118,31 +119,31 @@ const getActiveSport = computed(() => {
 watch(
   () => [route.name, route.query.period, route.query.startDate, route.query.endDate],
   async ([routeName, period, startDate, endDate]) => {
-    const { sportID } = getSportbyName(route.params.sport)
+    const { sport_id } = getSportbyName(route.params.sport)
     const { tournament_id } = route.params
     const { category_id } = route.params
     switch (routeName) {
       case 'fixtures-by-tournaments':
-        await getTournamentFixtures(sportID, tournament_id)
+        await getTournamentFixtures(sport_id, tournament_id)
         break
 
       case 'fixtures-by-category':
-        await getCategoryFixtures(sportID, category_id)
+        await getCategoryFixtures(sport_id, category_id)
         break
 
       case 'today-fixtures':
-        await fetchTodayActiveSport(sportID)
+        await fetchTodayActiveSport(sport_id)
         break
 
       case 'fixtures-by-sports':
         if (period) {
           if (startDate && endDate) {
-            await fetchActiveSportByCustomRange(sportID, startDate, endDate)
+            await fetchActiveSportByCustomRange(sport_id, startDate, endDate)
           } else {
-            await fetchActiveSportByPeriod(sportID, period)
+            await fetchActiveSportByPeriod(sport_id, period)
           }
         } else {
-          await fixturesByActiveSport(sportID)
+          await fixturesByActiveSport(sport_id)
         }
         break
 
@@ -278,9 +279,9 @@ async function fixturesByActiveSport(id) {
 async function fetchTodayActiveSport(id) {
   if(!FEED_TOGGLE) return;
   try {
-    const res = await getToday2(id, page.value)
-    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
+    const res = await getSportHighlights({sid: id, today: 1, page: page.value})
+    isPaginated.value = true
+    let filteredData = res.data.fixtures
     // Update fixturesList.value
     fixturesList.value =
       fixturesList.value && fixturesList.value.length
@@ -288,7 +289,7 @@ async function fetchTodayActiveSport(id) {
         : [...filteredData]
     isLastPage.value = res.lastPage === page.value
     // Set markets and active market
-    marketsGroup.value = res.markets
+    marketsGroup.value = res.data.markets
     activeMarket.value = marketsGroup.value[0]
     isLoading.value = false
   } catch (error) {
@@ -340,20 +341,20 @@ const fetchMoreData = async () => {
   page.value++
   console.log(`Fetching data for page ${page.value}...`)
   try {
-    const { sportID } = getSportbyName(route.params.sport)
+    const { sport_id } = getSportbyName(route.params.sport)
     const { period } = route.query
 
     // let newData = []
     switch (route.name) {
       case 'today-fixtures':
-        await fetchTodayActiveSport(sportID)
+        await fetchTodayActiveSport(sport_id)
         break
 
       case 'fixtures-by-sports':
         if (period) {
-          await fetchActiveSportByPeriod(sportID, period)
+          await fetchActiveSportByPeriod(sport_id, period)
         } else {
-          await fixturesByActiveSport(sportID)
+          await fixturesByActiveSport(sport_id)
         }
         break
 

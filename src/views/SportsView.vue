@@ -45,42 +45,42 @@
         <div class="m-countries-block">
           <div class="m-countries-block-title" data-cms-key="a_z">A-Z</div>
           <div class="m-country-list">
-            <template v-if="countriesData.length > 0">
+            <template v-if="countriesData.length">
               <div
                 v-for="(country, index) in countriesData"
-                :key="country.categoryID"
+                :key="country.category_id"
                 class="m-league"
               >
                 <div
-                  v-if="country.categoryName"
+                  v-if="country.country_name"
                   class="m-league-title hide"
                   @click="showChild(index, country)"
                 >
                   <span class="icon-triangle"></span>
-                  <span class="text">{{ country.categoryName }}</span>
-                  <span class="m-event-size">{{ country.total }}</span>
+                  <span class="text">{{ country.country_name }}</span>
+                  <span class="m-event-size">{{ country.games }}</span>
                 </div>
                 <div :id="'child_' + index" class="m-league-conent d-none">
                   <ul class="m-country-row" v-if="country.isOpen">
                     <li
                       class="not-top-league"
                       v-for="tournament in country.tournamentsData"
-                      :key="tournament.tournamentID"
+                      :key="tournament.tournament_id"
                     >
                       <a
                         href="#"
                         @click.prevent="
                           navigateTo('fixtures-by-tournaments', {
                             sport: activeSport.sport_name,
-                            categories: `sr:category:${country.categoryID}`,
-                            tournaments: `sr:tournament:${tournament.tournamentID}`
+                            categories: `sr:category:${country.category_id}`,
+                            tournaments: `sr:tournament:${tournament.tournament_id}`
                           })
                         "
                       >
                         <div class="m-item-left">
-                          {{ tournament.tournamentName }}
+                          {{ tournament.name }}
                         </div>
-                        <div class="m-item-right">{{ tournament.total }}</div>
+                        <div class="m-item-right">{{ tournament.games }}</div>
                       </a>
                     </li>
                   </ul>
@@ -137,9 +137,9 @@ const showChild = async (index, country) => {
   if (!country.isOpen) {
     if (isTournamentsLoading.value) return
     isTournamentsLoading.value = true
-    const res = await getTournamentsByCategories(country.categoryID)
+    const res = await getTournamentsByCategories(activeSport.value.sport_id, country.category_id)
     isTournamentsLoading.value = false
-    country.tournamentsData = res.sports
+    country.tournamentsData = res.data
     country.isOpen = true
     childElement?.classList.remove('d-none')
   } else {
@@ -151,8 +151,8 @@ const showChild = async (index, country) => {
 const getCountriesList = async () => {
   if(!FEED_TOGGLE)return
   isLoading.value = true
-  const sports = await getCategoriesBySport(activeSport.value.sport_id)
-  countriesData.value = sports.sports || []
+  const sports = (await getCategoriesBySport(activeSport.value.sport_id)).data || []
+  countriesData.value = sports || []
   isLoading.value = false
 }
 
@@ -222,7 +222,7 @@ onMounted(getSportCategories)
   min-height: 5rem;
   padding: 1.066rem 0.33333333rem 0.75rem;
   position: relative;
-  width: 5rem;
+  width: 6.2rem;
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item:first-child {
   margin-left: 0.83333333rem;

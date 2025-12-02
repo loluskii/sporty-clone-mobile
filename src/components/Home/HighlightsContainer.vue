@@ -137,7 +137,8 @@ async function getHighlightGames() {
   if(!FEED_TOGGLE) return;
   // Check if current tab already has data cached
   const currentTabHasData = tabView.value === 'today' ? Object.keys(todayData.value).length : Object.keys(highlightsData.value).length
-  if(!currentTabHasData) {
+  const isNewActiveSport = activeSportID.value !== prevSportID.value
+  if(!currentTabHasData || isNewActiveSport) {
     // Fetch data only if current tab doesn't have it
     isLoading.value = true
     const response = await getSportHighlights({
@@ -145,7 +146,7 @@ async function getHighlightGames() {
       today: tabView.value === 'today' ? 1 : 0,
       order_type: tabView.value === 'today' ? 'time' : 'priority',
     })
-    if (response.data.fixtures.length && response.data.markets.length) {
+    if (response.data.fixtures && response.data.markets) {
       fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
       // Cache data in the appropriate variable
       if(tabView.value === 'today') {
@@ -173,7 +174,7 @@ async function getHighlightGames() {
 
 async function getCountriesList() {
   if(!FEED_TOGGLE) return;
-  countriesData.value = (await getCategoriesBySport(activeSportID.value)).data.filter((x) => x.games > 0) || []
+  countriesData.value = (await getCategoriesBySport(activeSportID.value, null)).data.filter((x) => x.games > 0) || []
 }
 
 function getFixturesByMarkets(market) {
