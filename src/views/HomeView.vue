@@ -243,12 +243,6 @@ onMounted(async () => {})
   z-index: 221;
 }
 
-.m-sports .view-all {
-  border-top: 1px solid #f2f3f5;
-  border-color: #f2f3f5;
-  border-color: var(--brand-border-type1);
-}
-
 .m-sports .view-all a,
 .m-sports .view-all a:hover,
 .m-sports .view-all a:visited,

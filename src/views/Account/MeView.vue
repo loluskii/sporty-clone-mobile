@@ -127,7 +127,7 @@ defineComponent({
     rgba(255, 255, 255, 1) 100%
   ); */
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
   padding: 1.66666667rem 1.33333333rem;
 }
 

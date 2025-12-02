@@ -122,7 +122,7 @@
 
 .m-loading.light {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
 }
 
 .m-loading.light .loading::before {

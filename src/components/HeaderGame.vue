@@ -136,7 +136,7 @@ defineComponent({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #121212;
+  color: var(--text-type2-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -173,7 +173,7 @@ defineComponent({
 .m-nav-secondary a:active,
 .m-nav-secondary a:link,
 .m-nav-secondary a:hover {
-  color: #121212;
+  color: #1c2485;
   color: var(--text-type2-primary);
   text-decoration: none;
 }

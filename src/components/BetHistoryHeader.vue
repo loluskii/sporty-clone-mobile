@@ -75,7 +75,7 @@ defineProps({
 }
 .m-openbet-header .no-login {
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .m-openbet-header .no-login > span {
   padding: 0 0.66666667rem;

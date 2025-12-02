@@ -298,7 +298,6 @@ footer .btn button {
   background-color: var(--c-footer-btn-bg);
   border: 0;
   color: #ffffff;
-  color: var(--text-type2-primary);
   padding: 1.066rem 0;
   width: 100%;
 }

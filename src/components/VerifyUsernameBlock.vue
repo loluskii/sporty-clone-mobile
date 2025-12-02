@@ -500,7 +500,7 @@ function restartProcess() {}
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #ffffff;
+  color: var(--text-type2-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -537,7 +537,7 @@ function restartProcess() {}
 .m-nav-secondary a:active,
 .m-nav-secondary a:link,
 .m-nav-secondary a:hover {
-  color: #ffffff;
+  color: #1c2485;
   color: var(--text-type2-primary);
   text-decoration: none;
 }

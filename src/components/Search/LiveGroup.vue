@@ -135,7 +135,7 @@ onMounted(() => {
   background-color: #000825;
   background-color: var(--background-type2-primary);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .live-container .m-market-tab {
   background-color: #000825;

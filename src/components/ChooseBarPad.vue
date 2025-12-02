@@ -64,7 +64,7 @@
           <div
             v-show="filterIsOpen && filterName === 'league'"
             class="m-list"
-            style="min-height: calc(80vh - 94px) !important"
+            style="min-height: calc(100vh - 94px) !important"
           >
             <LoadingSpinner v-if="isCategoriesLoading" />
             <div v-else class="m-regions">
@@ -377,7 +377,7 @@ onUnmounted(() => {})
 }
 .m-choose-bar {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
   border-bottom: 0.08333333rem solid #eaecef;
   border-color: #eaecef;
   border-color: var(--brand-border-type1);
@@ -441,7 +441,7 @@ onUnmounted(() => {})
 .m-choose-odds .m-title,
 .m-choose-time .m-title {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #1b1e25;
@@ -504,7 +504,8 @@ onUnmounted(() => {})
   color: var(--brand-secondary);
 }
 .m-list {
-  background-color: #fafafa;
+  background-color: var(--background-type1-secondary);
+  color: #fafafa;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   left: 0px;
@@ -575,46 +576,7 @@ onUnmounted(() => {})
   outline: none;
   padding: 0.91666667rem 0.5rem 0.91666667rem 0;
 }
-.m-choose-sort .m-title,
-.m-choose-league .m-title,
-.m-choose-odds .m-title,
-.m-choose-time .m-title {
-  /* background-color: #fafafa; */
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #1b1e25;
-  color: var(--text-type1-tertiary);
-  font-size: 1.066rem;
-  font-weight: 700;
-  height: 1.66666667rem;
-  line-height: 1.66666667rem;
-  overflow: hidden;
-  padding: 0 1.66666667rem 0 0.66666667rem;
-  position: relative;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.m-choose-sort .m-title::before,
-.m-choose-league .m-title::before,
-.m-choose-odds .m-title::before,
-.m-choose-time .m-title::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.m-choose-sort .m-title::before,
-.m-choose-league .m-title::before,
-.m-choose-odds .m-title::before,
-.m-choose-time .m-title::before {
-  color: #9ca0ab;
-  color: var(--text-type1-secondary);
-  font-size: 0.83333333rem;
-  position: absolute;
-  right: 0.5rem;
-}
+
 .m-choose-sort .m-title.active::before,
 .m-choose-league .m-title.active::before,
 .m-choose-odds .m-title.active::before,

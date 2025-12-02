@@ -460,9 +460,7 @@ defineComponent({
 </script>
 <style scoped>
 .m-event-sport {
-  border-top: 1px solid #eaecef;
-  border-color: #eaecef;
-  border-color: var(--brand-border-type1);
+  border-bottom: .5px solid #595959;
   display: block;
   padding: 0.66666667rem 0;
 }

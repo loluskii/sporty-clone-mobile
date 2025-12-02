@@ -364,7 +364,7 @@ onBeforeUnmount(() => {
   background-color: #000825;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .live-container .m-market-tab {
   background-color: #000825;
