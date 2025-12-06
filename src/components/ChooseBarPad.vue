@@ -64,7 +64,7 @@
           <div
             v-show="filterIsOpen && filterName === 'league'"
             class="m-list"
-            style="min-height: calc(80vh - 94px) !important"
+            style="min-height: calc(100vh - 94px) !important"
           >
             <LoadingSpinner v-if="isCategoriesLoading" />
             <div v-else class="m-regions">
@@ -73,19 +73,18 @@
                   <ul class="m-category" v-if="categoryList">
                     <template v-for="(league, index) in categoryList" :key="index">
                       <li
-                        v-show="league.categoryName !== undefined"
                         class="tournament"
                         :class="{
-                          checked: activeCategory && activeCategory.categoryID == league.categoryID
+                          checked: activeCategory && activeCategory.category_id == league.category_id
                         }"
                         @click="setActiveCategory(league)"
                       >
-                        <span class="category-name">{{ league.categoryName }} </span
+                        <span class="category-name">{{ league.country_name }} </span
                         ><span class="select-tournamet-size">
                           <em v-if="getSelectedTournamentCountByCategory(league) > 0">{{
                             getSelectedTournamentCountByCategory(league)
                           }}</em> </span
-                        ><span class="event-size">{{ league.total }}</span>
+                        ><span class="event-size">{{ league.games }}</span>
                       </li>
                     </template>
                   </ul>
@@ -112,8 +111,8 @@
                             </span>
                           </label>
                         </div>
-                        <span class="tournament-name">{{ t.tournamentName }}</span
-                        ><span class="event-size">{{ t.total }}</span>
+                        <span class="tournament-name">{{ t.name }}</span
+                        ><span class="event-size">{{ t.games }}</span>
                       </li>
                     </template>
                   </ul>
@@ -238,9 +237,9 @@ function toggleFilter(name) {
     ) {
       isCategoriesLoading.value = true
       let dates = getDateRange(activePeriodFilter.value?.key)
-      getCategoriesBySport(getActiveSport.value.sportID, dates).then((res) => {
+      getCategoriesBySport(getActiveSport.value.sport_id, dates).then((res) => {
         isCategoriesLoading.value = false
-        categoryList.value = res.sports
+        categoryList.value = res.data
         if (route.name === 'fixtures-by-tournaments') {
           const cids = extractIdsFromURL(route.params.categories, 'category')
           const tids = extractIdsFromURL(route.params.tournaments, 'tournament')
@@ -290,9 +289,9 @@ const setActiveCategory = async (category) => {
   isTournamentsLoading.value = true
   activeCategory.value = category
   let dates = getDateRange(activePeriodFilter.value?.key)
-  const res = await getTournamentsByCategories(category.categoryID, dates)
+  const res = await getTournamentsByCategories(props.activeSport.sport_id, category.category_id, dates)
   isTournamentsLoading.value = false
-  tournamentsList.value = res.sports
+  tournamentsList.value = res.data
 }
 
 function resetSelection() {
@@ -315,7 +314,7 @@ function viewFixturesByTournaments() {
     return router.push({
       name: 'fixtures-by-tournaments',
       params: {
-        sport: props.activeSport.sportName,
+        sport: props.activeSport.sport_name,
         categories: categories,
         tournaments: tournaments
         // sort: 'sort:league'
@@ -327,7 +326,7 @@ function viewFixturesByTournaments() {
     return router.push({
       name: 'fixtures-by-tournaments',
       params: {
-        sport: props.activeSport.sportName,
+        sport: props.activeSport.sport_name,
         categories: categories,
         tournaments: tournaments
         // sort: 'sort:league'
@@ -345,7 +344,7 @@ const getCustomRangeData = (data) => {
   emitter.emit('showCustomDatePicker')
   return router.push({
     name: 'fixtures-by-sports',
-    params: { sport: slugify(props.activeSport.sportName) },
+    params: { sport: slugify(props.activeSport.sport_name) },
     query: { period: 'custom', startDate: data.start, endDate: data.end }
   })
 }

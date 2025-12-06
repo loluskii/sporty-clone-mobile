@@ -209,9 +209,6 @@ const getOdds = () => {
     const odds = props.eventData.outcomes
     let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
     let uniqueFiltered = filtered
-
-    console.log(filtered)
-
     // Apply any updates we've received from MQTT
     uniqueFiltered = filtered.map((outcome) => {
       const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
@@ -239,7 +236,6 @@ const getOdds = () => {
       outcomes.value = []
     }
 
-    console.log(outcomes.value)
   }
   // }
 }
@@ -277,7 +273,7 @@ onMounted(() => {
     // Then subscribe to odds changes
     const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
+      console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
       handleOddsChange(data)
     })
 

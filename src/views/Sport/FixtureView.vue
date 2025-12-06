@@ -99,6 +99,7 @@ const isPaginated = ref(false)
 const fetchingMore = ref(false)
 const container = ref(null)
 const isLastPage = ref(false)
+const lastPage = ref(null)
 
 const fixtureGroupingType = computed(() => {
   return fixturesList.value !== null && !Array.isArray(fixturesList.value)
@@ -132,19 +133,8 @@ watch(
         break
 
       case 'today-fixtures':
-        await fetchTodayActiveSport(sport_id)
-        break
-
       case 'fixtures-by-sports':
-        if (period) {
-          if (startDate && endDate) {
-            await fetchActiveSportByCustomRange(sport_id, startDate, endDate)
-          } else {
-            await fetchActiveSportByPeriod(sport_id, period)
-          }
-        } else {
-          await fixturesByActiveSport(sport_id)
-        }
+        await fetchFixturesByActiveSport(sport_id, period)
         break
 
       default:
@@ -164,22 +154,18 @@ async function getTournamentFixtures(sid) {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getFixturesByTournamentId(cat.tournamentID, sid, route.query?.period)
+        getSportHighlights({sid: id, per_page: 50, category_id: cat.tournament_id})
       )
     )
     const fixtures = results.reduce((acc, res) => {
-      if (res.status === 'fulfilled' && res.value.fixtures) {
-        let filteredData = res.value.fixtures.filter((f) => f.activeMarkets > 0)
-        acc = { ...acc, ..._.groupBy(filteredData, 'tournament') }
+      if (res.status === 'fulfilled' && res.value.data.fixtures) {
+        acc = { ...acc, ..._.groupBy(res.value.data.fixtures, 'tournament') }
       }
       return acc
     }, {})
 
     fixturesList.value = { ...fixtures }
-    marketsGroup.value =
-      results[0].status === 'fulfilled' && Object.keys(results[0].value).length > 0
-        ? results[0].value?.markets
-        : {}
+    marketsGroup.value =results[0].value?.data.markets
     activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
     isLoading.value = false
   } catch (error) {
@@ -191,13 +177,19 @@ async function getTournamentFixtures(sid) {
 async function getCategoryFixtures(sid, cid) {
   if(!FEED_TOGGLE) return;
   try {
-    const res = await getFixturesByCategories(sid, cid)
-    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-    fixturesList.value = _.groupBy(filteredData, 'tournament')
-    marketsGroup.value = res.markets
-    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-    isLoading.value = false
+    const res = await getSportHighlights({sid: id, per_page: 50, category_id: cid})
+    const { fixtures, markets, per_page, page: currentPage, total } = res.data
+    lastPage.value = Math.ceil(total / per_page)
+    if (fixtures.length) {
+      isPaginated.value = true
+      fixturesList.value = _.groupBy(fixtures, 'tournament')
+      isLastPage.value = lastPage.value === page.value
+      marketsGroup.value = markets
+      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+      isLoading.value = false
+    } else {
+      throw Error
+    }
   } catch (error) {
     isLoading.value = false
     loadingError.value = true
@@ -205,65 +197,36 @@ async function getCategoryFixtures(sid, cid) {
   }
 }
 
-async function fetchActiveSportByPeriod(id, period) {
+async function fetchFixturesByActiveSport(id, period = null) {
   if(!FEED_TOGGLE) return;
   try {
-    isLoading.value = true
-    let selectedPeriod = getDateRange(period)
-    const res = await getSportUpcoming(id, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-      fixturesList.value = _.groupBy(filteredData, 'tournament')
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-      isLoading.value = false
-    } else {
-      throw Error
+    let payload = {
+      sid: id,
+      per_page: 50
     }
-  } catch (error) {
-    isLoading.value = false
-    isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fetchActiveSportByCustomRange(sid, start, end) {
-  if(!FEED_TOGGLE) return;
-  try {
-    isLoading.value = true
-    let selectedPeriod = { startDate: start, endDate: end }
-    const res = await getSportUpcoming(sid, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-      fixturesList.value = _.groupBy(filteredData, 'tournament')
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-      isLoading.value = false
-    } else {
-      throw Error
+    if(period === 'tomorrow'){
+      payload.tomorrow = 1
+    }else if(period === 'today'){
+      payload.today = 1
+    }else if(period === 'today_tomorrow'){
+      payload.today = 1
+      payload.tomorrow = 1
+    }else{
+      let {startDate, endDate } = getDateRange(period)
+      payload.start = startDate
+      payload.end = endDate
+      payload.upcoming = 1
     }
-  } catch (error) {
-    isLoading.value = false
-    isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fixturesByActiveSport(id) {
-  if(!FEED_TOGGLE) return;
-  try {
-    let selectedPeriod = getDateRange('week')
-    const res = await getSportUpcoming(id, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0)
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets ? res.markets : []
+    const res = await getSportHighlights(payload)
+    const { fixtures, markets, per_page, page: currentPage, total } = res.data
+    lastPage.value =Math.ceil(total / per_page)
+    if (fixtures.length) {
+      isPaginated.value = true
+      fixturesList.value = fixturesList.value && fixturesList.value.length
+        ? [...fixturesList.value, ...fixtures]
+        : [...fixtures]
+      isLastPage.value = lastPage.value === page.value
+      marketsGroup.value = markets
       activeMarket.value = marketsGroup.value.length ? marketsGroup.value[0] : {}
     } else {
       throw Error
@@ -272,29 +235,6 @@ async function fixturesByActiveSport(id) {
   } catch (error) {
     isLoading.value = false
     isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fetchTodayActiveSport(id) {
-  if(!FEED_TOGGLE) return;
-  try {
-    const res = await getSportHighlights({sid: id, today: 1, page: page.value})
-    isPaginated.value = true
-    let filteredData = res.data.fixtures
-    // Update fixturesList.value
-    fixturesList.value =
-      fixturesList.value && fixturesList.value.length
-        ? [...fixturesList.value, ...filteredData]
-        : [...filteredData]
-    isLastPage.value = res.lastPage === page.value
-    // Set markets and active market
-    marketsGroup.value = res.data.markets
-    activeMarket.value = marketsGroup.value[0]
-    isLoading.value = false
-  } catch (error) {
-    isLoading.value = false
-    loadingError.value = true
     console.error(error)
   }
 }
@@ -343,19 +283,21 @@ const fetchMoreData = async () => {
   try {
     const { sport_id } = getSportbyName(route.params.sport)
     const { period } = route.query
+    const { tournament_id,category_id } = route.params
 
     // let newData = []
-    switch (route.name) {
-      case 'today-fixtures':
-        await fetchTodayActiveSport(sport_id)
+    switch (routeName) {
+      case 'fixtures-by-tournaments':
+        await getTournamentFixtures(sport_id, tournament_id)
         break
 
+      case 'fixtures-by-category':
+        await getCategoryFixtures(sport_id, category_id)
+        break
+
+      case 'today-fixtures':
       case 'fixtures-by-sports':
-        if (period) {
-          await fetchActiveSportByPeriod(sport_id, period)
-        } else {
-          await fixturesByActiveSport(sport_id)
-        }
+        await fetchFixturesByActiveSport(sport_id, period)
         break
 
       default:

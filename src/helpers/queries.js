@@ -134,33 +134,25 @@ export const getCategoriesBySport = async (sportID, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod ? 'startDate='+todayDate+'&endDate='+todayDate
-                      : isTomorrowPeriod ? 'startDate='+tomorrowDate+'&endDate='+tomorrowDate :
-                      `start=${period?.startDate}&end=${period?.endDate}`
+  const periodParam = isTodayPeriod ? 'start=' + todayDate + '&end=' + todayDate
+    : isTomorrowPeriod ? 'start=' + tomorrowDate + '&end=' + tomorrowDate :
+      `start=${period?.startDate}&end=${period?.endDate}`
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
-      `${NEW_FIXTURES_API}/categories/${sportID}${period ? periodParam :''}&source=mobile`
+      `${NEW_FIXTURES_API}/categories/${sportID}?${period ? periodParam : ''}&source=mobile`
     )
   )
 }
 
-export const getTournamentsByCategories = async (sid, categoryId, period) => {
-  const todayDate = moment().startOf('day').format('YYYY-MM-DD')
-  const tomorrowDate = moment().add(1, 'day').startOf('day').format('YYYY-MM-DD')
-  const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
-  const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
-  // Determine the period type
-  const periodParam = isTodayPeriod ?
-    'period=today' :
-    isTomorrowPeriod ?
-    'period=24hour' :
-    period ?
-    `start=${period?.startDate}&end=${period?.endDate}` :
-    'period=all'
+export const getTournamentsByCategories = async (sid, categoryId, period = null) => {
+  let periodFilter = null
+  if(period){
+    periodFilter = `&start=${period.startDate}&end=${period.endDate}`
+  }
   return parseData(
     fetchWrapper.get(
-      `${NEW_FIXTURES_API}/tournaments/${sid}?category_id=${categoryId}&source=mobile`
+      `${NEW_FIXTURES_API}/tournaments/${sid}?category_id=${categoryId}${periodFilter ?? ''}&source=mobile`
     )
   )
 }
@@ -224,8 +216,8 @@ export const getLiveCountBySport = async (sid) => {
 }
 
 export const getSportHighlights = async (payload) => {
-  const {sid = 1, page = 1, per_page = 20, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, order_type = 'priority'} = payload;
-  const params = new URLSearchParams({page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type })
+  const { sid = 1, page = 1, per_page = 20, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority' } = payload;
+  const params = new URLSearchParams({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end })
   return parseData(
     fetchWrapper.get(
       `${NEW_FIXTURES_API}/v1/fixtures/highlights/${sid}?${params}`
@@ -242,10 +234,10 @@ export const getSportUpcoming = async (sid, period) => {
   const periodParam = isTodayPeriod ?
     'period=today' :
     isTomorrowPeriod ?
-    'period=tomorrow' :
-    period?.startDate !== undefined && period?.endDate !== undefined ?
-    `startDate=${period?.startDate}&endDate=${period?.endDate}` :
-    `period=${period}`
+      'period=tomorrow' :
+      period?.startDate !== undefined && period?.endDate !== undefined ?
+        `startDate=${period?.startDate}&endDate=${period?.endDate}` :
+        `period=${period}`
 
   return parseData(
     fetchWrapper.get(
@@ -265,8 +257,7 @@ export const getHighlights2 = async (sid) => {
 export const getFixturesByTournamentId = async (id, sid, period = null) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${
-        period ? period : 'all'
+      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${period ? period : 'all'
       }&limit=50`
     )
   )
