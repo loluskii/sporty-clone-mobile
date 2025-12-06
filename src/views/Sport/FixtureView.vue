@@ -197,7 +197,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
         payload.today = 1
       } else if (period === 'today_tomorrow') {
         payload.today = 1
-        payload.tomorrow = 1
+        payload.tomorrow = 1 
       } else {
         let { startDate, endDate } = getDateRange(period)
         payload.start = startDate
