@@ -109,6 +109,7 @@ watch(
     const { sport_id } = getSportbyName(route.params.sport)
     const { tournament_id } = route.params
     const { category_id } = route.params
+    isLoading.value = true
     switch (routeName) {
       case 'fixtures-by-tournaments':
         await getTournamentFixtures(sport_id, tournament_id)
