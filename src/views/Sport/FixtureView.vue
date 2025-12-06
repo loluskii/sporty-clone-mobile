@@ -5,19 +5,12 @@
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
       <div v-show="marketsGroup?.length" class="m-sanp-nav-container" id="m-sanp-nav-container">
-        <div
-          class="m-snap-nav-wrap m-sport-type has-live"
-          :class="{ 'm-sport-type-fixed': isTop }"
-          style="overflow: auto"
-        >
+        <div class="m-snap-nav-wrap m-sport-type has-live" :class="{ 'm-sport-type-fixed': isTop }"
+          style="overflow: auto">
           <ul class="m-snap-nav flex">
-            <li
-              v-for="(market, m) in marketsGroup"
-              :key="m"
+            <li v-for="(market, m) in marketsGroup" :key="m"
               :class="market.marketID === activeMarket.marketID ? 'active' : ''"
-              class="m-sport-type-item m-snap-nav-item"
-              @click="selectMarket(market)"
-            >
+              class="m-sport-type-item m-snap-nav-item" @click="selectMarket(market)">
               {{ market.marketName }}
             </li>
           </ul>
@@ -25,16 +18,9 @@
         </div>
       </div>
       <div class="m-bet-content" style="position: relative">
-        <FixtureGroupingTournament
-          :fixtures-list="fixturesList"
-          :active-market="activeMarket"
-          v-if="fixtureGroupingType === 'tournament'"
-        />
-        <FixtureGroupingDefault
-          :fixtures-list="fixturesList"
-          :active-market="activeMarket"
-          v-else
-        />
+        <FixtureGroupingTournament :fixtures-list="fixturesList" :active-market="activeMarket"
+          v-if="fixtureGroupingType === 'tournament'" />
+        <FixtureGroupingDefault :fixtures-list="fixturesList" :active-market="activeMarket" v-else />
         <LoadingSpinner v-show="fetchingMore"></LoadingSpinner>
       </div>
     </template>
@@ -147,14 +133,14 @@ watch(
 )
 
 async function getTournamentFixtures(sid) {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return;
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
 
   try {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getSportHighlights({sid: id, per_page: 50, category_id: cat.tournament_id})
+        getSportHighlights({ sid: id, per_page: 50, category_id: cat.tournament_id })
       )
     )
     const fixtures = results.reduce((acc, res) => {
@@ -165,7 +151,7 @@ async function getTournamentFixtures(sid) {
     }, {})
 
     fixturesList.value = { ...fixtures }
-    marketsGroup.value =results[0].value?.data.markets
+    marketsGroup.value = results[0].value?.data.markets
     activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
     isLoading.value = false
   } catch (error) {
@@ -175,9 +161,9 @@ async function getTournamentFixtures(sid) {
 }
 
 async function getCategoryFixtures(sid, cid) {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return;
   try {
-    const res = await getSportHighlights({sid: id, per_page: 50, category_id: cid})
+    const res = await getSportHighlights({ sid: id, per_page: 50, category_id: cid })
     const { fixtures, markets, per_page, page: currentPage, total } = res.data
     lastPage.value = Math.ceil(total / per_page)
     if (fixtures.length) {
@@ -198,28 +184,30 @@ async function getCategoryFixtures(sid, cid) {
 }
 
 async function fetchFixturesByActiveSport(id, period = null) {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return;
   try {
     let payload = {
       sid: id,
       per_page: 50
     }
-    if(period === 'tomorrow'){
-      payload.tomorrow = 1
-    }else if(period === 'today'){
-      payload.today = 1
-    }else if(period === 'today_tomorrow'){
-      payload.today = 1
-      payload.tomorrow = 1
-    }else{
-      let {startDate, endDate } = getDateRange(period)
-      payload.start = startDate
-      payload.end = endDate
-      payload.upcoming = 1
+    if (period) {
+      if (period === 'tomorrow') {
+        payload.tomorrow = 1
+      } else if (period === 'today') {
+        payload.today = 1
+      } else if (period === 'today_tomorrow') {
+        payload.today = 1
+        payload.tomorrow = 1
+      } else {
+        let { startDate, endDate } = getDateRange(period)
+        payload.start = startDate
+        payload.end = endDate
+        payload.upcoming = 1
+      }
     }
     const res = await getSportHighlights(payload)
     const { fixtures, markets, per_page, page: currentPage, total } = res.data
-    lastPage.value =Math.ceil(total / per_page)
+    lastPage.value = Math.ceil(total / per_page)
     if (fixtures.length) {
       isPaginated.value = true
       fixturesList.value = fixturesList.value && fixturesList.value.length
@@ -283,7 +271,7 @@ const fetchMoreData = async () => {
   try {
     const { sport_id } = getSportbyName(route.params.sport)
     const { period } = route.query
-    const { tournament_id,category_id } = route.params
+    const { tournament_id, category_id } = route.params
 
     // let newData = []
     switch (routeName) {
@@ -359,13 +347,16 @@ defineComponent({
   -webkit-overflow-scrolling: none;
   overscroll-behavior: none;
 }
+
 .m-event-list .m-topnav .title {
   font-size: 1.66666667rem;
 }
+
 .m-event-list .m-topnav .arrow-icon {
   font-family: 'iconfont';
   width: auto;
 }
+
 .m-event-list .m-topnav .arrow-icon:before {
   content: '\e6A3';
   display: inline-block;
@@ -387,11 +378,13 @@ defineComponent({
     -webkit-transform 0.3s ease;
   vertical-align: middle;
 }
+
 .m-event-list .m-topnav .arrow-icon.open:before {
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
 }
+
 .m-event-list .m-topnav .trans-select {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -402,6 +395,7 @@ defineComponent({
   display: -ms-flexbox;
   display: flex;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -410,12 +404,15 @@ defineComponent({
   height: 2rem;
   position: static;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title {
   display: none;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title .af-select-input {
   display: hidden;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -446,22 +443,14 @@ defineComponent({
   color: #353a45;
   color: var(--text-type1-primary);
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.active {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: var(--brand-secondary);
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.active:after {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active:after {
   color: var(--brand-secondary);
   content: '\e611';
   float: right;
@@ -469,18 +458,16 @@ defineComponent({
   font-size: 1.33333333rem;
   padding-right: 1.66666667rem;
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.hover {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
 }
+
 .m-event-list .m-topnav .home-link {
   padding: 0 1rem 0 0.66666667rem;
 }
+
 .m-event-list .m-topnav .slot-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -492,7 +479,8 @@ defineComponent({
   display: flex;
   height: 100%;
 }
-.m-event-list .m-topnav .slot-container > a {
+
+.m-event-list .m-topnav .slot-container>a {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -503,9 +491,11 @@ defineComponent({
   display: flex;
   height: 100%;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon {
   padding: 0 0.66666667rem 0 1.25rem;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon::before {
   content: '\e613';
   font-family: 'iconfont' !important;
@@ -514,22 +504,26 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon:before {
   font-size: 1.75rem;
   position: relative;
   top: 0.08333333rem;
 }
+
 .m-event-list .m-sport-bet-error {
   color: #353a45;
   color: var(--text-type1-primary);
   padding: 2.5rem 0 0.83333333rem;
 }
+
 .m-event-list .no-data {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
   padding: 2.33333333rem;
   text-align: center;
 }
+
 .m-event-list .no-data::before {
   content: '\e624';
   font-family: 'iconfont' !important;
@@ -538,14 +532,17 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-list .no-data:before {
   color: #dcdee5;
   color: var(--disable-brand-secondary);
   font-size: 2.5rem;
 }
+
 .m-event-list .m-loading-wrap {
   margin-top: 15%;
 }
+
 .m-event-list .m-sanp-nav-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -561,27 +558,33 @@ defineComponent({
   border-bottom-color: #eaecef;
   border-bottom-color: var(--brand-border-type1);
 }
+
 .m-event-list .m-sport-type {
   -webkit-box-flex: 1;
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
 }
+
 .m-event-list .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
   font-weight: normal;
   padding: 0.61666667rem 1.25rem;
   /* border-radius: 30px; */
 }
+
 .m-event-list .m-sport-type .m-sport-type-item.active {
   border-bottom: 3px solid var(--c-prematch-tab-name-active);
 }
+
 .m-event-list .m-sport-type .m-sport-type-item:first-child {
   margin-left: 0.83333333rem;
 }
+
 .m-event-list .m-sport-type .m-sport-type-item:last-child {
   margin-right: 0.83333333rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -595,18 +598,22 @@ defineComponent({
   padding: 10px 0;
   border-bottom: 1px solid #eaecef;
 }
+
 /* .m-event-list .m-sport-type.m-sport-type-fixed.has-live {
   top: 7rem;
 } */
 .m-event-list .m-sport-type.m-sport-type-fixed.nav-down {
   top: 7.33333333rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed.nav-down.has-live {
   top: 10.66666667rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed.choose-open {
   z-index: -1;
 }
+
 .m-event-list .m-outright-bar {
   border-bottom: solid 0.08333333rem;
   -webkit-box-sizing: border-box;
@@ -615,6 +622,7 @@ defineComponent({
   border-bottom-color: #eaecef;
   border-bottom-color: var(--brand-border-type1);
 }
+
 .m-event-list .m-outright-bar .m-match-type-item {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -623,9 +631,11 @@ defineComponent({
   padding: 0.66666667rem 1.25rem;
   width: 100%;
 }
+
 .m-event-list .m-outright-bar .m-match-type-item.active {
   border-bottom: 4px solid var(--brand-text-secondary);
 }
+
 .m-event-list .m-outright-bar .m-match-type-item.m-snap-nav-item--disabled {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
@@ -638,12 +648,14 @@ defineComponent({
   text-align: center;
   width: 100%;
 }
+
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #0d9737;
   color: var(--brand-quaternary);
 }
+
 .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
