@@ -207,7 +207,7 @@ export const searchFixtures = async (q) => {
 
 export const getLiveHighlights = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/highlight/live/0?source=mobile&markets=1`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/v1/fixtures/live/0?per_page=50&source=mobile`)
   )
 }
 

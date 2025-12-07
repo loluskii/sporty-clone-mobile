@@ -31,8 +31,8 @@
         <div class="team">{{ gameData.awayTeam }}</div>
       </div>
       <div class="x-table-cell score">
-        <div class="set-score">{{ scores.homeScore }}</div>
-        <div class="set-score">{{ scores.awayScore }}</div>
+        <div class="set-score">{{ gameData.eventInfo.scores.home }}</div>
+        <div class="set-score">{{ gameData.eventInfo.scores.away }}</div>
       </div>
 
       <div class="x-table-cell m-market-cell">

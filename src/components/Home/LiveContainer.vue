@@ -149,13 +149,13 @@ const {
 
     // Use setTimeout to break potential update cycles
     setTimeout(() => {
-      if (response.fixtures) {
-        totalFixtures.value = response.fixtures.length
+      if (response.data.fixtures) {
+        totalFixtures.value = response.data.fixtures.length
 
         // Process sports list in a more efficient way
         const uniqueMap = new Map()
 
-        response.fixtures.forEach((fixture) => {
+        response.data.fixtures.forEach((fixture) => {
           if (!uniqueMap.has(fixture.sportID)) {
             uniqueMap.set(fixture.sportID, {
               sportID: fixture.sportID,
@@ -178,7 +178,7 @@ const {
         }
       } else {
         // Instead of setting isEmptyResponse, update existing fixtures to inactive state
-        if (completeLiveData.value?.fixtures) {
+        if (completeLiveData.value?.data.fixtures) {
           completeLiveData.value.fixtures = completeLiveData.value.fixtures.map((fixture) => ({
             ...fixture,
             outcomes: fixture.outcomes.map((outcome) => ({
@@ -204,14 +204,14 @@ watch(
 
 
 const sportsListData = computed(() => {
-  if (isEmptyResponse.value || !completeLiveData.value?.fixtures) {
+  if (isEmptyResponse.value || !completeLiveData.value?.data.fixtures) {
     return []
   }
 
   // Use a Map for deduplication (more efficient than Set + Array)
   const uniqueMap = new Map()
 
-  completeLiveData.value.fixtures.forEach((fixture) => {
+  completeLiveData.value.data.fixtures.forEach((fixture) => {
     if (!uniqueMap.has(fixture.sportID)) {
       uniqueMap.set(fixture.sportID, {
         sportID: fixture.sportID,
@@ -225,12 +225,12 @@ const sportsListData = computed(() => {
 })
 
 const filteredLiveData = computed(() => {
-  if (!completeLiveData.value?.fixtures || isEmptyResponse.value) {
+  if (!completeLiveData.value?.data.fixtures || isEmptyResponse.value) {
     return []
   }
 
   // Filter by sportID and sort by tournamentID
-  return completeLiveData.value.fixtures
+  return completeLiveData.value.data.fixtures
     .filter((fixture) => fixture.sportID === activeSportID.value)
     .sort((a, b) => {
       // First sort by tournamentID
@@ -240,13 +240,13 @@ const filteredLiveData = computed(() => {
       // If same tournament, maintain original order
       return 0
     })
-    .slice(0, 5)
+    .slice(0, 10)
 })
 
 const marketsGroup = computed(() => {
   let markets =
-    completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.markets
+    completeLiveData.value?.data.fixtures && !isEmptyResponse.value
+      ? completeLiveData.value?.data.markets
       : []
   // activeSportMarkets.value = _.sortBy(markets, 'marketID')
   // activeMarket.value = activeSportMarkets.value[0]
@@ -333,9 +333,9 @@ defineComponent({
 onMounted(() => {
   // Listen for match-ended events
   emitter.on('match-ended', (matchId) => {
-    if (completeLiveData.value?.fixtures) {
+    if (completeLiveData.value?.data.fixtures) {
       // Create a new array without the ended match
-      const updatedFixtures = completeLiveData.value.fixtures.filter(
+      const updatedFixtures = completeLiveData.value.data.fixtures.filter(
         (fixture) => String(fixture.matchID) !== String(matchId)
       )
 
