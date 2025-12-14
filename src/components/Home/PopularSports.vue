@@ -339,40 +339,40 @@ function assignTournaments(tournament, games, tournamentID) {
   }
 }
 
-function setupMqttSubscriptions(matchIds) {
-  // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchIds.join(',')}`
-  if (unsubscribeFunctions.value[subscriptionKey]) {
-    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
-  }
+// function setupMqttSubscriptions(matchIds) {
+//   // Only clear our own component's subscriptions
+//   const subscriptionKey = `${componentId}-${matchIds.join(',')}`
+//   if (unsubscribeFunctions.value[subscriptionKey]) {
+//     unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
+//   }
 
-  // Create subscriptions for each match ID
-  const subscriptions = matchIds.map((matchId) => {
-    // Subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      utilsStore.handleOddsChange(data)
-    })
+//   // Create subscriptions for each match ID
+//   const subscriptions = matchIds.map((matchId) => {
+//     // Subscribe to odds changes
+//     const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+//     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+//       utilsStore.handleOddsChange(data)
+//     })
 
-    // Subscribe to bet stop
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      utilsStore.handleBetStop(data)
-    })
+//     // Subscribe to bet stop
+//     const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+//     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+//       utilsStore.handleBetStop(data)
+//     })
 
-    return [unsubscribeOddsChange, unsubscribeBetStop]
-  })
+//     return [unsubscribeOddsChange, unsubscribeBetStop]
+//   })
 
-  // Flatten the array of subscription pairs
-  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
-}
+//   // Flatten the array of subscription pairs
+//   unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
+// }
 
 onBeforeUnmount(() => {
   // Clean up all MQTT subscriptions
-  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
-    subscriptions.forEach((unsubscribe) => unsubscribe())
-  })
-  unsubscribeFunctions.value = {}
+  // Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+  //   subscriptions.forEach((unsubscribe) => unsubscribe())
+  // })
+  // unsubscribeFunctions.value = {}
 })
 
 // Update onMounted

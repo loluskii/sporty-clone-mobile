@@ -60,11 +60,12 @@
           :class="
             isSelected(
               createID(
-                matchDetails.gameID,
                 matchDetails.matchID,
-                market.outcomeName,
-                market.oddID,
-                matchDetails.name
+                market.marketID,
+                market.outcomeID,
+                market.specifier,
+                '1X2',
+                market.outcomeName
               ),
               couponStore.coupon
             )
@@ -158,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.matchID, odd.marketID, odd.outcomeID, odd.specifier, '1X2', odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',
@@ -166,11 +167,11 @@ function addToBetslip(event, odd) {
     ele_id: id,
     outcome: odd,
     odds: odd.odds,
-    odd_id: odd.oddID,
+    odd_id: odd.outcomeID,
     odd_name: odd.outcomeName,
     type: 'prematch',
-    event_id: event.gameID,
-    specifier: ''
+    event_id: event.matchID,
+    specifier: odd.specifier || ''
   }
 
   // return couponStore.addToCoupon(data)

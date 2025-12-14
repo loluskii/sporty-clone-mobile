@@ -68,6 +68,7 @@
                 :gameData="fixture"
                 :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`"
                 :activeMarket="activeMarket"
+                :activeSportID="activeSportID"
               ></LiveHighlightsFixture>
             </div>
             <div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">

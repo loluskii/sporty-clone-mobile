@@ -285,10 +285,14 @@ export const getPlacedBetStatus = (status) => {
   }
 }
 
-export const createID = (event_id, provider_id, odd, id, event_name) => {
-  let oddname = String(odd).replace(/[^a-zA-Z0-9]/g, '_')
-  let eventname = String(event_name).replace(/[^a-zA-Z0-9]/g, '_')
-  return event_id + '_' + provider_id + '_' + oddname + '_' + id + '_' + eventname
+export const createID = (matchID, marketID, outcomeID, specifier = '', marketName = '', outcomeName = '') => {
+  // Create a unique ID based on match, market, outcome, specifier, and names
+  // This ensures selections are unique and human-readable
+  const cleanSpecifier = String(specifier || '').replace(/[^a-zA-Z0-9]/g, '_')
+  const cleanMarketName = String(marketName || '').replace(/\s+/g, '_')
+  const cleanOutcomeName = String(outcomeName || '').replace(/\s+/g, '_')
+
+  return `${matchID}_${marketID}_${outcomeID}${cleanSpecifier ? '_' + cleanSpecifier : ''}${cleanMarketName ? '_' + cleanMarketName : ''}${cleanOutcomeName ? '_' + cleanOutcomeName : ''}`
 }
 
 export const multibetCombination = (item) => {
