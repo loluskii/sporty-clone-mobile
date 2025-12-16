@@ -230,16 +230,16 @@ const safeLoad = (promise) =>
     return null
   })
 
-watch(
-  () => route.query.shareCode,
-  async (code) => {
-    // get booking code
-    if (code) {
-      await loadBet(code)
-    }
-  },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-)
+  watch(
+    () => route.query.shareCode,
+    async (code) => {
+      // get booking code
+      if (code) {
+        await loadBet(code)
+      }
+    },
+    { immediate: true } // Trigger the watch callback immediately on component mount
+  )
 
 onMounted(async () => {
   if (route.path !== '/') {
@@ -250,6 +250,27 @@ onMounted(async () => {
   if (clickId) {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
+
+  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(),
+  ]).then((results) => {
+    couponStore.sportsbookBonusList =
+      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
+
+    couponStore.SportsbookGlobalVariable =
+      results[1].status === "fulfilled" ? results[1].value.data.data : null
+
+    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
+    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+
+    console.log(results[2])
+    utilsStore.sportsMenu =
+      results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []
+
+    utilsStore.banksList =
+      results[4].status === "fulfilled" ? results[4].value.data : []
+
+    isLoading.value = false
+  })
 
   const res = await fetchBanners()
   if (res.data && Object.keys(res.data).length > 0) {
@@ -284,27 +305,6 @@ onMounted(async () => {
     }
     isLoading.value = false
   }
-
-  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(),
-  ]).then((results) => {
-    couponStore.sportsbookBonusList =
-      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
-
-    couponStore.SportsbookGlobalVariable =
-      results[1].status === "fulfilled" ? results[1].value.data.data : null
-
-    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
-
-    console.log(results[2])
-    utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []
-
-    utilsStore.banksList =
-      results[4].status === "fulfilled" ? results[4].value.data : []
-
-    isLoading.value = false
-  })
 
 
   emitter.on('openBetslip', toggleBetslip)
