@@ -62,6 +62,11 @@ export const router = createRouter({
       }
     },
     {
+      path: '/ref/:code',
+      name: 'ref-signup',
+      component: SignUpView
+    },
+    {
       path: '/search',
       name: 'search',
       component: SearchView
