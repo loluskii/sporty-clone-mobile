@@ -204,15 +204,13 @@ async function findAccount() {
         clientID: CLIENT_ID,
         phoneNumber: `234${phone}`
       }
-      activeStep.value = 2
-      startTimer()
-      // await sendOTP(payload).then((res) => {
-      //   activeStep.value = 2
-      //   startTimer()
-      // }).catch(err => {
-      //   userError.value = true
-      //   userErrorMessage.value = 'Unable to send OTP'
-      // })
+      await sendOTP(payload).then((res) => {
+        activeStep.value = 2
+        startTimer()
+      }).catch(err => {
+        userError.value = true
+        userErrorMessage.value = 'Unable to send OTP'
+      })
     } else {
       userError.value = true
       userErrorMessage.value = res.responseMessage
