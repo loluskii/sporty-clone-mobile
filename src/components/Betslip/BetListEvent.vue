@@ -9,12 +9,6 @@
           <div class="m-team-cell">
             <div class="m-outcome-desc-wrapper">
               <div class="m-outcome-desc" style="text-transform: capitalize">
-                <img
-                  :src="getImageSrc(selection.sportId)"
-                  style="height: 18px; margin-right: 0.2rem"
-                  alt=""
-                  srcset=""
-                />
                 {{ selection.outcomeName }}
               </div>
               <div
@@ -294,9 +288,9 @@ function goToGame() {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   position: relative;
-  background-color: #ffffff;
+  background-color: #000e21;
   /* margin: 8px; */
-  border-bottom: 1px solid #eaecef;
+  border-bottom: .5px solid #595959
   /* border-radius: 9px; */
 }
 .m-bet-container.m-change-item,

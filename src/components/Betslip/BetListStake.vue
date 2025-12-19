@@ -463,8 +463,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake {
-  background-color: #ffffff;
-  border-top: 0.16666667rem solid #eaecef;
+  background-color: #000e21;
   display: block;
   font-size: 1.066rem;
   overflow-x: hidden;
@@ -555,8 +554,7 @@ onMounted(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.real-theme {
-  background-color: rgba(13, 151, 55, 0.2);
-  background-color: var(--c-betslip-to-win-bg);
+  background-color: rgb(217, 37, 29, 0.2);
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flex {
@@ -568,10 +566,6 @@ onMounted(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .one-cut-text-gap {
   gap: 0.25rem;
-}
-
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme {
-  background-color: #f2f2f2;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-stake,

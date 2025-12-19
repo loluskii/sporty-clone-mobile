@@ -462,8 +462,7 @@ onMounted(() => {})
 
 .m-betslip-header {
   background: var(--background-type2-secondary);
-  color: #ffffff;
-  color: var(--text-type2-primary);
+  color: #f1f1f1;
   padding: 1.33333333rem 1.33333333rem 1.3rem 1.3rem;
 }
 
