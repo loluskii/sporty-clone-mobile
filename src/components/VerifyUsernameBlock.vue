@@ -74,9 +74,20 @@
               />
             </form>
           </div>
-          <!-- <div style="position: relative">
-                <span class="grey pointer">Send Again</span>&nbsp;
-              </div> -->
+          <div style="position: relative">
+            <span
+              class="grey pointer"
+              :class="{ disabled: isDisabled }"
+              @click="resendOtp"
+              :disabled="isDisabled"
+              :style="{
+                fontWeight: 'bold',
+                color: isDisabled ? '#aaa' : ''
+              }"
+            >
+              {{ isDisabled ? `Send Again in ${remainingTime}s` : 'Send Again' }} </span
+            >&nbsp;
+          </div>
         </div>
         <div v-if="otpError" class="error-message" style="text-align: center">
           <p>
@@ -154,6 +165,25 @@ const userErrorMessage = ref('')
 const OTP = ref('')
 const otpError = ref(false)
 const otpErrorMessage = ref('')
+const isDisabled = ref(false)
+const remainingTime = ref(60)
+let timer;
+const bindModal = ref('')
+
+const startTimer = () => {
+  isDisabled.value = true
+  remainingTime.value = 60
+
+  if (timer) clearInterval(timer) // Clear any existing timer
+
+  timer = setInterval(() => {
+    remainingTime.value -= 1
+    if (remainingTime.value === 0) {
+      clearInterval(timer)
+      isDisabled.value = false
+    }
+  }, 1000)
+}
 
 const submitDisabled = computed(() => {
   return String(phoneNumber.value).trim().length < 1 || isLoading.value
@@ -174,21 +204,20 @@ async function findAccount() {
         clientID: CLIENT_ID,
         phoneNumber: `234${phone}`
       }
-      const otp = await sendOTP(payload)
-
-      if (otp.status) {
+      await sendOTP(payload).then((res) => {
         activeStep.value = 2
-      } else {
-        isLoading.value = false
-        otpErrorMessage.value = otp.data.message
-      }
+        startTimer()
+      }).catch(err => {
+        userError.value = true
+        userErrorMessage.value = 'Unable to send OTP'
+      })
     } else {
       userError.value = true
       userErrorMessage.value = res.responseMessage
     }
   } catch (err) {
     isLoading.value = false
-    otpErrorMessage.value = 'Error processing your request'
+    otpErrorMessage.value = err ?? 'Unable to process your request'
   }
 }
 
@@ -206,13 +235,17 @@ const verifyOTPRequest = async () => {
     code: OTP.value
   }
 
-  const res = await verifyOTP(payload)
-  if (res.data.status) {
-    activeStep.value = 3
-  } else {
+  try {
+    const res = await verifyOTP(payload)
+    if(res && res.data.status){
+      activeStep.value = 3
+    }else{
+      throw Error(res)
+    }
+  } catch (error) {
     isLoading.value = false
     otpError.value = true
-    otpErrorMessage.value = res.data.message || 'Invalid OTP'
+    otpErrorMessage.value = error.error || 'Invalid OTP'
   }
 }
 
