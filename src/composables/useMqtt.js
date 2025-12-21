@@ -14,7 +14,7 @@ export function useMqttService() {
 
     const clientId = `odds-service-${import.meta.env.VITE_MQTT_CLIENTID || 'sporty-mobile'}-${Math.random().toString(36).substring(2, 11)}`
 
-    console.log('🔵 MQTT: Connecting to', 'wss://emqx.staging.sportsbookengine.com:443/mqtt', 'with clientId:', clientId)
+    // console.log('🔵 MQTT: Connecting to', 'wss://emqx.staging.sportsbookengine.com:443/mqtt', 'with clientId:', clientId)
 
     mqttClient = mqtt.connect('wss://emqx.staging.sportsbookengine.com:443/mqtt', {
       clientId,
@@ -28,13 +28,13 @@ export function useMqttService() {
 
       // Resubscribe to existing topics
       if (subscriptions.size > 0) {
-        console.log('🔵 MQTT: Resubscribing to', subscriptions.size, 'topic(s)')
+        // console.log('🔵 MQTT: Resubscribing to', subscriptions.size, 'topic(s)')
         subscriptions.forEach((_, topic) => {
           mqttClient.subscribe(topic, (err) => {
             if (err) {
               console.error('❌ MQTT: Failed to subscribe to', topic, err)
             } else {
-              console.log('✅ MQTT: Resubscribed to', topic)
+              // console.log('✅ MQTT: Resubscribed to', topic)
             }
           })
         })
@@ -107,7 +107,7 @@ export function useMqttService() {
     } else {
       // Only log in development to reduce noise
       const callbackCount = subscriptions.get(topic).length
-      console.log(`🔵 MQTT: Adding callback #${callbackCount + 1} to existing subscription: ${topic}`)
+      // console.log(`🔵 MQTT: Adding callback #${callbackCount + 1} to existing subscription: ${topic}`)
     }
 
     const callbacks = subscriptions.get(topic)
