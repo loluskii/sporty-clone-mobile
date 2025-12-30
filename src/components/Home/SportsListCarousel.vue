@@ -6,7 +6,7 @@
           <div class="sport-icon">
             <img src="@/assets/images/sports/1.png" loading="eager" width="20" height="20" />
           </div>
-          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Sports </span>
+          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">All Sports </span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
@@ -67,18 +67,6 @@
             <img src="@/assets/images/promotions.png" style="height: 25px" loading="eager" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Promotions</span>
-        </a>
-      </li>
-      <li
-        v-for="(sport, index) in sportsList?.slice(1)"
-        :key="index"
-        class="m-sports-choose-item m-snap-nav-item"
-      >
-        <a href="" @click.prevent="setActiveSport(sport.sportID)"
-          ><div class="sport-icon">
-            <img :src="getImageSrc(sport.sportID)" loading="lazy" width="22" height="22" />
-          </div>
-          <span class="sport-text"> {{ sport.sportName }} </span>
         </a>
       </li>
     </ul>

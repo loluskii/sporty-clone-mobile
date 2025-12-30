@@ -131,6 +131,7 @@ onMounted(() => {
   font-size: 1.066rem;
   margin: 0;
   padding: 0.33333333rem 0.91666667rem;
+  text-transform: capitalize;
   /* width: calc(100); */
 }
 
@@ -161,5 +162,9 @@ onMounted(() => {
 }
 .m-tab-active {
   border-bottom: 3px solid var(--c-prematch-tab-name-active);
+}
+
+.m-tabs-tab {
+  width: auto !important;
 }
 </style>

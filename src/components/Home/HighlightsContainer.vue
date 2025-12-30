@@ -16,20 +16,14 @@
         >
           <li
             v-for="(sport, index) in sportsListData"
-            :class="sport.sportID === activeSportID ? 'active' : ''"
-            @click="setActiveSport(sport.sportID)"
+            :class="sport.sport_id === activeSportID ? 'active' : ''"
+            @click="setActiveSport(sport.sport_id)"
             :key="index"
-            :id="'highlights_' + sport.sportID"
+            :id="'highlights_' + sport.sport_id"
             class="m-sport-type-item m-snap-nav-item"
           >
-            <img
-              :src="getImageSrc(sport.sportID)"
-              style="height: 20px; margin-right: 0.4rem"
-              alt=""
-              srcset=""
-            />
             <Transition name="bounce">
-              <span>{{ sport.sportName }}</span>
+              <span>{{ sport.sport_name }}</span>
             </Transition>
           </li>
         </ul>
@@ -51,31 +45,19 @@
       >
         <div
           class="m-tabs-tab"
-          @click="setActiveTab('highlights')"
-          :class="[highlightsActiveTab ? 'm-tabs-tab-active' : '']"
+          v-for="tab in tabList"
+          @click="setActiveTab(tab)"
+          :class="tabView == tab.toLowerCase() ? 'm-tabs-tab-active' : ''"
         >
-          Highlights
-        </div>
-        <div
-          class="m-tabs-tab"
-          @click="setActiveTab('today')"
-          :class="[todayActiveTab ? 'm-tabs-tab-active' : '']"
-        >
-          Today
-        </div>
-        <div
-          class="m-tabs-tab"
-          @click="setActiveTab('countries')"
-          :class="[countriesActiveTab ? 'm-tabs-tab-active' : '']"
-        >
-          Countries
+          {{tab}}
         </div>
       </div>
       <div class="m-tabs-content">
-        <div v-show="highlightsActiveTab" class="m-tabs-tabpane">
+        <div v-show="tabView !== 'countries'" class="m-tabs-tabpane">
           <div class="m-highlights-wrap" style="position: relative">
             <Highlights
               :highlightsData="highlightsData"
+              :view="tabView"
               :marketsGroup="marketsGroup"
               :activeMarket="activeMarket"
               @select-market="getFixturesByMarkets"
@@ -86,24 +68,13 @@
             <LoadingError v-show="loadingError"></LoadingError>
           </div>
         </div>
-        <div v-show="todayActiveTab" class="m-tabs-tabpane">
-          <Today
-            v-if="!isLoading && !loadingError"
-            :todaysData="todaysData"
-            :marketsGroup="marketsGroup"
-            :activeMarket="activeMarket"
-            @select-market="getFixturesByMarkets"
-          ></Today>
-          <LoadingSpinner v-show="isLoading"></LoadingSpinner>
-          <LoadingError v-show="loadingError"></LoadingError>
-        </div>
-        <div v-show="countriesActiveTab" class="m-tabs-tabpane">
+        <div v-show="tabView === 'countries'" class="m-tabs-tabpane">
           <Countries
             v-if="countriesData.length"
             :countriesData="countriesData"
             :activeSportID="activeSportID"
           ></Countries>
-        </div>
+        </div> 
       </div>
     </div>
   </div>
@@ -111,12 +82,11 @@
 <script setup>
 import { useUtilsStore } from '@/stores/utils.store'
 import Highlights from '@/components/Highlights/Highlights.vue'
-import Today from '@/components/Highlights/Today.vue'
 import Countries from '@/components/Highlights/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getHighlights2, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
+import { getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
@@ -124,55 +94,32 @@ import emitter from '@/plugins/emitter'
 const utilsStore = useUtilsStore()
 
 const highlightsData = ref([])
-const todaysData = ref([])
+const todayData = ref([]);
+const fixturesList = ref([])
 const countriesData = ref([])
 
-// const sportsListData = ref([])
+const tabList = ["Highlights", "Today", "Countries"];
+const tabView = ref('highlights')
+const prevTabView = ref('')
+
 const prevSportID = ref(1)
 const activeSportID = ref(1)
 
 const marketsGroup = ref({})
 const activeMarket = ref({})
 
-const todayActiveTab = ref(false)
-const highlightsActiveTab = ref(true)
-const countriesActiveTab = ref(false)
-
 const isLoading = ref(false)
 const loadingError = ref(false)
 
 function setActiveTab(tab) {
-  switch (tab) {
-    case 'highlights':
-      highlightsActiveTab.value = true
-      todayActiveTab.value = false
-      countriesActiveTab.value = false
-      getHighlightGames()
-      break
-    case 'today':
-      todayActiveTab.value = true
-      countriesActiveTab.value = false
-      highlightsActiveTab.value = false
-      getTodayGames()
-      break
-    case 'countries':
-      countriesActiveTab.value = true
-      highlightsActiveTab.value = false
-      todayActiveTab.value = false
-      break
-
-    default:
-      break
-  }
+  prevTabView.value = tabView.value
+  tabView.value = tab.toLowerCase()
+  tab === 'countries' ? getCountriesList() : getHighlightGames()
 }
 
 const sportsListData = computed(() => {
   return utilsStore.sportsMenu
 })
-const getImageSrc = (sportId) => {
-  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
-  return imageUrl
-}
 
 async function setActiveSport(sid) {
   // set the active sport id
@@ -188,48 +135,46 @@ async function setActiveSport(sid) {
 
 async function getHighlightGames() {
   if(!FEED_TOGGLE) return;
-  isLoading.value = true
-  if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
-    const response = await getHighlights2(activeSportID.value, 1)
-    if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
-      highlightsData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
-      marketsGroup.value = response.markets
-      setMarkets()
+  // Check if current tab already has data cached
+  const currentTabHasData = tabView.value === 'today' ? Object.keys(todayData.value).length : Object.keys(highlightsData.value).length
+  const isNewActiveSport = activeSportID.value !== prevSportID.value
+  if(!currentTabHasData || isNewActiveSport) {
+    // Fetch data only if current tab doesn't have it
+    isLoading.value = true
+    const response = await getSportHighlights({
+      sid: activeSportID.value, 
+      today: tabView.value === 'today' ? 1 : 0,
+      order_type: tabView.value === 'today' ? 'time' : 'priority',
+    })
+    if (response.data.fixtures && response.data.markets) {
+      fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
+      // Cache data in the appropriate variable
+      if(tabView.value === 'today') {
+        todayData.value = fixturesList.value
+      } else {
+        highlightsData.value = fixturesList.value
+      }
+      
+      marketsGroup.value = response.data.markets
+      activeMarket.value = response.data.markets[0]
     } else {
-      highlightsData.value = []
+      if(tabView.value === 'today') {
+        todayData.value = []
+      } else {
+        highlightsData.value = []
+      }
       marketsGroup.value = []
     }
-  }
-  isLoading.value = false
-}
-
-async function getTodayGames() {
-  if(!FEED_TOGGLE) return;
-  isLoading.value = true
-  if (!Object.keys(todaysData.value).length || prevSportID.value !== activeSportID.value) {
-    const response = await getToday2(activeSportID.value, 1)
-    if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
-      todaysData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
-      marketsGroup.value = response.markets
-      setMarkets()
-    } else {
-      todaysData.value = []
-      // marketsGroup.value = []
-    }
+  } else {
+    // Use cached data
+    fixturesList.value = tabView.value === 'today' ? todayData.value : highlightsData.value
   }
   isLoading.value = false
 }
 
 async function getCountriesList() {
   if(!FEED_TOGGLE) return;
-  countriesData.value = (await getCategoriesBySport(activeSportID.value)).sports || []
-}
-
-function setMarkets() {
-  // marketsGroup.value = sportsListData.value.find((obj) => obj.sport_id === activeSportID.value)
-  activeMarket.value = marketsGroup.value[0]
+  countriesData.value = (await getCategoriesBySport(activeSportID.value, null)).data.filter((x) => x.games > 0) || []
 }
 
 function getFixturesByMarkets(market) {
@@ -284,17 +229,6 @@ onMounted(async () => {
         delete highlightsData.value[date]
       }
     })
-
-    // Remove from today's data
-    Object.keys(todaysData.value).forEach((date) => {
-      todaysData.value[date] = todaysData.value[date].filter(
-        (fixture) => String(fixture.matchID) !== String(matchID)
-      )
-      // Remove empty date groups
-      if (todaysData.value[date].length === 0) {
-        delete todaysData.value[date]
-      }
-    })
   })
 })
 
@@ -305,7 +239,6 @@ onUnmounted(() => {
 
 defineComponent({
   components: {
-    Today,
     Highlights,
     Countries,
     LoadingError,
@@ -318,7 +251,6 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: #f1f1f1;
   /* z-index: 220; */
 }
 
@@ -328,28 +260,9 @@ defineComponent({
   top: 0px;
 }
 
-.m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  padding: 5px 15px;
-  /* border: 1px solid; */
-  border-radius: 25px;
-  background-color: #fff;
-}
-
-.bounce-enter-active {
-  animation: bounce-in 0.3s;
-}
-/* .bounce-leave-active {
-  animation: bounce-in 0.2s reverse;
-} */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 </style>
+
+
+
+
+

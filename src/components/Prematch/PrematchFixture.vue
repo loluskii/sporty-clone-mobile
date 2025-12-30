@@ -3,24 +3,16 @@
     <div data-op="label-prematch" class="m-event-sport m-sports-row">
       <div class="m-event-meta">
         <div>
-          <span class="m-time" style="margin-right: 5px">{{ eventData.eventTime }}</span>
-          <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span>
-          <span class="m-league-name"
-            >{{ eventData.tournament }} - {{ eventData.categoryName }}</span
-          >
+          <span class="m-time"
+            style="margin-right: 5px">{{ new Date(eventData.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) }}</span>
+          <!-- <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span> -->
+          <span class="m-league-name">{{ eventData.categoryName }} - {{ eventData.tournament }}</span>
         </div>
-        <img
-          src="@/assets/images/chart.png"
-          style="height: 12px"
-          alt=""
-          @click="showFixtureAnalysis(eventData.matchID)"
-          srcset=""
-        />
+        <img src="@/assets/images/chart.png" style="height: 12px" alt=""
+          @click="showFixtureAnalysis(eventData.match_id)" srcset="" />
       </div>
       <div class="x-table-row m-sports-table">
-        <div
-          class="x-table-cell m-info-cell"
-          @click="
+        <div class="x-table-cell m-info-cell" @click="
             $router.push({
               name: 'fixtures-detail',
               params: {
@@ -30,20 +22,16 @@
                 event_id: eventData.matchID
               }
             })
-          "
-        >
+          ">
           <div class="team">{{ eventData.homeTeam }}</div>
           <div class="team">{{ eventData.awayTeam }}</div>
         </div>
         <div class="x-table-cell m-market-cell">
           <div class="m-market m-event-market-default market-id-1" style="position: relative">
-            <template v-if="eventData.outcomes && eventData.activeMarkets > 0">
+            <template v-if="eventData.outcomes">
               <template v-if="outcomes.length">
-                <div
-                  v-if="activeMarket.specifier !== ''"
-                  class="m-outcome m-event-outcome-default specifiers-select"
-                  @click="toggleList"
-                >
+                <div v-if="activeMarket.specifier !== ''" class="m-outcome m-event-outcome-default specifiers-select"
+                  @click="toggleList">
                   <div tabindex="0" class="grid-specifier-select">
                     <div class="grid-specifier-select-label">
                       {{ activeSpecifier }}
@@ -54,46 +42,32 @@
                     <!---->
                   </div>
                 </div>
-                <div
-                  class="af-select-list m-event-specifiers-order"
-                  v-if="specifierOpen"
+                <div class="af-select-list m-event-specifiers-order" v-if="specifierOpen"
                   :class="'af-select-list-' + eventData.matchID"
-                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0"
-                >
-                  <span
-                    class="af-select-item"
-                    @click="setActiveSpecifier(item)"
-                    v-for="(item, i) in getSpecifiers"
-                    :key="i"
-                    >{{ item.value }}</span
-                  >
+                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0">
+                  <span class="af-select-item" @click="setActiveSpecifier(item)" v-for="(item, i) in getSpecifiers"
+                    :key="i">{{ item.value }}</span>
                 </div>
-                <Odds
-                  @click="addToBetslip(eventData, odd)"
-                  v-for="(odd, index) in uniqueOutcomes(outcomes)"
-                  :key="index"
-                  :odds="odd"
-                  :selectionClass="
+                <Odds @click="addToBetslip(eventData, odd)" v-for="(odd, index) in uniqueOutcomes(outcomes)"
+                  :key="index" :odds="odd" :selectionClass="
                     isSelected(
                       createID(
-                        eventData.gameID,
                         eventData.matchID,
-                        odd.outcomeName,
-                        odd.oddID,
-                        eventData.name
+                        odd.marketID,
+                        odd.outcomeID,
+                        odd.specifier,
+                        activeMarket.marketName,
+                        odd.outcomeName
                       ),
                       couponStore.coupon
                     )
                       ? 'm-outcome--checked'
                       : ''
-                  "
-                ></Odds>
+                  "></Odds>
               </template>
               <template v-else>
-                <div
-                  v-if="activeMarket.specifier !== ''"
-                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock"
-                >
+                <div v-if="activeMarket.specifier !== ''"
+                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock">
                   <span data-op="prematch-lock" class="m-icon-lock"></span>
                 </div>
                 <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index"></EmptyOdds>
@@ -112,7 +86,7 @@
 </template>
 <script setup>
 import { defineComponent, computed, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { createID, isSelected, sortArr, slugify } from '@/helpers'
+import { createID, isSelected, sortArr, formatDate, slugify } from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
 import { useCouponStore } from '@/stores'
@@ -138,9 +112,6 @@ const localOutcomes = ref([])
 
 // Keep track of updated odds
 const updatedOutcomes = ref({})
-
-// Add the updatePending ref
-const updatePending = ref(false)
 
 const getSpecifiers = computed(() => {
   if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
@@ -229,42 +200,42 @@ function showFixtureAnalysis(id) {
 }
 
 const getOdds = () => {
-  // Find and return the odds based on marketID and outcomeID
-  if (props.activeMarket && props.eventData.activeMarkets > 0) {
-    if (props.eventData.outcomes) {
-      // Always start with the original data from props
-      const odds = props.eventData.outcomes
-      let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
-      let uniqueFiltered = uniqueOutcomes(filtered)
-
-      // Apply any updates we've received from MQTT
-      uniqueFiltered = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
-        if (updatedOutcomes.value[key]) {
-          return {
-            ...outcome,
-            odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active
-          }
-        }
-        return outcome
-      })
-
-      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = uniqueFiltered[0]?.specifier
-        if (defaultSpecifier) {
-          uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
-          activeSpecifier.value = defaultSpecifier.split('=')[1]
+  // Find and return the odds based on marketID and outcom_id
+  // if (props.activeMarket && props.eventData.activeMarkets > 0) {
+  if (props.eventData.outcomes) {
+    // Always start with the original data from props
+    const odds = props.eventData.outcomes
+    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
+    let uniqueFiltered = filtered
+    // Apply any updates we've received from MQTT
+    uniqueFiltered = filtered.map((outcome) => {
+      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
+      if (updatedOutcomes.value[key]) {
+        return {
+          ...outcome,
+          odds: updatedOutcomes.value[key].odds,
+          active: updatedOutcomes.value[key].active
         }
       }
-      if (uniqueFiltered.length) {
-        // console.log(_.sortBy(uniqueFiltered, 'outcomeID'))
-        outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
-      } else {
-        outcomes.value = []
+      return outcome
+    })
+
+    if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
+      let defaultSpecifier = uniqueFiltered[0]?.specifier
+      if (defaultSpecifier) {
+        uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === defaultSpecifier)
+        activeSpecifier.value = defaultSpecifier.split('=')[1]
       }
     }
+    if (uniqueFiltered.length) {
+      outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+      // outcomes.value = sortArr(uniqueFiltered, 'outcomeID')
+    } else {
+      outcomes.value = []
+    }
+
   }
+  // }
 }
 
 watch(
@@ -276,8 +247,6 @@ watch(
 )
 
 onMounted(() => {
-  // console.log('🏗️ Component: Setting up MQTT subscriptions for match ID:', props.eventData.matchID)
-
   // Initialize outcomes from props
   localOutcomes.value = props.eventData.outcomes || []
   outcomes.value = props.eventData.outcomes || []
@@ -290,25 +259,57 @@ onMounted(() => {
     // Create a unique component ID to help with debugging
     const componentId = `prematch-fixture-${matchId}-${Date.now()}`
 
-    // Subscribe to bet stop first (higher priority)
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
-      handleBetStop(data)
+    // Subscribe to all topics for this sport using wildcard
+    // Topic structure: sports/{sportId}/match/{matchId}/{topic}
+    // Each component will filter messages by its own match_id
+    const sportId = 1 // Football/Soccer
+    const wildcardTopic = `sports/${sportId}/match/#`
+
+    const unsubscribe = subscribe(wildcardTopic, (data, topic) => {
+      // Filter: only process messages for this specific match
+      const messageMatchId = data.match_id
+
+      if (!messageMatchId || String(messageMatchId) !== String(matchId)) {
+        // Not for this match, ignore silently
+        // console.log('wrong match')
+        return
+      }
+
+      // Route based on the topic path (last segment after matchId)
+      // Topic format: sports/{sportId}/match/{matchId}/{messageType}
+      const topicParts = topic.split('/')
+      const messageType = topicParts[topicParts.length - 1]
+
+      // console.log(`📊 MQTT: Processing ${messageType} for match ${matchId}`)
+
+      switch (messageType) {
+        case 'markets':
+          // Market/odds update
+          // console.log('📊 markets update:', data)
+          handleMarketUpdate(data)
+          break
+        case 'bet_stop':
+          // console.log('📊 bet stop update:', data)
+          // Bet stop/suspend
+          handleBetStop(data)
+          break
+        case 'match_status':
+          // Match status update (time, period, etc.)
+          // console.log('📊 Match status update:', data)
+          break
+        case 'scores':
+          // Score update
+          // console.log('📊 Score update:', data)
+          break
+        default:
+          // console.warn(`📊 Unknown message type: ${messageType} on topic: ${topic}`)
+      }
     })
 
-    // Then subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
-      handleOddsChange(data)
-    })
-
-    // Store unsubscribe functions for cleanup
+    // Store unsubscribe function for cleanup
     onBeforeUnmount(() => {
-      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
-      unsubscribeBetStop()
-      unsubscribeOddsChange()
+      // console.log(`🧹 Component: Cleaning up MQTT subscription for match ID: ${matchId}`)
+      unsubscribe()
     })
   }
 })
@@ -322,7 +323,58 @@ watch(
   { deep: true }
 )
 
-// Function to handle odds changes
+// Function to handle market updates from MQTT
+// Message format: { market_id, match_id, specifier, outcomes: [{outcome_id, odds, active}] }
+function handleMarketUpdate(data) {
+  if (!data || !data.outcomes || !Array.isArray(data.outcomes)) {
+    return
+  }
+
+  // Store the updated odds in our tracking object immediately (don't wait for requestAnimationFrame)
+  const updatedOutcomesCopy = { ...updatedOutcomes.value }
+
+  data.outcomes.forEach((outcome) => {
+    const key = `${data.market_id}-${outcome.outcome_id}-${data.specifier || ''}`
+    updatedOutcomesCopy[key] = {
+      odds: outcome.odds,
+      active: outcome.active,
+      timestamp: Date.now()
+    }
+  })
+
+  updatedOutcomes.value = updatedOutcomesCopy
+
+  // Update the visible outcomes if this market is currently being displayed
+  if (outcomes.value.length > 0 && props.activeMarket) {
+    // Check if the incoming market matches the currently displayed market
+    const isCurrentMarket =
+      parseInt(data.market_id) === parseInt(props.activeMarket.marketID) &&
+      (data.specifier || '') === (outcomes.value[0]?.specifier || '')
+
+    if (isCurrentMarket) {
+      // Use requestAnimationFrame for DOM updates
+      requestAnimationFrame(() => {
+        outcomes.value = outcomes.value.map((outcome) => {
+          const newOutcome = data.outcomes.find(
+            (o) => String(o.outcome_id) === String(outcome.outcomeID)
+          )
+
+          if (newOutcome) {
+            return {
+              ...outcome,
+              odds: newOutcome.odds,
+              active: newOutcome.active
+            }
+          }
+
+          return outcome
+        })
+      })
+    }
+  }
+}
+
+// Function to handle odds changes (legacy format support)
 function handleOddsChange(data) {
   if (!data || !data.markets) return
 
@@ -333,78 +385,66 @@ function handleOddsChange(data) {
     return
   }
 
-  if (!updatePending.value) {
-    updatePending.value = true
+  const markets = data.markets || []
 
-    requestAnimationFrame(() => {
-      const markets = data.markets || []
+  if (markets.length > 0) {
+    // Update cache immediately (outside RAF)
+    const updatedOutcomesCopy = { ...updatedOutcomes.value }
 
-      if (markets.length > 0) {
-        const updatedOutcomesCopy = { ...updatedOutcomes.value }
-
-        markets.forEach((market) => {
-          if (market.outcomes) {
-            market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
-              updatedOutcomesCopy[key] = {
-                odds: outcome.odds,
-                active: outcome.active ? 1 : 0,
-                timestamp: Date.now()
-              }
-            })
+    markets.forEach((market) => {
+      if (market.outcomes) {
+        market.outcomes.forEach((outcome) => {
+          const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
+          updatedOutcomesCopy[key] = {
+            odds: outcome.odds,
+            active: outcome.active ? 1 : 0,
+            timestamp: Date.now()
           }
         })
+      }
+    })
 
-        updatedOutcomes.value = updatedOutcomesCopy
+    updatedOutcomes.value = updatedOutcomesCopy
 
-        if (outcomes.value.length > 0) {
-          outcomes.value = outcomes.value.map((outcome) => {
-            const market = markets.find(
-              (m) => m.id === outcome.marketID && (m.specifiers || '') === (outcome.specifier || '')
+    // Use requestAnimationFrame for DOM updates
+    if (outcomes.value.length > 0) {
+      requestAnimationFrame(() => {
+        outcomes.value = outcomes.value.map((outcome) => {
+          const market = markets.find(
+            (m) => m.id === outcome.marketID && (m.specifiers || '') === (outcome.specifier || '')
+          )
+
+          if (market && market.outcomes) {
+            const newOutcome = market.outcomes.find(
+              (o) => String(o.id) === String(outcome.outcomeID)
             )
 
-            if (market && market.outcomes) {
-              const newOutcome = market.outcomes.find(
-                (o) => String(o.id) === String(outcome.outcomeID)
-              )
-
-              if (newOutcome) {
-                return {
-                  ...outcome,
-                  odds: newOutcome.odds,
-                  active: newOutcome.active ? 1 : 0
-                }
+            if (newOutcome) {
+              return {
+                ...outcome,
+                odds: newOutcome.odds,
+                active: newOutcome.active ? 1 : 0
               }
             }
+          }
 
-            return outcome
-          })
-        }
-      }
-
-      updatePending.value = false
-    })
+          return outcome
+        })
+      })
+    }
   }
 }
 
 // Function to handle bet stop
 function handleBetStop(data) {
-  const matchId = props.eventData.matchID
-  const dataMatchId = data.event_id || data.match_id
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
-    return
-  }
-
-  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
-
+  // Set all odds to 0 and deactivate
   outcomes.value = outcomes.value.map((outcome) => ({
     ...outcome,
     odds: 0,
     active: 0
   }))
 
+  // Update the cache as well
   outcomes.value.forEach((outcome) => {
     const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
     updatedOutcomes.value[key] = {
@@ -414,17 +454,17 @@ function handleBetStop(data) {
     }
   })
 
-  const matchTime = new Date(props.eventData.startTime)
+  // Check if match time has passed (match should have started)
+  const matchTime = new Date(props.eventData.date)
   const currentTime = new Date()
 
-  if (matchTime < currentTime) {
-    // console.log('Match time has passed, removing fixture:', props.eventData.matchID)
+  if (matchTime <= currentTime) {
     emitter.emit('remove-fixture', props.eventData.matchID)
   }
 }
 
 function addToBetslip(event, odd) {
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.matchID, odd.marketID, odd.outcomeID, odd.specifier, props.activeMarket.marketName, odd.outcomeName)
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
@@ -436,14 +476,14 @@ function addToBetslip(event, odd) {
   const data = {
     fixture: event,
     market_name: props.activeMarket.marketName,
-    market_id: odd.marketID,
+    marketID: odd.marketID,
     ele_id: id,
     outcome: odd,
     odds: odd.odds,
-    odd_id: odd.oddID,
+    odd_id: odd.outcomeID,
     odd_name: odd.outcomeName,
     type: 'prematch',
-    event_id: event.gameID,
+    event_id: event.matchID,
     specifier: odd.specifier
   }
 
@@ -466,11 +506,13 @@ defineComponent({
   display: block;
   padding: 0.66666667rem 0;
 }
+
 .m-event-sport:hover,
 .m-event-sport:active,
 .m-event-sport:visited {
   text-decoration: none;
 }
+
 .m-event-sport .m-event-meta {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -488,12 +530,15 @@ defineComponent({
   justify-content: space-between;
   line-height: 1.25rem;
 }
-.m-event-sport .m-event-meta > span {
+
+.m-event-sport .m-event-meta>span {
   margin-right: 0.83333333rem;
 }
-.m-event-sport .m-event-meta > span:last-child {
+
+.m-event-sport .m-event-meta>span:last-child {
   margin-right: 0;
 }
+
 .m-event-sport .m-event-meta .m-event-icon {
   display: inline-block;
   -webkit-box-flex: 0;
@@ -502,11 +547,13 @@ defineComponent({
   flex: 0;
   margin: 0 0.33333333rem 0 -0.83333333rem;
 }
+
 .m-event-sport .m-event-meta .m-event-icon svg,
 .m-event-sport .m-event-meta .m-event-icon img {
   height: 1.066rem;
   vertical-align: top;
 }
+
 .m-event-sport .m-event-meta .m-time {
   color: #353a45;
   color: var(--c-event-sport-time-text);
@@ -516,6 +563,7 @@ defineComponent({
   flex: 0;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .m-game-id {
   -webkit-box-flex: 0;
   -webkit-flex: 0;
@@ -523,6 +571,7 @@ defineComponent({
   flex: 0;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .m-league-name {
   display: inline-block;
   vertical-align: top;
@@ -530,9 +579,11 @@ defineComponent({
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-meta .event-labels {
   margin: 0 0.91666667rem 0 -0.83333333rem;
 }
+
 .m-event-sport .m-sports-table {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -540,6 +591,7 @@ defineComponent({
   align-items: center;
   margin-top: 0.66666667rem;
 }
+
 .m-event-sport .m-market-cell {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -547,33 +599,40 @@ defineComponent({
   flex: 0 0 auto;
   width: 55%;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome {
   background: #d6ebdc;
   background: var(--brand-prematch-odds-bg);
   color: var(--brand-prematch-odds-text);
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
   background-color: var(--brand-secondary);
   color: #ffffff;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--checked:before {
   color: #ffffff !important;
   color: var(--brand-tertiary) !important;
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--disabled {
   background-color: #dcdee5;
   background-color: var(--c-prematch-outcome-disabled-bg);
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
 }
+
 .m-event-sport .m-market-cell .m-market .m-outcome--up:before,
 .m-event-sport .m-market-cell .m-market .m-outcome--down:before {
   color: #096b27;
   color: var(--brand-secondary);
 }
-.m-event-sport .m-info-cell > div {
+
+.m-event-sport .m-info-cell>div {
   line-height: 1.4;
 }
+
 .m-event-sport .m-info-cell .team {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -584,6 +643,7 @@ defineComponent({
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-sport .m-event-footer {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -599,21 +659,26 @@ defineComponent({
   justify-content: space-between;
   margin-top: 0.41666667rem;
 }
+
 .m-event-sport .m-event-footer .m-event-comment {
   color: #9ca0ab;
   font-size: 0.83333333rem;
 }
+
 .m-event-sport .m-market-size {
   color: #9ca0ab;
   font-size: 0.83333333rem;
   width: 45%;
 }
+
 .m-event-sport .m-market-size .media-icon {
   margin-left: 0.25rem;
 }
-.m-event-sport .m-market-size .media-icon + .media-icon {
+
+.m-event-sport .m-market-size .media-icon+.media-icon {
   margin-left: 0.41666667rem;
 }
+
 .m-event-sport .m-market-size .sfm-icon {
   -webkit-transform: translateY(-1px);
   -ms-transform: translateY(-1px);
@@ -635,11 +700,13 @@ defineComponent({
   padding: 0 0.83333333rem;
   z-index: 25 !important;
 }
+
 .m-sports-table .m-date-row .m-date {
   color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1rem;
 }
+
 .m-sports-table .m-date-row .market-title {
   display: -webkit-box;
   display: -webkit-flex;
@@ -651,7 +718,8 @@ defineComponent({
   flex: 0 1 auto;
   width: 55%;
 }
-.m-sports-table .m-date-row .market-title > div {
+
+.m-sports-table .m-date-row .market-title>div {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   -webkit-box-flex: 1;
@@ -661,17 +729,21 @@ defineComponent({
   font-size: 0.83333333rem;
   text-align: center;
 }
+
 .m-sports-table .m-date-row .market-title .specifier-cell {
   min-width: 0;
   overflow: hidden;
 }
+
 .m-sports-table .m-sports-row {
   margin: 0 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads {
   display: block;
   margin: 0.83333333rem;
 }
+
 .m-sports-table .m-inner-ads img {
   display: block;
   width: 100%;
@@ -682,12 +754,14 @@ defineComponent({
   text-align: center;
   width: 100%;
 }
+
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #0d9737;
   color: var(--brand-quaternary);
 }
+
 .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);

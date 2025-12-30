@@ -5,19 +5,12 @@
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
       <div v-show="marketsGroup?.length" class="m-sanp-nav-container" id="m-sanp-nav-container">
-        <div
-          class="m-snap-nav-wrap m-sport-type has-live"
-          :class="{ 'm-sport-type-fixed': isTop }"
-          style="overflow: auto"
-        >
+        <div class="m-snap-nav-wrap m-sport-type has-live" :class="{ 'm-sport-type-fixed': isTop }"
+          style="overflow: auto">
           <ul class="m-snap-nav flex">
-            <li
-              v-for="(market, m) in marketsGroup"
-              :key="m"
+            <li v-for="(market, m) in marketsGroup" :key="m"
               :class="market.marketID === activeMarket.marketID ? 'active' : ''"
-              class="m-sport-type-item m-snap-nav-item"
-              @click="selectMarket(market)"
-            >
+              class="m-sport-type-item m-snap-nav-item" @click="selectMarket(market)">
               {{ market.marketName }}
             </li>
           </ul>
@@ -25,16 +18,9 @@
         </div>
       </div>
       <div class="m-bet-content" style="position: relative">
-        <FixtureGroupingTournament
-          :fixtures-list="fixturesList"
-          :active-market="activeMarket"
-          v-if="fixtureGroupingType === 'tournament'"
-        />
-        <FixtureGroupingDefault
-          :fixtures-list="fixturesList"
-          :active-market="activeMarket"
-          v-else
-        />
+        <FixtureGroupingTournament :fixtures-list="fixturesList" :active-market="activeMarket"
+          v-if="fixtureGroupingType === 'tournament'" />
+        <FixtureGroupingDefault :fixtures-list="fixturesList" :active-market="activeMarket" v-else />
         <LoadingSpinner v-show="fetchingMore"></LoadingSpinner>
       </div>
     </template>
@@ -63,6 +49,7 @@ import ChooseBarPad from '@/components/ChooseBarPad.vue'
 import FixtureGroupingTournament from '@/components/FixtureGrouping/FixtureGroupingTournament.vue'
 import FixtureGroupingDefault from '@/components/FixtureGrouping/FixtureGroupingDefault.vue'
 import {
+  getSportHighlights,
   getFixturesByCategories,
   getFixturesByTournamentId,
   getSportUpcoming,
@@ -98,6 +85,7 @@ const isPaginated = ref(false)
 const fetchingMore = ref(false)
 const container = ref(null)
 const isLastPage = ref(false)
+const lastPage = ref(null)
 
 const fixtureGroupingType = computed(() => {
   return fixturesList.value !== null && !Array.isArray(fixturesList.value)
@@ -108,7 +96,7 @@ const fixtureGroupingType = computed(() => {
 // const filterQuery = ref()
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+  return utilsStore.sportsMenu.find((x) => x.sport_name == name)
 }
 
 const getActiveSport = computed(() => {
@@ -118,32 +106,22 @@ const getActiveSport = computed(() => {
 watch(
   () => [route.name, route.query.period, route.query.startDate, route.query.endDate],
   async ([routeName, period, startDate, endDate]) => {
-    const { sportID } = getSportbyName(route.params.sport)
+    const { sport_id } = getSportbyName(route.params.sport)
     const { tournament_id } = route.params
     const { category_id } = route.params
+    isLoading.value = true
     switch (routeName) {
       case 'fixtures-by-tournaments':
-        await getTournamentFixtures(sportID, tournament_id)
+        await getTournamentFixtures(sport_id, tournament_id)
         break
 
       case 'fixtures-by-category':
-        await getCategoryFixtures(sportID, category_id)
+        await getCategoryFixtures(sport_id, category_id)
         break
 
       case 'today-fixtures':
-        await fetchTodayActiveSport(sportID)
-        break
-
       case 'fixtures-by-sports':
-        if (period) {
-          if (startDate && endDate) {
-            await fetchActiveSportByCustomRange(sportID, startDate, endDate)
-          } else {
-            await fetchActiveSportByPeriod(sportID, period)
-          }
-        } else {
-          await fixturesByActiveSport(sportID)
-        }
+        await fetchFixturesByActiveSport(sport_id, period)
         break
 
       default:
@@ -156,29 +134,25 @@ watch(
 )
 
 async function getTournamentFixtures(sid) {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return;
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
 
   try {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getFixturesByTournamentId(cat.tournamentID, sid, route.query?.period)
+        getSportHighlights({ sid: id, per_page: 50, category_id: cat.tournament_id })
       )
     )
     const fixtures = results.reduce((acc, res) => {
-      if (res.status === 'fulfilled' && res.value.fixtures) {
-        let filteredData = res.value.fixtures.filter((f) => f.activeMarkets > 0)
-        acc = { ...acc, ..._.groupBy(filteredData, 'tournament') }
+      if (res.status === 'fulfilled' && res.value.data.fixtures) {
+        acc = { ...acc, ..._.groupBy(res.value.data.fixtures, 'tournament') }
       }
       return acc
     }, {})
 
     fixturesList.value = { ...fixtures }
-    marketsGroup.value =
-      results[0].status === 'fulfilled' && Object.keys(results[0].value).length > 0
-        ? results[0].value?.markets
-        : {}
+    marketsGroup.value = results[0].value?.data.markets
     activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
     isLoading.value = false
   } catch (error) {
@@ -188,15 +162,21 @@ async function getTournamentFixtures(sid) {
 }
 
 async function getCategoryFixtures(sid, cid) {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return;
   try {
-    const res = await getFixturesByCategories(sid, cid)
-    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-    fixturesList.value = _.groupBy(filteredData, 'tournament')
-    marketsGroup.value = res.markets
-    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-    isLoading.value = false
+    const res = await getSportHighlights({ sid: id, per_page: 50, category_id: cid })
+    const { fixtures, markets, per_page, page: currentPage, total } = res.data
+    lastPage.value = Math.ceil(total / per_page)
+    if (fixtures.length) {
+      isPaginated.value = true
+      fixturesList.value = _.groupBy(fixtures, 'tournament')
+      isLastPage.value = lastPage.value === page.value
+      marketsGroup.value = markets
+      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+      isLoading.value = false
+    } else {
+      throw Error
+    }
   } catch (error) {
     isLoading.value = false
     loadingError.value = true
@@ -204,65 +184,38 @@ async function getCategoryFixtures(sid, cid) {
   }
 }
 
-async function fetchActiveSportByPeriod(id, period) {
-  if(!FEED_TOGGLE) return;
+async function fetchFixturesByActiveSport(id, period = null) {
+  if (!FEED_TOGGLE) return;
   try {
-    isLoading.value = true
-    let selectedPeriod = getDateRange(period)
-    const res = await getSportUpcoming(id, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-      fixturesList.value = _.groupBy(filteredData, 'tournament')
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-      isLoading.value = false
-    } else {
-      throw Error
+    let payload = {
+      sid: id,
+      per_page: 50
     }
-  } catch (error) {
-    isLoading.value = false
-    isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fetchActiveSportByCustomRange(sid, start, end) {
-  if(!FEED_TOGGLE) return;
-  try {
-    isLoading.value = true
-    let selectedPeriod = { startDate: start, endDate: end }
-    const res = await getSportUpcoming(sid, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-      fixturesList.value = _.groupBy(filteredData, 'tournament')
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
-      isLoading.value = false
-    } else {
-      throw Error
+    if (period) {
+      if (period === 'tomorrow') {
+        payload.tomorrow = 1
+      } else if (period === 'today') {
+        payload.today = 1
+      } else if (period === 'today_tomorrow') {
+        payload.today = 1
+        payload.tomorrow = 1 
+      } else {
+        let { startDate, endDate } = getDateRange(period)
+        payload.start = startDate
+        payload.end = endDate
+        payload.upcoming = 1
+      }
     }
-  } catch (error) {
-    isLoading.value = false
-    isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fixturesByActiveSport(id) {
-  if(!FEED_TOGGLE) return;
-  try {
-    let selectedPeriod = getDateRange('week')
-    const res = await getSportUpcoming(id, selectedPeriod)
-    if (res.fixtures) {
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      fixturesList.value = res.fixtures.filter((f) => f.activeMarkets > 0)
-      isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-      isLastPage.value = res.lastPage === page.value
-      marketsGroup.value = res.markets ? res.markets : []
+    const res = await getSportHighlights(payload)
+    const { fixtures, markets, per_page, page: currentPage, total } = res.data
+    lastPage.value = Math.ceil(total / per_page)
+    if (fixtures.length) {
+      isPaginated.value = true
+      fixturesList.value = fixturesList.value && fixturesList.value.length
+        ? [...fixturesList.value, ...fixtures]
+        : [...fixtures]
+      isLastPage.value = lastPage.value === page.value
+      marketsGroup.value = markets
       activeMarket.value = marketsGroup.value.length ? marketsGroup.value[0] : {}
     } else {
       throw Error
@@ -271,29 +224,6 @@ async function fixturesByActiveSport(id) {
   } catch (error) {
     isLoading.value = false
     isEmptyResponse.value = true
-    console.error(error)
-  }
-}
-
-async function fetchTodayActiveSport(id) {
-  if(!FEED_TOGGLE) return;
-  try {
-    const res = await getToday2(id, page.value)
-    isPaginated.value = res.lastPage !== undefined && res.remainingRecords !== undefined
-    let filteredData = res.fixtures.filter((f) => f.activeMarkets > 0)
-    // Update fixturesList.value
-    fixturesList.value =
-      fixturesList.value && fixturesList.value.length
-        ? [...fixturesList.value, ...filteredData]
-        : [...filteredData]
-    isLastPage.value = res.lastPage === page.value
-    // Set markets and active market
-    marketsGroup.value = res.markets
-    activeMarket.value = marketsGroup.value[0]
-    isLoading.value = false
-  } catch (error) {
-    isLoading.value = false
-    loadingError.value = true
     console.error(error)
   }
 }
@@ -340,21 +270,23 @@ const fetchMoreData = async () => {
   page.value++
   console.log(`Fetching data for page ${page.value}...`)
   try {
-    const { sportID } = getSportbyName(route.params.sport)
+    const { sport_id } = getSportbyName(route.params.sport)
     const { period } = route.query
+    const { tournament_id, category_id } = route.params
 
     // let newData = []
-    switch (route.name) {
-      case 'today-fixtures':
-        await fetchTodayActiveSport(sportID)
+    switch (routeName) {
+      case 'fixtures-by-tournaments':
+        await getTournamentFixtures(sport_id, tournament_id)
         break
 
+      case 'fixtures-by-category':
+        await getCategoryFixtures(sport_id, category_id)
+        break
+
+      case 'today-fixtures':
       case 'fixtures-by-sports':
-        if (period) {
-          await fetchActiveSportByPeriod(sportID, period)
-        } else {
-          await fixturesByActiveSport(sportID)
-        }
+        await fetchFixturesByActiveSport(sport_id, period)
         break
 
       default:
@@ -416,13 +348,16 @@ defineComponent({
   -webkit-overflow-scrolling: none;
   overscroll-behavior: none;
 }
+
 .m-event-list .m-topnav .title {
   font-size: 1.66666667rem;
 }
+
 .m-event-list .m-topnav .arrow-icon {
   font-family: 'iconfont';
   width: auto;
 }
+
 .m-event-list .m-topnav .arrow-icon:before {
   content: '\e6A3';
   display: inline-block;
@@ -444,11 +379,13 @@ defineComponent({
     -webkit-transform 0.3s ease;
   vertical-align: middle;
 }
+
 .m-event-list .m-topnav .arrow-icon.open:before {
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
 }
+
 .m-event-list .m-topnav .trans-select {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -459,6 +396,7 @@ defineComponent({
   display: -ms-flexbox;
   display: flex;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select {
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -467,12 +405,15 @@ defineComponent({
   height: 2rem;
   position: static;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title {
   display: none;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-title .af-select-input {
   display: hidden;
 }
+
 .m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -503,22 +444,14 @@ defineComponent({
   color: #353a45;
   color: var(--text-type1-primary);
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.active {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: var(--brand-secondary);
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.active:after {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active:after {
   color: var(--brand-secondary);
   content: '\e611';
   float: right;
@@ -526,18 +459,16 @@ defineComponent({
   font-size: 1.33333333rem;
   padding-right: 1.66666667rem;
 }
-.m-event-list
-  .m-topnav
-  .trans-select
-  .sport-select.af-select
-  .af-select-list
-  .af-select-item.hover {
+
+.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
 }
+
 .m-event-list .m-topnav .home-link {
   padding: 0 1rem 0 0.66666667rem;
 }
+
 .m-event-list .m-topnav .slot-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -549,7 +480,8 @@ defineComponent({
   display: flex;
   height: 100%;
 }
-.m-event-list .m-topnav .slot-container > a {
+
+.m-event-list .m-topnav .slot-container>a {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -560,9 +492,11 @@ defineComponent({
   display: flex;
   height: 100%;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon {
   padding: 0 0.66666667rem 0 1.25rem;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon::before {
   content: '\e613';
   font-family: 'iconfont' !important;
@@ -571,22 +505,26 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-list .m-topnav .slot-container .search-icon:before {
   font-size: 1.75rem;
   position: relative;
   top: 0.08333333rem;
 }
+
 .m-event-list .m-sport-bet-error {
   color: #353a45;
   color: var(--text-type1-primary);
   padding: 2.5rem 0 0.83333333rem;
 }
+
 .m-event-list .no-data {
   color: #9ca0ab;
   color: var(--text-disable-type1-primary);
   padding: 2.33333333rem;
   text-align: center;
 }
+
 .m-event-list .no-data::before {
   content: '\e624';
   font-family: 'iconfont' !important;
@@ -595,14 +533,17 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-list .no-data:before {
   color: #dcdee5;
   color: var(--disable-brand-secondary);
   font-size: 2.5rem;
 }
+
 .m-event-list .m-loading-wrap {
   margin-top: 15%;
 }
+
 .m-event-list .m-sanp-nav-container {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -618,27 +559,33 @@ defineComponent({
   border-bottom-color: #eaecef;
   border-bottom-color: var(--brand-border-type1);
 }
+
 .m-event-list .m-sport-type {
   -webkit-box-flex: 1;
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
 }
+
 .m-event-list .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
   font-weight: normal;
   padding: 0.61666667rem 1.25rem;
   /* border-radius: 30px; */
 }
+
 .m-event-list .m-sport-type .m-sport-type-item.active {
   border-bottom: 3px solid var(--c-prematch-tab-name-active);
 }
+
 .m-event-list .m-sport-type .m-sport-type-item:first-child {
   margin-left: 0.83333333rem;
 }
+
 .m-event-list .m-sport-type .m-sport-type-item:last-child {
   margin-right: 0.83333333rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -652,18 +599,22 @@ defineComponent({
   padding: 10px 0;
   border-bottom: 1px solid #eaecef;
 }
+
 /* .m-event-list .m-sport-type.m-sport-type-fixed.has-live {
   top: 7rem;
 } */
 .m-event-list .m-sport-type.m-sport-type-fixed.nav-down {
   top: 7.33333333rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed.nav-down.has-live {
   top: 10.66666667rem;
 }
+
 .m-event-list .m-sport-type.m-sport-type-fixed.choose-open {
   z-index: -1;
 }
+
 .m-event-list .m-outright-bar {
   border-bottom: solid 0.08333333rem;
   -webkit-box-sizing: border-box;
@@ -672,6 +623,7 @@ defineComponent({
   border-bottom-color: #eaecef;
   border-bottom-color: var(--brand-border-type1);
 }
+
 .m-event-list .m-outright-bar .m-match-type-item {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -680,9 +632,11 @@ defineComponent({
   padding: 0.66666667rem 1.25rem;
   width: 100%;
 }
+
 .m-event-list .m-outright-bar .m-match-type-item.active {
   border-bottom: 4px solid var(--brand-text-secondary);
 }
+
 .m-event-list .m-outright-bar .m-match-type-item.m-snap-nav-item--disabled {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
@@ -695,12 +649,14 @@ defineComponent({
   text-align: center;
   width: 100%;
 }
+
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #0d9737;
   color: var(--brand-quaternary);
 }
+
 .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);

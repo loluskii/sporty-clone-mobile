@@ -17,15 +17,15 @@
             <span
               v-for="(sport, index) in sportsList"
               :key="index"
-              @click="setActiveSport(sport.sportID)"
+              @click="setActiveSport(sport.sport_id)"
               class="af-select-item af-select-item"
-              :class="activeSport == sport.sportID ? 'active' : ''"
-              >{{ sport.sportName }}</span
+              :class="activeSport == sport.sport_id ? 'active' : ''"
+              >{{ sport.sport_name }}</span
             >
           </div>
         </div>
         <span class="title" @click="toggleSportsDropdown">
-          {{ SportsName.sportName }}
+          {{ SportsName.sport_name }}
           <span class="arrow-icon"></span
         ></span>
       </div>
@@ -62,7 +62,7 @@ const activeSport = computed(() => {
 
 const getActiveSport = computed(() => {
   const active = utilsStore.sportID
-  return utilsStore.sportsMenu.find((x) => x.sportID == active)
+  return utilsStore.sportsMenu.find((x) => x.sport_id == active)
 })
 
 const toggleSportsDropdown = () => {
@@ -75,7 +75,7 @@ function setActiveSport(id) {
   // emit('sport-change')
   router.push({
     name: 'fixtures-by-sports',
-    params: { sport: getActiveSport.value.sportName }
+    params: { sport: getActiveSport.value.sport_name }
   })
 }
 

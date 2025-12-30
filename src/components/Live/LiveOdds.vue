@@ -4,11 +4,11 @@
     class="m-outcome m-event-outcome-default"
     :class="[
       selectionClass,
-      odds.odds <= 1 ? 'm-outcome--disabled' : 'x',
+      odds.odds <= 1 || !odds.odds ? 'm-outcome--disabled' : 'x',
       oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : ''
     ]"
   >
-    <span v-if="odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
+    <span v-if="odds.odds <= 1 || !odds.odds" class="m-outcome-odds m-icon-lock"></span>
     <span v-else data-op="label-odds-amount" class="m-outcome-odds">
       {{ odds.odds.toFixed(2) }}
     </span>

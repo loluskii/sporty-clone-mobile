@@ -1,5 +1,12 @@
-import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API } from './constants'
+import {
+  fetchWrapper
+} from './fetch-wrapper'
+import {
+  BASE_API,
+  CLIENT_ID,
+  NEW_BASE_API,
+  NEW_FIXTURES_API
+} from './constants'
 import moment from 'moment'
 
 function today() {
@@ -118,7 +125,7 @@ export const getCodeHubItems = async (data) => {
 }
 
 export const getSportsMenu = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`))
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/sports`))
 }
 
 export const getCategoriesBySport = async (sportID, period) => {
@@ -127,37 +134,25 @@ export const getCategoriesBySport = async (sportID, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+  const periodParam = isTodayPeriod ? 'start=' + todayDate + '&end=' + todayDate
+    : isTomorrowPeriod ? 'start=' + tomorrowDate + '&end=' + tomorrowDate :
+      `start=${period?.startDate}&end=${period?.endDate}`
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/categories/${sportID}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`
+      `${NEW_FIXTURES_API}/categories/${sportID}?${period ? periodParam : ''}&source=mobile`
     )
   )
 }
 
-export const getTournamentsByCategories = async (categoryId, period) => {
-  const todayDate = moment().startOf('day').format('YYYY-MM-DD')
-  const tomorrowDate = moment().add(1, 'day').startOf('day').format('YYYY-MM-DD')
-  const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
-  const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
-  // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+export const getTournamentsByCategories = async (sid, categoryId, period = null) => {
+  let periodFilter = null
+  if(period){
+    periodFilter = `&start=${period.startDate}&end=${period.endDate}`
+  }
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/tournaments/${categoryId}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`
+      `${NEW_FIXTURES_API}/tournaments/${sid}?category_id=${categoryId}${periodFilter ?? ''}&source=mobile`
     )
   )
 }
@@ -165,7 +160,7 @@ export const getTournamentsByCategories = async (categoryId, period) => {
 export const getFixturesByCategories = async (categoryId, sid) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`
+      `${NEW_FIXTURES_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`
     )
   )
 }
@@ -212,7 +207,7 @@ export const searchFixtures = async (q) => {
 
 export const getLiveHighlights = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/highlight/live/0?source=mobile&markets=1`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/v1/fixtures/live/0?per_page=50&source=mobile`)
   )
 }
 
@@ -220,10 +215,12 @@ export const getLiveCountBySport = async (sid) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/live/games/count/${sid}`))
 }
 
-export const getSportHighlights = async (sid, hours, page) => {
+export const getSportHighlights = async (payload) => {
+  const { sid = 1, page = 1, per_page = 20, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority' } = payload;
+  const params = new URLSearchParams({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end })
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/highlight/prematch/${sid}?upcoming=1&page=${page}&perPage=15&timeoffset=${sign}${offsetHours}`
+      `${NEW_FIXTURES_API}/v1/fixtures/highlights/${sid}?${params}`
     )
   )
 }
@@ -234,13 +231,13 @@ export const getSportUpcoming = async (sid, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
 
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=tomorrow'
-      : period?.startDate !== undefined && period?.endDate !== undefined
-        ? `startDate=${period?.startDate}&endDate=${period?.endDate}`
-        : `period=${period}`
+  const periodParam = isTodayPeriod ?
+    'period=today' :
+    isTomorrowPeriod ?
+      'period=tomorrow' :
+      period?.startDate !== undefined && period?.endDate !== undefined ?
+        `startDate=${period?.startDate}&endDate=${period?.endDate}` :
+        `period=${period}`
 
   return parseData(
     fetchWrapper.get(
@@ -260,8 +257,7 @@ export const getHighlights2 = async (sid) => {
 export const getFixturesByTournamentId = async (id, sid, period = null) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${
-        period ? period : 'all'
+      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${period ? period : 'all'
       }&limit=50`
     )
   )
@@ -269,7 +265,13 @@ export const getFixturesByTournamentId = async (id, sid, period = null) => {
 
 export const getFixtureMarkets = async (id) => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/match/${id}?timeoffset=${sign}${offsetHours}`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/game/${id}`)
+  )
+}
+
+export const getMarketsGrouping = async (sid) => {
+  return parseData(
+    fetchWrapper.get(`${NEW_FIXTURES_API}/markets/groups?sport_id=${sid}`)
   )
 }
 
