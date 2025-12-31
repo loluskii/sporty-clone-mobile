@@ -3,7 +3,7 @@ export const brandDetails = {
   url: 'soccerpay.com',
   title: 'Soccerpay',
   colors: {
-    primaryColor: '#1e8e50',
+    primaryColor: '#021642',
     secondaryColor: '#d99201',
     tertiaryColor: '#1a3f22',
 
@@ -13,13 +13,13 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#d99201',
 
-    prematchOddBackgroundColor: '#fbf4e6',
-    prematchOddTextColor: '#d99201',
-    activePrematchOddBackground: '#0D9737',
-    activePrematchOddTextColor: '#fff',
+    prematchOddBackgroundColor: '#021642',
+    prematchOddTextColor: '#FFF',
+    activePrematchOddBackground: '#F28705',
+    activePrematchOddTextColor: '#000',
 
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
-    liveOddTextColor: '#d9ae01',
+    liveOddTextColor: '#fff',
     activeLiveOddBackground: '#d9ae01',
     activeLiveOddTextColor: '#fff',
 
@@ -29,8 +29,8 @@ export const brandDetails = {
     highlightTextColor: '#1a3f22'
   },
   fonts: {
-    primaryFont: 'Degular Regular',
-    primaryFontURL: '',
+    primaryFont: 'Inter',
+    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
     secondaryFont: '',
     secondaryFontURL: ''
   },
