@@ -62,12 +62,16 @@ const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
 })
 
-function toggleBetslip() {
+async function toggleBetslip() {
   showBetslip.value = !showBetslip.value
   if (showBetslip.value) {
     document.body.style.overflowY = 'hidden'
+    // Validate selections and subscribe to MQTT when betslip opens
+    await couponStore.validateAndSubscribe()
   } else {
     document.body.style.overflowY = 'scroll'
+    // Unsubscribe from MQTT when betslip closes
+    couponStore.unsubscribeAll()
   }
 }
 
@@ -183,36 +187,40 @@ async function validateSelections() {
   if (!couponStore.coupon.selections.length) return
 
   const selections = couponStore.coupon.selections.map((event) => ({
-    matchId: parseInt(event.matchId),
-    marketId: event.marketId.toString(),
-    outcomeId: event.outcomeId,
-    specifier: event.specifier
+    match_id: parseInt(event.matchId),
+    market_id: parseInt(event.marketId),
+    outcome_id: String(event.outcomeId),
+    producer_id: event.producerId || 0,
+    specifier: event.specifier || ''
   }))
-  const res = await validateBetslipSelections({ events: selections })
+  const res = await validateBetslipSelections(selections)
 
-  if (res.success) {
-    // Convert response object to array of validated selections
-    const validatedSelections = Object.values(res.data)
+  if (res.status_code === 200 && res.data) {
+    // data is already an array
+    const validatedSelections = Array.isArray(res.data) ? res.data : Object.values(res.data)
 
     // Update each selection with the new odds and active status
     validatedSelections.forEach((validatedSelection) => {
       const selection = couponStore.coupon.selections.find(
         (sel) =>
-          String(sel.matchId) === String(validatedSelection.matchId) &&
-          String(sel.marketId) === validatedSelection.marketId &&
-          String(sel.outcomeId) === validatedSelection.outcomeId
+          String(sel.matchId) === String(validatedSelection.match_id) &&
+          String(sel.marketId) === String(validatedSelection.market_id) &&
+          String(sel.outcomeId) === String(validatedSelection.outcome_id)
       )
 
       if (selection) {
         selection.odds = validatedSelection.odds
-        selection.suspended = !validatedSelection.active
-        selection.unavailable = !validatedSelection.active
+
+        // Handle different status states based on status_name
+        const statusName = validatedSelection.status_name || ''
+        selection.suspended = statusName === 'Suspended'
+        selection.unavailable = statusName === 'Deactivated'
         selection.changed = true
 
-        // Reset the changed flag after 5 seconds
+        // Reset the changed flag after 1 second
         setTimeout(() => {
           selection.changed = false
-        }, 5000)
+        }, 1000)
       }
     })
 

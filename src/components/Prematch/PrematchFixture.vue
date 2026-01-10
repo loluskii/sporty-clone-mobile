@@ -476,7 +476,7 @@ function addToBetslip(event, odd) {
   const data = {
     fixture: event,
     market_name: props.activeMarket.marketName,
-    marketID: odd.marketID,
+    market_id: odd.marketID,
     ele_id: id,
     outcome: odd,
     odds: odd.odds,

@@ -44,7 +44,7 @@
                 </g>
               </svg>
             </span>
-            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.betslipId)">
+            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.share_code)">
               <svg
                 viewBox="5 2 15 20"
                 fill="none"
@@ -59,7 +59,7 @@
                 ></path>
               </svg>
             </span>
-            {{ response.data.betslipId }}
+            {{ response.data.share_code }}
           </span>
         </li>
       </ul>

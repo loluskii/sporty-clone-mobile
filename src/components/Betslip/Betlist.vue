@@ -360,9 +360,10 @@ async function placeBet(e) {
 
   try {
     const res = await couponStore.placeBet(e, 'bet', bonusId)
+    console.log(res)
     couponStore.isBetslipLoading = false
 
-    if (res?.success) {
+    if (res?.status_code === 200) {
       if (betslipMode.value) {
         try {
           couponStore.isSimulating = true
@@ -383,7 +384,7 @@ async function placeBet(e) {
       emit('update-betcount')
     } else {
       emit('toggle-betslip')
-      emitter.emit('showErrorMessage', res?.message || 'Failed to place bet')
+      emitter.emit('showErrorMessage', res?.status_description || 'Failed to place bet')
     }
   } catch (error) {
     console.error('Error placing bet:', error)

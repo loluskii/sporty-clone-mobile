@@ -2,7 +2,7 @@
 export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
 export const NEW_FIXTURES_API = 'https://fixture.sportsbookengine.com'
-
+export const NEW_BET_API = 'https://bet.staging.sportsbookengine.com/v1'
 export const CLIENT_ID = 4
 export const AUTH_EXCLUDE_LIST = []
 export const WTH_PERC = 0

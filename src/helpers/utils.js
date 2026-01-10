@@ -188,10 +188,10 @@ export const getDataFromPayload = (couponPayload) => {
     changed: false
   }
 
-  if (couponPayload?.type === 'live') {
-    data.inPlayTime = couponPayload.fixture.eventTime
-    data.score = couponPayload.fixture.homeScore + ':' + couponPayload.fixture.awayScore
-  }
+  // if (couponPayload?.type === 'live') {
+  //   data.inPlayTime = couponPayload.fixture.eventTime
+  //   data.score = couponPayload.fixture.homeScore + ':' + couponPayload.fixture.awayScore
+  // }
   return data
 }
 

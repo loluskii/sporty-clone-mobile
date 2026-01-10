@@ -5,6 +5,7 @@ import {
   BASE_API,
   CLIENT_ID,
   NEW_BASE_API,
+  NEW_BET_API,
   NEW_FIXTURES_API
 } from './constants'
 import moment from 'moment'
@@ -276,12 +277,12 @@ export const getMarketsGrouping = async (sid) => {
 }
 
 export const getBets = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet`))
 }
 
-export const getSettledBets = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
-}
+// export const getSettledBets = async (payload) => {
+//   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
+// }
 
 export const getTransactionsData = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/user/wallet/transactions`, payload))
@@ -321,11 +322,11 @@ export const placeBet = async (payload) => {
 }
 
 export const placeBet2 = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/place-bet/${CLIENT_ID}`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/bet`, payload))
 }
 
 export const validateBetslipSelections = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/validate-selections`, payload))
+  return parseData(fetchWrapper.post(`${NEW_FIXTURES_API}/odd/status`, payload))
 }
 
 export const performCashout = async (payload) => {

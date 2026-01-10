@@ -135,7 +135,7 @@
                             {{ event.marketName }}
                           </span>
                         </div>
-                        <div class="m-live-odds" v-if="event.type === 'live'">
+                        <!-- <div class="m-live-odds" v-if="event.type === 'live'">
                           <template
                             v-if="
                               event.isLive &&
@@ -159,7 +159,7 @@
                           >
                             Live Odds Suspended
                           </div>
-                        </div>
+                        </div> -->
 
                         <div @click="goToEvent(event)" class="m-aginst m-t-black m-t-14">
                           <span>
@@ -175,7 +175,7 @@
                           </span>
                           <span class="m-t-12"></span>
                         </div>
-                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                        <!-- <div v-else class="m-score" style="color: var(--brand-secondary)">
                           <span class="m-t-12 capitalize">
                             {{
                               !event.isLive ? 'FT' : `${event.eventTime} ${getMatchStatus(event)}`
@@ -184,7 +184,7 @@
                           <span class="m-t-12" style="font-weight: bold">
                             {{ ` | ${event.score}` }}
                           </span>
-                        </div>
+                        </div> -->
                       </div>
                     </li>
                   </ul>
@@ -333,15 +333,7 @@ async function getBetsData() {
       userId: userStore.currentUser.id
     }
     const res = await getBets(payload)
-    openBets.value = res.bets
-    res.bets.forEach((bet) => {
-      let hasLiveSelection = bet.selections.filter((s) => s.type === 'live')
-      if (hasLiveSelection.length > 0) {
-        bet.hasLiveSelection = true
-      } else {
-        bet.hasLiveSelection = false
-      }
-    })
+    openBets.value = res.data.data.filter((x) => x.status === -1)
     isLoading.value = false
   } catch (error) {
     isLoading.value = false

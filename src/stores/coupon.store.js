@@ -1,4 +1,3 @@
-      // Filter out suspended or unavailable selections
 import { defineStore } from 'pinia'
 // import _ from 'lodash'
 import { useUsersStore } from '@/stores'
@@ -16,7 +15,8 @@ import {
   getSplitProps,
   placeBet2,
   bookBet2,
-  CLIENT_ID
+  CLIENT_ID,
+  validateBetslipSelections
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 
@@ -43,17 +43,18 @@ export const useCouponStore = defineStore({
       selections: [],
       combos: [],
       totalOdds: 1,
-      maxBonus: 0,
-      minBonus: 0,
-      grossWin: 0,
-      maxWin: 0,
-      minWin: 0,
+      isBooking: 0,
+      // maxBonus: 0,
+      // minBonus: 0,
+      // grossWin: 0,
+      // maxWin: 0,
+      // minWin: 0,
       stake: 100,
       totalStake: 100,
-      minOdds: 1,
-      maxOdds: 1,
-      wthTax: 0,
-      exciseDuty: 0,
+      // minOdds: 1,
+      // maxOdds: 1,
+      // wthTax: 0,
+      // exciseDuty: 0,
       bonusId: null,
       useBonus: false,
       useCashback: false,
@@ -276,23 +277,23 @@ export const useCouponStore = defineStore({
         
         couponData.selections.push(data)
         couponData.bet_type = 'Single'
-        couponData.betslip_type = 'Single'
+        // couponData.betslip_type = 'Single'
         couponData.totalOdds = (parseFloat(couponData.totalOdds) * parseFloat(data.odds)).toFixed(2)
         //calculate and get pot winnings with bonus
-        const winnings = calculateWinnings(couponData, globalVars, bonusList)
-        couponData.maxWin = winnings.maxWin
-        couponData.maxBonus = winnings.maxBonus
-        couponData.wthTax = winnings.wthTax
-        couponData.grossWin = winnings.grossWin
-        couponData.grouped = groupSelections(couponData.selections, 'matchId')
-        couponData.tournaments = groupTournament(couponData.selections)
+        // const winnings = calculateWinnings(couponData, globalVars, bonusList)
+        // couponData.maxWin = winnings.maxWin
+        // couponData.maxBonus = winnings.maxBonus
+        // couponData.wthTax = winnings.wthTax
+        // couponData.grossWin = winnings.grossWin
+        // couponData.grouped = groupSelections(couponData.selections, 'matchId')
+        // couponData.tournaments = groupTournament(couponData.selections)
 
         // check if event is live
-        if (data.type === 'live') couponData.hasLive = true
+        // if (data.type === 'live') couponData.hasLive = true
         //update bets state in redux
         this.coupon = couponData
       } else {
-        couponData.betslip_type = 'Multiple'
+        // couponData.betslip_type = 'Multiple'
         couponData.bet_type = 'Multiple'
         for (let i = 0; i < couponData.selections.length; i++) {
           //check if it's same event selected and remove it
@@ -304,18 +305,18 @@ export const useCouponStore = defineStore({
               // recalculate total odds
               couponData.totalOdds = calculateTotalOdds(couponData.selections)
               //group selections by tournament
-              couponData.tournaments = groupTournament(couponData.selections)
+              // couponData.tournaments = groupTournament(couponData.selections)
               //check bet type
               couponData.bet_type = checkBetType(couponData.grouped)
-              couponData.betslip_type = checkBetType(couponData.grouped)
+              // couponData.betslip_type = checkBetType(couponData.grouped)
 
-              const winnings = calculateWinnings(couponData, globalVars, bonusList)
-              couponData.maxWin = winnings.maxWin
-              couponData.maxBonus = winnings.maxBonus
-              couponData.wthTax = winnings.wthTax
-              couponData.grossWin = winnings.grossWin
+              // const winnings = calculateWinnings(couponData, globalVars, bonusList)
+              // couponData.maxWin = winnings.maxWin
+              // couponData.maxBonus = winnings.maxBonus
+              // couponData.wthTax = winnings.wthTax
+              // couponData.grossWin = winnings.grossWin
               // check if has live
-              couponData.hasLive = checkIfHasLive(couponData.selections)
+              // couponData.hasLive = checkIfHasLive(couponData.selections)
               this.coupon = couponData
             } else {
               // return dispatch({ type: CANCEL_BET })
@@ -354,7 +355,7 @@ export const useCouponStore = defineStore({
       }
 
       // After successfully adding selection, subscribe to its updates
-      this.manageSubscription(selection, true)
+      // this.manageSubscription(selection, true)
     },
     async removeSelection(id) {
       const globalVars = this.SportsbookGlobalVariable
@@ -719,12 +720,33 @@ export const useCouponStore = defineStore({
           coupondata.useBonus = true
         }
 
-        delete coupondata.combos
-        delete coupondata.fixtures
-        delete coupondata.tournaments
+        // Transform coupon data to new API format
+        const payload = {
+          bet_type: coupondata.bet_type,
+          bonusId: coupondata.bonusId || 0,
+          combos: coupondata.combos?.map(combo => ({
+            combinations: combo.combinations || 0,
+            grouping: combo.Grouping || combo.grouping || '',
+            stake: combo.stake || combo.Stake || 0
+          })) || [],
+          isBooking: coupondata.isBooking,
+          selections: coupondata.selections.map(selection => ({
+            marketId: parseInt(selection.marketId || selection.market_id) || 0,
+            matchId: parseInt(selection.matchId || selection.match_id) || 0,
+            outcomeId: String(selection.outcomeId || selection.odd_id || selection.outcomeID),
+            producerId: selection.producerId || selection.producerID || 1,
+            specifier: selection.specifier || '',
+            sportId: parseInt(selection.sportId || selection.sport_id) || 0
+          })),
+          source: coupondata.source || 'mobile',
+          stake: coupondata.stake,
+          system: coupondata.system || null,
+          totalStake: coupondata.totalStake,
+          useBonus: coupondata.useBonus || false
+        }
 
         try {
-          const res = await placeBet2(coupondata)
+          const res = await placeBet2(payload)
           this.isBetslipLoading = false
           return res
         } catch (error) {
@@ -734,7 +756,33 @@ export const useCouponStore = defineStore({
       } else if (type == 'book') {
         try {
           coupondata.isBooking = 1
-          const res = await bookBet2(coupondata)
+
+          // Transform coupon data to new API format for booking
+          const payload = {
+            bet_type: coupondata.bet_type,
+            bonusId: coupondata.bonusId || 0,
+            combos: coupondata.combos?.map(combo => ({
+              combinations: combo.combinations || 0,
+              grouping: combo.Grouping || combo.grouping || '',
+              stake: combo.stake || combo.Stake || 0
+            })) || [],
+            isBooking: 1,
+            selections: coupondata.selections.map(selection => ({
+              marketId: parseInt(selection.marketId || selection.market_id) || 0,
+              matchId: parseInt(selection.matchId || selection.match_id) || 0,
+              outcomeId: String(selection.outcomeId || selection.odd_id || selection.outcomeID),
+              producerId: selection.producerId || selection.producerID || 1,
+              specifier: selection.specifier || '',
+              sportId: parseInt(selection.sportId || selection.sport_id) || 0
+            })),
+            source: coupondata.source || 'mobile',
+            stake: coupondata.stake,
+            system: coupondata.system || null,
+            totalStake: coupondata.totalStake,
+            useBonus: coupondata.useBonus || false
+          }
+
+          const res = await bookBet2(payload)
           this.isBetslipLoading = false
           return res
         } catch (error) {
@@ -820,6 +868,91 @@ export const useCouponStore = defineStore({
         console.log('📊 Betslip: Successfully resubscribed to all selections')
       } catch (error) {
         console.error('📊 Betslip: Error resubscribing to selections:', error)
+      }
+    },
+    async validateAndSubscribe() {
+      if (!this.coupon.selections.length) return
+
+      try {
+        // Prepare selections for validation
+        const selections = this.coupon.selections.map((event) => ({
+          match_id: parseInt(event.matchId),
+          market_id: parseInt(event.marketId),
+          outcome_id: String(event.outcomeId),
+          producer_id: event.producerId || 0,
+          specifier: event.specifier || ''
+        }))
+
+        // Validate selections
+        const res = await validateBetslipSelections(selections)
+
+        if (res.status_code === 200 && res.data) {
+          const validatedSelections = Array.isArray(res.data) ? res.data : Object.values(res.data)
+
+          // Update each selection with the new odds and active status
+          validatedSelections.forEach((validatedSelection) => {
+            const selection = this.coupon.selections.find(
+              (sel) =>
+                String(sel.matchId) === String(validatedSelection.match_id) &&
+                String(sel.marketId) === String(validatedSelection.market_id) &&
+                String(sel.outcomeId) === String(validatedSelection.outcome_id)
+            )
+
+            if (selection) {
+              const oldOdds = selection.odds
+              selection.odds = validatedSelection.odds
+
+              // Handle different status states based on status_name
+              selection.suspended = validatedSelection.status_name === 'Suspended'
+              selection.unavailable = validatedSelection.status_name === 'Deactivated'
+              selection.changed = parseFloat(oldOdds) !== validatedSelection.odds
+
+              // Reset the changed flag after 1 second
+              setTimeout(() => {
+                selection.changed = false
+              }, 1000)
+            }
+          })
+
+          // Recalculate winnings after updating all selections
+          this.updateWinnings({
+            stake: this.coupon.totalStake,
+            id: 'all'
+          })
+        }
+
+        // Subscribe to MQTT only for selections that are not unavailable
+        this.coupon.selections.forEach((selection) => {
+          if (selection && !selection.unavailable) {
+            this.manageSubscription(selection, true)
+          }
+        })
+
+      } catch (error) {
+        console.error('📊 Betslip: Error validating selections:', error)
+      }
+    },
+    unsubscribeAll() {
+      try {
+        // Unsubscribe from all active subscriptions
+        this.activeSubscriptions.forEach((subscription) => {
+          try {
+            if (typeof subscription.unsubscribeOdds === 'function') {
+              subscription.unsubscribeOdds()
+            }
+            if (typeof subscription.unsubscribeBetStop === 'function') {
+              subscription.unsubscribeBetStop()
+            }
+          } catch (error) {
+            console.error('📊 Betslip: Error unsubscribing:', error)
+          }
+        })
+
+        // Clear the subscriptions array
+        this.activeSubscriptions = []
+        console.log('📊 Betslip: Successfully unsubscribed from all selections')
+      } catch (error) {
+        console.error('📊 Betslip: Error in unsubscribeAll:', error)
       }
     },
   },
