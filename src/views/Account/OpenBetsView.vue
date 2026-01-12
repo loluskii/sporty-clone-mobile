@@ -64,10 +64,7 @@
                       ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
                     >
                   </div>
-                  <div class="actions">
-                    <span class="divider"></span>
-                    <div style="color: #322c84" @click="shareTicket"></div>
-                  </div>
+
                 </div>
                 <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">

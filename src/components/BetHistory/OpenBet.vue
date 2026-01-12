@@ -88,7 +88,7 @@ export default {}
 
 .m-uc-nav {
   height: 4rem;
-  background: #ffffff;
+  /* background: #ffffff; */
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -591,7 +591,7 @@ export default {}
 }
 
 .m-sportsBet--bets .m-bet-item {
-  background: #ffffff;
+  background: #1c2745;
   border-radius: 0.16666667rem;
   -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
@@ -599,6 +599,7 @@ export default {}
   box-sizing: border-box;
   margin-bottom: 0.83333333rem;
   width: 100%;
+  color:#fafafa !important
 }
 
 .m-sportsBet--bets .m-title {

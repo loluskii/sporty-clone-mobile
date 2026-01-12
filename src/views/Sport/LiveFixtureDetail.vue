@@ -806,7 +806,7 @@ defineComponent({
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .m-event-detail-wrap .m-match-tracker-icons-above-wrapper {
   overflow: auto;
@@ -992,7 +992,6 @@ defineComponent({
 .m-event-detail-wrap .event-detail .m-sport-market .m-market .m-market-title {
   border-top: 1px solid #353a45;
   color: #ffffff;
-  color: var(--text-type2-primary);
 }
 .m-event-detail-wrap
   .event-detail

@@ -343,7 +343,7 @@ function placeBet() {
     emit('toggle-betslip')
     return router.push({ name: 'sign-in' })
   } else if (placeBetDisabled.value) {
-    return
+    // return
   } else if (hasSuspendedSelections.value) {
     emit('toggle-betslip')
     emitter.emit('showErrorMessage', 'Some selections are suspended')
