@@ -175,7 +175,7 @@
                           </span>
                           <span class="m-t-12"></span>
                         </div>
-                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                        <!--- <div v-else class="m-score" style="color: var(--brand-secondary)">
                           <span class="m-t-12 capitalize">
                             {{
                               !event.isLive ? 'FT' : `${event.eventTime} ${getMatchStatus(event)}`
@@ -184,7 +184,7 @@
                           <span class="m-t-12" style="font-weight: bold">
                             {{ ` | ${event.score}` }}
                           </span>
-                        </div>
+                        </div> -->
                       </div>
                     </li>
                   </ul>
