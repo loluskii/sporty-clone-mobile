@@ -57,7 +57,7 @@
               <div class="m-item-wrap">
                 <div class="m-title">
                   <div>
-                    <span class="m-t-14 m-t-bold m-t-black">
+                    <span class="m-t-14 m-t-bold m-t-black" style="text-transform: capitalize">
                       {{ bet.betCategory }}
                     </span>
                     <span v-if="bet.hasLiveSelection"
@@ -128,7 +128,6 @@
                       </div>
                       <div class="m-l-right f-flex-item">
                         <div class="m-t-14 m-t-l16 m-t-dark f-wrap">
-                          <i class="m-r-5" :class="'m-icon-' + event.sport"></i>
                           <span class="m-r-5 m-t-bold">{{ event.outcomeName }}</span>
                           <span class="m-t-bold m-r-5 m-b-5"> @ {{ event.odds.toFixed(2) }} </span>
                           <span class="m-t-14 m-t-gray m-b-5">
@@ -327,13 +326,12 @@ const getMatchStatus = (event) => {
 async function getBetsData() {
   try {
     let payload = {
-      clientId: CLIENT_ID,
-      date: '',
-      status: 0,
-      userId: userStore.currentUser.id
+      status: -1,
+      page: '',
+      perPage: 20
     }
     const res = await getBets(payload)
-    openBets.value = res.data.data.filter((x) => x.status === -1)
+    openBets.value = res.data.data
     isLoading.value = false
   } catch (error) {
     isLoading.value = false
@@ -429,10 +427,6 @@ onMounted(async () => {
   getCodes()
   if (isAuthenticated) {
     getBetsData()
-
-    intervalId.value = setInterval(() => {
-      getBetsData()
-    }, 10000)
   }
 })
 

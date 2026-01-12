@@ -277,7 +277,8 @@ export const getMarketsGrouping = async (sid) => {
 }
 
 export const getBets = async (payload) => {
-  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet`))
+  const { page=1, perPage=10, status=-1, start, end } = payload
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet?page=${page}&perPage=${perPage}&status=-1&start=&end=`))
 }
 
 // export const getSettledBets = async (payload) => {
