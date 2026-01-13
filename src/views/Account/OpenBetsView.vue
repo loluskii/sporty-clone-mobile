@@ -285,7 +285,6 @@
 import BetHistoryHeader from '@/components/BetHistoryHeader.vue'
 // import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
-import OpenBet from '@/components/BetHistory/OpenBet.vue'
 import { ref, defineComponent, onMounted, onUnmounted } from 'vue'
 import {
   getBets,
