@@ -101,7 +101,7 @@ function copyToClipboard() {
 }
 
 function redirectToPlatform(platform) {
-  let message = `Hey I just placed on Cubetbet! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
+  let message = `Hey I just placed on Bet24! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
   switch (platform) {
     case 'whatsapp':
       return window.open('https://wa.me/?text=' + encodeURIComponent(message))
