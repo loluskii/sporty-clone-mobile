@@ -7,7 +7,7 @@ const FixtureView = () => import('@/views/Sport/FixtureView.vue')
 const SignInView = () => import('@/views/SignInView.vue')
 const SignUpView = () => import('@/views/SignUpView.vue')
 const BetHistoryView = () => import('@/views/Account/BetHistoryView.vue')
-const OpenBetsView = () => import('@/views/Account/OpenBetsView.vue')
+const BetsView = () => import('@/views/Account/BetsView.vue')
 const BetDetailView = () => import('@/views/Account/BetDetailView.vue')
 const MeView = () => import('@/views/Account/MeView.vue')
 const ProfileView = () => import('@/views/Account/ProfileView.vue')
@@ -150,9 +150,9 @@ export const router = createRouter({
 
     // Bet History
     {
-      path: '/Bets/OpenBets',
-      name: 'open-bets',
-      component: OpenBetsView,
+      path: '/Bets',
+      name: 'bets-view',
+      component: BetsView,
       meta: { showMobileNavigation: true }
     },
     {

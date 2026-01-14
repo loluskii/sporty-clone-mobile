@@ -36,7 +36,7 @@
       </div>
       <div class="body">
         <div class="transaction-wrap">
-          <div @click="$router.push({ name: 'open-bets' })" class="transaction-wrap-item history">
+          <div @click="$router.push({ name: 'bets-view' })" class="transaction-wrap-item history">
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/bet_history.76d3fd43f4.svg"
               class="transaction-wrap-item-img"

@@ -277,7 +277,7 @@ export const getMarketsGrouping = async (sid) => {
 }
 
 export const getBets = async (payload) => {
-  const { page=1, perPage=10, status=-1, start, end } = payload
+  const { page=1, perPage=5, status=-1, start, end } = payload
   return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet?page=${page}&perPage=${perPage}&status=-1&start=&end=`))
 }
 
@@ -328,6 +328,10 @@ export const placeBet2 = async (payload) => {
 
 export const validateBetslipSelections = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_FIXTURES_API}/odd/status`, payload))
+}
+
+export const fetchCashoutForBet = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/cashout/build`, payload))
 }
 
 export const performCashout = async (payload) => {
