@@ -28,7 +28,7 @@ const SearchView = () => import('@/views/SearchView.vue')
 const GroupView = () => import('@/views/Games/GroupView.vue')
 const Search = () => import('../views/Games/SearchView.vue')
 
-const GamesView = () => import('@/views/Games/GamesView.vue')
+const CasinoView = () => import('@/views/CasinoView.vue')
 const PlayView = () => import('@/views/Games/PlayView.vue')
 const CodeHubView = () => import('@/views/CodeHubView.vue')
 const Promotions = () => import('@/views/Promotions.vue')
@@ -218,8 +218,7 @@ export const router = createRouter({
     {
       path: '/Games',
       name: 'casino-games',
-      component: GamesView,
-      meta: { showMobileNavigation: true }
+      component: CasinoView,
     },
     {
       path: '/Games/Search',
