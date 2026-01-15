@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.5...v1.2.6) (2026-01-15)
+
+
+### Bug Fixes
+
+* force no-cache build to ensure updates reflect ([427d059](https://github.com/zoroplay/sporty-clone-mobile/commit/427d0599029adcb285f93fe892b1ed755524dac7))
+
 ## [1.2.5](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.4...v1.2.5) (2025-11-29)
 
 
