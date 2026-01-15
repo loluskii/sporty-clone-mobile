@@ -88,6 +88,13 @@
       >
         Refund Policy
       </h5>
+			<h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'contact_us' } })"
+      >
+        Contact Us
+      </h5>
     </div>
     <div class="btn" @click="handleClick">
       <button>
