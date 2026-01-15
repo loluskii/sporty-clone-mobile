@@ -29,7 +29,8 @@ docker rm sporty-clone-mobile || true
 docker compose down || true
 
 # Build and start services (this will use the local .env file)
-docker compose up -d --build
+docker compose build --no-cache
+docker compose up -d
 
 # Show running containers
 docker ps

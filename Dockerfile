@@ -27,7 +27,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 RUN echo 'server { \
-    listen 3002; \
+    listen 80; \
     root /usr/share/nginx/html; \
     index index.html; \
     location / { \
@@ -35,6 +35,6 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 3002
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
