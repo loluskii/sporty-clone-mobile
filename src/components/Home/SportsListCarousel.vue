@@ -33,14 +33,14 @@
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Virtuals</span>
         </a>
       </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
+      <!-- <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="playAviator"
           ><div class="sport-icon">
             <img src="@/assets/images/aviator.png" style="filter: none" loading="eager" width="24" height="24" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
-      </li>
+      </li> -->
       <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
