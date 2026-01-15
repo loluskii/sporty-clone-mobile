@@ -36,7 +36,8 @@ docker compose down || true
 # Build and start services (this will use the local .env file)
 echo "Removing old images and containers..."
 docker compose down --rmi all --volumes --remove-orphans || true
-docker system prune -af || true
+echo "Cleaning build cache (preserving networks)..."
+docker builder prune -af || true
 echo "Building fresh image without cache..."
 docker compose build --no-cache --pull
 echo "Starting services..."

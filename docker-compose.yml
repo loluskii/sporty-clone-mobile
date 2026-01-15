@@ -6,10 +6,27 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_BASE_URL=${VITE_BASE_URL}
+        - VITE_SITE_URL=${VITE_SITE_URL}
         - VITE_NEW_BASE_API=${VITE_NEW_BASE_API}
+        - VITE_ENCRYPT_SECRET_KEY=${VITE_ENCRYPT_SECRET_KEY}
+        - VITE_APP_KEY=${VITE_APP_KEY}
         - VITE_CLIENT_ID=${VITE_CLIENT_ID}
         - VITE_CURRENCY=${VITE_CURRENCY}
+        - VITE_WTH_PERC=${VITE_WTH_PERC}
+        - VITE_EXCISE_DUTY=${VITE_EXCISE_DUTY}
+        - VITE_FAST_ADD_AMOUNTS=${VITE_FAST_ADD_AMOUNTS}
+        - VITE_TIMEZONE=${VITE_TIMEZONE}
+        - VITE_MaxCombinationsByGrouping=${VITE_MaxCombinationsByGrouping}
+        - VITE_MaxCouponCombinations=${VITE_MaxCouponCombinations}
+        - VITE_MinBonusOdd=${VITE_MinBonusOdd}
+        - VITE_MinGroupingsBetStake=${VITE_MinGroupingsBetStake}
+        - VITE_MaxGroupingsBetStake=${VITE_MaxGroupingsBetStake}
+        - VITE_MinBetStake=${VITE_MinBetStake}
+        - VITE_StakeInnerMod0Combination=${VITE_StakeInnerMod0Combination}
+        - VITE_XPRESS_LAUNCH_URL=${VITE_XPRESS_LAUNCH_URL}
+        - VITE_XPRESS_PRIVATE_KEY=${VITE_XPRESS_PRIVATE_KEY}
+        - VITE_XPRESS_PUBLIC_KEY=${VITE_XPRESS_PUBLIC_KEY}
+        - VITE_MQTT_URI=${VITE_MQTT_URI}
     ports:
       - "3002:80"
     environment:
