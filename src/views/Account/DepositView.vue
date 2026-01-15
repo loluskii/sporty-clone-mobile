@@ -161,7 +161,12 @@ function setActiveTab(method) {
 async function getPayments() {
   isLoading.value = true
   const res = await getPaymentMethods()
-  depositMethods.value = res.data
+  // Sort payment methods to put Opay first
+  depositMethods.value = res.data.sort((a, b) => {
+    if (a.provider === 'opay') return -1
+    if (b.provider === 'opay') return 1
+    return 0
+  })
   isLoading.value = false
 }
 
