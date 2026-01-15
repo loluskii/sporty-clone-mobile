@@ -1,3 +1,10 @@
+## [1.2.8](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.7...v1.2.8) (2026-01-15)
+
+
+### Bug Fixes
+
+* pass all VITE_ env vars to Docker build (was only passing 4/21) ([14f8253](https://github.com/zoroplay/sporty-clone-mobile/commit/14f8253cb417db1e9a2dfdab6820a9ed8861d5cd))
+
 ## [1.2.7](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.6...v1.2.7) (2026-01-15)
 
 
