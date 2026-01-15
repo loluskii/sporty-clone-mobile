@@ -16,8 +16,8 @@
     </div>
 
     <div v-else style="margin-top: 20px">
-        <template v-if="!openBets">
-            <div v-if="!openBets & !isLoading">
+        <template v-if="!hasOpenBets">
+            <div v-if="!hasOpenBets && !isLoading">
                 <div class="m-error-wrapper" style="text-align: center">
                     <span class="m-error-msg"> You currently have no Open Bets. </span>
                 </div>
@@ -99,10 +99,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import $ from 'jquery'
-import { getBets, formatNumber, fetchCashoutForBet, slugify, getNext7Days, getCodeHubItems, performCashout } from '@/helpers'
+import { formatNumber, fetchCashoutForBet, slugify, getNext7Days, getCodeHubItems, performCashout } from '@/helpers'
 import { useUtilsStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
@@ -123,7 +123,8 @@ const props = defineProps({
 const router = useRouter()
 const { SportsbookGlobalVariable } = useUtilsStore()
 
-const openBets = ref(null)
+const openBets = ref([])
+const hasOpenBets = computed(() => openBets.value.length > 0)
 const isLoading = ref(true)
 const codes = ref([])
 const showCashoutModal = ref(false)
@@ -131,16 +132,6 @@ const cashoutData = ref({})
 const cashingOut = ref(false)
 const cashoutPollInterval = ref(null)
 const POLL_INTERVAL = 30000 // Poll every 30 seconds
-
-async function getBetsData() {
-    try {
-        const res = await getBets({ status: -1, page: 1, perPage: 5 })
-        openBets.value = res.data.data
-        isLoading.value = false
-    } catch (error) {
-        isLoading.value = false
-    }
-}
 
 async function getCodes() {
     let payload = {
@@ -200,9 +191,7 @@ function stopCashoutPolling() {
 onMounted(() => {
     getCodes()
     if (props.isAuthenticated) {
-        getBetsData().then(() => {
-            startCashoutPolling()
-        })
+        startCashoutPolling()
     }
 })
 
@@ -222,7 +211,7 @@ async function confirmCashout() {
     if (res.success) {
         console.log('cashout successful')
         emitter.emit('showDialogueToaster', 'Cashout Successful!')
-        await getBetsData()
+        // Bets refresh handled by parent.
     } else {
         emitter.emit('showDialogueToaster', res.message)
     }
@@ -262,6 +251,17 @@ function showChild(e, index) {
     $('#' + index + '_bop').toggleClass('d-none')
     $('#' + index + '_child').toggleClass('d-none')
 }
+
+watch(
+    () => props.bets,
+    (value) => {
+        openBets.value = Array.isArray(value) ? value : []
+        if (props.isAuthenticated) {
+            isLoading.value = false
+        }
+    },
+    { immediate: true }
+)
 
 </script>
 

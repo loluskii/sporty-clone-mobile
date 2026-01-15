@@ -10,7 +10,7 @@ export const APP_KEY = 'SBE'
 export const SIM_ALLOWED_MARKETS = [
   1, 10, 18, 19, 20, 21, 26, 29, 35, 37, 45, 47, 60, 63, 75, 81, 98, 548,
 ];
-export const SIM_ENABLED = false;
+export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true;
 

@@ -277,8 +277,20 @@ export const getMarketsGrouping = async (sid) => {
 }
 
 export const getBets = async (payload) => {
-  const { page=1, perPage=5, status=-1, start, end } = payload
-  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet?page=${page}&perPage=${perPage}&status=-1&start=&end=`))
+  const { page = 1, perPage = 5, status = -1, start, end } = payload
+  const params = new URLSearchParams({ page, perPage })
+
+  if (status !== undefined && status !== null) {
+    params.set('status', status)
+  }
+  if (start) {
+    params.set('start', start)
+  }
+  if (end) {
+    params.set('end', end)
+  }
+
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet?${params.toString()}`))
 }
 
 // export const getSettledBets = async (payload) => {
