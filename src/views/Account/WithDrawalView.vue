@@ -281,13 +281,13 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
+                    <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ usersStore.balance }}</span>
+                      <span>NGN {{ usersStore.balance }}</span>
                     </p>
                   </div>
                 </div>
@@ -310,7 +310,7 @@
                   <div class="m-input-wap-prepend m-input-wap-prepend--default">
                     <span class="amount-prepend"
                       ><span>Amount</span>
-                      (SSP)
+                      (NGN)
                     </span>
                   </div>
                   <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
@@ -352,7 +352,7 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ usersStore.balance }}</span>
+                    <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
@@ -371,7 +371,7 @@
                   <div class="m-input-wap-prepend m-input-wap-prepend--default">
                     <span class="amount-prepend"
                       ><span>Amount</span>
-                      (SSP)
+                      (NGN)
                     </span>
                   </div>
                   <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>

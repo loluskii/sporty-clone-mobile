@@ -67,7 +67,7 @@
   --brand-opacity-disabled: 0.5;
   --brand-opacity-hover: 0.8;
 
-  --brand-border-type1: #eaecef;
+  --brand-border-type1: #9ca0ab;
   --brand-border-type2: #f2f3f5;
   --brand-border-type3: #dcdee5;
 
@@ -110,7 +110,7 @@
   --background-type2-primary: #1B1E25;
   --background-type2-secondary: #22252D;
   --background-type2-tertiary: #353A45;
-  --background-general-primary: #1B1E25;
+  --background-general-primary: rgb(0,14,34);
   --background-general-primary-op-0: rgba(27, 30, 37, 0);
   --background-general-primary-op-60: rgba(27, 30, 37, 0.6);
   --background-mask: rgba(0, 0, 0, 0.7);

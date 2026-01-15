@@ -221,7 +221,7 @@ async function submitKycRequest(){
     if(documentType.value === 'bank_account'){
       payload.bankCode = bankCode.value
     }
-    if(documentType.value === 'international_passport'){
+    if(documentType.value === 'international_paNGNort'){
       payload.lastName = lastName.value
     }
 

@@ -139,7 +139,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import emitter from '@/plugins/emitter'
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from '@/helpers'
 
-const activeTab = ref('paystack')
+const activeTab = ref('opay')
 const depositMethods = ref([])
 const usersStore = useUsersStore()
 const utilsStore = useUtilsStore()
@@ -201,38 +201,7 @@ async function beginDeposit() {
 
     const res = await getDepositURL(payload)
     if (res.success) {
-      if (activeTab.value === 'fidelity') {
-        try {
-          const payazaConfig = JSON.parse(Object.values(res.data)[0])
-          const payazaCheckout = PayazaCheckout.setup({
-            ...payazaConfig,
-            merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
-            // onClose: function () {
-            //   emitter.emit('showErrorMessage', 'Payment cancelled!');
-            //   isDepositing.value = false;
-            // },
-            callback: function (response) {
-              console.log('Payment response:', response)
-              if (response.type === 'success') {
-                // emitter.emit('showSuccessMessage', 'Payment successful!');
-                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${res.data.transactionRef}`
-              } else {
-                emitter.emit(
-                  'showErrorMessage',
-                  response.message || 'Payment failed. Please try again.'
-                )
-              }
-              isLoading.value = false
-            }
-          })
-
-          payazaCheckout.showPopup()
-        } catch (error) {
-          console.error('Error parsing Payaza config:', error)
-          emitter.emit('showErrorMessage', 'Failed to initialize payment. Please try again.')
-          isLoading.value = false
-        }
-      } else if (activeTab.value === 'sbengine') {
+      if (activeTab.value === 'sbengine') {
         isDepositing.value = false
         emitter.emit('showDepositWithdrawalModal', {
           type: 'Deposit',

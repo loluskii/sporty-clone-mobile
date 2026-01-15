@@ -607,7 +607,7 @@ export default {}
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  border-bottom: 1px solid #eaecef;
+  border-bottom: 1px solid var(--brand-border-type1);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   display: -webkit-box;
