@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.5...v1.2.6) (2026-01-15)
+
+
+### Bug Fixes
+
+* implemented sorting for payment method to put Opay first ([a57db74](https://github.com/zoroplay/sporty-clone-mobile/commit/a57db7410c9e7f62a3aca1f84c830bccd7f4054c))
+
 ## [1.2.5](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.4...v1.2.5) (2025-11-29)
 
 
