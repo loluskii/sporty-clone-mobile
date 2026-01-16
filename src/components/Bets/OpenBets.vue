@@ -47,67 +47,23 @@
                 </ul>
             </div>
         </div>
-        <div v-if="showCashoutModal" class="m-sportBets m-cashout">
-            <div id="j_pop_cashout" class="m-cashout-pop">
-                <div class="m-mask"></div>
-                <div class="m-container m-container-fix">
-                    <div class="m-close" @click="closeCashoutModal"></div>
-                    <div class="m-main">
-                        <div class="m-head f-alg-side">
-                            <div class="f-alg-side-item">
-                                <div class="m-t-12 m-t-l16 m-t-gray">Stake</div>
-                                <div class="m-t-14 m-t-l16 m-t-default">
-                                    {{ cashoutData.stake.toFixed(2) }}
-                                </div>
-                            </div>
-                            <div class="f-alg-side-item">
-                                <div class="m-t-12 m-t-l16 m-t-gray">Pot. Win</div>
-                                <div class="m-t-14 m-t-l16 m-t-default">
-                                    {{ cashoutData.possibleWin.toFixed(2) }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="m-body instant">
-                            <div class="m-t-center m-l-top">
-                                <div class="m-t-20 m-t-default m-t-bold m-total">
-                                    <span data-cms-key="partial_cashout" data-cms-page="cashout">Full Cashout
-                                    </span>
-                                    <div class="number-grow-warp">
-                                        <span class="number-grow">{{ cashoutData.cashOutAmount.toFixed(2) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="m-btn-wrapper">
-                                <div>
-                                    <button @click.prevent="confirmCashout" class="af-button af-button--primary">
-                                        <span v-if="!cashingOut"><span>Confirm</span>
-                                            <span class="money">
-                                                {{ SportsbookGlobalVariable.CurrencyCode }}
-                                                {{ cashoutData.cashOutAmount.toFixed(2) }}
-                                            </span>
-                                        </span>
-                                        <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <CashoutPopup
+            v-if="showCashoutModal"
+            :cashout-data="cashoutData"
+            @close="handleCashoutClose"
+        />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import $ from 'jquery'
-import { formatNumber, fetchCashoutForBet, slugify, getNext7Days, getCodeHubItems, performCashout } from '@/helpers'
-import { useUtilsStore } from '@/stores'
-import emitter from '@/plugins/emitter'
+import { slugify, getNext7Days, getCodeHubItems } from '@/helpers'
 import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import OpenBetItem from './OpenBetItem.vue'
+import CashoutPopup from './CashoutPopup.vue'
 
 const props = defineProps({
     bets: {
@@ -121,15 +77,12 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const { SportsbookGlobalVariable } = useUtilsStore()
-
 const openBets = ref([])
 const hasOpenBets = computed(() => openBets.value.length > 0)
 const isLoading = ref(true)
 const codes = ref([])
 const showCashoutModal = ref(false)
 const cashoutData = ref({})
-const cashingOut = ref(false)
 const cashoutPollInterval = ref(null)
 const POLL_INTERVAL = 30000 // Poll every 30 seconds
 
@@ -143,78 +96,44 @@ async function getCodes() {
     codes.value = res.data.data.slice(0, 10)
 }
 
-function closeCashoutModal() {
-    if (!cashingOut.value) {
-        showCashoutModal.value = false
-    }
-}
-
 function handleCashout(bet) {
     showCashoutModal.value = true
     cashoutData.value = bet
 }
 
 // Poll cashout amounts for all open bets
-async function pollCashoutAmounts() {
-    if (!openBets.value || openBets.value.length === 0) return
+// async function pollCashoutAmounts() {
+//     if (!openBets.value || openBets.value.length === 0) return
 
-    try {
-        const updatedBets = await Promise.all(
-            openBets.value.map(async (bet) => {
-                const cashoutResponse = await fetchCashoutForBet({betId: bet.id, source: "mobile"})
-                if (cashoutResponse && cashoutResponse.status_code === 200) {
-                    return { ...bet, cashOutAmount: cashoutResponse.data.payout }
-                }
-                return bet
-            })
-        )
-        openBets.value = updatedBets
-    } catch (error) {
-        console.error('Error polling cashout amounts:', error)
-    }
-}
+//     try {
+//         const updatedBets = await Promise.all(
+//             openBets.value.map(async (bet) => {
+//                 const cashoutResponse = await fetchCashoutForBet({betId: bet.id, source: "mobile"})
+//                 if (cashoutResponse && cashoutResponse.status_code === 200) {
+//                     return { ...bet, cashOutAmount: cashoutResponse.data.payout }
+//                 }
+//                 return bet
+//             })
+//         )
+//         openBets.value = updatedBets
+//     } catch (error) {
+//         console.error('Error polling cashout amounts:', error)
+//     }
+// }
 
-function startCashoutPolling() {
-    // Initial fetch
-    pollCashoutAmounts()
-    // Start interval
-    cashoutPollInterval.value = setInterval(pollCashoutAmounts, POLL_INTERVAL)
-}
-
-function stopCashoutPolling() {
-    if (cashoutPollInterval.value) {
-        clearInterval(cashoutPollInterval.value)
-        cashoutPollInterval.value = null
-    }
-}
+// function startCashoutPolling() {
+//     // Initial fetch
+//     pollCashoutAmounts()
+//     // Start interval
+//     cashoutPollInterval.value = setInterval(pollCashoutAmounts, POLL_INTERVAL)
+// }
 
 onMounted(() => {
     getCodes()
-    if (props.isAuthenticated) {
-        startCashoutPolling()
-    }
 })
 
-onUnmounted(() => {
-    stopCashoutPolling()
-})
-
-async function confirmCashout() {
-    cashingOut.value = true
-    const res = await performCashout({
-        betId: cashoutData.value.id,
-        amount: cashoutData.value.cashOutAmount
-    })
-    cashingOut.value = false
+function handleCashoutClose() {
     showCashoutModal.value = false
-
-    if (res.success) {
-        console.log('cashout successful')
-        emitter.emit('showDialogueToaster', 'Cashout Successful!')
-        // Bets refresh handled by parent.
-    } else {
-        emitter.emit('showDialogueToaster', res.message)
-    }
 }
 
 function goToEvent(event) {

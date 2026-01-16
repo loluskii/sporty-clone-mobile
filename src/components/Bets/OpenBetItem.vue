@@ -15,9 +15,9 @@
                             aria-label="Share Bet"></div>
                     </div>
                 </div>
-                <div :id="bet.id + '_bop'" class="simpleListItem" @click="isExpanded = !isExpanded" v-if="!isExpanded"
+                <div :id="bet.id + '_bop'" class="simpleListItem" v-if="!isExpanded"
                     v-for="event in bet.selections.slice(0, 1)" :key="event.id">
-                    <div class="info-container">
+                    <div class="info-container" @click="isExpanded = !isExpanded">
                         <span class="m-t-l20 m-t-14 m-list-t-default m-ellipsis">
                             {{ event.eventName }}
                         </span>
@@ -25,15 +25,15 @@
                                 class="m-t-bold m-list-t-default m-t-mv5">{{ bet.stake }}</span>
                         </div>
                     </div>
-                    <button class="af-button af-button--primary m-btn--cashout simple"
-                        :class="{ 'disabled is-disabled': !bet.cashOutAmount }"
-                        :disabled="!bet.cashOutAmount || cashingOut || bet.isBonusBet" type="button"> <span><span
+                    <button class="af-button af-button--primary m-btn--cashout simple" @click.prevent="handleCashout(bet)"
+                        :class="{ 'disabled is-disabled': !bet.estimatedCashout }"
+                        :disabled="!bet.estimatedCashout || cashingOut || bet.isBonusBet" type="button"> <span><span
                                 class="label">Cashout</span>
                             <div class="amount">
                                 <span v-if="!cashingOut">{{
-                                    bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
+                                    bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
                                         ? `${SportsbookGlobalVariable.CurrencyCode}
-                                    ${bet.cashOutAmount.toFixed(2)}`
+                                    ${bet.estimatedCashout.toFixed(2)}`
                                         : 'Unavailable'
                                 }}</span>
                             </div>
@@ -131,17 +131,17 @@
                     <div
                         v-if="bet.status === -1"
                         class="m-btn-wrapper"
-                        :class="{ disabled: !bet.cashOutAmount }"
+                        :class="{ disabled: !bet.estimatedCashout }"
                         >
                         <button
-                            :disabled="!bet.cashOutAmount || cashingOut || bet.isBonusBet"
+                            :disabled="!bet.estimatedCashout || cashingOut || bet.isBonusBet"
                             @click.prevent="handleCashout(bet)"
                             type="button"
                             class="m-btn--cashout"
                         >
                             <span v-if="!cashingOut">{{
-                            bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                                ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.cashOutAmount.toFixed(2)}`
+                            bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
+                                ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.estimatedCashout.toFixed(2)}`
                                 : 'Cashout Unavailable'
                             }}</span>
                             <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
