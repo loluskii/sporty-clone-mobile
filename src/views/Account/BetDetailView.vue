@@ -121,7 +121,7 @@
 
 <script setup>
 import { defineComponent, watch, ref } from 'vue'
-import BetDetail from '../../components/BetHistory/BetDetail.vue'
+import BetDetail from '../../components/Bets/BetDetail.vue'
 import HeaderOther from '../../components/HeaderOther.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatDate, formatNumber, loadBetslipByCode } from '@/helpers'
