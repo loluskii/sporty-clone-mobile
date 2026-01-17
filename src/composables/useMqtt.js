@@ -12,14 +12,16 @@ export function useMqttService() {
       return mqttClient
     }
 
-    const clientId = `odds-service-${import.meta.env.VITE_MQTT_CLIENTID || 'sporty-mobile'}-${Math.random().toString(36).substring(2, 11)}`
+    const clientId = `${import.meta.env.VITE_MQTT_CLIENTID}-${Math.random().toString(36).substr(2, 9)}`
+    const host = import.meta.env.VITE_MQTT_HOST
+    const port = import.meta.env.VITE_MQTT_PORT
+    const mqttUrl = `ws://${host}:${port}/mqtt`
 
-    // console.log('🔵 MQTT: Connecting to', 'wss://emqx.staging.sportsbookengine.com:443/mqtt', 'with clientId:', clientId)
-
-    mqttClient = mqtt.connect('wss://emqx.staging.sportsbookengine.com:443/mqtt', {
+    mqttClient = mqtt.connect(mqttUrl, {
       clientId,
       clean: true,
-      reconnectPeriod: 1000
+      reconnectPeriod: 1000,
+      connectTimeout: 30000
     })
 
     mqttClient.on('connect', () => {
