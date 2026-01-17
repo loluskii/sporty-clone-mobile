@@ -3,11 +3,11 @@
     <div class="m-event-meta">
       <span class="m-event-time">{{ displayTime }}</span>
       <span class="match-status">{{
-        gameData.matchStatus == '1st half'
+        matchStatus == '1st half'
           ? 'H1'
-          : gameData.matchStatus == '2nd half'
+          : matchStatus == '2nd half'
             ? 'H2'
-            : gameData.matchStatus
+            : matchStatus
       }}</span>
       <!-- <span class="m-league-name">{{ gameData.categoryName }} - {{ gameData.tournament }}</span> -->
       <div class="live-marker" data-cms-key="live">Live</div>
@@ -124,6 +124,7 @@ const scores = ref({
 const outcomes = ref([])
 const timer = ref(null)
 const displayTime = ref(props.gameData.eventTime || '00:00')
+const matchStatus = ref(props.gameData.matchStatus || '')
 
 // Keep track of updated outcomes
 const updatedOutcomes = ref({})
@@ -133,17 +134,15 @@ const specifierOpen = ref(false)
 
 const updatePending = ref(false)
 
-// Time handling functions
-const parseTimeToSeconds = (timeStr) => {
+// Time handling functions - now works with minutes only
+const parseTimeToMinutes = (timeStr) => {
   if (timeStr === '--:--') return null
-  const [minutes, seconds] = timeStr.split(':').map(Number)
-  return minutes * 60 + seconds
+  const [minutes] = timeStr.split(':').map(Number)
+  return minutes
 }
 
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+const formatMinutesToTime = (minutes) => {
+  return `${minutes.toString().padStart(2, '0')}:00`
 }
 
 const stopTimer = () => {
@@ -156,23 +155,22 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialTime = parseTimeToSeconds(displayTime.value)
-  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
+  const initialMinutes = parseTimeToMinutes(displayTime.value)
+  if (initialMinutes === null || initialMinutes === 45 || initialMinutes === 90) return
 
-  let currentSeconds = initialTime
-  displayTime.value = formatSecondsToTime(currentSeconds)
+  let currentMinutes = initialMinutes
 
   timer.value = setInterval(() => {
-    currentSeconds++
+    currentMinutes++
 
-    // Stop at key match times
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+    // Stop at key match times (halftime and fulltime)
+    if (currentMinutes === 45 || currentMinutes === 90) {
       stopTimer()
       return
     }
 
-    displayTime.value = formatSecondsToTime(currentSeconds)
-  }, 1000)
+    displayTime.value = formatMinutesToTime(currentMinutes)
+  }, 60000) // Increment every minute
 }
 
 // Watch for gameData changes to start timer
@@ -374,13 +372,19 @@ function handleFixtureStatus(data) {
     scores.value.homeScore = data.home_score
     scores.value.awayScore = data.away_score
 
-    // Update time and status
+    // Update time and status using local refs (not props)
     displayTime.value = data.event_time
-    props.gameData.matchStatus = data.match_status
+    matchStatus.value = data.match_status
 
     // Restart timer with new time
     startTimer()
   })
+}
+
+// Function to handle match ended - remove fixture from list
+function handleMatchEnded(data) {
+  stopTimer()
+  emitter.emit('match-ended', props.gameData.matchID)
 }
 
 onMounted(() => {
@@ -400,15 +404,17 @@ onMounted(() => {
     const componentId = `live-fixture-${matchId}-${Date.now()}`
 
     const topics = {
-      oddsChange: `feeds/live/odds_change/${matchId}`,
-      betStop: `feeds/live/bet_stop/${matchId}`,
-      fixtureStatus: `feeds/live/fixture_status/${matchId}`
+      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`,
+      matchEnded: `sbe/feeds/live/match_ended/${matchId}`
     }
 
     const handlers = {
       oddsChange: handleOddsChange,
       betStop: handleBetStop,
-      fixtureStatus: handleFixtureStatus
+      fixtureStatus: handleFixtureStatus,
+      matchEnded: handleMatchEnded
     }
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {
