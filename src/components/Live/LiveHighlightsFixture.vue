@@ -468,9 +468,9 @@ onMounted(() => {
     const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`
 
     const topics = {
-      oddsChange: `feeds/live/odds_change/${matchId}`,
-      betStop: `feeds/live/bet_stop/${matchId}`,
-      fixtureStatus: `feeds/live/fixture_status/${matchId}`
+      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
     }
 
     const handlers = {
