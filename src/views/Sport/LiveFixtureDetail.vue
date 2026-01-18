@@ -276,16 +276,17 @@ const noMarkets = computed(() => {
 })
 
 // Time handling functions
-const parseTimeToSeconds = (timeStr) => {
-  if (timeStr === '--:--') return null
-  const [minutes, seconds] = timeStr.split(':').map(Number)
-  return minutes * 60 + seconds
+const formatMinutesToTime = (minutes) => {
+  return `${minutes.toString().padStart(2, '0')}:00`
 }
 
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+const parseTimeToMinutes = (timeString) => {
+  if (!timeString) return null
+  const parts = timeString.split(':')
+  if (parts.length >= 1) {
+    return parseInt(parts[0], 10)
+  }
+  return null
 }
 
 const stopTimer = () => {
@@ -298,23 +299,22 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialTime = parseTimeToSeconds(eventTime.value)
-  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
+  const initialMinutes = parseTimeToMinutes(eventTime.value)
+  if (initialMinutes === null || initialMinutes === 45 || initialMinutes === 90) return
 
-  let currentSeconds = initialTime
-  eventTime.value = formatSecondsToTime(currentSeconds)
+  let currentMinutes = initialMinutes
 
   timer.value = setInterval(() => {
-    currentSeconds++
+    currentMinutes++
 
-    // Stop at key match times (45:00 and 90:00)
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+    // Stop at key match times (halftime and fulltime)
+    if (currentMinutes === 45 || currentMinutes === 90) {
       stopTimer()
       return
     }
 
-    eventTime.value = formatSecondsToTime(currentSeconds)
-  }, 1000)
+    eventTime.value = formatMinutesToTime(currentMinutes)
+  }, 60000) // Increment every minute
 }
 
 // MQTT handlers
@@ -324,7 +324,6 @@ function handleFixtureStatus(data) {
     stopTimer()
     // Clean up intervals
     if (refetchInterval.value) {
-      console.log(`🧹 Component: Cleaning up periodic refetch interval`)
       clearInterval(refetchInterval.value)
       refetchInterval.value = null
     }
@@ -356,13 +355,8 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    console.log(
-      `📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`
-    )
     return
   }
-
-  console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
 
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
@@ -375,10 +369,6 @@ function handleBetStop(data) {
     }))
 
     groupedMarkets.value = groupByMarketID(eventMarkets.value)
-  }
-
-  if (eventDetail.value?.statusCode === 3) {
-    console.log('Match has ended, showing unavailable message')
   }
 }
 
@@ -458,10 +448,6 @@ function handleOddsChange(data) {
 
 // MQTT setup
 function setupMqttSubscriptions(matchId) {
-  console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`)
-
-  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`
-
   const topics = {
     oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
     betStop: `sbe/feeds/live/bet_stop/${matchId}`,
@@ -475,15 +461,12 @@ function setupMqttSubscriptions(matchId) {
   }
 
   const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-    console.log(`📊 Subscribing to ${key} on topic: ${topic}`)
     return subscribe(topic, (data) => {
-      console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data)
       handlers[key](data)
     })
   })
 
   unsubscribeFunctions.value = unsubscribers
-  console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`)
 }
 
 // Periodic refetch setup
@@ -494,7 +477,6 @@ function setupPeriodicRefetch(matchId) {
 
   refetchInterval.value = setInterval(async () => {
     if (!matchHasEnded.value) {
-      console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res).length && res.markets) {
@@ -507,20 +489,14 @@ function setupPeriodicRefetch(matchId) {
           scores.homeScore = res.homeScore
           scores.awayScore = res.awayScore
           eventTime.value = res.eventTime
-          console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
         }
       } catch (error) {
-        console.error(`❌ Error during periodic refetch:`, error)
+        // Silent fail for periodic refetch
       }
     } else {
-      console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`)
       clearInterval(refetchInterval.value)
     }
   }, REFETCH_INTERVAL_MS)
-
-  console.log(
-    `⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS / 1000} seconds for match ID: ${matchId}`
-  )
 }
 
 // Lifecycle hooks
@@ -535,14 +511,12 @@ onMounted(() => {
 onUnmounted(() => {
   // Clean up MQTT subscriptions
   if (unsubscribeFunctions.value.length > 0) {
-    console.log(`🧹 Component: Cleaning up MQTT subscriptions`)
     unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
     unsubscribeFunctions.value = []
   }
 
   // Clean up intervals
   if (refetchInterval.value) {
-    console.log(`🧹 Component: Cleaning up periodic refetch interval`)
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
   }
@@ -606,7 +580,6 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
-    console.log(`🔍 Fetching event details for ID: ${id}`)
     const res = await getFixtureMarkets(id)
     isLoading.value = false
     if (Object.keys(res).length && res.markets && res.statusCode === 1) {
@@ -624,11 +597,8 @@ async function getEventDetail(id) {
       eventTime.value = res.eventTime
 
       if (res.matchID) {
-        // console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`) // Add pre-setup log
         setupMqttSubscriptions(res.matchID)
         setupPeriodicRefetch(res.matchID)
-      } else {
-        console.warn(`⚠️ No matchID found in event details response`)
       }
     } else {
       eventDetail.value = res
@@ -642,7 +612,6 @@ async function getEventDetail(id) {
       eventTime.value = res.eventTime
     }
   } catch (error) {
-    console.error(`❌ Error fetching event details:`, error)
     eventDetail.value = null
     isLoading.value = false
   }
