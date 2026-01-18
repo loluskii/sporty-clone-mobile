@@ -352,13 +352,13 @@ function setupMqttSubscriptions(matchIds) {
   // Create subscriptions for each match ID
   const subscriptions = matchIds.map((matchId) => {
     // Subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+    const oddsChangeTopic = `sbe/feeds/prematch/odds_change/${matchId}`
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
       utilsStore.handleOddsChange(data)
     })
 
     // Subscribe to bet stop
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+    const betStopTopic = `sbe/feeds/prematch/bet_stop/${matchId}`
     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
       utilsStore.handleBetStop(data)
     })
