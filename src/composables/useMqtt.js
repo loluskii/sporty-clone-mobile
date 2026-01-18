@@ -27,7 +27,6 @@ export function useMqttService() {
     })
 
     mqttClient.on('connect', () => {
-      console.log('🔵 MQTT Connected')
       isConnected.value = true
 
       // Resubscribe to existing topics
@@ -51,16 +50,15 @@ export function useMqttService() {
         }
         messageQueue.get(topic).push(data)
       } catch (error) {
-        console.error(`Error processing message for ${topic}:`, error)
+        // Silent fail for message parsing errors
       }
     })
 
-    mqttClient.on('error', (error) => {
-      console.error('🔴 MQTT Error:', error)
+    mqttClient.on('error', () => {
+      // Silent fail for MQTT errors
     })
 
     mqttClient.on('close', () => {
-      console.log('🟡 MQTT Disconnected')
       isConnected.value = false
       if (processingInterval) {
         clearInterval(processingInterval)
@@ -86,7 +84,7 @@ export function useMqttService() {
         try {
           callback(latestMessage)
         } catch (error) {
-          console.error(`Error in callback for ${topic}:`, error)
+          // Silent fail for callback errors
         }
       })
 
