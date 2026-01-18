@@ -53,11 +53,11 @@
                 <div class="x-table-cell m-name-cell">
                   <div class="m-name">
                     <template
-                      v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
+                      v-for="(outcome, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
                       :key="m"
                     >
                       <div class="market-name">
-                        <span> {{ market.outcomeName }} </span>
+                        <span>{{ getOutcomeDisplayName(activeMarket.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
                       </div>
                     </template>
                   </div>
@@ -106,6 +106,24 @@ import {
 } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
+
+// Map outcome IDs to standard display names for common markets
+const outcomeNameMap = {
+  '1X2': { 1: '1', 2: 'X', 3: '2' },
+  'DC': { 9: '1X', 10: '12', 11: 'X2' },
+  'DNB': { 4: '1', 5: '2' },
+  'Over/Under': { 12: 'Over', 13: 'Under' },
+  'Odd/Even': { 70: 'Odd', 72: 'Even' },
+  'GG/NG': { 74: 'GG', 76: 'NG' }
+}
+
+const getOutcomeDisplayName = (marketName, outcomeID, originalName) => {
+  const marketMap = outcomeNameMap[marketName]
+  if (marketMap && marketMap[outcomeID]) {
+    return marketMap[outcomeID]
+  }
+  return originalName
+}
 
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
