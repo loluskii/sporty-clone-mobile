@@ -299,10 +299,7 @@ const totalStake = computed(() => {
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
   return couponStore.coupon.selections.some(
-    (selection) =>
-      selection.suspended ||
-      selection.unavailable ||
-      (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+    (selection) => selection.suspended || selection.unavailable
   )
 })
 
@@ -412,20 +409,11 @@ function handleAcceptChange() {
     selection.changed = false
   })
 
-  // Remove any suspended selections that are unavailable
-  const updatedSelections = couponStore.coupon.selections.filter((selection) => {
-    const isExpired = (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
-    return !(selection.suspended && isExpired)
+  // Recalculate winnings after accepting changes
+  couponStore.updateWinnings({
+    stake: couponStore.coupon.totalStake,
+    id: 'all'
   })
-
-  if (updatedSelections.length !== couponStore.coupon.selections.length) {
-    couponStore.coupon.selections = updatedSelections
-    // Recalculate winnings after removing suspended selections
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: 'all'
-    })
-  }
 }
 
 onMounted(() => {
