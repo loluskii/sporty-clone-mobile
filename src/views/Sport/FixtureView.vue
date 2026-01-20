@@ -141,7 +141,7 @@ async function getTournamentFixtures(sid) {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getSportHighlights({ sid: id, per_page: 50, category_id: cat.tournament_id })
+        getSportHighlights({ page: page.value, sid: id, per_page: 50, category_id: cat.tournament_id })
       )
     )
     const fixtures = results.reduce((acc, res) => {
@@ -189,6 +189,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
   try {
     let payload = {
       sid: id,
+      page: page.value,
       per_page: 50
     }
     if (period) {
@@ -207,7 +208,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
       }
     }
     const res = await getSportHighlights(payload)
-    const { fixtures, markets, per_page, page: currentPage, total } = res.data
+    const { fixtures, markets, per_page, currentPage, total } = res.data
     lastPage.value = Math.ceil(total / per_page)
     if (fixtures.length) {
       isPaginated.value = true
@@ -275,7 +276,7 @@ const fetchMoreData = async () => {
     const { tournament_id, category_id } = route.params
 
     // let newData = []
-    switch (routeName) {
+    switch (route.name) {
       case 'fixtures-by-tournaments':
         await getTournamentFixtures(sport_id, tournament_id)
         break

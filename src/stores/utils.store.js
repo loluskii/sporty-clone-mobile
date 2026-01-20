@@ -31,7 +31,8 @@ export const useUtilsStore = defineStore({
     featuredError: null,
     activeFeaturedTournament: null,
     isFetchingTournamentGames: false,
-    banksList: []
+    banksList: [],
+    activeBetView: 'open_bets'
   }),
 
   getters: {
@@ -248,6 +249,7 @@ export const useUtilsStore = defineStore({
       'errorMessage',
       'categoriesList',
       'previousRoute',
+      'activeBetView',
       // 'featuredTournaments',
       // 'featuredTournamentGames',
       'featuredLastFetchTime',

@@ -277,7 +277,7 @@ export const getMarketsGrouping = async (sid) => {
 }
 
 export const getBets = async (payload) => {
-  const { page = 1, perPage = 5, status = -1, start, end } = payload
+  const { page = 1, perPage = 5, status, start, end } = payload
   const params = new URLSearchParams({ page, perPage })
 
   if (status !== undefined && status !== null) {

@@ -1,209 +1,177 @@
 <template>
   <div class="m-bethistory">
-    <div v-if="!isAuthenticated" class="m-error-wrapper" style="margin-top: 20px; text-align: center">
-      <div>
-        <span class="m-error-msg">Please Log In to see your Bet Details</span>
-        <div class="m-btn" @click="$router.push('/sign-in')">Login</div>
-      </div>
-    </div>
-
-    <div v-else class="m-ticket-detail">
-      <div v-if="!betDetail" class="m-list-none-wrap">
-        <div class="m-list-none" style="padding: 5rem 0 7.33333333rem; text-align: center">
-          <span class="no-list-txt">No Ticket Selected.</span>
+    <div class="m-ticket-detail">
+      <div class="m-nav-secondary">
+        <div class="m-nav-left">
+          <span @click="$emit('reset')" class="m-icon m-icon--back"></span>
+          <span class="title"> Ticket Details </span>
         </div>
-      </div>
-      <div v-else>
-        <div class="ticket-top">
-          <div class="seperate ticket-info">
-            <span data-cms-key="ticket_id_vid" data-cms-page="bet_history"
-              >Ticket ID: {{ betDetail.betslipId }}</span
-            >
-            <span>{{ formatDate(betDetail.created, 'DD/MM HH:mm') }}</span>
-          </div>
-          <div class="bar seperate">
-            <span class="type"
-              ><span data-cms-key="multiple" data-cms-page="bet_history">{{
-                selections.length > 1 ? 'Multiple' : 'Single'
-              }}</span>
-            </span>
-
-            <span
-              class="status"
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
-              >{{ betDetail.statusDescription }}</span
-            >
-          </div>
-
-          <div class="seperate stake-amount">
-            <span class="left" data-cms-key="total_return" data-cms-page="bet_history"
-              >Total Return</span
-            >
-            <span
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
-              >{{ betDetail.winnings ? formatNumber(betDetail.winnings) : '0.00' }}</span
-            >
-          </div>
-
-          <div class="under-split">
-            <div class="cash-info">
-              <em></em>
-              <div class="seperate">
-                <span class="left">Total Stake</span>
-                <span>{{ formatNumber(betDetail.stake) }}</span>
-              </div>
-
-              <div class="seperate">
-                <span class="left">Total Odds</span>
-                <span>{{ formatNumber(betDetail.totalOdd) }}</span>
-              </div>
+        <div class="info-container">
+          <div class="m-nav-right">
+            <div @click="$router.push({ name: 'home' })" class="home-link">
+              <div class="home-icon"></div>
             </div>
           </div>
-          <div
-            v-if="betDetail.statusCode !== 1"
-            data-op="rebet-wrapper"
-            class="rebet-wrapper seperate"
+        </div>
+      </div>
+      <div class="ticket-top">
+        <div class="seperate ticket-info">
+          <span data-cms-key="ticket_id_vid" data-cms-page="bet_history"
+            >Ticket ID: {{ bet.id }}</span
           >
-            <div class="book-code-wrapper">
-              <div>
-                <span
-                  class="book-code-text"
-                  data-cms-key="booking_code"
-                  data-cms-page="common_functions"
-                  >Booking Code</span
+          <span>{{ moment(new Date(bet.created)).format('DD/MM HH:mm') }}</span>
+        </div>
+        <div class="bar seperate">
+          <span class="type"
+            ><span data-cms-key="multiple" data-cms-page="bet_history">{{
+              bet.selections.length > 1 ? 'Multiple' : 'Single'
+            }}</span>
+          </span>
+
+          <span
+            class="status"
+            :style="`${bet.status === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+            >{{ bet.statusDescription }}</span
+          >
+        </div>
+
+        <div class="seperate stake-amount">
+          <span class="left" data-cms-key="total_return" data-cms-page="bet_history"
+            >Total Return</span
+          >
+          <span
+            :style="`${bet.status === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+            >{{ bet.status === 1 ? formatNumber(bet.possibleWin) : '0.00' }}</span
+          >
+        </div>
+
+        <div class="under-split">
+          <div class="cash-info">
+            <em></em>
+            <div class="seperate">
+              <span class="left">Total Stake</span>
+              <span>{{ formatNumber(bet.stake) }}</span>
+            </div>
+
+            <div class="seperate">
+              <span class="left">Total Odds</span>
+              <span>{{ formatNumber(bet.totalOdd) }}</span>
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="bet.status === -1"
+          data-op="rebet-wrapper"
+          class="rebet-wrapper seperate"
+        >
+          <div class="book-code-wrapper">
+            <div>
+              <span
+                class="book-code-text"
+                data-cms-key="booking_code"
+                data-cms-page="common_functions"
+                >Booking Code</span
+              >
+              <span class="book-code"> {{ bet.shareCode }} </span>
+            </div>
+            <div class="book-code-operator">
+              <div :data-clipboard-text="bet.shareCode">
+                <div
+                  @click="copyCode"
+                  class="copy-icon icon-font-base"
+                  style="font-size: 1.33333rem"
                 >
-                <span class="book-code"> {{ betDetail.betslipId }} </span>
-              </div>
-              <div class="book-code-operator">
-                <div :data-clipboard-text="betDetail.betslipId">
-                  <div
-                    @click="copyCode"
-                    class="copy-icon icon-font-base"
-                    style="font-size: 1.33333rem"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-copy"
+                    viewBox="0 0 16 16"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      class="bi bi-copy"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
-                      />
-                    </svg>
-                  </div>
+                    <path
+                      fill-rule="evenodd"
+                      d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
-            <div class="rebet-btn-wrapper" @click="rebet">
-              <div class="rebet-btn">
-                <span v-if="!isRebetLoading">Rebet</span>
-                <div v-else class="rebetting"></div>
-              </div>
+          </div>
+          <div class="rebet-btn-wrapper" @click="rebet">
+            <div class="rebet-btn">
+              <span v-if="!isRebetLoading">Rebet</span>
+              <div v-else class="rebetting"></div>
             </div>
           </div>
-          <div v-if="betDetail.statusCode == 1" class="m-share">
-            <img src="/winning.png" style="height: 100%; width: 100%" />
-          </div>
         </div>
-        <div
-          v-for="(selection, s) in selections"
-          :key="s"
-          data-v-403b7fca=""
-          class="ticket-selection-list ticket-detail-list"
-        >
-          <div class="seperate">
-            <span class="status">
-              <span v-if="selection.statusDescription === 'Lost'">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="20"
-                  fill="red"
-                  class="bi bi-x-octagon-fill"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"
-                  />
-                </svg>
-              </span>
-              <span v-if="selection.statusDescription === 'Won'">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="20"
-                  fill="green"
-                  class="bi bi-shield-fill-check"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m2.146 5.146a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793z"
-                  />
-                </svg>
-              </span>
-              <span v-if="selection.statusDescription === 'Pending'">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="20"
-                  fill="#333"
-                  class="bi bi-clock-fill"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"
-                  />
-                </svg>
-              </span>
+        <div v-if="bet.statusCode == 1" class="m-share">
+          <img src="/winning.png" style="height: 100%; width: 100%" />
+        </div>
+      </div>
+      <div
+        v-for="(selection, s) in props.bet.selections"
+        :key="s"
+        
+        class="ticket-selection-list ticket-detail-list"
+      >
+        <div class="seperate px-0">
+          <span class="status">
+            <span v-if="selection.statusDescription === 'Lost'">
+              <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="svg-icon-base"><circle cx="12" cy="12" r="7" fill="#fff"></circle><path d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="#E41827"></path></svg>
             </span>
-            <div class="solo">
-              <span>
-                <span class="gray">Game ID: {{ selection.eventId }}</span>
-                <span class="gray"> | </span>
-                <span class="gray">{{ formatDate(selection.eventDate, 'DD/MM HH:mm') }}</span></span
+            <span v-if="selection.statusDescription === 'Won'">
+              <svg data-v-54f5b7e7="" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="won svg-icon-base"><circle cx="12" cy="12.5" r="9" fill="currentColor"></circle><path d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z" fill="#fff" stroke="#fff" stroke-width=".2"></path></svg>
+            </span>
+            <span v-if="selection.statusDescription === 'Pending'">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="20"
+                fill="#333"
+                class="bi bi-clock-fill"
+                viewBox="0 0 16 16"
               >
-              <div class="ellips">{{ selection.eventName }}</div>
-              <span class="score-wrapper"
-                ><div class="not-seperate">
-                  <span class="gray">FT Score: </span>
-                  <p>
-                    <span>
-                      <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
-                    >
-                  </p>
-                </div></span
-              >
-              <div class="pick-info">
-                <p class="not-seperate">
-                  <span class="gray colon">Pick</span>
+                <path
+                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"
+                />
+              </svg>
+            </span>
+            <span v-if="selection.statusDescription === 'Void' || selection.statusDescription === 'Cancelled'">
+              <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="void svg-icon-base"><circle cx="12" cy="12" r="8" fill="#fff"></circle><mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" style="mask-type: alpha;"><path fill="#D9D9D9" d="M0 0h24v24H0z"></path></mask><g mask="url(#a)"><path d="M7.5 12.9h9v-1.8h-9v1.8zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="currentColor"></path></g></svg>
+            </span>
+          </span>
+          <div class="solo">
+            <span>
+              <span class="gray">Game ID: {{ selection.eventId }}</span>
+              <span class="gray"> | </span>
+              <span class="gray">{{ formatDate(selection.eventDate, 'DD/MM HH:mm') }}</span></span
+            >
+            <div class="ellips">{{ selection.eventName }}</div>
+            <span class="score-wrapper"
+              ><div class="not-seperate">
+                <span class="gray">FT Score: </span>
+                <p>
                   <span>
-                    {{ selection.outcomeName }}
-                    @{{ selection.odds.toFixed(2) }}
-                  </span>
+                    <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
+                  >
                 </p>
-                <p class="not-seperate">
-                  <span class="gray colon">Market</span>
-                  <span> {{ selection.marketName }} </span>
-                </p>
-              </div>
+              </div></span
+            >
+            <div class="pick-info">
+              <p class="not-seperate">
+                <span class="gray colon">Pick</span>
+                <span>
+                  {{ selection.outcomeName }}
+                  @{{ selection.odds.toFixed(2) }}
+                </span>
+              </p>
+              <p class="not-seperate">
+                <span class="gray colon">Market</span>
+                <span> {{ selection.marketName }} </span>
+              </p>
             </div>
           </div>
-        </div>
-        <div class="seperate bets-info">
-          <span class="bets-num">Number of Bets: 1</span>
-          <span class="to-bet-detail">Bet Details</span>
-        </div>
-        <div
-          class="seperate bets-info to-trans"
-          @click="router.push({ name: 'account-transactions' })"
-        >
-          <span class="bets-num">Check Transaction History</span>
-          <i class="arrow"></i>
         </div>
       </div>
     </div>
@@ -216,11 +184,12 @@ import { useRouter } from 'vue-router'
 import { formatDate, formatNumber, loadBetslipByCode } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
+import moment from 'moment'
 
 const props = defineProps({
   bet: {
     type: Object,
-    default: null
+    default: JSON.parse(localStorage.getItem('betDetail')) || {}
   },
   isAuthenticated: {
     type: Boolean,
@@ -229,31 +198,15 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const betDetail = ref(null)
 const couponStore = useCouponStore()
 const isRebetLoading = ref(false)
-const selections = computed(() => betDetail.value?.selections || [])
 
-watch(
-  () => props.bet,
-  (value) => {
-    if (value) {
-      betDetail.value = value
-      return
-    }
-    const stored = localStorage.getItem('betDetail')
-    if (stored) {
-      betDetail.value = JSON.parse(stored)
-    }
-  },
-  { immediate: true }
-)
 
 async function rebet() {
-  if (!betDetail.value) return
+  if (!props.bet) return
   isRebetLoading.value = true
   try {
-    const res = await loadBetslipByCode(betDetail.value.betslipId)
+    const res = await loadBetslipByCode(props.bet.id)
     isRebetLoading.value = false
     if (res.success) {
       if (res.data.selections.length) {
@@ -284,8 +237,8 @@ async function rebet() {
 }
 
 function copyCode() {
-  if (!betDetail.value) return
-  const textToCopy = betDetail.value.betslipId
+  if (!props.bet) return
+  const textToCopy = props.bet.shareCode
   const textarea = document.createElement('textarea')
   textarea.value = textToCopy
   document.body.appendChild(textarea)
@@ -301,6 +254,9 @@ function copyCode() {
 </script>
 
 <style>
+.px-0{
+  padding: 0 !important;
+}
 .rebetting::before {
   content: '\e654';
   font-family: 'iconfont' !important;
@@ -321,8 +277,7 @@ function copyCode() {
 }
 
 .m-ticket-detail {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: #fff;
   font-size: 1rem;
 }
 .m-ticket-detail .seperate {
@@ -403,7 +358,7 @@ function copyCode() {
 .m-ticket-detail .rebet-wrapper {
   border-top: 1px solid rgba(234, 236, 239, 0.2);
   margin-top: 1.08333333rem;
-  padding: 1rem 0px 0rem;
+  padding: 1rem 1rem 0rem;
 }
 .m-ticket-detail .rebet-wrapper .book-code-wrapper {
   -webkit-box-align: center;
@@ -803,4 +758,168 @@ function copyCode() {
   position: relative;
   top: 0.16666667rem;
 }
+.m-nav-secondary {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #e41827;
+  background-color: var(--brand-primary);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #ffffff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  font-size: 1.33333333rem;
+  height: 3.66666667rem;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 0 1.33333333rem 0 1.66666667rem;
+  width: 100%;
+}
+.m-nav-secondary .m-nav-left {
+  -webkit-box-align: end;
+  -webkit-align-items: flex-end;
+  -ms-flex-align: end;
+  align-items: flex-end;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+}
+.m-nav-secondary .m-nav-left .m-icon {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #ffffff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+  margin-right: 1.58333333rem;
+}
+.m-nav-secondary .m-nav-left .m-icon :before {
+  font-size: 1.33333333rem !important;
+}
+.m-nav-secondary .m-nav-left .m-icon.m-icon--back::before {
+  content: '\e620';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+.m-nav-secondary .m-nav-left .m-icon--close::before {
+  content: '\e69a';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+.m-nav-secondary .m-nav-left .m-icon--close :before {
+  font-size: 1.5rem !important;
+}
+.m-nav-secondary.withHome {
+  padding: 0 0 0 1.66666667rem;
+}
+.m-nav-secondary a :visited,
+.m-nav-secondary a :active,
+.m-nav-secondary a :link,
+.m-nav-secondary a :hover {
+  color: #ffffff;
+  color: var(--text-type2-primary);
+  text-decoration: none;
+}
+.m-nav-secondary .title {
+  font-size: 1.66666667rem;
+  line-height: 2rem;
+}
+.m-nav-secondary .title.small-font-height {
+  font-size: 1.066rem;
+  line-height: 1.5rem;
+}
+
+.m-nav-secondary .info-container {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+}
+.m-nav-secondary .m-nav-right {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100%;
+}
+
+.root {
+  display: inline-block;
+  position: relative;
+}
+.won::before {
+  content: '\e60b';
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+.won::before {
+  color: #0D9737;
+  color: var(--brand-secondary);
+  font-size: 1.66666667rem;
+  font-weight: normal;
+  line-height: 1;
+  padding-right: 1.25rem;
+  position: relative;
+  vertical-align: middle;
+}
+.not-start,
+.on-going {
+  color: #353A45;
+}
+.void,
+.refund-all {
+  color: #9CA0AB;
+}
+.won,
+.flash-win,
+.flash-save,
+.early-payout,
+.early-goal {
+  color: #0D9737;
+}
+.delayed {
+  bottom: -0.25rem;
+  position: absolute;
+  right: -0.25rem;
+}
+ svg.delayed circle {
+  fill: #353A45;
+}
+ svg.delayed path {
+  fill: #FAFAFA;
+}
+
 </style>

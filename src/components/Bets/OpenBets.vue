@@ -17,7 +17,7 @@
 
     <div v-else style="margin-top: 20px">
         <template v-if="!hasOpenBets">
-            <div v-if="!hasOpenBets && !isLoading">
+            <div v-if="!hasOpenBets && !props.isLoading">
                 <div class="m-error-wrapper" style="text-align: center">
                     <span class="m-error-msg"> You currently have no Open Bets. </span>
                 </div>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
             </div>
-            <div v-if="isLoading">
+            <div v-if="props.isLoading">
                 <LoadingSpinner />
             </div>
         </template>
@@ -73,13 +73,16 @@ const props = defineProps({
     isAuthenticated: {
         type: Boolean,
         default: false
+    },
+    isLoading: {
+        type: Boolean,
+        default: false
     }
 })
 
 const router = useRouter()
 const openBets = ref([])
 const hasOpenBets = computed(() => openBets.value.length > 0)
-const isLoading = ref(true)
 const codes = ref([])
 const showCashoutModal = ref(false)
 const cashoutData = ref({})
@@ -175,9 +178,9 @@ watch(
     () => props.bets,
     (value) => {
         openBets.value = Array.isArray(value) ? value : []
-        if (props.isAuthenticated) {
-            isLoading.value = false
-        }
+        // if (props.isAuthenticated) {
+        //     isLoading.value = false
+        // }
     },
     { immediate: true }
 )

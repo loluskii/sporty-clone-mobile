@@ -143,15 +143,10 @@ async function loadBet(code) {
 }
 
 async function getBetsData() {
-  let payload = {
-    clientId: CLIENT_ID,
-    date: '',
-    status: 0,
-    userId: usersStore.currentUser.id
-  }
-  const res = await getBets(payload)
+  if(route.name === 'bets-view') return
+  const res = await getBets({status: -1})
   if (res.bets) {
-    openBets.value = res.bets.length
+    openBets.value = res?.data?.data.length
   }
 }
 

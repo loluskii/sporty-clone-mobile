@@ -1,5 +1,5 @@
 <template>
-  <div class="m-sportBets">
+  <div class="m-sportBets" v-if="activeTab !=='bet_detail'">
     <div style="width: 100%; height: 87px"></div>
     <div class="fixed-wrap" style="position: fixed; top: 0rem; z-index: 1000; width: 100%">
       <div>
@@ -43,10 +43,13 @@
       :bets="betData"
       :bet="selectedBet"
       :isAuthenticated="isAuthenticated"
+      :isLoading="isLoading"
       @view-detail="handleViewDetail"
+      @fetch-bets="handleFetchBets"
       @back="activeTab = 'all_bets'"
     />
   </div>
+  <bet-detail v-else :bet="selectedBet" :isAuthenticated="isAuthenticated" @reset="resetView" />
 </template>
 
 <script setup>
@@ -59,10 +62,13 @@ import AllBets from '../../components/Bets/AllBets.vue'
 import BetDetail from '../../components/Bets/BetDetail.vue'
 import emitter from '@/plugins/emitter'
 
-
-
-const activeTab = ref('open_bets')
-const selectedBet = ref(null)
+const utilsStore = useUtilsStore()
+const activeTab = computed({
+  get: () => utilsStore.activeBetView || 'open_bets',
+  set: (value) => {
+    utilsStore.activeBetView = value
+  }
+})
 
 // Component map for dynamic switching
 const componentMap = {
@@ -72,23 +78,24 @@ const componentMap = {
 }
 
 const currentComponent = computed(() => componentMap[activeTab.value] || OpenBets)
+const selectedBet = ref(null || JSON.parse(localStorage.getItem('betDetail')))
 
 const betData = ref([])
 const isLoading = ref(true)
 const { isAuthenticated } = useAuthStore()
-const { SportsbookGlobalVariable } = useUtilsStore()
+const { SportsbookGlobalVariable } = utilsStore
 const {balance} = useUsersStore()
 const showCashoutModal = ref(false)
 const cashoutData = ref({})
 const cashingOut = ref(false)
 const codes = ref([])
-const router = useRouter()
-const route = useRoute()
 
-async function getBetsData(status = -1) {
+async function getBetsData(status) {
   isLoading.value = true
+  console.log(status)
   try {
-    const res = await getBets({status: status})
+    const payload = status === '' ? {perPage: 20} : { status: -1 }
+    const res = await getBets(payload)
     betData.value = res?.data?.data || []
   } catch (error) {
     betData.value = []
@@ -123,9 +130,12 @@ function handleCashout(bet) {
 
 async function confirmCashout() {
   cashingOut.value = true
+  const estimatedCashout = Number(cashoutData.value.estimatedCashout || cashoutData.value.cashOutAmount || 0)
+  const percentRaw = estimatedCashout > 0 ? cashoutData.value.cashOutAmount / estimatedCashout : 0
   const res = await performCashout({
     betId: cashoutData.value.id,
-    amount: cashoutData.value.cashOutAmount
+    percent: Math.min(1, Math.max(0.1, percentRaw)),
+    source: 'mobile'
   })
   cashingOut.value = false
   showCashoutModal.value = false
@@ -133,7 +143,7 @@ async function confirmCashout() {
   if (res.success) {
     console.log('cashout successful')
     emitter.emit('showDialogueToaster', 'Cashout Successful!')
-    await getBetsData()
+    await getBetsData('')
   } else {
     emitter.emit('showDialogueToaster', res.message)
   }
@@ -142,11 +152,13 @@ async function confirmCashout() {
 function handleViewDetail(bet) {
   if (bet) {
     selectedBet.value = bet
+    activeTab.value = 'bet_detail';
   }
-  activeTab.value = 'bet_detail'
 }
 
 function setActiveTab(tab) {
+  isLoading.value = true
+  betData.value = []
   activeTab.value = tab
   if (!isAuthenticated) return
   if (tab === 'open_bets') {
@@ -156,10 +168,29 @@ function setActiveTab(tab) {
   }
 }
 
-onMounted(async () => {
-  getCodes()
-  if (isAuthenticated) {
+function resetView(){
+  localStorage.removeItem('betDetail')
+  activeTab.value = 'all_bets'
+  if (!isAuthenticated) return
+  getBetsData('')
+}
+
+function handleFetchBets(statusKey) {
+  if (activeTab.value !== 'all_bets') return
+  if (statusKey === -1) {
     getBetsData(-1)
+    return
+  }
+  getBetsData('')
+}
+
+onMounted(() => {
+  if (isAuthenticated) {
+    if (activeTab.value === 'all_bets') {
+      getBetsData('')
+    }else {
+      getBetsData(-1)
+    }
   }
 })
 

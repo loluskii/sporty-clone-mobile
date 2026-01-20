@@ -37,7 +37,16 @@
                                     :class="{ 'm-slider-disabled': !isCashoutAvailable }"
                                     style="width: auto; padding: 10px;"
                                 >
-                                    <div aria-hidden="true" class="m-slider" style="height: 4px;">
+                                    <div
+                                        ref="sliderBarRef"
+                                        aria-hidden="true"
+                                        class="m-slider"
+                                        style="height: 4px;"
+                                        @pointerdown.prevent="onSliderPointerDown"
+                                        @pointermove.prevent="onSliderPointerMove"
+                                        @pointerup.prevent="onSliderPointerUp"
+                                        @pointercancel.prevent="onSliderPointerUp"
+                                    >
                                         <div
                                             class="m-slider-always m-slider-dot"
                                             :style="sliderDotStyle"
@@ -104,10 +113,12 @@ const emit = defineEmits(['close', 'cashout-success', 'cashout-failed'])
 const { SportsbookGlobalVariable } = useUtilsStore()
 const cashingOut = ref(false)
 const sliderValue = ref(0)
+const sliderBarRef = ref(null)
+const isDragging = ref(false)
 
 const rawMaxCashout = computed(() => Number(props.cashoutData?.estimatedCashout || 0))
 const isCashoutAvailable = computed(() => rawMaxCashout.value > 0)
-const minCashout = computed(() => 0)
+const minCashout = computed(() => (rawMaxCashout.value > 0 ? 0.1 : 0))
 const maxCashout = computed(() => (isCashoutAvailable.value ? rawMaxCashout.value : 0))
 const sliderInputMin = computed(() => (isCashoutAvailable.value ? minCashout.value : 0))
 const sliderStep = computed(() => 0.01)
@@ -165,13 +176,45 @@ function closeCashoutModal() {
     }
 }
 
+function setSliderValueFromClientX(clientX) {
+    const sliderEl = sliderBarRef.value
+    if (!sliderEl) return
+    const rect = sliderEl.getBoundingClientRect()
+    if (rect.width === 0) return
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    const rawValue = minCashout.value + ratio * (maxCashout.value - minCashout.value)
+    const step = sliderStep.value || 0.01
+    const stepped = Math.round(rawValue / step) * step
+    sliderValue.value = Number(stepped.toFixed(2))
+}
+
+function onSliderPointerDown(event) {
+    if (!isCashoutAvailable.value) return
+    isDragging.value = true
+    if (event.pointerId != null && sliderBarRef.value?.setPointerCapture) {
+        sliderBarRef.value.setPointerCapture(event.pointerId)
+    }
+    setSliderValueFromClientX(event.clientX)
+}
+
+function onSliderPointerMove(event) {
+    if (!isDragging.value || !isCashoutAvailable.value) return
+    setSliderValueFromClientX(event.clientX)
+}
+
+function onSliderPointerUp() {
+    isDragging.value = false
+}
+
 async function confirmCashout() {
     if (cashingOut.value) return
     cashingOut.value = true
     try {
+        const percent = maxCashout.value > 0 ? cashoutAmount.value / maxCashout.value : 0
         const res = await performCashout({
             betId: props.cashoutData.id,
-            amount: cashoutAmount.value
+            percent: Math.min(1, Math.max(0.1, percent)),
+            source: 'mobile'
         })
         if (res.success) {
             emitter.emit('showDialogueToaster', 'Cashout Successful!')
