@@ -49,6 +49,42 @@
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+
+    // Customize widget position and appearance
+    Tawk_API.customStyle = {
+      visibility: {
+        desktop: {
+          position: 'br', // bottom-right
+          xOffset: 15,
+          yOffset: 70 // Move up above bottom navigation
+        },
+        mobile: {
+          position: 'br', // bottom-right
+          xOffset: 10,
+          yOffset: 100 // Move up above bottom navigation
+        },
+        bubble: {
+          rotate: '0deg',
+          xOffset: -20,
+          yOffset: 70
+        }
+      }
+    };
+
+    // Hide the "Chat" text label after widget loads
+    Tawk_API.onLoad = function() {
+      Tawk_API.hideWidget();
+      // Create custom icon-only button
+      var customBtn = document.createElement('div');
+      customBtn.id = 'tawk-custom-btn';
+      customBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+      customBtn.style.cssText = 'position:fixed;bottom:70px;left:15px;width:50px;height:50px;background:#03a84e;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9999;box-shadow:0 2px 10px rgba(0,0,0,0.3);';
+      customBtn.onclick = function() {
+        Tawk_API.toggle();
+      };
+      document.body.appendChild(customBtn);
+    };
+
     (function(){
     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
     s1.async=true;
