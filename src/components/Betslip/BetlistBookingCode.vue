@@ -20,7 +20,7 @@
       >
         <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
         <input
-          type="input"
+          type="text"
           name=""
           v-model="bookingCode"
           placeholder="Booking Code"
@@ -95,7 +95,7 @@ async function loadBet() {
   } catch (error) {
     isInvalidCode.value = true
     isLoading.value = false
-    errorMesssage.value = error
+    errorMesssage.value = error?.message || String(error)
   }
 }
 

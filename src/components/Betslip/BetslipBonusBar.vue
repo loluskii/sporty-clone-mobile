@@ -1,6 +1,6 @@
 <template>
   <div id="bonus-progress-bar" class="real-theme">
-    <div class="progress" :style="`width: ${(coupon.selections.length / 50) * 100}%`"></div>
+    <div class="progress" :style="`width: ${progressWidth}%`"></div>
     <p>Add more qualifying selections to boost your bonus</p>
   </div>
 </template>
@@ -9,6 +9,8 @@
 import { useCouponStore } from '@/stores'
 
 const { coupon } = useCouponStore()
+
+const progressWidth = Math.min(100, Math.max(0, (coupon.selections.length / 50) * 100))
 </script>
 <style>
 #bonus-progress-bar {

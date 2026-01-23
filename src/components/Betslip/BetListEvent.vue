@@ -40,7 +40,7 @@
               <span
                 tabindex="0"
                 class="m-keybord-input"
-                @click="openKeyboard"
+                @click.stop="openKeyboard"
                 style="--fontsize: inherit"
                 v-html="selection.stake"
                 v-if="betSlipType === 'Single' && selectionsLength > 1"
@@ -65,7 +65,6 @@ import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmo
 import { useRouter } from 'vue-router'
 import { useCouponStore, useUtilsStore } from '@/stores'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
-import emitter from '@/plugins/emitter'
 
 const couponStore = useCouponStore()
 const utilsStore = useUtilsStore()
@@ -137,8 +136,10 @@ onBeforeUnmount(() => {
 
 const scores = ref()
 
+const keyboardKey = computed(() => `selection:${props.selection.matchId}`)
+
 const isKeyboardVisible = computed(() => {
-  return props.activeSelectionId === props.selection.matchId
+  return couponStore.activeKeyboardKey === keyboardKey.value
 })
 
 const getSportbyName = (name) => {
@@ -168,6 +169,9 @@ const selectionIsUnavailable = computed(() => {
 
   // return hoursDifference >= 5;
 })
+
+const minStake = computed(() => Number(utilsStore.SportsbookGlobalVariable?.singleMinStake || 0))
+const maxStake = computed(() => Number(utilsStore.SportsbookGlobalVariable?.singleMaxStake || 0))
 
 // Add a computed property to get the specific unavailability reason
 const getUnavailabilityReason = computed(() => {
@@ -213,18 +217,24 @@ async function removeSelection() {
 }
 
 function handleStakeChange(stake) {
+  const parsed = Number(stake)
+  const normalized = Number.isFinite(parsed)
+    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
+    : minStake.value
   return couponStore.updateWinnings({
-    stake: stake,
+    stake: normalized,
     id: props.selection.selectionId
   })
 }
 
 function openKeyboard() {
   emit('on-selection-input', props.selection.matchId)
+  couponStore.setActiveKeyboardKey(keyboardKey.value)
 }
 
 function hideKeyboard() {
   emit('on-selection-input', 0)
+  couponStore.setActiveKeyboardKey(null)
 }
 
 function onKeyClick(type, value) {
@@ -266,7 +276,7 @@ function onKeyClick(type, value) {
       handleStakeChange(stake)
       break
     case 'done':
-      hideKeyboard()
+      couponStore.setActiveKeyboardKey(null)
       break
   }
 }

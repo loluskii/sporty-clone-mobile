@@ -2,11 +2,12 @@
  <div class="m-betslips-stake-wrapper">
     <div class="m-betslips-stake" style="padding-bottom: 5px;">
       <StakeInput 
-        title="Play Alls"
-        :stake="coupon.totalStake"
+        title="Play All"
+        :stake="playAllStake"
         :bet-slip-type="betSlipType"
         :can-edit="true"
         :tabindex="-1"
+        :sync-all="true"
       />
 
       <StakeInput 
@@ -39,6 +40,14 @@ const couponStore = useCouponStore();
 
 const coupon = computed(() => {
   return couponStore.coupon
+})
+
+const playAllStake = computed(() => {
+  const combos = coupon.value.combos || []
+  if (!combos.length) return coupon.value.totalStake
+  const firstStake = combos[0]?.Stake
+  const allSame = combos.every((combo) => combo?.Stake === firstStake)
+  return allSame ? firstStake : ''
 })
 
 

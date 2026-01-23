@@ -5,11 +5,7 @@
       <div class="m-input-keyboard-wrapper m-input mg-b-10">
         <div class="m-input-wrapper">
           <span data-cms-key="total_stake">
-            {{
-              betSlipType == 'Single' && selectionsLength > 1
-                ? 'Stake per bet (' + selectionsLength + ' bets)'
-                : 'Total Stake'
-            }}
+            {{ isSingleMulti ? 'Stake per bet (' + selectionsLength + ' bets)' : 'Total Stake' }}
           </span>
 
           <span style="text-align: end;">
@@ -19,7 +15,7 @@
             <span
               tabindex="0"
               :class="{'m-keybord-input multiple-stake-input': betSlipType !== 'Combo'}"
-              v-html="betlistStake"
+              v-html="stakeDisplay"
               @click="toggleKeyboard"
             ></span>
           </span>
@@ -27,7 +23,7 @@
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
-            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ betlistStake }} to
+            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ totalStakeDisplay }} to
             place this bet. Please deposit an additional {{ amountNeededToStake }}
           </p>
           <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
@@ -52,6 +48,11 @@
           >
         </div>
       </template>
+
+      <div class="bonus mg-b-10" v-if="isSingleMulti">
+        <span>Total Stake</span>
+        <span>{{ totalStakeDisplay }}</span>
+      </div>
 
       <div class="total-odds mg-b-10" v-if="betType === 'Multiple'">
         <span>Total Odds</span>
@@ -162,7 +163,7 @@
 import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -176,18 +177,45 @@ const { SportsbookGlobalVariable } = useUtilsStore()
 const userStore = useUsersStore()
 const router = useRouter()
 const emit = defineEmits(['toggle-show', 'toggle-betslip', 'book-bet'])
-const keyboardVisible = ref(false)
+const keyboardKey = 'betlist:total'
+const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
+
+const minStake = computed(() => {
+  const raw = props.betSlipType === 'Combo'
+    ? SportsbookGlobalVariable.comboMinStake
+    : SportsbookGlobalVariable.singleMinStake
+  return Number(raw || 0)
+})
+
+const maxStake = computed(() => {
+  const raw = props.betSlipType === 'Combo'
+    ? SportsbookGlobalVariable.comboMaxStake
+    : SportsbookGlobalVariable.singleMaxStake
+  return Number(raw || 0)
+})
 
 const updateStake = (stake) => {
-  couponStore.coupon.stake = stake
+  const parsed = Number(stake)
+  const normalized = Number.isFinite(parsed)
+    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
+    : minStake.value
+  couponStore.coupon.stake = normalized
   return couponStore.updateWinnings({
-    stake: stake,
+    stake: normalized,
     id: 'all'
   })
 }
 
-const betlistStake = computed(() => {
-  return couponStore.coupon.totalStake
+const isSingleMulti = computed(() => props.betSlipType === 'Single' && selectionsLength.value > 1)
+
+const stakeDisplay = computed(() => {
+  return isSingleMulti.value ? couponStore.coupon.stake : couponStore.coupon.totalStake
+})
+
+const totalStakeAmount = computed(() => Number(couponStore.coupon.totalStake || 0))
+
+const totalStakeDisplay = computed(() => {
+  return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
 })
 
 const goToDeposit = () => {
@@ -197,7 +225,7 @@ const goToDeposit = () => {
 
 const placeBetDisabled = computed(() => {
   return (
-    couponStore.coupon.totalStake < parseFloat(SportsbookGlobalVariable.MinBetStake) ||
+    totalStakeAmount.value < parseFloat(SportsbookGlobalVariable.MinBetStake) ||
     couponStore.isBetslipLoading ||
     hasSuspendedSelections.value ||
     balanceLowerThanStake.value
@@ -207,13 +235,13 @@ const placeBetDisabled = computed(() => {
 const balanceLowerThanStake = computed(() => {
   return (
     userStore.currentUser &&
-    betlistStake.value > userStore.currentUser?.sportBonusBalance &&
-    betlistStake.value > userStore.currentUser?.availableBalance
+    totalStakeAmount.value > userStore.currentUser?.sportBonusBalance &&
+    totalStakeAmount.value > userStore.currentUser?.availableBalance
   )
 })
 
 const amountNeededToStake = computed(() => {
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
+  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(totalStakeAmount.value - parseFloat(userStore.balance))}`
 })
 
 const acceptedChanges = computed(() => {
@@ -224,20 +252,24 @@ const taxEnabled = computed(() => SportsbookGlobalVariable.taxEnabled === '1')
 const exciseTax = computed(() => parseFloat(SportsbookGlobalVariable.exciseTax || 0))
 
 const stakeAfterTax = computed(() => {
-  const excise = betlistStake.value * (exciseTax.value / 100)
-  return betlistStake.value - excise
+  const excise = totalStakeAmount.value * (exciseTax.value / 100)
+  return totalStakeAmount.value - excise
 })
 
 const wthTax = computed(() => {
   let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
-  return (stakeAfterTax.value * couponStore.coupon.totalOdds - couponStore.coupon.totalStake) * wth
+  return (stakeAfterTax.value * couponStore.coupon.totalOdds - totalStakeAmount.value) * wth
 })
 
 // Computed property for potential winnings
 const potentialWin = computed(() => {
-  const stake = parseFloat(betlistStake.value) || 0
+  const stake = totalStakeAmount.value || 0
   const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
   let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0)
+  const isSingleBet = props.betSlipType === 'Single' && selectionsLength.value === 1
+  const isMultipleBet = props.betSlipType === 'Multiple'
+  const isSingleMulti = props.betSlipType === 'Single' && selectionsLength.value > 1
+  const isSystemBet = props.betSlipType === 'Combo'
 
   if (taxEnabled.value) {
     let finalPayout = stake * totalOdd
@@ -250,22 +282,28 @@ const potentialWin = computed(() => {
       // wth tax
       finalPayout = finalPayout - parseFloat(wthTax.value || 0)
     }
-    return formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
+    const taxedWin = formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
+    if (isSingleMulti || isSystemBet) {
+      return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${taxedWin}`
+    }
+    return taxedWin
   }
 
-  const isSingleBet = props.betSlipType === 'Single' && selectionsLength.value === 1
-  const isMultipleBet = props.betSlipType === 'Multiple'
+
 
   if (isMultipleBet || isSingleBet) {
     return formatNumber(parseFloat(maxWin.value || 0))
   }
-  return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
-    parseFloat(maxWin.value || 0)
-  )}`
+  if (isSingleMulti || isSystemBet) {
+    return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
+      parseFloat(maxWin.value || 0)
+    )}`
+  }
 })
 
 const toggleKeyboard = () => {
-  keyboardVisible.value = !keyboardVisible.value
+  const nextKey = keyboardVisible.value ? null : keyboardKey
+  couponStore.setActiveKeyboardKey(nextKey)
 }
 
 const totalOdds = computed(() => {
@@ -353,7 +391,7 @@ function placeBet() {
 }
 
 function onKeyClick(type, value) {
-  let stake = betlistStake.value.toString()
+  let stake = stakeDisplay.value.toString()
   let finalStake
   switch (type) {
     case 'number':
@@ -397,7 +435,7 @@ function onKeyClick(type, value) {
       break
     case 'done':
       // Handle the "Done" button click if needed
-      keyboardVisible.value = false
+      couponStore.setActiveKeyboardKey(null)
       break
     // Add more cases for other button types if necessary
   }
@@ -430,7 +468,7 @@ function handleAcceptChange() {
 
 onMounted(() => {
   couponStore.updateWinnings({
-    stake: betlistStake.value
+    stake: stakeDisplay.value
   })
 })
 </script>

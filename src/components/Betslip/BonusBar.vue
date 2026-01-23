@@ -10,11 +10,12 @@ import { computed } from 'vue'
 const props = defineProps(['bonus'])
 
 const bonusPerc = computed(() => {
-  if (props.bonus) {
-    return parseFloat((props.bonus.rolledAmount / props.bonus.pendingAmount) * 100)
-  } else {
-    return 0.0
-  }
+  if (!props.bonus) return 0
+  const pending = Number(props.bonus.pendingAmount || 0)
+  const rolled = Number(props.bonus.rolledAmount || 0)
+  if (pending <= 0) return 0
+  const raw = (rolled / pending) * 100
+  return Math.min(100, Math.max(0, parseFloat(raw)))
 })
 </script>
 <style>

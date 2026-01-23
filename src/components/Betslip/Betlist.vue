@@ -77,7 +77,6 @@
                       clip-rule="evenodd"
                     ></path>
                   </svg>
-
                   <span>Remove all</span>
                 </div>
                 <div class="wrapper separate-part" @click="showBetSettings = true">
@@ -114,14 +113,13 @@
               >
                 <span data-cms-key="multiple">Multiple</span>
               </li>
-              <!-- <li
+              <li
                 :class="betSlipType === 'Combo' ? 'active' : ''"
                 @click="couponStore.setBetType('Combo')"
                 class="m-list-bet-type-item m-snap-nav-item"
-                data-op="betslip-multi-tag-system"
               >
                 <span data-cms-key="system">System</span>
-              </li> -->
+              </li>
             </ul>
             <i class="controls left-controls"></i>
             <i class="controls right-controls"></i>
@@ -153,10 +151,10 @@
               </div>
             </div>
 
-            <!-- <SystemBet 
+            <SystemBet 
               v-if="betSlipType === 'Combo'" 
               :betSlipType="betSlipType"
-            /> -->
+            />
 
             <BetListStake
               @toggle-show="toggleShow"
@@ -259,11 +257,9 @@ import { useCouponStore, useUsersStore } from "@/stores";
 import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import BetlistBookingCode from "./BetlistBookingCode.vue";
-import BetSettings from "./BetSettings.vue";
 import Simulation from "./Simulation.vue";
 import BetslipModeToggle from "./BetslipModeToggle.vue";
 import { useUtilsStore } from "@/stores";
-import VueToggles from "vue-toggles";
 import SystemBet from "./SystemBet.vue";
 
 const emit = defineEmits(['toggle-betslip', 'update-betcount'])
@@ -280,7 +276,6 @@ const activeSelectionInput = ref()
 const showBetSettings = ref(false)
 const simulationResults = ref(null)
 
-const value = ref(false)
 
 const betSlipType = computed(() => {
   return couponStore.coupon.betslip_type

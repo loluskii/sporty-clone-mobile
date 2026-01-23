@@ -39,9 +39,10 @@
 
 <script setup>
 import BetlistStakeKeyboard from "./BetlistStakeKeyboard.vue";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import { useCouponStore, useUsersStore, useUtilsStore } from "@/stores";
+import { formatNumber } from "@/helpers";
 
 import { useRouter } from "vue-router";
 
@@ -53,6 +54,7 @@ const props = defineProps({
   tabindex: Number,
   betSlipType: String,
   combo: Object,
+  syncAll: Boolean,
 });
 
 const userStore = useUsersStore();
@@ -61,7 +63,16 @@ const { SportsbookGlobalVariable } = useUtilsStore();
 const {coupon} = couponStore;
 
 const router = useRouter();
-const keyboardVisible = ref(false);
+const keyboardKey = computed(() => {
+  if (props.combo && props.combo.Grouping !== undefined) {
+    return `combo:${props.combo.Grouping}`
+  }
+  return `system:${props.title || 'all'}`
+})
+
+const keyboardVisible = computed(() => {
+  return couponStore.activeKeyboardKey === keyboardKey.value
+})
 
 const emit = defineEmits(["toggle-betslip"]);
 
@@ -78,25 +89,45 @@ const amountNeededToStake = computed(() => {
   return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(bal)}`;
 })
 
+const minStake = computed(() => {
+  const raw = props.betSlipType === 'Combo'
+    ? SportsbookGlobalVariable.comboMinStake
+    : SportsbookGlobalVariable.singleMinStake
+  return Number(raw || 0)
+})
+
+const maxStake = computed(() => {
+  const raw = props.betSlipType === 'Combo'
+    ? SportsbookGlobalVariable.comboMaxStake
+    : SportsbookGlobalVariable.singleMaxStake
+  return Number(raw || 0)
+})
+
 const goToDeposit = () => {
   emit("toggle-betslip");
   return router.push({ name: 'account-deposit' })
 }
 
 const updateStake = (stake) => {
+  const parsed = Number(stake)
+  const normalized = Number.isFinite(parsed)
+    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
+    : minStake.value
   // coupon.stake = stake;
   if(props.betSlipType === 'Combo') {
-    return couponStore.updateComboWinnings(stake, props.combo);
+    const targetCombo = props.syncAll ? null : props.combo
+    return couponStore.updateComboWinnings(normalized, targetCombo);
   } else {
     return couponStore.updateWinnings({
-      stake: stake,
+      stake: normalized,
       id: "all",
     });
   }
 };
 
 const toggleKeyboard = () => {
-  keyboardVisible.value = !keyboardVisible.value;
+  const nextKey = keyboardVisible.value ? null : keyboardKey.value
+  couponStore.setActiveKeyboardKey(nextKey)
 };
 
 function onKeyClick(type, value) {
@@ -144,7 +175,7 @@ function onKeyClick(type, value) {
       break;
     case "done":
       // Handle the "Done" button click if needed
-      keyboardVisible.value = false;
+      couponStore.setActiveKeyboardKey(null)
       break;
     // Add more cases for other button types if necessary
   }
