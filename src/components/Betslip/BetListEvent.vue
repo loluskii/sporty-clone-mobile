@@ -2,7 +2,7 @@
   <div class="m-bet-container" :class="selection.changed ? 'm-change-item animated' : ''">
     <div data-op="betslip-multi-odds" class="m-outcomes-row">
       <div class="m-outcomes-opt" @click="removeSelection">
-        <div class="m-outcomes-color"></div>
+        <div class="m-outcomes-color" :style="matchGroupStyle"></div>
       </div>
       <div class="m-outcome-right">
         <div class="m-outcomes-row m-team-row" @click="goToGame">
@@ -148,6 +148,32 @@ const getSportbyName = (name) => {
 
 const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
+})
+
+const matchIdKey = computed(() => String(props.selection.matchId || props.selection.fixture?.matchID || ''))
+const matchGroupCount = computed(() => {
+  if (!matchIdKey.value) return 0
+  return couponStore.coupon.selections.filter(
+    (selection) => String(selection.matchId || selection.fixture?.matchID || '') === matchIdKey.value
+  ).length
+})
+
+const matchGroupColors = ['#0D9737', '#1E88E5', '#F39C12', '#8E44AD', '#E91E63', '#00ACC1', '#6D4C41']
+const matchGroupColor = computed(() => {
+  const key = matchIdKey.value
+  if (!key) return 'transparent'
+  let hash = 0
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) % 0x7fffffff
+  }
+  return matchGroupColors[hash % matchGroupColors.length]
+})
+
+const matchGroupStyle = computed(() => {
+  if (matchGroupCount.value <= 1) {
+    return { width: '3px', backgroundColor: 'transparent' }
+  }
+  return { width: '3px', backgroundColor: matchGroupColor.value }
 })
 
 const selectionIsUnavailable = computed(() => {

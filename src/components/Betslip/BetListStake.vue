@@ -54,9 +54,9 @@
         <span>{{ totalStakeDisplay }}</span>
       </div>
 
-      <div class="total-odds mg-b-10" v-if="betType === 'Multiple'">
+      <div class="total-odds mg-b-10" v-if="showTotalOdds">
         <span>Total Odds</span>
-        <span>{{ totalOdds }}</span>
+        <span>{{ totalOddsDisplay }}</span>
       </div>
 
       <div class="bonus mg-b-10">
@@ -270,6 +270,7 @@ const potentialWin = computed(() => {
   const isMultipleBet = props.betSlipType === 'Multiple'
   const isSingleMulti = props.betSlipType === 'Single' && selectionsLength.value > 1
   const isSystemBet = props.betSlipType === 'Combo'
+  const isSplitMultiple = props.betSlipType === 'Multiple' && props.betType === 'Split'
 
   if (taxEnabled.value) {
     let finalPayout = stake * totalOdd
@@ -283,7 +284,7 @@ const potentialWin = computed(() => {
       finalPayout = finalPayout - parseFloat(wthTax.value || 0)
     }
     const taxedWin = formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
-    if (isSingleMulti || isSystemBet) {
+    if (isSingleMulti || isSystemBet || isSplitMultiple) {
       return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${taxedWin}`
     }
     return taxedWin
@@ -294,7 +295,7 @@ const potentialWin = computed(() => {
   if (isMultipleBet || isSingleBet) {
     return formatNumber(parseFloat(maxWin.value || 0))
   }
-  if (isSingleMulti || isSystemBet) {
+  if (isSingleMulti || isSystemBet || isSplitMultiple) {
     return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
       parseFloat(maxWin.value || 0)
     )}`
@@ -308,6 +309,16 @@ const toggleKeyboard = () => {
 
 const totalOdds = computed(() => {
   return formatNumber(couponStore.coupon.totalOdds)
+})
+
+const minOdds = computed(() => formatNumber(couponStore.coupon.minOdds || 0))
+const maxOdds = computed(() => formatNumber(couponStore.coupon.maxOdds || 0))
+const showTotalOdds = computed(() => props.betType === 'Multiple' || props.betType === 'Split')
+const totalOddsDisplay = computed(() => {
+  if (props.betType === 'Split') {
+    return `${minOdds.value} ~ ${maxOdds.value}`
+  }
+  return totalOdds.value
 })
 
 const maxBonus = computed(() => {

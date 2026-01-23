@@ -4,7 +4,8 @@
             <div class="m-item-wrap">
                 <div class="m-title" @click="isExpanded = !isExpanded">
                     <div><span style="text-transform: capitalize;" class="m-t-14 m-t-bold m-list-t-default">
-                            {{ bet.betCategory }}
+                            {{ bet.betType === 'multi' ? 'Multiple' : bet.betType === 'single' ? 'Single' : bet.betType
+                                === 'system' ? 'System':bet.betType }}
                         </span> <span data-op="openbet-item-live-tag" style="display: none;"><span
                                 class="m-i-live m-t-b5" data-cms-key="live"
                                 data-cms-page="common_functions">Live</span></span>
@@ -25,8 +26,8 @@
                                 class="m-t-bold m-list-t-default m-t-mv5">{{ bet.stake }}</span>
                         </div>
                     </div>
-                    <button class="af-button af-button--primary m-btn--cashout simple" @click.prevent="handleCashout(bet)"
-                        :class="{ 'disabled is-disabled': !bet.estimatedCashout }"
+                    <button class="af-button af-button--primary m-btn--cashout simple"
+                        @click.prevent="handleCashout(bet)" :class="{ 'disabled is-disabled': !bet.estimatedCashout }"
                         :disabled="!bet.estimatedCashout || cashingOut || bet.isBonusBet" type="button"> <span><span
                                 class="label">Cashout</span>
                             <div class="amount">
@@ -49,8 +50,8 @@
                                             <svg v-if="event.status === -1" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
                                                 class="not-start svg-icon-base">
-                                                <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"
-                                                    style="mask-type: alpha;">
+                                                <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24"
+                                                    height="24" style="mask-type: alpha;">
                                                     <path fill="currentColor" d="M0 0h24v24H0z"></path>
                                                 </mask>
                                                 <g mask="url(#a)">
@@ -67,7 +68,7 @@
                                                     d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z"
                                                     fill="#E41827"></path>
                                             </svg>
-    
+
                                             <svg v-else-if="event.status === 1" viewBox="0 0 24 25" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
                                                 class="won svg-icon-base">
@@ -76,7 +77,7 @@
                                                     d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z"
                                                     fill="#fff" stroke="#fff" stroke-width=".2"></path>
                                             </svg>
-    
+
                                         </span>
                                     </span>
                                 </div>
@@ -84,14 +85,16 @@
                                     <div class="m-t-14 m-t-l16 m-t-default f-wrap"><i class="m-r-5 m-icon-football"></i>
                                         <span data-op="openbet-detail-outcome-desc" class="m-r-5 m-t-bold"><span> {{
                                             event.outcomeName }}
-                                            </span></span> <span data-op="openbet-detail-odds" class="m-t-bold m-r-5 m-b-5">
+                                            </span></span> <span data-op="openbet-detail-odds"
+                                            class="m-t-bold m-r-5 m-b-5">
                                             @ {{ event.odds.toFixed(2) }}
                                         </span> <span data-op="openbet-detail-market-desc"
                                             class="m-t-14 m-t-gray m-b-5"><span>
                                                 {{ event.marketName }}
                                             </span> </span>
                                     </div>
-                                    <div class="m-against m-list-t-default m-t-14"><span data-op="openbet-detail-home-away">
+                                    <div class="m-against m-list-t-default m-t-14"><span
+                                            data-op="openbet-detail-home-away">
                                             {{ event.eventName }}
                                         </span></div>
                                     <div class="m-score">
@@ -109,13 +112,13 @@
                                         Details</span> <i class="m-icon-pack"></i></span></div>
                         </div>
                     </div>
-    
+
                     <div class="m-money f-flex m-list-t-default f-btwn m-t-12">
                         <div class="m-money__list">
                             <div data-cms-key="stake" data-cms-page="bet_history">Stake
                             </div>
                             <div class="m-t-bold amount">
-                                {{bet.stake}}
+                                {{ bet.stake }}
                             </div>
                         </div>
                         <div class="m-money__list">
@@ -123,26 +126,18 @@
                                 Pot. Win
                             </div>
                             <div class="m-t-bold m-t-ml6 amount">
-                                {{bet.possibleWin}}
+                                {{ bet.possibleWin }}
                             </div>
                         </div>
                     </div>
 
-                    <div
-                        v-if="bet.status === -1"
-                        class="m-btn-wrapper"
-                        :class="{ disabled: !bet.estimatedCashout }"
-                        >
-                        <button
-                            :disabled="!bet.estimatedCashout || cashingOut || bet.isBonusBet"
-                            @click.prevent="handleCashout(bet)"
-                            type="button"
-                            class="m-btn--cashout"
-                        >
+                    <div v-if="bet.status === -1" class="m-btn-wrapper" :class="{ disabled: !bet.estimatedCashout }">
+                        <button :disabled="!bet.estimatedCashout || cashingOut || bet.isBonusBet"
+                            @click.prevent="handleCashout(bet)" type="button" class="m-btn--cashout">
                             <span v-if="!cashingOut">{{
-                            bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
-                                ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.estimatedCashout.toFixed(2)}`
-                                : 'Cashout Unavailable'
+                                bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
+                                    ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.estimatedCashout.toFixed(2)}`
+                                    : 'Cashout Unavailable'
                             }}</span>
                             <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
                         </button>

@@ -94,9 +94,10 @@ export const useCouponStore = defineStore({
 
         const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
         const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
+        const subscriptionKey = `${type}:${matchId}`
 
         if (isAdding) {
-          if (!this.activeSubscriptions.some((sub) => String(sub.matchId) === matchId)) {
+          if (!this.activeSubscriptions.some((sub) => sub.key === subscriptionKey)) {
             const unsubscribeOdds = subscribe(oddsChangeTopic, (data) => {
               this.handleOddsChange(data, selection)
             })
@@ -104,7 +105,9 @@ export const useCouponStore = defineStore({
               this.handleBetStop(data, selection)
             })
             this.activeSubscriptions.push({
+              key: subscriptionKey,
               matchId,
+              type,
               oddsChangeTopic,
               betStopTopic,
               unsubscribeOdds,
@@ -115,11 +118,12 @@ export const useCouponStore = defineStore({
           const hasOtherSelectionsFromMatch = this.coupon.selections.some(
             (s) =>
               String(s.matchId || s.fixture?.matchID) === matchId &&
+              String(s.type || '') === String(type || '') &&
               s.selectionId !== selection.selectionId
           )
           if (!hasOtherSelectionsFromMatch) {
             const subscription = this.activeSubscriptions.find(
-              (sub) => String(sub.matchId) === matchId
+              (sub) => sub.key === subscriptionKey
             )
             if (subscription) {
               try {
@@ -136,7 +140,7 @@ export const useCouponStore = defineStore({
                 // );
               }
               this.activeSubscriptions = this.activeSubscriptions.filter(
-                (sub) => String(sub.matchId) !== matchId
+                (sub) => sub.key !== subscriptionKey
               )
             }
           }
@@ -312,19 +316,21 @@ export const useCouponStore = defineStore({
             // console.log(bonus, "bon");
             //group selections by match
             this.coupon.tournaments = groupTournament(this.coupon.selections)
-            this.coupon.fixtures = groupSelections(couponData.selections)
+            this.coupon.fixtures = groupSelections(this.coupon.selections)
 
             // con
             //bet type
             this.coupon.bet_type = 'Split'
-            this.coupon.betslip_type = 'Combo'
+            this.coupon.betslip_type = 'Multiple'
 
             const splitProps = await getSplitProps(this.coupon)
             //calculate winnings
             let minStake =
               splitProps.minStake !== undefined && splitProps.minStake !== ''
                 ? splitProps.minStake
-                : 0
+                : this.coupon.stake || this.SportsbookGlobalVariable.singleMinStake || 0
+            minStake = Number(minStake) || 0
+            this.coupon.stake = minStake
             const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(minStake)
             const maxWinnings = parseFloat(splitProps.maxOdds) * parseFloat(minStake)
 
@@ -337,7 +343,10 @@ export const useCouponStore = defineStore({
             this.coupon.minWin = this.coupon.minGrossWin - this.coupon.minWTH
             this.coupon.grossWin = parseFloat(splitProps.maxBonus) + maxWinnings
             this.coupon.wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
-            this.coupon.maxWin = this.coupon.grossWin - couponData.wthTax
+            this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
+
+            const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
+            this.coupon.combos = calculatedGroup.Groups
 
             return
           }
@@ -353,10 +362,15 @@ export const useCouponStore = defineStore({
         )
 
         //group selections by match
-        this.coupon.tournaments = groupTournament(couponData.selections)
-        this.coupon.fixtures = groupSelections(couponData.selections)
+        this.coupon.tournaments = groupTournament(this.coupon.selections)
+        this.coupon.fixtures = groupSelections(this.coupon.selections)
         //check bet type
         this.coupon.bet_type = checkBetType(this.coupon.fixtures)
+        this.coupon.betslip_type = 'Multiple'
+        if (this.coupon.bet_type === 'Split') {
+          const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
+          this.coupon.combos = calculatedGroup.Groups
+        }
         // check if event is live
 
         if (type === 'live') this.coupon.hasLive = true
@@ -364,7 +378,12 @@ export const useCouponStore = defineStore({
         if (this.coupon.bet_type === 'Split') {
           const splitProps = await getSplitProps(this.coupon)
 
-          this.coupon.minStake = parseFloat(splitProps.stake) / splitProps.noOfCombos
+          const minStake =
+            splitProps.minStake !== undefined && splitProps.minStake !== ''
+              ? splitProps.minStake
+              : this.coupon.stake || this.SportsbookGlobalVariable.singleMinStake || 0
+          this.coupon.minStake = Number(minStake) || 0
+          this.coupon.stake = this.coupon.minStake
 
           //calculate winnings
           const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(this.coupon.minStake)
@@ -722,7 +741,7 @@ export const useCouponStore = defineStore({
         }
       }
     },
-        updateComboWinnings(val, combo) {
+    updateComboWinnings(val, combo) {
       let coupondata = { ...this.coupon };
       let stake = val;
       if (stake === '') {
@@ -864,6 +883,117 @@ export const useCouponStore = defineStore({
         alert('error. stake must be greater than 0')
         return
       }
+      const buildSelections = (selections) =>
+        selections.map((selection) => ({
+          marketId: parseInt(selection.marketId || selection.market_id) || 0,
+          matchId: parseInt(selection.matchId || selection.match_id) || 0,
+          outcomeId: String(selection.outcomeId || selection.odd_id || selection.outcomeID),
+          specifier: selection.specifier || ''
+        }))
+
+      const buildSingleStake = (selections) => {
+        const stakes = selections
+          .map((selection) => Number(selection.stake || 0))
+          .filter((value) => Number.isFinite(value) && value > 0)
+        if (!stakes.length) {
+          return { stake: 0, totalStake: 0 }
+        }
+        const first = stakes[0]
+        const same = stakes.every((value) => value === first)
+        const totalStake = stakes.reduce((sum, value) => sum + value, 0)
+        return {
+          stake: same ? first : 0,
+          totalStake
+        }
+      }
+
+      const buildSystemPayload = () => {
+        const combos = coupondata.combos || []
+        const sizedCombos = combos
+          .filter((combo) => Number(combo.Grouping || combo.grouping) > 0)
+          .map((combo) => ({
+            size: Number(combo.Grouping || combo.grouping),
+            stake: Number(combo.Stake || combo.stake || 0)
+          }))
+          .filter((combo) => Number.isFinite(combo.size))
+          .sort((a, b) => a.size - b.size)
+        const sizes = sizedCombos.map((combo) => combo.size)
+        const stakes = sizedCombos.map((combo) => combo.stake)
+        const unitStake =
+          stakes.length && stakes.every((value) => value === stakes[0]) ? [stakes[0]] : stakes
+        return {
+          betType: 'system',
+          stake: 0,
+          totalStake: 0,
+          system: {
+            sizes,
+            unitStake,
+            bankers: []
+          },
+          selections: buildSelections(coupondata.selections)
+        }
+      }
+
+      const buildBets = () => {
+        const selections = coupondata.selections || []
+        if (coupondata.betslip_type === 'Combo' || coupondata.bet_type === 'Combo') {
+          return [buildSystemPayload()]
+        }
+        if (coupondata.bet_type === 'Split' && coupondata.betslip_type === 'Multiple') {
+          const matchCounts = selections.reduce((acc, selection) => {
+            const key = String(selection.matchId || selection.match_id || selection.fixture?.matchID)
+            acc[key] = (acc[key] || 0) + 1
+            return acc
+          }, {})
+          const singles = selections.filter((selection) => {
+            const key = String(selection.matchId || selection.match_id || selection.fixture?.matchID)
+            return matchCounts[key] > 1
+          })
+          const multiples = selections.filter((selection) => {
+            const key = String(selection.matchId || selection.match_id || selection.fixture?.matchID)
+            return matchCounts[key] <= 1
+          })
+          const singleStake = buildSingleStake(singles)
+          const bets = []
+          if (singles.length) {
+            bets.push({
+              betType: 'single',
+              selections: buildSelections(singles),
+              stake: singleStake.stake,
+              totalStake: singleStake.totalStake
+            })
+          }
+          if (multiples.length) {
+            bets.push({
+              betType: 'multi',
+              selections: buildSelections(multiples),
+              stake: Number(coupondata.stake || 0),
+              totalStake: Number(coupondata.stake || 0)
+            })
+          }
+          return bets
+        }
+        if (coupondata.betslip_type === 'Single' || coupondata.bet_type === 'Single') {
+          const singleStake = buildSingleStake(selections)
+          return [
+            {
+              betType: 'single',
+              selections: buildSelections(selections),
+              stake: singleStake.stake,
+              totalStake: singleStake.totalStake
+            }
+          ]
+        }
+        return [
+          {
+            betType: 'multi',
+            selections: buildSelections(selections),
+            stake: Number(coupondata.stake || 0),
+            totalStake: Number(coupondata.totalStake || coupondata.stake || 0)
+          }
+        ]
+      }
+
       if (type === 'bet') {
         this.isBetslipLoading = true
         coupondata.isBooking = this.mode === 'real' ? 0 : 2
@@ -874,26 +1004,10 @@ export const useCouponStore = defineStore({
 
         // Transform coupon data to new API format
         const payload = {
-          bet_type: coupondata.bet_type,
+          bets: buildBets(),
           bonusId: coupondata.bonusId || 0,
-          combos: coupondata.combos?.map(combo => ({
-            combinations: combo.combinations || 0,
-            grouping: combo.Grouping || combo.grouping || '',
-            stake: combo.stake || combo.Stake || 0
-          })) || [],
           isBooking: coupondata.isBooking,
-          selections: coupondata.selections.map(selection => ({
-            marketId: parseInt(selection.marketId || selection.market_id) || 0,
-            matchId: parseInt(selection.matchId || selection.match_id) || 0,
-            outcomeId: String(selection.outcomeId || selection.odd_id || selection.outcomeID),
-            producerId: selection.producerId || selection.producerID || 1,
-            specifier: selection.specifier || '',
-            sportId: parseInt(selection.sportId || selection.sport_id) || 0
-          })),
-          source: coupondata.source || 'mobile',
-          stake: coupondata.stake,
-          system: coupondata.system || null,
-          totalStake: coupondata.totalStake,
+          source: coupondata.source || 'web',
           useBonus: coupondata.useBonus || false
         }
 
@@ -911,26 +1025,10 @@ export const useCouponStore = defineStore({
 
           // Transform coupon data to new API format for booking
           const payload = {
-            bet_type: coupondata.bet_type,
+            bets: buildBets(),
             bonusId: coupondata.bonusId || 0,
-            combos: coupondata.combos?.map(combo => ({
-              combinations: combo.combinations || 0,
-              grouping: combo.Grouping || combo.grouping || '',
-              stake: combo.stake || combo.Stake || 0
-            })) || [],
             isBooking: 1,
-            selections: coupondata.selections.map(selection => ({
-              marketId: parseInt(selection.marketId || selection.market_id) || 0,
-              matchId: parseInt(selection.matchId || selection.match_id) || 0,
-              outcomeId: String(selection.outcomeId || selection.odd_id || selection.outcomeID),
-              producerId: selection.producerId || selection.producerID || 1,
-              specifier: selection.specifier || '',
-              sportId: parseInt(selection.sportId || selection.sport_id) || 0
-            })),
-            source: coupondata.source || 'mobile',
-            stake: coupondata.stake,
-            system: coupondata.system || null,
-            totalStake: coupondata.totalStake,
+            source: coupondata.source || 'web',
             useBonus: coupondata.useBonus || false
           }
 

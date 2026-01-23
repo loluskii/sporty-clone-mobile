@@ -2,7 +2,9 @@
 import SlotKey from './SlotKey'
 import CalculatedGroup from './calculated-group'
 import CalculatedCoupon from './calculated-coupon'
-import { Combination, FastCombination as fastCombination } from './combination'
+import { Combination, FastCombination } from './combination'
+
+const fastCombination = new FastCombination()
 
 const BetCouponGroup = (function () {
   function BetCouponGroup() {}

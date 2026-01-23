@@ -24,7 +24,7 @@
         <div class="bar seperate">
           <span class="type"
             ><span data-cms-key="multiple" data-cms-page="bet_history">{{
-              bet.selections.length > 1 ? 'Multiple' : 'Single'
+              bet.betType
             }}</span>
           </span>
 

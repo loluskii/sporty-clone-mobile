@@ -106,7 +106,7 @@
                 <span data-cms-key="singles">Single</span>
               </li>
               <li
-                :class="betSlipType !== 'Combo' && betType === 'Multiple' ? 'active' : ''"
+                :class="betSlipType === 'Multiple' ? 'active' : ''"
                 @click="couponStore.setBetType('Multiple')"
                 class="flex flex-center m-list-bet-type-item m-snap-nav-item"
                 data-op="betslip-multi-tag-multi"
