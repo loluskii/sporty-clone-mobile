@@ -285,10 +285,11 @@ export const getPlacedBetStatus = (status) => {
   }
 }
 
-export const createID = (event_id, provider_id, odd, id, event_name) => {
-  let oddname = String(odd).replace(/[^a-zA-Z0-9]/g, '_')
-  let eventname = String(event_name).replace(/[^a-zA-Z0-9]/g, '_')
-  return event_id + '_' + provider_id + '_' + oddname + '_' + id + '_' + eventname
+export const createID = (event_id, market_id, odd, id, event_name, specifier = '') => {
+  const specifierStr = String(specifier || '').replace(/[^a-zA-Z0-9]/g, '_')
+  const oddname = String(odd).replace(/[^a-zA-Z0-9]/g, '_')
+  const eventname = String(event_name).replace(/[^a-zA-Z0-9]/g, '_')
+  return `${event_id}_${market_id}_${oddname}_${id}_${eventname}${specifierStr ? '_' + specifierStr : ''}`
 }
 
 export const multibetCombination = (item) => {
@@ -314,6 +315,7 @@ export const min = (list) => {
 }
 
 export const isSelected = (ele_id, coupon) => {
+  console.log('Checking if selected:', ele_id)
   let isExist = false
 
   if (coupon.selections.length > 0) {

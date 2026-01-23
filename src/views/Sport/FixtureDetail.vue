@@ -78,10 +78,11 @@
                               'm-outcome--checked': isSelected(
                                 createID(
                                   eventDetail.gameID,
-                                  eventDetail.matchID,
+                                  market.marketID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name
+                                  eventDetail.name,
+                                  marketGroup.specifier
                                 ),
                                 couponStore.coupon
                               ),
@@ -149,10 +150,11 @@
                                   'm-outcome--checked': isSelected(
                                     createID(
                                       eventDetail.gameID,
-                                      eventDetail.matchID,
+                                      mg.marketID,
                                       outcome.outcomeName,
                                       outcome.oddID,
-                                      eventDetail.name
+                                      eventDetail.name,
+                                      mg.specifier
                                     ),
                                     couponStore.coupon
                                   ),
@@ -180,10 +182,11 @@
                               'm-outcome--checked': isSelected(
                                 createID(
                                   eventDetail.gameID,
-                                  eventDetail.matchID,
+                                  market.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name
+                                  eventDetail.name,
+                                  marketGroup.specifier
                                 ),
                                 couponStore.coupon
                               ),
@@ -516,10 +519,11 @@ function addToBetslip(market, outcome) {
   }
   const id = createID(
     eventDetail.value.gameID,
-    eventDetail.value.matchID,
+    marketId,
     outcome.outcomeName,
     outcome.oddID,
-    eventDetail.value.name
+    eventDetail.value.name,
+    market.specifier
   )
   const data = {
     fixture: eventDetail.value,

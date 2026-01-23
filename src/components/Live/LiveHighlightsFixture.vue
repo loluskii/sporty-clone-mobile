@@ -77,7 +77,8 @@
                     gameData.matchID,
                     odd.outcomeName,
                     odd.oddID,
-                    gameData.name
+                    gameData.name,
+                    odd.specifier
                   ),
                   couponStore.coupon
                 )
@@ -329,7 +330,7 @@ const toggleList = () => {
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(

@@ -21,7 +21,7 @@
                   </p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? 'Finished' : eventTime }}</span>
+                  <span>{{ eventDetail.eventTime !== '--:--' ? eventTime : '' }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
@@ -83,10 +83,11 @@
                             'm-outcome--checked': isSelected(
                               createID(
                                 eventDetail.gameID,
-                                eventDetail.matchID,
+                                marketGroup.marketID,
                                 selection.outcomeName,
-                                selection.oddID,
-                                eventDetail.name
+                                selection.outcomeID,
+                                eventDetail.name,
+                                marketGroup.specifier
                               ),
                               couponStore.coupon
                             ),
@@ -152,10 +153,11 @@
                                 'm-outcome--checked': isSelected(
                                   createID(
                                     eventDetail.gameID,
-                                    eventDetail.matchID,
+                                    mg.marketID,
                                     outcome.outcomeName,
-                                    outcome.oddID,
-                                    eventDetail.name
+                                    outcome.outcomID,
+                                    eventDetail.name,
+                                    mg.specifier
                                   ),
                                   couponStore.coupon
                                 ),
@@ -182,10 +184,11 @@
                             'm-outcome--checked': isSelected(
                               createID(
                                 eventDetail.gameID,
-                                eventDetail.matchID,
+                                marketGroup.marketID,
                                 selection.outcomeName,
-                                selection.oddID,
-                                eventDetail.name
+                                selection.outcomID,
+                                eventDetail.name,
+                                marketGroup.specifier
                               ),
                               couponStore.coupon
                             ),
@@ -276,15 +279,23 @@ const noMarkets = computed(() => {
 })
 
 // Time handling functions
-const formatMinutesToTime = (minutes) => {
-  return `${minutes.toString().padStart(2, '0')}:00`
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-const parseTimeToMinutes = (timeString) => {
+const parseTime = (timeString) => {
   if (!timeString) return null
   const parts = timeString.split(':')
-  if (parts.length >= 1) {
-    return parseInt(parts[0], 10)
+  if (parts.length >= 2) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: parseInt(parts[1], 10)
+    }
+  } else if (parts.length === 1) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: 0
+    }
   }
   return null
 }
@@ -299,13 +310,19 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialMinutes = parseTimeToMinutes(eventTime.value)
-  if (initialMinutes === null || initialMinutes === 45 || initialMinutes === 90) return
+  const initialTime = parseTime(eventTime.value)
+  if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
 
-  let currentMinutes = initialMinutes
+  let currentMinutes = initialTime.minutes
+  let currentSeconds = initialTime.seconds
 
   timer.value = setInterval(() => {
-    currentMinutes++
+    currentSeconds++
+
+    if (currentSeconds >= 60) {
+      currentSeconds = 0
+      currentMinutes++
+    }
 
     // Stop at key match times (halftime and fulltime)
     if (currentMinutes === 45 || currentMinutes === 90) {
@@ -313,8 +330,8 @@ const startTimer = () => {
       return
     }
 
-    eventTime.value = formatMinutesToTime(currentMinutes)
-  }, 60000) // Increment every minute
+    eventTime.value = formatTime(currentMinutes, currentSeconds)
+  }, 1000) // Increment every second
 }
 
 // Helper to format event time (append + for 90+ minutes in soccer)
@@ -503,8 +520,8 @@ function setupPeriodicRefetch(matchId) {
           groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
           // Get scores from eventInfo.scores if available, fallback to top-level
           if (data.eventInfo?.scores) {
-            scores.homeScore = data.eventInfo.scores.home ?? 0
-            scores.awayScore = data.eventInfo.scores.away ?? 0
+            scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+            scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
           } else {
             scores.homeScore = data.homeScore ?? 0
             scores.awayScore = data.awayScore ?? 0
@@ -619,7 +636,6 @@ async function getEventDetail(id) {
 
       if (isLive && mappedData.market?.length > 0) {
         eventDetail.value = mappedData
-        console.log('Fetched event markets:', mappedData)
         // Filter out suspended markets
         eventMarkets.value = mappedData.market.filter(
           (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
@@ -629,8 +645,8 @@ async function getEventDetail(id) {
         awayTeam.value = mappedData.competitor2
         // Get scores from eventInfo.scores if available, fallback to top-level
         if (data.eventInfo?.scores) {
-          scores.homeScore = data.eventInfo.scores.home ?? 0
-          scores.awayScore = data.eventInfo.scores.away ?? 0
+          scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+          scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
         } else {
           scores.homeScore = data.homeScore ?? 0
           scores.awayScore = data.awayScore ?? 0
@@ -726,10 +742,11 @@ function addToBetslip(market, outcome) {
 
   const id = createID(
     eventDetail.value.gameID,
-    eventDetail.value.matchID,
+    marketId,
     outcome.outcomeName,
-    outcome.oddID,
-    eventDetail.value.name
+    outcome.oddID || outcome.outcomeID,
+    eventDetail.value.name,
+    market.specifier
   )
   const data = {
     fixture: eventDetail.value,

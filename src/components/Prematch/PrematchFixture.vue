@@ -80,7 +80,8 @@
                         eventData.matchID,
                         odd.outcomeName,
                         odd.oddID,
-                        eventData.name
+                        eventData.name,
+                        odd.specifier
                       ),
                       couponStore.coupon
                     )
@@ -434,7 +435,7 @@ function handleFixtureStatus(data) {
 }
 
 function addToBetslip(event, odd) {
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
