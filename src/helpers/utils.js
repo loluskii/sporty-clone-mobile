@@ -315,7 +315,6 @@ export const min = (list) => {
 }
 
 export const isSelected = (ele_id, coupon) => {
-  console.log('Checking if selected:', ele_id)
   let isExist = false
 
   if (coupon.selections.length > 0) {
