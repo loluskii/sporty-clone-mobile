@@ -61,20 +61,17 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits, computed, toRef } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCouponStore, useUtilsStore } from '@/stores'
+import { useCouponStore } from '@/stores'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
+import { useOddsChangeIndicator } from '@/composables/useOddsChangeIndicator'
+import { useMatchGroupStyle } from '@/composables/useMatchGroupStyle'
+import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboard'
 
 const couponStore = useCouponStore()
-const utilsStore = useUtilsStore()
 const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection'])
 const router = useRouter()
-
-const keyboardVisible = ref(false)
-const oddUp = ref(false)
-const oddDown = ref(false)
-const previousOdds = ref(null)
 
 const props = defineProps({
   selection: Object,
@@ -82,98 +79,19 @@ const props = defineProps({
   betType: String,
   activeSelectionId: Number
 })
-
-// Add a timer reference to clear on component unmount
-let arrowTimer = null
-
-// Watch for changes to selection.odds
-watch(
-  () => props.selection.odds,
-  (newValue, oldValue) => {
-    if (previousOdds.value === null) {
-      previousOdds.value = newValue
-      return
-    }
-
-    // Only show arrows if there's an actual change in value
-    if (newValue !== previousOdds.value) {
-      if (parseFloat(newValue) > parseFloat(previousOdds.value)) {
-        oddUp.value = true
-        oddDown.value = false
-      } else if (parseFloat(newValue) < parseFloat(previousOdds.value)) {
-        oddUp.value = false
-        oddDown.value = true
-      }
-
-      // Reset arrows after 5 seconds
-      if (arrowTimer) {
-        clearTimeout(arrowTimer)
-      }
-
-      arrowTimer = setTimeout(() => {
-        oddUp.value = false
-        oddDown.value = false
-      }, 5000)
-
-      // Update previous odds
-      previousOdds.value = newValue
-    }
+const selectionRef = toRef(props, 'selection')
+const { oddUp, oddDown } = useOddsChangeIndicator(computed(() => selectionRef.value?.odds))
+const { matchGroupStyle } = useMatchGroupStyle(selectionRef)
+const { isKeyboardVisible, openKeyboard, hideKeyboard, onKeyClick } = useSelectionStakeKeyboard(
+  selectionRef,
+  {
+    onOpen: () => emit('on-selection-input', selectionRef.value?.matchId || 0),
+    onClose: () => emit('on-selection-input', 0)
   }
 )
 
-// Listen for acceptChanges event from BetListStake
-onMounted(() => {
-  // Initialize previousOdds
-  previousOdds.value = props.selection.odds
-})
-
-// Clean up timers when component is unmounted
-onBeforeUnmount(() => {
-  if (arrowTimer) {
-    clearTimeout(arrowTimer)
-  }
-})
-
-const scores = ref()
-
-const keyboardKey = computed(() => `selection:${props.selection.matchId}`)
-
-const isKeyboardVisible = computed(() => {
-  return couponStore.activeKeyboardKey === keyboardKey.value
-})
-
-const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
-}
-
 const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
-})
-
-const matchIdKey = computed(() => String(props.selection.matchId || props.selection.fixture?.matchID || ''))
-const matchGroupCount = computed(() => {
-  if (!matchIdKey.value) return 0
-  return couponStore.coupon.selections.filter(
-    (selection) => String(selection.matchId || selection.fixture?.matchID || '') === matchIdKey.value
-  ).length
-})
-
-const matchGroupColors = ['#0D9737', '#1E88E5', '#F39C12', '#8E44AD', '#E91E63', '#00ACC1', '#6D4C41']
-const matchGroupColor = computed(() => {
-  const key = matchIdKey.value
-  if (!key) return 'transparent'
-  let hash = 0
-  for (let i = 0; i < key.length; i += 1) {
-    hash = (hash * 31 + key.charCodeAt(i)) % 0x7fffffff
-  }
-  return matchGroupColors[hash % matchGroupColors.length]
-})
-
-const matchGroupStyle = computed(() => {
-  if (matchGroupCount.value <= 1) {
-    return { width: '3px', backgroundColor: 'transparent' }
-  }
-  return { width: '3px', backgroundColor: matchGroupColor.value }
 })
 
 const selectionIsUnavailable = computed(() => {
@@ -195,9 +113,6 @@ const selectionIsUnavailable = computed(() => {
 
   // return hoursDifference >= 5;
 })
-
-const minStake = computed(() => Number(utilsStore.SportsbookGlobalVariable?.singleMinStake || 0))
-const maxStake = computed(() => Number(utilsStore.SportsbookGlobalVariable?.singleMaxStake || 0))
 
 // Add a computed property to get the specific unavailability reason
 const getUnavailabilityReason = computed(() => {
@@ -240,71 +155,6 @@ const getSelectionOdds = (odds) => {
 
 async function removeSelection() {
   await couponStore.removeSelection(props.selection.selectionId || props.selection.id)
-}
-
-function handleStakeChange(stake) {
-  const parsed = Number(stake)
-  const normalized = Number.isFinite(parsed)
-    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
-    : minStake.value
-  return couponStore.updateWinnings({
-    stake: normalized,
-    id: props.selection.selectionId
-  })
-}
-
-function openKeyboard() {
-  emit('on-selection-input', props.selection.matchId)
-  couponStore.setActiveKeyboardKey(keyboardKey.value)
-}
-
-function hideKeyboard() {
-  emit('on-selection-input', 0)
-  couponStore.setActiveKeyboardKey(null)
-}
-
-function onKeyClick(type, value) {
-  let stake = props.selection.stake.toString()
-  let finalStake
-  switch (type) {
-    case 'number':
-      if (stake.length < 7) {
-        if (typeof value === 'number') {
-          if (stake === '') {
-            finalStake = value
-          } else {
-            finalStake = parseFloat(stake) + value
-          }
-        } else {
-          finalStake = stake + value
-        }
-        handleStakeChange(finalStake)
-      }
-      break
-    case 'dot':
-      if (stake.length < 6 && !stake.includes('.')) {
-        stake += '.'
-        handleStakeChange(stake)
-      }
-      break
-    case 'double-zero':
-      if (stake.length < 6) {
-        stake += '00'
-        handleStakeChange(stake)
-      }
-      break
-    case 'clear':
-      stake = ''
-      handleStakeChange(stake)
-      break
-    case 'delete':
-      stake = stake.toString().slice(0, -1)
-      handleStakeChange(stake)
-      break
-    case 'done':
-      couponStore.setActiveKeyboardKey(null)
-      break
-  }
 }
 
 function goToGame() {

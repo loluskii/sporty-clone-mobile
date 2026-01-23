@@ -29,7 +29,6 @@
                                     <span class="number-grow">{{ displayCashout }}</span>
                                 </div>
                             </div>
-                            <!-- TODO insert slider here using ui below -->
                             <div class="m-slider-bar">
                                 <div
                                     role="slider"

@@ -162,8 +162,9 @@
 <script setup>
 import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
+import { useBetslipCalculations } from '@/composables/useBetslipCalculations'
 import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -177,46 +178,26 @@ const { SportsbookGlobalVariable } = useUtilsStore()
 const userStore = useUsersStore()
 const router = useRouter()
 const emit = defineEmits(['toggle-show', 'toggle-betslip', 'book-bet'])
+const { betSlipType, betType } = toRefs(props)
+const {
+  selectionsLength,
+  isSingleMulti,
+  stakeDisplay,
+  totalStakeAmount,
+  totalStakeDisplay,
+  totalStake,
+  taxEnabled,
+  exciseTax,
+  stakeAfterTax,
+  wthTax,
+  showTotalOdds,
+  totalOddsDisplay,
+  maxBonus,
+  potentialWin,
+  updateStake
+} = useBetslipCalculations({ betSlipType, betType })
 const keyboardKey = 'betlist:total'
 const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
-
-const minStake = computed(() => {
-  const raw = props.betSlipType === 'Combo'
-    ? SportsbookGlobalVariable.comboMinStake
-    : SportsbookGlobalVariable.singleMinStake
-  return Number(raw || 0)
-})
-
-const maxStake = computed(() => {
-  const raw = props.betSlipType === 'Combo'
-    ? SportsbookGlobalVariable.comboMaxStake
-    : SportsbookGlobalVariable.singleMaxStake
-  return Number(raw || 0)
-})
-
-const updateStake = (stake) => {
-  const parsed = Number(stake)
-  const normalized = Number.isFinite(parsed)
-    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
-    : minStake.value
-  couponStore.coupon.stake = normalized
-  return couponStore.updateWinnings({
-    stake: normalized,
-    id: 'all'
-  })
-}
-
-const isSingleMulti = computed(() => props.betSlipType === 'Single' && selectionsLength.value > 1)
-
-const stakeDisplay = computed(() => {
-  return isSingleMulti.value ? couponStore.coupon.stake : couponStore.coupon.totalStake
-})
-
-const totalStakeAmount = computed(() => Number(couponStore.coupon.totalStake || 0))
-
-const totalStakeDisplay = computed(() => {
-  return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
-})
 
 const goToDeposit = () => {
   emit('toggle-betslip')
@@ -248,101 +229,13 @@ const acceptedChanges = computed(() => {
   return couponStore.coupon.acceptChanges
 })
 
-const taxEnabled = computed(() => SportsbookGlobalVariable.taxEnabled === '1')
-const exciseTax = computed(() => parseFloat(SportsbookGlobalVariable.exciseTax || 0))
-
-const stakeAfterTax = computed(() => {
-  const excise = totalStakeAmount.value * (exciseTax.value / 100)
-  return totalStakeAmount.value - excise
-})
-
-const wthTax = computed(() => {
-  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
-  return (stakeAfterTax.value * couponStore.coupon.totalOdds - totalStakeAmount.value) * wth
-})
-
-// Computed property for potential winnings
-const potentialWin = computed(() => {
-  const stake = totalStakeAmount.value || 0
-  const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
-  let wth = parseFloat(SportsbookGlobalVariable.wthTax || 0)
-  const isSingleBet = props.betSlipType === 'Single' && selectionsLength.value === 1
-  const isMultipleBet = props.betSlipType === 'Multiple'
-  const isSingleMulti = props.betSlipType === 'Single' && selectionsLength.value > 1
-  const isSystemBet = props.betSlipType === 'Combo'
-  const isSplitMultiple = props.betSlipType === 'Multiple' && props.betType === 'Split'
-
-  if (taxEnabled.value) {
-    let finalPayout = stake * totalOdd
-
-    if (exciseTax.value > 0) {
-      finalPayout = parseFloat(stakeAfterTax.value || 0) * totalOdd
-    }
-
-    if (wth > 0) {
-      // wth tax
-      finalPayout = finalPayout - parseFloat(wthTax.value || 0)
-    }
-    const taxedWin = formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
-    if (isSingleMulti || isSystemBet || isSplitMultiple) {
-      return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${taxedWin}`
-    }
-    return taxedWin
-  }
-
-
-
-  if (isMultipleBet || isSingleBet) {
-    return formatNumber(parseFloat(maxWin.value || 0))
-  }
-  if (isSingleMulti || isSystemBet || isSplitMultiple) {
-    return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
-      parseFloat(maxWin.value || 0)
-    )}`
-  }
-})
-
 const toggleKeyboard = () => {
   const nextKey = keyboardVisible.value ? null : keyboardKey
   couponStore.setActiveKeyboardKey(nextKey)
 }
 
-const totalOdds = computed(() => {
-  return formatNumber(couponStore.coupon.totalOdds)
-})
-
-const minOdds = computed(() => formatNumber(couponStore.coupon.minOdds || 0))
-const maxOdds = computed(() => formatNumber(couponStore.coupon.maxOdds || 0))
-const showTotalOdds = computed(() => props.betType === 'Multiple' || props.betType === 'Split')
-const totalOddsDisplay = computed(() => {
-  if (props.betType === 'Split') {
-    return `${minOdds.value} ~ ${maxOdds.value}`
-  }
-  return totalOdds.value
-})
-
-const maxBonus = computed(() => {
-  return couponStore.coupon.maxBonus
-})
-
-const selectionsLength = computed(() => {
-  return couponStore.coupon.selections.length
-})
-
-const minWin = computed(() => {
-  return couponStore.coupon.minWin
-})
-
-const maxWin = computed(() => {
-  return couponStore.coupon.maxWin
-})
-
 const betslipMode = computed(() => {
   return couponStore.betslipMode
-})
-
-const totalStake = computed(() => {
-  return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
 })
 
 // Add this computed property to check for suspended selections
