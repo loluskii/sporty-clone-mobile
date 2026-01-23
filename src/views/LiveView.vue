@@ -115,20 +115,17 @@
 
 <script setup>
 import LiveFixture from '@/components/Live/LiveFixture.vue'
-import { useUtilsStore, useCouponStore } from '@/stores'
+import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights } from '@/helpers'
-import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
+import { getFeedsLiveFixtures } from '@/helpers'
+import { sportsList } from '@/helpers/constants'
+import { ref, computed, watch } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
-import { useMqttService } from '@/composables/useMqtt'
 
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
-const couponStore = useCouponStore()
-const mqttService = useMqttService()
-const unsubscribeFunctions = ref([])
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
 
 // Map outcome IDs to standard display names for common markets
@@ -156,110 +153,94 @@ const getImageSrc = (sportId) => {
 
 const {
   data: completeLiveData,
-  isLoading,
-  refetch
-} = useQuery('liveData', getLiveHighlights, {
-  // Prevent automatic refetching which can cause recursive updates
-  refetchOnWindowFocus: false,
-  refetchOnMount: true,
-  refetchOnReconnect: false,
-  // Use a longer stale time to prevent unnecessary refetches
-  staleTime: 60000, // 1 minute
-  // Add cacheTime to control how long data stays in cache
-  cacheTime: 300000, // 5 minutes
-  // Update refetch interval to 10 minutes
-  refetchInterval: 60000 * 10, // 10 minutes
-  // Add retry logic with exponential backoff
-  retry: (failureCount, error) => {
-    // Don't retry on 4xx errors
-    if (error.response && error.response.status >= 400 && error.response.status < 500) {
-      return false
-    }
-    return failureCount < 3 // retry up to 3 times
-  },
-  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  onError: (err) => {
-    console.error('Error fetching live data:', err)
-  },
-  onSuccess: (response) => {
-    if (response.fixtures) {
-      // Check if betslip selections exist in current event list
-      // checkBetslipSelectionsExist();
-    } else {
-      // Instead of setting isEmptyResponse, update existing fixtures to inactive state
-      if (completeLiveData.value?.fixtures) {
-        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map((fixture) => ({
-          ...fixture,
-          outcomes: fixture.outcomes.map((outcome) => ({
-            ...outcome,
-            odds: 0,
-            active: false
-          }))
-        }))
+  isLoading
+} = useQuery(
+  ['liveViewData'],
+  () => getFeedsLiveFixtures(0, 0, 0, 'priority'), // sport_id=0 fetches all sports
+  {
+    // Prevent automatic refetching which can cause recursive updates
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    // Use a longer stale time to prevent unnecessary refetches
+    staleTime: 60000, // 1 minute
+    // Add cacheTime to control how long data stays in cache
+    cacheTime: 300000, // 5 minutes
+    // Update refetch interval to 10 minutes
+    refetchInterval: 60000 * 10, // 10 minutes
+    // Add retry logic with exponential backoff
+    retry: (failureCount, error) => {
+      // Don't retry on 4xx errors
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        return false
       }
-      isEmptyResponse.value = true
-    }
-  }
-})
-
-const sportsListData = computed(() => {
-  if (isEmptyResponse.value) {
-    return []
-  } else {
-    const sportCountMap = new Map()
-
-    completeLiveData.value?.fixtures?.forEach((fixture) => {
-      const key = fixture.sportName
-      if (sportCountMap.has(key)) {
-        const sportData = sportCountMap.get(key)
-        sportData.count += 1
+      return failureCount < 3 // retry up to 3 times
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    onError: (err) => {
+      console.error('Error fetching live data:', err)
+    },
+    onSuccess: (response) => {
+      if (response?.data.fixtures && response.data.fixtures.length > 0) {
+        isEmptyResponse.value = false
       } else {
-        sportCountMap.set(key, {
-          sportID: fixture.sportID,
-          sportName: fixture.sportName,
-          count: 1
-        })
+        isEmptyResponse.value = true
       }
-    })
-
-    // Convert Map to array and sort it by sportID
-    const uniqueList = Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
-
-    return uniqueList
+    }
   }
+)
+
+// Derive sports list from response data with fixture counts per sport
+const sportsListData = computed(() => {
+  if (!completeLiveData.value?.data.fixtures) {
+    return []
+  }
+  // Group fixtures by sport and count
+  const sportCounts = new Map()
+  completeLiveData.value.data.fixtures.forEach(fixture => {
+    if (!sportCounts.has(fixture.sportID)) {
+      sportCounts.set(fixture.sportID, {
+        sportID: fixture.sportID,
+        sportName: fixture.sportName || sportsList.find(s => s.sport_id === fixture.sportID)?.name || `Sport ${fixture.sportID}`,
+        count: 0
+      })
+    }
+    sportCounts.get(fixture.sportID).count++
+  })
+  return Array.from(sportCounts.values()).sort((a, b) => a.sportID - b.sportID)
 })
 
 const filteredLiveData = computed(() => {
-  let fixtures =
-    completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.fixtures
-          ?.filter((s) => s.sportID == activeSportID.value)
-          .sort((a, b) => {
-            // First sort by tournamentID
-            if (a.tournamentID !== b.tournamentID) {
-              return a.tournamentID - b.tournamentID
-            }
-            // If same tournament, maintain original order
-            return 0
-          })
-      : []
+  if (!completeLiveData.value?.data.fixtures || isEmptyResponse.value) {
+    return {}
+  }
+
+  // Filter by selected sport, sort and group by category
+  const fixtures = completeLiveData.value.data.fixtures
+    .filter(fixture => fixture.sportID === activeSportID.value)
+    .sort((a, b) => {
+      // First sort by tournamentID
+      if (a.tournamentID !== b.tournamentID) {
+        return a.tournamentID - b.tournamentID
+      }
+      // If same tournament, maintain original order
+      return 0
+    })
 
   return _.groupBy(fixtures, 'categoryName')
 })
 
 const marketsGroup = computed(() => {
-  let markets =
-    completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.markets
-      : []
-  // activeSportMarkets.value = _.sortBy(markets, 'marketID')
-  // activeMarket.value = activeSportMarkets.value[0]
-  return markets
+  if (!completeLiveData.value?.data.markets || isEmptyResponse.value) {
+    return []
+  }
+  return completeLiveData.value.data.markets
 })
 
+// Filter markets by active sport
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
-  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
+  const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
+  return _.sortBy(markets, 'marketID')
 })
 
 const activeMarket = computed(() => {
@@ -275,12 +256,20 @@ watch(activeSportMarkets, (newValue) => {
   }
 })
 
+// Auto-select first sport when data loads if current sport has no fixtures
+watch(sportsListData, (newValue) => {
+  if (newValue.length > 0) {
+    // Check if current activeSportID exists in the list
+    const currentSportExists = newValue.some(s => s.sportID === activeSportID.value)
+    if (!currentSportExists) {
+      activeSportID.value = newValue[0].sportID
+    }
+  }
+})
+
 function setActiveSport(sid) {
   activeSportID.value = parseInt(sid)
-  // let markets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
-  // activeSportMarkets.value = _.sortBy(markets, 'marketID')
-  // activeMarket.value = activeSportMarkets.value[0]
-  document.getElementById('live_' + sid).scrollIntoView({
+  document.getElementById('live_' + sid)?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
     inline: 'center'
@@ -291,136 +280,10 @@ function selectMarket(market) {
   utilsStore.activeLiveMarkets = market
 }
 
-// Function to handle odds changes
-const handleOddsChange = (data) => {
-  // console.log('⚙️ LiveView: Received odds change:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    // console.log('⚙️ LiveView: No fixtures data available, skipping odds update')
-    return
-  }
-
-  // Find and update the fixture with matching matchID
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(data.matchID)
-  )
-
-  if (fixtureIndex !== -1) {
-    // console.log(`⚙️ LiveView: Updating odds for match ID ${data.matchID}`)
-
-    // Update the fixture's outcomes
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...completeLiveData.value.fixtures[fixtureIndex],
-      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map((outcome) => {
-        if (String(outcome.outcomeID) === String(data.outcomeID)) {
-          return {
-            ...outcome,
-            odds: data.odds,
-            active: data.active
-          }
-        }
-        return outcome
-      })
-    }
-  }
-}
-
-// Function to handle bet stops
-const handleBetStop = (data) => {
-  // console.log('⚙️ LiveView: Received bet stop:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    // console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
-    return
-  }
-
-  // Find and update the fixture with matching matchID
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(data.matchID)
-  )
-
-  if (fixtureIndex !== -1) {
-    // console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
-
-    // Update all outcomes to be inactive with odds 0
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...completeLiveData.value.fixtures[fixtureIndex],
-      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map((outcome) => ({
-        ...outcome,
-        odds: 0,
-        active: false
-      }))
-    }
-  }
-}
-
-// Function to set up MQTT subscriptions
-const setupMqttSubscriptions = () => {
-  // console.log('⚙️ LiveView: Setting up MQTT subscriptions')
-
-  if (!completeLiveData.value?.fixtures) {
-    // console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
-    return
-  }
-
-  // Get unique match IDs from fixtures
-  const matchIds = [
-    ...new Set(completeLiveData.value.fixtures.map((fixture) => String(fixture.matchID)))
-  ]
-
-  // Subscribe to odds changes and bet stops for each match
-  matchIds.forEach((matchId) => {
-    const oddsChangeUnsubscribe = mqttService.subscribe(`odds_change/${matchId}`, handleOddsChange)
-
-    const betStopUnsubscribe = mqttService.subscribe(`bet_stop/${matchId}`, handleBetStop)
-
-    unsubscribeFunctions.value.push(oddsChangeUnsubscribe, betStopUnsubscribe)
-  })
-}
-
-onMounted(async () => {
-  if (completeLiveData.value && completeLiveData.value.fixtures.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID
-    setupMqttSubscriptions()
-  }
-})
-
-onBeforeUnmount(() => {
-  // Clean up MQTT subscriptions
-  unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
-  unsubscribeFunctions.value = []
-})
-
-defineComponent({
-  methods: {
-    // Manually trigger a refetch without making a new network request
-    handleManualRefetch() {
-      refetch()
-    }
-  }
-})
-
-// Add watcher for activeSportID to update store
+// Update store when activeSportID changes
 watch(activeSportID, (newValue) => {
   utilsStore.activeLiveSportID = newValue
 })
-
-// Add watcher for sportsListData to set activeSportID
-watch(
-  sportsListData,
-  (newSportsList) => {
-    if (newSportsList.length > 0) {
-      // Only set activeSportID if it's not already set or not in the list
-      if (
-        !activeSportID.value ||
-        !newSportsList.some((sport) => sport.sportID === activeSportID.value)
-      ) {
-        activeSportID.value = newSportsList[0].sportID
-      }
-    }
-  },
-  { immediate: true }
-)
 </script>
 
 <style>

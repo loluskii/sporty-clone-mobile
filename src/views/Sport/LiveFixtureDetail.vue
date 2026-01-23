@@ -92,15 +92,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             selection.displayName ?? selection.outcomeName
                           }}</em>
-                          <em :class="{ 'm-icon-lock': selection.odds <= 1 }">{{
-                            selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                          <em :class="{ 'm-icon-lock': !selection.odds || selection.odds <= 1 }">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -161,11 +161,11 @@
                                 ),
                                 'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
                                 'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
-                                'm-outcome--disabled': outcome.odds <= 1
+                                'm-outcome--disabled': !outcome.odds || outcome.odds <= 1
                               }"
                             >
-                              <em :class="{ 'm-icon-lock': outcome.odds <= 1 }">{{
-                                outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
+                              <em :class="{ 'm-icon-lock': !outcome.odds || outcome.odds <= 1 }">{{
+                                outcome.odds && outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
                               }}</em>
                             </div>
                           </template>
@@ -191,15 +191,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             getMarketCode(selection.outcomeName)
                           }}</em>
-                          <em :class="selection.odds <= 1 ? 'm-icon-lock' : ''">{{
-                            selection.odds <= 1 ? '' : selection.odds.toFixed(2)
+                          <em :class="!selection.odds || selection.odds <= 1 ? 'm-icon-lock' : ''">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -234,7 +234,7 @@
 import HeaderOther from '@/components/HeaderOther.vue'
 import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
+import { getFeedsGameDetail, chunks, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useCouponStore } from '@/stores'
@@ -317,10 +317,21 @@ const startTimer = () => {
   }, 60000) // Increment every minute
 }
 
-// MQTT handlers
-function handleFixtureStatus(data) {
+// Helper to format event time (append + for 90+ minutes in soccer)
+const formatEventTime = (time, sportId) => {
+  if (!time || time === '--:--') return time
+  const minutes = parseInt(time.split(':')[0])
+  // For soccer (sportId 1), append + for 45+ or 90+
+  if (sportId === 1 && (minutes >= 45 || minutes >= 90)) {
+    return time.replace(/^(\d+)/, '$1+')
+  }
+  return time
+}
+
+// MQTT handlers - New topic: sports/{sport_id}/match/{match_id}/match_status
+function handleMatchStatus(data) {
   // Handle match end
-  if (data.status_code === 100) {
+  if (data.match_status === 'Ended') {
     stopTimer()
     // Clean up intervals
     if (refetchInterval.value) {
@@ -335,29 +346,37 @@ function handleFixtureStatus(data) {
 
     eventMarkets.value = []
     groupedMarkets.value = []
+    if (eventDetail.value) {
+      eventDetail.value.statusCode = 3 // Match ended
+    }
     return
   }
-  requestAnimationFrame(() => {
-    // Update scores
-    scores.homeScore = data.home_score
-    scores.awayScore = data.away_score
 
+  requestAnimationFrame(() => {
     // Update event time and status
-    eventTime.value = data.event_time
+    const sportId = eventDetail.value?.sportID || 1
+    eventTime.value = formatEventTime(data.event_time, sportId)
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
   })
 }
 
-function handleBetStop(data) {
-  const matchId = eventDetail.value?.matchID
-  const dataMatchId = data.event_id || data.match_id
+// New topic: sports/{sport_id}/match/{match_id}/scores
+function handleScores(data) {
+  requestAnimationFrame(() => {
+    scores.homeScore = data.home_score
+    scores.awayScore = data.away_score
+    if (data.event_time) {
+      const sportId = eventDetail.value?.sportID || 1
+      eventTime.value = formatEventTime(data.event_time, sportId)
+    }
+  })
+}
 
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    return
-  }
-
+/// New topic: sports/{sport_id}/match/{match_id}/bet_stop
+function handleBetStop() {
+  // Lock all markets (set odds to 0 and inactive)
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
       ...market,
@@ -372,42 +391,29 @@ function handleBetStop(data) {
   }
 }
 
-function handleOddsChange(data) {
-  if (!data || !data.markets) return
+// New topic: sports/{sport_id}/match/{match_id}/markets
+function handleMarkets(data) {
+  if (!data) return
 
-  const matchId = eventDetail.value?.matchID
-  const dataMatchId = data.event_id || data.match_id
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) return
-
-  // Handle clock status
-  if (data.sport_event_status?.clock?.stopped !== undefined) {
-    isClockStopped.value = data.sport_event_status.clock.stopped
-    if (isClockStopped.value) {
-      stopTimer()
-    } else {
-      startTimer()
-    }
-  }
+  // status: 0 = Active, 1 = Suspended, 2 = Deactivated
+  const isActive = data.status === 0
+  const marketId = String(data.market_id)
+  const specifier = data.specifier || ''
 
   if (!updatePending.value) {
     updatePending.value = true
 
     requestAnimationFrame(() => {
-      const markets = data.markets || []
-      if (markets.length > 0) {
+      if (data.outcomes && Array.isArray(data.outcomes)) {
         const updatedOutcomesCopy = { ...updatedOutcomes.value }
 
-        markets.forEach((market) => {
-          if (market.outcomes) {
-            market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
-              updatedOutcomesCopy[key] = {
-                odds: outcome.odds,
-                active: outcome.active ? 1 : 0,
-                timestamp: Date.now()
-              }
-            })
+        data.outcomes.forEach((outcome) => {
+          const outcomeId = outcome.outcome_id ?? outcome.outcomeID
+          const key = `${marketId}-${outcomeId}-${specifier}`
+          updatedOutcomesCopy[key] = {
+            odds: isActive ? parseFloat(outcome.odds) : 0,
+            active: isActive ? 1 : 0,
+            timestamp: Date.now()
           }
         })
 
@@ -415,21 +421,24 @@ function handleOddsChange(data) {
 
         if (eventMarkets.value?.length > 0) {
           eventMarkets.value = eventMarkets.value.map((market) => {
-            const updatedMarket = markets.find(
-              (m) => m.id === market.marketID && (m.specifiers || '') === (market.specifier || '')
-            )
+            // Get marketID - handle both camelCase and snake_case from API
+            const mktId = String(market.marketID ?? market.market_id)
+            const mktSpecifier = market.specifier || ''
 
-            if (updatedMarket?.outcomes) {
+            // Match by marketID and specifier (use String for type-safe comparison)
+            if (mktId === marketId && mktSpecifier === specifier) {
               market.outcomes = market.outcomes.map((outcome) => {
-                const newOutcome = updatedMarket.outcomes.find(
-                  (o) => String(o.id) === String(outcome.outcomeID)
+                // Handle both camelCase and snake_case for outcome matching
+                const outcomeId = String(outcome.outcomeID ?? outcome.outcome_id)
+                const newOutcome = data.outcomes.find(
+                  (o) => String(o.outcome_id ?? o.outcomeID) === outcomeId
                 )
 
                 return newOutcome
                   ? {
                       ...outcome,
-                      odds: newOutcome.odds,
-                      active: newOutcome.active ? 1 : 0
+                      odds: isActive ? parseFloat(newOutcome.odds) : 0,
+                      active: isActive ? 1 : 0
                     }
                   : outcome
               })
@@ -446,18 +455,22 @@ function handleOddsChange(data) {
   }
 }
 
-// MQTT setup
-function setupMqttSubscriptions(matchId) {
+// MQTT setup - New topic format: sports/{sport_id}/match/{match_id}/{type}
+function setupMqttSubscriptions(matchId, sportId) {
+  const topicBase = `sports/${sportId}/match/${matchId}`
+
   const topics = {
-    oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
-    betStop: `sbe/feeds/live/bet_stop/${matchId}`,
-    fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
+    matchStatus: `${topicBase}/match_status`,
+    scores: `${topicBase}/scores`,
+    markets: `${topicBase}/markets`,
+    betStop: `${topicBase}/bet_stop`
   }
 
   const handlers = {
-    oddsChange: handleOddsChange,
-    betStop: handleBetStop,
-    fixtureStatus: handleFixtureStatus
+    matchStatus: handleMatchStatus,
+    scores: handleScores,
+    markets: handleMarkets,
+    betStop: handleBetStop
   }
 
   const unsubscribers = Object.entries(topics).map(([key, topic]) => {
@@ -478,17 +491,25 @@ function setupPeriodicRefetch(matchId) {
   refetchInterval.value = setInterval(async () => {
     if (!matchHasEnded.value) {
       try {
-        const res = await getFixtureMarkets(matchId)
-        if (Object.keys(res).length && res.markets) {
-          // Filter out suspended markets
-          eventMarkets.value =
-            res.statusCode === 3
-              ? []
-              : res.markets.filter((market) => market.statusName !== 'Suspended')
-          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-          scores.homeScore = res.homeScore
-          scores.awayScore = res.awayScore
-          eventTime.value = res.eventTime
+        const {data} = await getFeedsGameDetail(matchId)
+        if (data && Object.keys(data).length && data.market) {
+          const isActive = data.status === 0
+          // Filter out suspended and deactivated markets
+          eventMarkets.value = !isActive
+            ? []
+            : data.market.filter(
+                (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+              )
+          groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
+          // Get scores from eventInfo.scores if available, fallback to top-level
+          if (data.eventInfo?.scores) {
+            scores.homeScore = data.eventInfo.scores.home ?? 0
+            scores.awayScore = data.eventInfo.scores.away ?? 0
+          } else {
+            scores.homeScore = data.homeScore ?? 0
+            scores.awayScore = data.awayScore ?? 0
+          }
+          eventTime.value = data.eventTime
         }
       } catch (error) {
         // Silent fail for periodic refetch
@@ -580,36 +601,56 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
-    const res = await getFixtureMarkets(id)
+    const res = await getFeedsGameDetail(id)
     isLoading.value = false
-    if (Object.keys(res).length && res.markets && res.statusCode === 1) {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value =
-        res.statusCode === 3
-          ? []
-          : res.markets.filter((market) => market.statusName !== 'Suspended')
-      groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = res.eventTime
 
-      if (res.matchID) {
-        setupMqttSubscriptions(res.matchID)
-        setupPeriodicRefetch(res.matchID)
+    if (res && Object.keys(res).length) {
+      const data = res.data;
+      // Map new response structure to expected format
+      const mappedData = {
+        ...data,
+        competitor1: data.homeTeam,
+        competitor2: data.awayTeam,
+        categoryName: data.country,
+        statusCode: data.producerStatus === 1 ? 1 : 3 // 1 = active/live, 3 = ended
       }
-    } else {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value = []
-      groupedMarkets.value = []
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = res.eventTime
+
+      const isLive = mappedData.producerID !== 3 // Not Prematch
+
+      if (isLive && mappedData.market?.length > 0) {
+        eventDetail.value = mappedData
+        console.log('Fetched event markets:', mappedData)
+        // Filter out suspended markets
+        eventMarkets.value = mappedData.market.filter(
+          (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+        )
+        groupedMarkets.value = groupByMarketID(eventMarkets.value)
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        // Get scores from eventInfo.scores if available, fallback to top-level
+        if (data.eventInfo?.scores) {
+          scores.homeScore = data.eventInfo.scores.home ?? 0
+          scores.awayScore = data.eventInfo.scores.away ?? 0
+        } else {
+          scores.homeScore = data.homeScore ?? 0
+          scores.awayScore = data.awayScore ?? 0
+        }
+        eventTime.value = data.eventTime
+
+        if (data.matchID) {
+          setupMqttSubscriptions(data.matchID, data.sportID)
+          setupPeriodicRefetch(data.matchID)
+        }
+      } else {
+        eventDetail.value = mappedData
+        eventMarkets.value = []
+        groupedMarkets.value = []
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        scores.homeScore = data.homeScore
+        scores.awayScore = data.awayScore
+        eventTime.value = data.eventTime
+      }
     }
   } catch (error) {
     console.error(`❌ Error fetching event details:`, error)

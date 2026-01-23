@@ -125,10 +125,23 @@ const timer = ref(null)
 const displayTime = ref(props.gameData.eventTime || '00:00')
 const isClockStopped = ref(false)
 
-const scores = ref({
-  homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0
-})
+// Get scores from eventInfo.scores if available
+const getInitialScores = () => {
+  const eventInfo = props.gameData?.eventInfo
+  if (eventInfo?.scores) {
+    return {
+      homeScore: eventInfo.scores.home ?? 0,
+      awayScore: eventInfo.scores.away ?? 0
+    }
+  }
+  // Fallback to top-level homeScore/awayScore if they exist
+  return {
+    homeScore: props.gameData?.homeScore ?? 0,
+    awayScore: props.gameData?.awayScore ?? 0
+  }
+}
+
+const scores = ref(getInitialScores())
 
 const outcomes = ref([])
 
@@ -453,11 +466,8 @@ watch(
 onMounted(() => {
   // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
-  // Initialize scores from props
-  scores.value = {
-    homeScore: props.gameData.homeScore,
-    awayScore: props.gameData.awayScore
-  }
+  // Initialize scores from eventInfo.scores or fallback to top-level properties
+  scores.value = getInitialScores()
 
   outcomes.value = props.gameData.outcomes || []
   getOdds()

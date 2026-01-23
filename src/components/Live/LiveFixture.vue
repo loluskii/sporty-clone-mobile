@@ -99,8 +99,8 @@
 
 <script setup>
 import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue'
+import EmptyOdds from '@/components/EmptyOdds.vue';
 import LiveOdds from './LiveOdds.vue'
-import EmptyOdds from '@/components/EmptyOdds.vue'
 import { sortArr, createID, isSelected, slugify } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
@@ -117,10 +117,23 @@ const props = defineProps({
   activeMarket: Object
 })
 
-const scores = ref({
-  homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0
-})
+// Get scores from eventInfo.scores if available
+const getInitialScores = () => {
+  const eventInfo = props.gameData?.eventInfo
+  if (eventInfo?.scores) {
+    return {
+      homeScore: eventInfo.scores.home ?? 0,
+      awayScore: eventInfo.scores.away ?? 0
+    }
+  }
+  // Fallback to top-level homeScore/awayScore if they exist
+  return {
+    homeScore: props.gameData?.homeScore ?? 0,
+    awayScore: props.gameData?.awayScore ?? 0
+  }
+}
+
+const scores = ref(getInitialScores())
 const outcomes = ref([])
 const timer = ref(null)
 const displayTime = ref(props.gameData.eventTime || '00:00')
@@ -268,60 +281,52 @@ function addToBetslip(event, odd) {
   return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
 }
 
-// Function to handle odds changes
-function handleOddsChange(data) {
-  if (!data || !data.markets) return
+// New topic: sports/{sport_id}/match/{match_id}/markets
+function handleMarkets(data) {
+  if (!data) return
 
-  const matchId = props.gameData.matchID
-  const dataMatchId = data.event_id || data.match_id
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    return
-  }
+  // status: 0 = Active, 1 = Suspended, 2 = Deactivated
+  const isActive = data.status === 0
+  const marketId = String(data.market_id)
+  const specifier = data.specifier || ''
 
   if (!updatePending.value) {
     updatePending.value = true
 
     requestAnimationFrame(() => {
-      scores.value.homeScore = data.sport_event_status.home_score
-      scores.value.awayScore = data.sport_event_status.away_score
-
-      const markets = data.markets || []
-
-      if (markets.length > 0) {
+      if (data.outcomes && Array.isArray(data.outcomes)) {
         const updatedOutcomesCopy = { ...updatedOutcomes.value }
 
-        markets.forEach((market) => {
-          if (market.outcomes) {
-            market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
-              updatedOutcomesCopy[key] = {
-                odds: outcome.odds,
-                active: outcome.active ? 1 : 0,
-                timestamp: Date.now()
-              }
-            })
+        data.outcomes.forEach((outcome) => {
+          const outcomeId = outcome.outcome_id ?? outcome.outcomeID
+          const key = `${marketId}-${outcomeId}-${specifier}`
+          updatedOutcomesCopy[key] = {
+            odds: isActive ? parseFloat(outcome.odds) : 0,
+            active: isActive ? 1 : 0,
+            timestamp: Date.now()
           }
         })
 
         updatedOutcomes.value = updatedOutcomesCopy
 
+        // Update displayed outcomes if they match this market
         if (outcomes.value.length > 0) {
           outcomes.value = outcomes.value.map((outcome) => {
-            const market = markets.find(
-              (m) => m.id === outcome.marketID && (m.specifiers || '') === (outcome.specifier || '')
-            )
+            const mktId = String(outcome.marketID ?? outcome.market_id)
+            const outId = String(outcome.outcomeID ?? outcome.outcome_id)
+            const outSpec = outcome.specifier || ''
 
-            if (market && market.outcomes) {
-              const newOutcome = market.outcomes.find(
-                (o) => String(o.id) === String(outcome.outcomeID)
+            // Check if this outcome matches the incoming market update
+            if (mktId === marketId && outSpec === specifier) {
+              const newOutcome = data.outcomes.find(
+                (o) => String(o.outcome_id ?? o.outcomeID) === outId
               )
 
               if (newOutcome) {
                 return {
                   ...outcome,
-                  odds: newOutcome.odds,
-                  active: newOutcome.active ? 1 : 0
+                  odds: isActive ? parseFloat(newOutcome.odds) : 0,
+                  active: isActive ? 1 : 0
                 }
               }
             }
@@ -336,97 +341,96 @@ function handleOddsChange(data) {
   }
 }
 
-// Function to handle bet stop
-function handleBetStop(data) {
-  // First, verify this update is for the correct match
-  const matchId = props.gameData.matchID
-  const dataMatchId = data.event_id || data.match_id
-
-  // If the data doesn't match our event, ignore it
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
-    return
-  }
-
-  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
-
-  // Immediately suspend all outcomes in the component
-  outcomes.value = outcomes.value.map((outcome) => ({
-    ...outcome,
-    odds: 0,
-    active: 0
-  }))
+// New topic: sports/{sport_id}/match/{match_id}/scores
+function handleScores(data) {
+  requestAnimationFrame(() => {
+    scores.value.homeScore = data.home_score
+    scores.value.awayScore = data.away_score
+    if (data.event_time) {
+      displayTime.value = data.event_time
+    }
+  })
 }
 
-// Function to handle fixture status updates
-function handleFixtureStatus(data) {
-  // Handle match end
-  if (data.status_code === 100) {
+// New topic: sports/{sport_id}/match/{match_id}/match_status
+function handleMatchStatus(data) {
+  // Check if match has ended
+  if (data.match_status === 'Ended') {
     stopTimer()
     emitter.emit('match-ended', props.gameData.matchID)
     return
   }
 
   requestAnimationFrame(() => {
-    // Update scores
-    scores.value.homeScore = data.home_score
-    scores.value.awayScore = data.away_score
-
-    // Update time and status using local refs (not props)
-    displayTime.value = data.event_time
-    matchStatus.value = data.match_status
-
+    // Update time and status
+    if (data.event_time) {
+      displayTime.value = data.event_time
+    }
+    if (data.match_status) {
+      matchStatus.value = data.match_status
+    }
     // Restart timer with new time
     startTimer()
   })
 }
 
-// Function to handle match ended - remove fixture from list
-function handleMatchEnded(data) {
-  stopTimer()
-  emitter.emit('match-ended', props.gameData.matchID)
+// New topic: sports/{sport_id}/match/{match_id}/bet_stop
+function handleBetStop() {
+  // Lock all outcomes (set odds to 0 and inactive)
+  outcomes.value = outcomes.value.map((outcome) => ({
+    ...outcome,
+    odds: 0,
+    active: 0
+  }))
+
+  // Also update the tracked outcomes
+  const updatedOutcomesCopy = { ...updatedOutcomes.value }
+  outcomes.value.forEach((outcome) => {
+    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+    updatedOutcomesCopy[key] = {
+      odds: 0,
+      active: 0,
+      timestamp: Date.now()
+    }
+  })
+  updatedOutcomes.value = updatedOutcomesCopy
 }
 
 onMounted(() => {
-  // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
-
-  scores.value = {
-    homeScore: props.gameData.homeScore,
-    awayScore: props.gameData.awayScore
-  }
+  // Initialize scores from eventInfo.scores or top-level
+  scores.value = getInitialScores()
 
   outcomes.value = props.gameData.outcomes || []
   getOdds()
 
   const matchId = props.gameData.matchID
+  const sportId = props.gameData.sportID
 
-  if (matchId) {
-    const componentId = `live-fixture-${matchId}-${Date.now()}`
+  if (matchId && sportId) {
+    // New topic format: sports/{sport_id}/match/{match_id}/{type}
+    const topicBase = `sports/${sportId}/match/${matchId}`
 
     const topics = {
-      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
-      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
-      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`,
-      matchEnded: `sbe/feeds/live/match_ended/${matchId}`
+      matchStatus: `${topicBase}/match_status`,
+      scores: `${topicBase}/scores`,
+      markets: `${topicBase}/markets`,
+      betStop: `${topicBase}/bet_stop`
     }
 
     const handlers = {
-      oddsChange: handleOddsChange,
-      betStop: handleBetStop,
-      fixtureStatus: handleFixtureStatus,
-      matchEnded: handleMatchEnded
+      matchStatus: handleMatchStatus,
+      scores: handleScores,
+      markets: handleMarkets,
+      betStop: handleBetStop
     }
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-      // console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
       return subscribe(topic, (data) => {
-        // console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
         handlers[key](data)
       })
     })
 
     onBeforeUnmount(() => {
-      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
       unsubscribers.forEach((unsubscribe) => unsubscribe())
       stopTimer()
     })
