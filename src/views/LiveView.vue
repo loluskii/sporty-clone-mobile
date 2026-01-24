@@ -107,11 +107,11 @@ import LiveFixture from '@/components/Live/LiveFixture.vue'
 import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights } from '@/helpers'
-import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
+import { getFeedsLiveFixtures } from '@/helpers'
+import { sportsList } from '@/helpers/constants'
+import { ref, computed, watch } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
-import emitter from '@/plugins/emitter'
 
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
@@ -142,92 +142,94 @@ const getImageSrc = (sportId) => {
 
 const {
   data: completeLiveData,
-  isLoading,
-  refetch
-} = useQuery('liveData', getLiveHighlights, {
-  refetchOnWindowFocus: false,
-  refetchOnMount: true,
-  refetchOnReconnect: false,
-  staleTime: 60000,
-  cacheTime: 300000,
-  refetchInterval: 60000 * 10,
-  retry: (failureCount, error) => {
-    if (error.response && error.response.status >= 400 && error.response.status < 500) {
-      return false
-    }
-    return failureCount < 3
-  },
-  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  onError: (err) => {
-    console.error('Error fetching live data:', err)
-  },
-  onSuccess: (response) => {
-    if (response.fixtures) {
-      // Data loaded successfully
-    } else {
-      if (completeLiveData.value?.fixtures) {
-        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map((fixture) => ({
-          ...fixture,
-          outcomes: fixture.outcomes.map((outcome) => ({
-            ...outcome,
-            odds: 0,
-            active: false
-          }))
-        }))
+  isLoading
+} = useQuery(
+  ['liveViewData'],
+  () => getFeedsLiveFixtures(0, 0, 0, 'priority'), // sport_id=0 fetches all sports
+  {
+    // Prevent automatic refetching which can cause recursive updates
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    // Use a longer stale time to prevent unnecessary refetches
+    staleTime: 60000, // 1 minute
+    // Add cacheTime to control how long data stays in cache
+    cacheTime: 300000, // 5 minutes
+    // Update refetch interval to 10 minutes
+    refetchInterval: 60000 * 10, // 10 minutes
+    // Add retry logic with exponential backoff
+    retry: (failureCount, error) => {
+      // Don't retry on 4xx errors
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        return false
       }
-      isEmptyResponse.value = true
+      return failureCount < 3 // retry up to 3 times
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    onError: (err) => {
+      console.error('Error fetching live data:', err)
+    },
+    onSuccess: (response) => {
+      if (response?.data.fixtures && response.data.fixtures.length > 0) {
+        isEmptyResponse.value = false
+      } else {
+        isEmptyResponse.value = true
+      }
     }
   }
-})
+)
 
+// Derive sports list from response data with fixture counts per sport
 const sportsListData = computed(() => {
-  if (isEmptyResponse.value) {
+  if (!completeLiveData.value?.data.fixtures) {
     return []
   }
-  const sportCountMap = new Map()
-
-  completeLiveData.value?.fixtures?.forEach((fixture) => {
-    const key = fixture.sportName
-    if (sportCountMap.has(key)) {
-      const sportData = sportCountMap.get(key)
-      sportData.count += 1
-    } else {
-      sportCountMap.set(key, {
+  // Group fixtures by sport and count
+  const sportCounts = new Map()
+  completeLiveData.value.data.fixtures.forEach(fixture => {
+    if (!sportCounts.has(fixture.sportID)) {
+      sportCounts.set(fixture.sportID, {
         sportID: fixture.sportID,
-        sportName: fixture.sportName,
-        count: 1
+        sportName: fixture.sportName || sportsList.find(s => s.sport_id === fixture.sportID)?.name || `Sport ${fixture.sportID}`,
+        count: 0
       })
     }
+    sportCounts.get(fixture.sportID).count++
   })
-
-  return Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
+  return Array.from(sportCounts.values()).sort((a, b) => a.sportID - b.sportID)
 })
 
 const filteredLiveData = computed(() => {
-  let fixtures =
-    completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.fixtures
-          ?.filter((s) => s.sportID == activeSportID.value)
-          .sort((a, b) => {
-            if (a.tournamentID !== b.tournamentID) {
-              return a.tournamentID - b.tournamentID
-            }
-            return 0
-          })
-      : []
+  if (!completeLiveData.value?.data.fixtures || isEmptyResponse.value) {
+    return {}
+  }
 
-  return _.groupBy(fixtures, 'tournament')
+  // Filter by selected sport, sort and group by category
+  const fixtures = completeLiveData.value.data.fixtures
+    .filter(fixture => fixture.sportID === activeSportID.value)
+    .sort((a, b) => {
+      // First sort by tournamentID
+      if (a.tournamentID !== b.tournamentID) {
+        return a.tournamentID - b.tournamentID
+      }
+      // If same tournament, maintain original order
+      return 0
+    })
+
+  return _.groupBy(fixtures, 'categoryName')
 })
 
 const marketsGroup = computed(() => {
-  return completeLiveData.value?.fixtures && !isEmptyResponse.value
-    ? completeLiveData.value?.markets
-    : []
+  if (!completeLiveData.value?.data.markets || isEmptyResponse.value) {
+    return []
+  }
+  return completeLiveData.value.data.markets
 })
 
+// Filter markets by active sport
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
-  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
+  const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
+  return _.sortBy(markets, 'marketID')
 })
 
 const activeMarket = computed(() => {
@@ -235,10 +237,22 @@ const activeMarket = computed(() => {
 })
 
 watch(activeSportMarkets, (newValue) => {
+  // Update activeMarket when activeSportMarkets changes
   if (newValue.length) {
     utilsStore.activeLiveMarkets = newValue[0]
   } else {
     utilsStore.activeLiveMarkets = []
+  }
+})
+
+// Auto-select first sport when data loads if current sport has no fixtures
+watch(sportsListData, (newValue) => {
+  if (newValue.length > 0) {
+    // Check if current activeSportID exists in the list
+    const currentSportExists = newValue.some(s => s.sportID === activeSportID.value)
+    if (!currentSportExists) {
+      activeSportID.value = newValue[0].sportID
+    }
   }
 })
 
@@ -255,65 +269,9 @@ function selectMarket(market) {
   utilsStore.activeLiveMarkets = market
 }
 
-function toggleTournament(e, tournamentKey) {
-  const childId = 'league-content-' + tournamentKey
-  const childElement = document.getElementById(childId)
-  const element = e.currentTarget
-  const isHidden = element.classList.contains('hide')
-
-  if (isHidden) {
-    childElement?.classList.remove('d-none')
-    element.classList.remove('hide')
-  } else {
-    childElement?.classList.add('d-none')
-    element.classList.add('hide')
-  }
-}
-
-const handleMatchEnded = (matchId) => {
-  if (!completeLiveData.value?.fixtures) return
-
-  completeLiveData.value.fixtures = completeLiveData.value.fixtures.filter(
-    (fixture) => String(fixture.matchID) !== String(matchId)
-  )
-}
-
-onMounted(async () => {
-  if (completeLiveData.value && completeLiveData.value.fixtures?.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID
-  }
-  emitter.on('match-ended', handleMatchEnded)
-})
-
-onBeforeUnmount(() => {
-  emitter.off('match-ended', handleMatchEnded)
-})
-
+// Update store when activeSportID changes
 watch(activeSportID, (newValue) => {
   utilsStore.activeLiveSportID = newValue
-})
-
-watch(
-  sportsListData,
-  (newSportsList) => {
-    if (newSportsList.length > 0) {
-      if (
-        !activeSportID.value ||
-        !newSportsList.some((sport) => sport.sportID === activeSportID.value)
-      ) {
-        activeSportID.value = newSportsList[0].sportID
-      }
-    }
-  },
-  { immediate: true }
-)
-
-defineComponent({
-  methods: {
-    handleManualRefetch() {
-      refetch()
-    }
-  }
 })
 </script>
 
