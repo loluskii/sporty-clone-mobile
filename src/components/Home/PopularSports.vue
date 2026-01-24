@@ -85,19 +85,6 @@
                   </li>
                   <li
                     class="featured-nav-item m-snap-nav-item"
-                    @click="setActiveTab('featuredGames')"
-                    :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
-                    role="tab"
-                    aria-label="featured games"
-                  >
-                    <span
-                      class="feature-nav-span"
-                      :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
-                      >Casino</span
-                    >
-                  </li>
-                  <li
-                    class="featured-nav-item m-snap-nav-item"
                     @click="setActiveTab('codes')"
                     :class="activeFeaturedTab == 'codes' ? 'active' : ''"
                     role="tab"
@@ -190,14 +177,6 @@
           </template>
           <LoadingSpinner v-else></LoadingSpinner>
         </div>
-        <FeaturedGamesContainer
-          v-show="activeFeaturedTab == 'featuredGames'"
-          :featuredCasinogames="featuredCasinogames"
-          :featuredCasino="featuredCasino"
-          :activeCasinoCategory="activeCasinoCategory"
-          @set-active-category="setActiveCategory"
-          :casinoIsLoading="casinoIsLoadingGames"
-        ></FeaturedGamesContainer>
         <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
     </div>
@@ -265,7 +244,7 @@ function getImageURL(name) {
   } else if (name == 'Bundesliga') {
     return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`
+    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${name}.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'`
   }
 }
 
@@ -383,7 +362,9 @@ onMounted(async () => {
   // Only fetch if we don't have data or it's stale
   if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
     await utilsStore.fetchFeaturedGames().then(() => {
-      setActiveTournament(featuredTournaments.value[0])
+      if(featuredTournaments.value.length){
+        setActiveTournament(featuredTournaments.value[0])
+      }
     })
   }
 })
