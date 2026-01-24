@@ -81,7 +81,8 @@
                                   eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name
+                                  eventDetail.name,
+                                  marketGroup.specifier
                                 ),
                                 couponStore.coupon
                               ),
@@ -152,7 +153,8 @@
                                       eventDetail.matchID,
                                       outcome.outcomeName,
                                       outcome.oddID,
-                                      eventDetail.name
+                                      eventDetail.name,
+                                      mg.specifier
                                     ),
                                     couponStore.coupon
                                   ),
@@ -183,7 +185,8 @@
                                   eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name
+                                  eventDetail.name,
+                                  marketGroup.specifier
                                 ),
                                 couponStore.coupon
                               ),
@@ -506,7 +509,8 @@ function addToBetslip(market, outcome) {
     eventDetail.value.matchID,
     outcome.outcomeName,
     outcome.oddID,
-    eventDetail.value.name
+    eventDetail.value.name,
+    market.specifier
   )
   const data = {
     fixture: eventDetail.value,

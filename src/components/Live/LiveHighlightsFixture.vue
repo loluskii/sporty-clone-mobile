@@ -74,10 +74,11 @@
                 isSelected(
                   createID(
                     gameData.gameID,
-                    gameData.matchID,
+                    activeMarket.marketID,
                     odd.outcomeName,
                     odd.oddID,
-                    gameData.name
+                    gameData.name,
+                    odd.specifier
                   ),
                   couponStore.coupon
                 )
@@ -122,13 +123,25 @@ const props = defineProps({
 const activeSpecifier = ref()
 const specifierOpen = ref(false)
 const timer = ref(null)
-const displayTime = ref(props.gameData.eventTime || '00:00')
 const isClockStopped = ref(false)
 
-const scores = ref({
-  homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0
-})
+// Get scores from eventInfo.scores if available
+const getInitialScores = () => {
+  const eventInfo = props.gameData?.eventInfo
+  if (eventInfo?.scores) {
+    return {
+      homeScore: eventInfo.scores.home ?? 0,
+      awayScore: eventInfo.scores.away ?? 0
+    }
+  }
+  // Fallback to top-level homeScore/awayScore if they exist
+  return {
+    homeScore: props.gameData?.homeScore ?? 0,
+    awayScore: props.gameData?.awayScore ?? 0
+  }
+}
+
+const scores = ref(getInitialScores())
 
 const outcomes = ref([])
 
@@ -151,6 +164,92 @@ const formatSecondsToTime = (seconds) => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = () => {
+  const sportId = props.gameData.sportID
+  return TIMED_SPORTS.includes(sportId)
+}
+
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 2
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport()) return timeStr
+
+  const totalSeconds = parseTimeToSeconds(timeStr)
+  if (totalSeconds === null) return timeStr
+
+  let adjustedSeconds = totalSeconds + MQTT_LATENCY_COMPENSATION
+
+  // Cap at halftime/fulltime boundaries
+  const status = (props.gameData.matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (adjustedSeconds > 90 * 60) adjustedSeconds = 90 * 60
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (adjustedSeconds > 45 * 60) adjustedSeconds = 45 * 60
+  }
+
+  return formatSecondsToTime(adjustedSeconds)
+}
+
+// Calculate elapsed match time from kick-off (only for timed sports)
+const calculateElapsedTime = (kickOffDateStr) => {
+  if (!kickOffDateStr) return null
+
+  // Only calculate for timed sports like Soccer
+  if (!isTimedSport()) return null
+
+  const kickOffTime = new Date(kickOffDateStr).getTime()
+  const now = Date.now()
+  const elapsedMs = now - kickOffTime
+
+  // If kick-off hasn't started yet or invalid date
+  if (elapsedMs < 0) return null
+
+  const elapsedSeconds = Math.floor(elapsedMs / 1000)
+  const status = props.gameData.matchStatus?.toLowerCase() || ''
+
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    return Math.min(elapsedSeconds, 90 * 60)
+  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
+    // Halftime: cap at 45:00
+    return 45 * 60
+  } else {
+    // First half or unknown: cap at 45 mins
+    return Math.min(elapsedSeconds, 45 * 60)
+  }
+}
+
+// Get initial display time - prefer calculated time from kick-off, fallback to eventTime
+const getInitialDisplayTime = () => {
+  // Only calculate from kick-off for timed sports
+  if (isTimedSport()) {
+    const kickOffDate = props.gameData.date
+    if (kickOffDate) {
+      const calculatedSeconds = calculateElapsedTime(kickOffDate)
+      if (calculatedSeconds !== null) {
+        return formatSecondsToTime(calculatedSeconds)
+      }
+    }
+  }
+
+  // For non-timed sports or fallback, use backend's eventTime
+  return props.gameData.eventTime || '--:--'
+}
+
+const displayTime = ref(getInitialDisplayTime())
+
 const stopTimer = () => {
   if (timer.value) {
     clearInterval(timer.value)
@@ -160,6 +259,9 @@ const stopTimer = () => {
 
 const startTimer = () => {
   stopTimer()
+
+  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
+  if (!isTimedSport()) return
 
   const initialTime = parseTimeToSeconds(displayTime.value)
   if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
@@ -194,8 +296,8 @@ function handleFixtureStatus(data) {
     scores.value.homeScore = data.home_score
     scores.value.awayScore = data.away_score
 
-    // Update time and status
-    displayTime.value = data.event_time
+    // Update time and status (with latency compensation)
+    displayTime.value = adjustTimeForLatency(data.event_time)
     props.gameData.matchStatus = data.match_status
 
     // Restart timer with new time
@@ -316,7 +418,7 @@ const toggleList = () => {
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.gameID, odd.marketID, odd.outcomeName, odd.outcomeID, event.name, odd.specifier)
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
@@ -453,11 +555,8 @@ watch(
 onMounted(() => {
   // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
-  // Initialize scores from props
-  scores.value = {
-    homeScore: props.gameData.homeScore,
-    awayScore: props.gameData.awayScore
-  }
+  // Initialize scores from eventInfo.scores or top-level
+  scores.value = getInitialScores()
 
   outcomes.value = props.gameData.outcomes || []
   getOdds()

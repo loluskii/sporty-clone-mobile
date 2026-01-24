@@ -64,7 +64,8 @@
                 matchDetails.matchID,
                 market.outcomeName,
                 market.oddID,
-                matchDetails.name
+                matchDetails.name,
+                market.specifier
               ),
               couponStore.coupon
             )
@@ -158,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
   const data = {
     fixture: event,
     market_name: '1X2',
