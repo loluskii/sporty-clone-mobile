@@ -237,7 +237,7 @@
 import HeaderOther from '@/components/HeaderOther.vue'
 import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
+import { getFeedsGameDetail, chunks, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useCouponStore } from '@/stores'
@@ -620,17 +620,25 @@ function setupPeriodicRefetch(matchId) {
   refetchInterval.value = setInterval(async () => {
     if (!matchHasEnded.value) {
       try {
-        const res = await getFixtureMarkets(matchId)
-        if (Object.keys(res).length && res.markets) {
-          // Filter out suspended markets
-          eventMarkets.value =
-            res.statusCode === 3
-              ? []
-              : res.markets.filter((market) => market.statusName !== 'Suspended')
-          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-          scores.homeScore = res.homeScore
-          scores.awayScore = res.awayScore
-          eventTime.value = getDisplayTime(res)
+        const {data} = await getFeedsGameDetail(matchId)
+        if (data && Object.keys(data).length && data.market) {
+          const isActive = data.status === 0
+          // Filter out suspended and deactivated markets
+          eventMarkets.value = !isActive
+            ? []
+            : data.market.filter(
+                (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+              )
+          groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
+          // Get scores from eventInfo.scores if available, fallback to top-level
+          if (data.eventInfo?.scores) {
+            scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+            scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+          } else {
+            scores.homeScore = data.homeScore ?? 0
+            scores.awayScore = data.awayScore ?? 0
+          }
+          eventTime.value = data.eventTime
         }
       } catch (error) {
         // Silent fail for periodic refetch
@@ -722,38 +730,60 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
-    const res = await getFixtureMarkets(id)
+    const res = await getFeedsGameDetail(id)
     isLoading.value = false
-    if (Object.keys(res).length && res.markets && res.statusCode === 1) {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value =
-        res.statusCode === 3
-          ? []
-          : res.markets.filter((market) => market.statusName !== 'Suspended')
-      groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = getDisplayTime(res)
 
-      if (res.matchID) {
-        setupMqttSubscriptions(res.matchID)
-        setupPeriodicRefetch(res.matchID)
+    if (res && Object.keys(res).length) {
+      const data = res.data;
+      // Map new response structure to expected format
+      const mappedData = {
+        ...data,
+        competitor1: data.homeTeam,
+        competitor2: data.awayTeam,
+        categoryName: data.country,
+        statusCode: data.producerStatus === 1 ? 1 : 3 // 1 = active/live, 3 = ended
       }
-    } else {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value = []
-      groupedMarkets.value = []
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = getDisplayTime(res)
+
+      const isLive = mappedData.producerID !== 3 // Not Prematch
+
+      if (isLive && mappedData.market?.length > 0) {
+        eventDetail.value = mappedData
+        // Filter out suspended markets
+        eventMarkets.value = mappedData.market.filter(
+          (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+        )
+        groupedMarkets.value = groupByMarketID(eventMarkets.value)
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        // Get scores from eventInfo.scores if available, fallback to top-level
+        if (data.eventInfo?.scores) {
+          scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+          scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+        } else {
+          scores.homeScore = data.homeScore ?? 0
+          scores.awayScore = data.awayScore ?? 0
+        }
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
+
+        if (data.matchID) {
+          setupMqttSubscriptions(data.matchID)
+          setupPeriodicRefetch(data.matchID)
+        }
+      } else {
+        eventDetail.value = mappedData
+        eventMarkets.value = []
+        groupedMarkets.value = []
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        scores.homeScore = data.homeScore
+        scores.awayScore = data.awayScore
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
+      }
     }
   } catch (error) {
+    console.error(`❌ Error fetching event details:`, error)
     eventDetail.value = null
     isLoading.value = false
   }
