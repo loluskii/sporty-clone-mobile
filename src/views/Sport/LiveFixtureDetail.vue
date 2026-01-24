@@ -341,17 +341,11 @@ const calculateElapsedTime = (kickOffDateStr, matchStatus, sportId) => {
   }
 }
 
-// Get display time - prefer calculated from kick-off, fallback to backend eventTime
+// Get display time - use eventTime directly from API response
 const getDisplayTime = (data) => {
-  // Only calculate from kick-off for timed sports
-  if (isTimedSport(data.sportID) && data.date) {
-    const calculated = calculateElapsedTime(data.date, data.matchStatus, data.sportID)
-    if (calculated) {
-      return calculated
-    }
-  }
-  // For non-timed sports or fallback, use backend's eventTime
-  return data.eventTime || '--:--'
+  // Temporarily disabled: time calculation from kick-off
+  // Use eventTime directly from API response
+  return data?.eventTime || '--:--'
 }
 
 const stopTimer = () => {
