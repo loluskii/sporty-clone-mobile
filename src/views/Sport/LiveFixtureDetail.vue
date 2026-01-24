@@ -93,15 +93,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             selection.displayName ?? selection.outcomeName
                           }}</em>
-                          <em :class="{ 'm-icon-lock': selection.odds <= 1 }">{{
-                            selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                          <em :class="{ 'm-icon-lock': !selection.odds || selection.odds <= 1 }">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -166,8 +166,8 @@
                                 'm-outcome--disabled': outcome.odds <= 1
                               }"
                             >
-                              <em :class="{ 'm-icon-lock': outcome.odds <= 1 }">{{
-                                outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
+                              <em :class="{ 'm-icon-lock': !outcome.odds || outcome.odds <= 1 }">{{
+                                outcome.odds && outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
                               }}</em>
                             </div>
                           </template>
@@ -194,15 +194,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             getMarketCode(selection.outcomeName)
                           }}</em>
-                          <em :class="selection.odds <= 1 ? 'm-icon-lock' : ''">{{
-                            selection.odds <= 1 ? '' : selection.odds.toFixed(2)
+                          <em :class="!selection.odds || selection.odds <= 1 ? 'm-icon-lock' : ''">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -397,21 +397,22 @@ const calculateElapsedTime = (kickOffDateStr, sportId, matchStatus) => {
   }
 }
 
-// Get initial display time - prefer calculated time from kick-off, fallback to eventTime
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
 const getDisplayTime = (gameData) => {
-  const sportId = gameData?.sportID
-  // Only calculate from kick-off for timed sports
-  if (isTimedSport(sportId)) {
-    const kickOffDate = gameData?.date
-    if (kickOffDate) {
-      const calculated = calculateElapsedTime(kickOffDate, sportId, gameData?.matchStatus)
-      if (calculated) {
-        return formatTime(calculated.minutes, calculated.seconds)
-      }
-    }
-  }
+  // Temporarily disabled: time calculation from kick-off
+  // const sportId = gameData?.sportID
+  // if (isTimedSport(sportId)) {
+  //   const kickOffDate = gameData?.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate, sportId, gameData?.matchStatus)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
 
-  // For non-timed sports or fallback, use backend's eventTime
+  // Use eventTime directly from API response
   return gameData?.eventTime || '--:--'
 }
 

@@ -256,20 +256,21 @@ const calculateElapsedTime = (kickOffDateStr) => {
   }
 }
 
-// Get initial display time - prefer calculated time from kick-off, fallback to eventTime
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
 const getInitialDisplayTime = () => {
-  // Only calculate from kick-off for timed sports
-  if (isTimedSport()) {
-    const kickOffDate = props.gameData.date
-    if (kickOffDate) {
-      const calculated = calculateElapsedTime(kickOffDate)
-      if (calculated) {
-        return formatTime(calculated.minutes, calculated.seconds)
-      }
-    }
-  }
+  // Temporarily disabled: time calculation from kick-off
+  // if (isTimedSport()) {
+  //   const kickOffDate = props.gameData.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
 
-  // For non-timed sports or fallback, use backend's eventTime
+  // Use eventTime directly from API response
   return props.gameData.eventTime || '--:--'
 }
 
