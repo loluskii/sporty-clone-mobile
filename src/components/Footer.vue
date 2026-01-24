@@ -17,7 +17,7 @@
     </div>
     <div></div>
     <div class="payment-methods">
-      <h5>Payment methods</h5>
+      <!-- <h5>Payment methods</h5>
       <div class="slider-wrap">
         <div class="slider-window">
           <div class="sliders" style="transform: translateX(0%)">
@@ -29,7 +29,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <p>
         Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
         Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
@@ -47,7 +47,7 @@
           })
         "
       >
-        Terms &amp; Conditions
+        Terms and Conditions
       </h5>
       <h5 class="divider">|</h5>
       <h5

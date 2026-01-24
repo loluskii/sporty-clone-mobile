@@ -38,6 +38,7 @@ onMounted(async () => {
 <style scoped>
 .body {
   padding: 1.5rem;
+  color: #fafafa !important;
 }
 h2 {
   font-size: 1.33333333rem;

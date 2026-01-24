@@ -501,7 +501,6 @@ body {
 }
 
 .x-layout-main .x-main-mid {
-  height: 100%;
   left: 0px;
   position: absolute;
   top: 0px;

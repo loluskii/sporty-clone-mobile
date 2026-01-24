@@ -25,9 +25,9 @@
       <div class="homeIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
@@ -42,9 +42,9 @@
       <div class="awayIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
