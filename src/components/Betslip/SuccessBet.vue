@@ -16,12 +16,12 @@
       <ul class="list">
         <li data-op="betslip-success-stake">
           <span>Total Stake</span>
-          <span>{{ formatNumber(response.data.stake) }}</span>
+          <span>{{ formatNumber(response.data.bets[0].stake) }}</span>
         </li>
 
         <li>
           <span>Potential Win</span>
-          <span>{{ formatNumber(response.data.possibleWin) }}</span>
+          <span>{{ formatNumber(response.data.bets[0].possibleWin) }}</span>
         </li>
         <li class="share-code">
           <span><span>Booking Code</span> <em></em></span>
@@ -44,7 +44,7 @@
                 </g>
               </svg>
             </span>
-            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.share_code)">
+            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.bets[0].share_code)">
               <svg
                 viewBox="5 2 15 20"
                 fill="none"
@@ -59,7 +59,7 @@
                 ></path>
               </svg>
             </span>
-            {{ response.data.share_code }}
+            {{ response.data.bets[0].share_code }}
           </span>
         </li>
       </ul>

@@ -13,6 +13,12 @@ export function useSelectionStakeKeyboard(selectionRef, options = {}) {
 
   const handleStakeChange = (stake) => {
     if (!selectionRef.value) return
+    if (stake === '') {
+      return couponStore.updateWinnings({
+        stake: '',
+        id: selectionRef.value.selectionId || selectionRef.value.id
+      })
+    }
     const parsed = Number(stake)
     const normalized = Number.isFinite(parsed)
       ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))

@@ -23,6 +23,13 @@ export function useBetslipCalculations({ betSlipType, betType }) {
   })
 
   const updateStake = (stake) => {
+    if (stake === '') {
+      couponStore.coupon.stake = ''
+      return couponStore.updateWinnings({
+        stake: '',
+        id: 'all'
+      })
+    }
     const parsed = Number(stake)
     const normalized = Number.isFinite(parsed)
       ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))

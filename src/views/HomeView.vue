@@ -11,7 +11,7 @@
       <!-- SportsList Carousel -->
       <!-- Popular Sports -->
       <keep-alive>
-        <PopularSports></PopularSports>
+        <!-- <PopularSports></PopularSports> -->
       </keep-alive>
       <!-- Popular Sports -->
       <keep-alive>

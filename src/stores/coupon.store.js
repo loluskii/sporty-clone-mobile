@@ -16,7 +16,8 @@ import {
   placeBet2,
   bookBet2,
   CLIENT_ID,
-  validateBetslipSelections
+  validateBetslipSelections,
+  formatNumber
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 
@@ -794,24 +795,46 @@ export const useCouponStore = defineStore({
         this.coupon = coupondata;
 
       } else {// update single combo stake
+        let stakeValue = Number(stake);
+        if (!Number.isFinite(stakeValue)) {
+          stakeValue = 0;
+        }
 
-        combo.Stake = parseFloat(stake);
+        combo.Stake = stakeValue;
 
         if (!coupondata.Groupings || !coupondata.Groupings.length) {
-          coupondata.Groupings = [combo];
+          coupondata.Groupings = stakeValue > 0 ? [combo] : [];
         } else {
           const groupIndex = coupondata.Groupings.findIndex(function (g) { return g.Grouping === combo.Grouping; });
-          if (groupIndex === -1) {
-            coupondata.Groupings = [...coupondata.Groupings, combo];
-          } else {//update combo stake
-            const groupings = [...coupondata.Groupings]
-            groupings[groupIndex] = combo;
-            coupondata.Groupings = groupings;
+          if (stakeValue > 0) {
+            if (groupIndex === -1) {
+              coupondata.Groupings = [...coupondata.Groupings, combo];
+            } else {//update combo stake
+              const groupings = [...coupondata.Groupings]
+              groupings[groupIndex] = combo;
+              coupondata.Groupings = groupings;
+            }
+          } else if (groupIndex !== -1) {
+            coupondata.Groupings = coupondata.Groupings.filter((group) => group.Grouping !== combo.Grouping);
           }
         }
 
-        const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.SportsbookGlobalVariable.MinBonusOdd);
-        coupondata = couponCalculation.updateFromCalculatedCoupon(coupondata, calculatedCoupon, this.SportsbookGlobalVariable, this.sportsbookBonusList);
+        coupondata.Groupings = (coupondata.Groupings || []).filter((group) => {
+          const groupStake = Number(group.Stake || group.stake || 0);
+          return Number.isFinite(groupStake) && groupStake > 0;
+        });
+
+        if (coupondata.Groupings.length) {
+          const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.SportsbookGlobalVariable.MinBonusOdd);
+          coupondata = couponCalculation.updateFromCalculatedCoupon(coupondata, calculatedCoupon, this.SportsbookGlobalVariable, this.sportsbookBonusList);
+        } else {
+          coupondata.minWin = 0;
+          coupondata.maxWin = 0;
+          coupondata.minBonus = 0;
+          coupondata.maxBonus = 0;
+          coupondata.minOdds = 0;
+          coupondata.maxOdds = 0;
+        }
         let total = 0;
 
         const combos = []
@@ -819,6 +842,9 @@ export const useCouponStore = defineStore({
         // update combos with max win
         coupondata.combos.forEach((item) => {
           let comboItem = { ...item };
+          comboItem.minWin = 0;
+          comboItem.maxWin = 0;
+          comboItem.checked = false;
           for (let i = 0; i < coupondata.Groupings.length; i++) {
             if (comboItem.Grouping === coupondata.Groupings[i].Grouping) {
               comboItem.minWin = formatNumber(coupondata.Groupings[i].minWin);
@@ -891,20 +917,17 @@ export const useCouponStore = defineStore({
           specifier: selection.specifier || ''
         }))
 
-      const buildSingleStake = (selections) => {
-        const stakes = selections
-          .map((selection) => Number(selection.stake || 0))
-          .filter((value) => Number.isFinite(value) && value > 0)
-        if (!stakes.length) {
-          return { stake: 0, totalStake: 0 }
-        }
-        const first = stakes[0]
-        const same = stakes.every((value) => value === first)
-        const totalStake = stakes.reduce((sum, value) => sum + value, 0)
-        return {
-          stake: same ? first : 0,
-          totalStake
-        }
+      const buildSingleBets = (selections) => {
+        return selections.map((selection) => {
+          const rawStake = Number(selection.stake || 0)
+          const stake = Number.isFinite(rawStake) ? rawStake : 0
+          return {
+            betType: 'single',
+            selections: buildSelections([selection]),
+            stake,
+            totalStake: stake
+          }
+        })
       }
 
       const buildSystemPayload = () => {
@@ -915,7 +938,7 @@ export const useCouponStore = defineStore({
             size: Number(combo.Grouping || combo.grouping),
             stake: Number(combo.Stake || combo.stake || 0)
           }))
-          .filter((combo) => Number.isFinite(combo.size))
+          .filter((combo) => Number.isFinite(combo.size) && Number(combo.stake) > 0)
           .sort((a, b) => a.size - b.size)
         const sizes = sizedCombos.map((combo) => combo.size)
         const stakes = sizedCombos.map((combo) => combo.stake)
@@ -953,15 +976,9 @@ export const useCouponStore = defineStore({
             const key = String(selection.matchId || selection.match_id || selection.fixture?.matchID)
             return matchCounts[key] <= 1
           })
-          const singleStake = buildSingleStake(singles)
           const bets = []
           if (singles.length) {
-            bets.push({
-              betType: 'single',
-              selections: buildSelections(singles),
-              stake: singleStake.stake,
-              totalStake: singleStake.totalStake
-            })
+            bets.push(...buildSingleBets(singles))
           }
           if (multiples.length) {
             bets.push({
@@ -974,15 +991,7 @@ export const useCouponStore = defineStore({
           return bets
         }
         if (coupondata.betslip_type === 'Single' || coupondata.bet_type === 'Single') {
-          const singleStake = buildSingleStake(selections)
-          return [
-            {
-              betType: 'single',
-              selections: buildSelections(selections),
-              stake: singleStake.stake,
-              totalStake: singleStake.totalStake
-            }
-          ]
+          return buildSingleBets(selections)
         }
         return [
           {

@@ -15,7 +15,7 @@
           type="textx" 
           disabled 
           class="m-keybord-input multiple-stake-input" 
-          v-html="stake"
+          v-html="displayStake"
           v-if="canEdit"
           @click="toggleKeyboard">
         </span>
@@ -49,7 +49,7 @@ import { useRouter } from "vue-router";
 const props = defineProps({
   title: String,
   combination: Number,
-  stake: Number,
+  stake: [Number, String],
   canEdit: Boolean,
   tabindex: Number,
   betSlipType: String,
@@ -103,12 +103,30 @@ const maxStake = computed(() => {
   return Number(raw || 0)
 })
 
+const displayStake = computed(() => {
+  const numericStake = Number(props.stake)
+  if (!Number.isFinite(numericStake) || numericStake === 0) {
+    return ''
+  }
+  return props.stake
+})
+
 const goToDeposit = () => {
   emit("toggle-betslip");
   return router.push({ name: 'account-deposit' })
 }
 
 const updateStake = (stake) => {
+  if (stake === '') {
+    if (props.betSlipType === 'Combo') {
+      const targetCombo = props.syncAll ? null : props.combo
+      return couponStore.updateComboWinnings(0, targetCombo)
+    }
+    return couponStore.updateWinnings({
+      stake: '',
+      id: "all",
+    })
+  }
   const parsed = Number(stake)
   const normalized = Number.isFinite(parsed)
     ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
