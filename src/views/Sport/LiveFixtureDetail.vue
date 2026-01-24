@@ -300,6 +300,60 @@ const parseTime = (timeString) => {
   return null
 }
 
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = (sportId) => {
+  return TIMED_SPORTS.includes(sportId)
+}
+
+// Calculate elapsed match time from kick-off (only for timed sports)
+const calculateElapsedTime = (kickOffDateStr, matchStatus, sportId) => {
+  if (!kickOffDateStr) return null
+
+  // Only calculate for timed sports like Soccer
+  if (!isTimedSport(sportId)) return null
+
+  const kickOffTime = new Date(kickOffDateStr).getTime()
+  const now = Date.now()
+  const elapsedMs = now - kickOffTime
+
+  // If kick-off hasn't started yet or invalid date
+  if (elapsedMs < 0) return null
+
+  const elapsedMinutes = Math.floor(elapsedMs / 60000)
+  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
+  const status = (matchStatus || '').toLowerCase()
+
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    const cappedMinutes = Math.min(elapsedMinutes, 90)
+    return formatTime(cappedMinutes, elapsedSeconds)
+  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
+    // Halftime: show 45:00
+    return '45:00'
+  } else {
+    // First half or unknown: cap at 45 mins
+    const cappedMinutes = Math.min(elapsedMinutes, 45)
+    return formatTime(cappedMinutes, elapsedSeconds)
+  }
+}
+
+// Get display time - prefer calculated from kick-off, fallback to backend eventTime
+const getDisplayTime = (data) => {
+  // Only calculate from kick-off for timed sports
+  if (isTimedSport(data.sportID) && data.date) {
+    const calculated = calculateElapsedTime(data.date, data.matchStatus, data.sportID)
+    if (calculated) {
+      return calculated
+    }
+  }
+  // For non-timed sports or fallback, use backend's eventTime
+  return data.eventTime || '--:--'
+}
+
 const stopTimer = () => {
   if (timer.value) {
     clearInterval(timer.value)
@@ -309,6 +363,9 @@ const stopTimer = () => {
 
 const startTimer = () => {
   stopTimer()
+
+  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
+  if (!isTimedSport(eventDetail.value?.sportID)) return
 
   const initialTime = parseTime(eventTime.value)
   if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
@@ -345,6 +402,49 @@ const formatEventTime = (time, sportId) => {
   return time
 }
 
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 2
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr, sportId, matchStatus) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport(sportId)) return timeStr
+
+  const parsed = parseTime(timeStr)
+  if (!parsed) return timeStr
+
+  let { minutes, seconds } = parsed
+
+  // Add latency compensation
+  seconds += MQTT_LATENCY_COMPENSATION
+
+  // Handle overflow
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60)
+    seconds = seconds % 60
+  }
+
+  // Cap at halftime/fulltime boundaries
+  const status = (matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (minutes >= 90) {
+      minutes = 90
+      seconds = 0
+    }
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (minutes >= 45) {
+      minutes = 45
+      seconds = 0
+    }
+  }
+
+  return formatTime(minutes, seconds)
+}
+
 // MQTT handlers - New topic: sports/{sport_id}/match/{match_id}/match_status
 function handleMatchStatus(data) {
   // Handle match end
@@ -370,9 +470,11 @@ function handleMatchStatus(data) {
   }
 
   requestAnimationFrame(() => {
-    // Update event time and status
+    // Update event time and status (with latency compensation)
     const sportId = eventDetail.value?.sportID || 1
-    eventTime.value = formatEventTime(data.event_time, sportId)
+    const matchStatus = eventDetail.value?.matchStatus || data.match_status
+    const adjustedTime = adjustTimeForLatency(data.event_time, sportId, matchStatus)
+    eventTime.value = formatEventTime(adjustedTime, sportId)
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
@@ -384,9 +486,14 @@ function handleScores(data) {
   requestAnimationFrame(() => {
     scores.homeScore = data.home_score
     scores.awayScore = data.away_score
+    // Sync time from backend to correct any drift (with latency compensation)
     if (data.event_time) {
       const sportId = eventDetail.value?.sportID || 1
-      eventTime.value = formatEventTime(data.event_time, sportId)
+      const matchStatus = eventDetail.value?.matchStatus || ''
+      const adjustedTime = adjustTimeForLatency(data.event_time, sportId, matchStatus)
+      eventTime.value = formatEventTime(adjustedTime, sportId)
+      // Restart timer with synced time
+      startTimer()
     }
   })
 }
@@ -651,7 +758,8 @@ async function getEventDetail(id) {
           scores.homeScore = data.homeScore ?? 0
           scores.awayScore = data.awayScore ?? 0
         }
-        eventTime.value = data.eventTime
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
 
         if (data.matchID) {
           setupMqttSubscriptions(data.matchID, data.sportID)
@@ -665,7 +773,8 @@ async function getEventDetail(id) {
         awayTeam.value = mappedData.competitor2
         scores.homeScore = data.homeScore
         scores.awayScore = data.awayScore
-        eventTime.value = data.eventTime
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
       }
     }
   } catch (error) {

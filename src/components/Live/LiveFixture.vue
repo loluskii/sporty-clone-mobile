@@ -137,7 +137,6 @@ const getInitialScores = () => {
 const scores = ref(getInitialScores())
 const outcomes = ref([])
 const timer = ref(null)
-const displayTime = ref(props.gameData.eventTime || '00:00')
 const matchStatus = ref(props.gameData.matchStatus || '')
 
 // Keep track of updated outcomes
@@ -148,16 +147,130 @@ const specifierOpen = ref(false)
 
 const updatePending = ref(false)
 
-// Time handling functions - now works with minutes only
-const parseTimeToMinutes = (timeStr) => {
-  if (timeStr === '--:--') return null
-  const [minutes] = timeStr.split(':').map(Number)
-  return minutes
+// Time handling functions
+const parseTime = (timeString) => {
+  if (!timeString || timeString === '--:--') return null
+  const parts = timeString.split(':')
+  if (parts.length >= 2) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: parseInt(parts[1], 10)
+    }
+  } else if (parts.length === 1) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: 0
+    }
+  }
+  return null
 }
 
-const formatMinutesToTime = (minutes) => {
-  return `${minutes.toString().padStart(2, '0')}:00`
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
+
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 30
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport()) return timeStr
+
+  const parsed = parseTime(timeStr)
+  if (!parsed) return timeStr
+
+  let { minutes, seconds } = parsed
+
+  // Add latency compensation
+  seconds += MQTT_LATENCY_COMPENSATION
+
+  // Handle overflow
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60)
+    seconds = seconds % 60
+  }
+
+  // Cap at halftime/fulltime boundaries
+  if (minutes >= 90) {
+    minutes = 90
+    seconds = 0
+  } else if (minutes >= 45 && minutes < 46) {
+    // Don't go past 45:00 in first half
+    const status = (props.gameData.matchStatus || '').toLowerCase()
+    if (!status.includes('2nd') && !status.includes('second')) {
+      minutes = 45
+      seconds = 0
+    }
+  }
+
+  return formatTime(minutes, seconds)
+}
+
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = () => {
+  const sportId = props.gameData.sportID
+  return TIMED_SPORTS.includes(sportId)
+}
+
+// Calculate elapsed match time from kick-off (only for timed sports)
+const calculateElapsedTime = (kickOffDateStr) => {
+  if (!kickOffDateStr) return null
+
+  // Only calculate for timed sports like Soccer
+  if (!isTimedSport()) return null
+
+  const kickOffTime = new Date(kickOffDateStr).getTime()
+  const now = Date.now()
+  const elapsedMs = now - kickOffTime
+
+  // If kick-off hasn't started yet or invalid date
+  if (elapsedMs < 0) return null
+
+  const elapsedMinutes = Math.floor(elapsedMs / 60000)
+  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
+
+  // Handle halftime: if elapsed > 45 mins but match status is still 1st half or halftime
+  const status = props.gameData.matchStatus?.toLowerCase() || ''
+
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    const adjustedMinutes = Math.min(elapsedMinutes, 90)
+    return { minutes: adjustedMinutes, seconds: elapsedSeconds }
+  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
+    // Halftime: cap at 45:00
+    return { minutes: 45, seconds: 0 }
+  } else {
+    // First half or unknown: cap at 45 mins
+    const cappedMinutes = Math.min(elapsedMinutes, 45)
+    return { minutes: cappedMinutes, seconds: elapsedSeconds }
+  }
+}
+
+// Get initial display time - prefer calculated time from kick-off, fallback to eventTime
+const getInitialDisplayTime = () => {
+  // Only calculate from kick-off for timed sports
+  if (isTimedSport()) {
+    const kickOffDate = props.gameData.date
+    if (kickOffDate) {
+      const calculated = calculateElapsedTime(kickOffDate)
+      if (calculated) {
+        return formatTime(calculated.minutes, calculated.seconds)
+      }
+    }
+  }
+
+  // For non-timed sports or fallback, use backend's eventTime
+  return props.gameData.eventTime || '--:--'
+}
+
+const displayTime = ref(getInitialDisplayTime())
 
 const stopTimer = () => {
   if (timer.value) {
@@ -169,13 +282,22 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialMinutes = parseTimeToMinutes(displayTime.value)
-  if (initialMinutes === null || initialMinutes === 45 || initialMinutes === 90) return
+  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
+  if (!isTimedSport()) return
 
-  let currentMinutes = initialMinutes
+  const initialTime = parseTime(displayTime.value)
+  if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
+
+  let currentMinutes = initialTime.minutes
+  let currentSeconds = initialTime.seconds
 
   timer.value = setInterval(() => {
-    currentMinutes++
+    currentSeconds++
+
+    if (currentSeconds >= 60) {
+      currentSeconds = 0
+      currentMinutes++
+    }
 
     // Stop at key match times (halftime and fulltime)
     if (currentMinutes === 45 || currentMinutes === 90) {
@@ -183,8 +305,8 @@ const startTimer = () => {
       return
     }
 
-    displayTime.value = formatMinutesToTime(currentMinutes)
-  }, 60000) // Increment every minute
+    displayTime.value = formatTime(currentMinutes, currentSeconds)
+  }, 1000) // Increment every second
 }
 
 // Watch for gameData changes to start timer
@@ -347,8 +469,11 @@ function handleScores(data) {
   requestAnimationFrame(() => {
     scores.value.homeScore = data.home_score
     scores.value.awayScore = data.away_score
+    // Sync time from backend to correct any drift (with latency compensation)
     if (data.event_time) {
-      displayTime.value = data.event_time
+      displayTime.value = adjustTimeForLatency(data.event_time)
+      // Restart timer with synced time
+      startTimer()
     }
   })
 }
@@ -363,9 +488,9 @@ function handleMatchStatus(data) {
   }
 
   requestAnimationFrame(() => {
-    // Update time and status
+    // Update time and status (with latency compensation)
     if (data.event_time) {
-      displayTime.value = data.event_time
+      displayTime.value = adjustTimeForLatency(data.event_time)
     }
     if (data.match_status) {
       matchStatus.value = data.match_status
