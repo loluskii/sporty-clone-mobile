@@ -78,11 +78,10 @@
                               'm-outcome--checked': isSelected(
                                 createID(
                                   eventDetail.gameID,
-                                  market.marketID,
+                                  eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name,
-                                  marketGroup.specifier
+                                  eventDetail.name
                                 ),
                                 couponStore.coupon
                               ),
@@ -150,11 +149,10 @@
                                   'm-outcome--checked': isSelected(
                                     createID(
                                       eventDetail.gameID,
-                                      mg.marketID,
+                                      eventDetail.matchID,
                                       outcome.outcomeName,
                                       outcome.oddID,
-                                      eventDetail.name,
-                                      mg.specifier
+                                      eventDetail.name
                                     ),
                                     couponStore.coupon
                                   ),
@@ -182,11 +180,10 @@
                               'm-outcome--checked': isSelected(
                                 createID(
                                   eventDetail.gameID,
-                                  market.matchID,
+                                  eventDetail.matchID,
                                   selection.outcomeName,
                                   selection.oddID,
-                                  eventDetail.name,
-                                  marketGroup.specifier
+                                  eventDetail.name
                                 ),
                                 couponStore.coupon
                               ),
@@ -235,7 +232,7 @@ import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFeedsGameDetail, chunks, formatDate, createID, isSelected } from '@/helpers'
+import { getFixtureMarkets, chunks, formatDate, createID, isSelected } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
@@ -320,12 +317,10 @@ function setupPeriodicRefetch(matchId) {
       // Only refetch if match is still available
       // console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
-        const res = await getFeedsGameDetail(matchId)
-        // Map new API response structure
-        const markets = res.market || []
-        if (Object.keys(res).length && markets.length) {
-          eventMarkets.value = markets
-          groupedMarkets.value = groupByMarketID(markets)
+        const res = await getFixtureMarkets(matchId)
+        if (Object.keys(res).length && res.markets) {
+          eventMarkets.value = res.markets
+          groupedMarkets.value = groupByMarketID(res.markets)
           // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`)
         }
       } catch (error) {
@@ -359,29 +354,18 @@ onBeforeUnmount(() => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
-    const res = await getFeedsGameDetail(id)
-    // Map new API response structure to expected format
-    const mappedData = {
-      ...res,
-      markets: res.market || [], // New API uses 'market' instead of 'markets'
-      competitor1: res.homeTeam,
-      competitor2: res.awayTeam,
-      categoryName: res.country,
-      // producerStatus 1 = available, map to statusCode 0 for prematch
-      statusCode: res.producerStatus === 1 ? 0 : 1
-    }
-
-    if (Object.keys(mappedData).length && mappedData.markets) {
-      eventDetail.value = mappedData
-      eventMarkets.value = mappedData.markets
-      groupedMarkets.value = groupByMarketID(mappedData.markets)
-      homeTeam.value = mappedData.competitor1
-      awayTeam.value = mappedData.competitor2
+    const res = await getFixtureMarkets(id)
+    if (Object.keys(res).length && res.markets) {
+      eventDetail.value = res
+      eventMarkets.value = res.markets
+      groupedMarkets.value = groupByMarketID(res.markets)
+      homeTeam.value = res.competitor1
+      awayTeam.value = res.competitor2
 
       // Set up MQTT subscriptions after we have the event details
-      if (mappedData.matchID) {
-        setupMqttSubscriptions(mappedData.matchID)
-        setupPeriodicRefetch(mappedData.matchID)
+      if (res.matchID) {
+        setupMqttSubscriptions(res.matchID)
+        setupPeriodicRefetch(res.matchID)
       }
     } else {
       emitter.emit('showErrorMessage', {
@@ -519,11 +503,10 @@ function addToBetslip(market, outcome) {
   }
   const id = createID(
     eventDetail.value.gameID,
-    marketId,
+    eventDetail.value.matchID,
     outcome.outcomeName,
     outcome.oddID,
-    eventDetail.value.name,
-    market.specifier
+    eventDetail.value.name
   )
   const data = {
     fixture: eventDetail.value,

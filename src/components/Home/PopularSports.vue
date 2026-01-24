@@ -270,6 +270,7 @@ function getImageURL(name) {
 }
 
 const setActiveTournament = (tournament) => {
+  if (!tournament?.tournamentID) return
   utilsStore.setActiveFeaturedTournament(tournament.tournamentID)
   scrollGamesIntoView()
 }

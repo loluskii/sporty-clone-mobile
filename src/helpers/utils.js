@@ -196,6 +196,7 @@ export const getDataFromPayload = (couponPayload) => {
 }
 
 export const formatDate = (date, format) => {
+  if (!date) return ''
   const fixDateForAllBrowsers = date.replace(/-/g, '/')
   const d = new Date(fixDateForAllBrowsers)
   return moment(d).format(format)
