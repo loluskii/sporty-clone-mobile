@@ -43,11 +43,11 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'terms_&_conditions' }
+            params: { page: 'terms_and_conditions' }
           })
         "
       >
-        Terms &amp; Conditions
+        Terms and Conditions
       </h5>
       <h5 class="divider">|</h5>
       <h5

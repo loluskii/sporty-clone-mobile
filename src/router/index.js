@@ -295,7 +295,8 @@ export const router = createRouter({
     {
       path: '/CMS/:page',
       name: 'cms-page',
-      component: CMSPage
+      component: CMSPage,
+      meta: { showFooter: true }
     },
 
     // Promotions
