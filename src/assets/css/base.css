@@ -455,7 +455,7 @@ i,
 th,
 var {
   font-style: normal;
-  font-weight: 500;
+  font-weight: bold;
 }
 
 ol,
@@ -471,8 +471,6 @@ h4,
 h5,
 h6 {
   font-family: var(--brand-primary-font-family);
-  font-size: 100%;
-  font-weight: 500;
 }
 
 q:after,
