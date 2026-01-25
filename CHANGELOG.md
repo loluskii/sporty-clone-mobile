@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.2.4) (2026-01-25)
+
+
+### Bug Fixes
+
+* env updated ([f6f6e46](https://github.com/zoroplay/sporty-clone-mobile/commit/f6f6e467d2bdd40a7b887cb677a9116400cb9827))
+
 ## [1.2.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.2.4) (2026-01-24)
 
 
