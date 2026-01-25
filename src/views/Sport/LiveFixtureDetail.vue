@@ -632,13 +632,13 @@ function setupPeriodicRefetch(matchId) {
               )
           groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
           // Get scores from eventInfo.scores if available, fallback to top-level
-          if (data.eventInfo?.scores) {
-            scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
-            scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
-          } else {
+          // if (data.eventInfo?.scores) {
+          //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+          //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+          // } else {
             scores.homeScore = data.homeScore ?? 0
             scores.awayScore = data.awayScore ?? 0
-          }
+          // }
           eventTime.value = data.eventTime
         }
       } catch (error) {
@@ -757,13 +757,13 @@ async function getEventDetail(id) {
         homeTeam.value = mappedData.competitor1
         awayTeam.value = mappedData.competitor2
         // Get scores from eventInfo.scores if available, fallback to top-level
-        if (data.eventInfo?.scores) {
-          scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
-          scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
-        } else {
+        // if (data.eventInfo?.scores) {
+        //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+        //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+        // } else {
           scores.homeScore = data.homeScore ?? 0
           scores.awayScore = data.awayScore ?? 0
-        }
+        // }
         // Calculate time from kick-off for more accuracy
         eventTime.value = getDisplayTime(data)
 
