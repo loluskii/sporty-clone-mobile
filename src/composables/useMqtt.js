@@ -16,12 +16,16 @@ export function useMqttService() {
     const host = import.meta.env.VITE_MQTT_HOST
     const port = import.meta.env.VITE_MQTT_PORT
     const mqttUrl = `ws://${host}:${port}/mqtt`
+    const username = import.meta.env.VITE_MQTT_USERNAME
+    const password = import.meta.env.VITE_MQTT_PASSWORD
 
     mqttClient = mqtt.connect(mqttUrl, {
       clientId,
       clean: true,
       reconnectPeriod: 1000,
-      connectTimeout: 30000
+      connectTimeout: 30000,
+      username,
+      password
     })
 
     mqttClient.on('connect', () => {

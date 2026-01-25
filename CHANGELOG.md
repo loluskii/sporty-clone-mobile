@@ -1,16 +1,38 @@
-## [1.2.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.2.4) (2026-01-25)
+## [Unreleased] (2026-01-24)
 
+
+### Features
+
+* refactored betslip calculations and bet list logic into reusable composables
+* shared MQTT odds handling + live timer composables for prematch/live fixtures
+* betslip header/tabs components split for cleaner layout
 
 ### Bug Fixes
 
-* env updated ([f6f6e46](https://github.com/zoroplay/sporty-clone-mobile/commit/f6f6e467d2bdd40a7b887cb677a9116400cb9827))
+* single bet payload now emits one bet per selection with its stake
+* system payload omits cleared combo stakes and recalculates wins correctly
+* stake keyboard clear works across system/play-all and combo lines
+* allow cleared stake input values in system stake inputs
 
-## [1.2.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.2.4) (2026-01-24)
+## [Unreleased] (2026-01-23)
 
+
+### Features
+
+* cashout slider drag-to-set with pointer handling
+* cashout payload now uses percent + source
+* betslip match-id grouping indicator and refreshed Real/Sim toggle
+* stake min/max enforcement and default min stake on bet type switch
+* split/system handling for odds and potential win ranges
 
 ### Bug Fixes
 
-* env updated ([f6f6e46](https://github.com/zoroplay/sporty-clone-mobile/commit/f6f6e467d2bdd40a7b887cb677a9116400cb9827))
+* split/system combos generation and odds grouping consistency
+* fastCombination instantiation in coupon calculation
+* betslip keyboard single-instance behavior
+* booking code input type + error message
+* bonus progress clamping and divide-by-zero guard
+* remove unused imports/refs in betslip components
 
 ## [1.2.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.2.4) (2026-01-20)
 
