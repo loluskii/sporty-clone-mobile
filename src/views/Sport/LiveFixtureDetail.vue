@@ -360,7 +360,9 @@ const startTimer = () => {
 function handleFixtureStatus(data) {
   // Handle match end
   requestAnimationFrame(() => {
-    eventTime.value = data.event_time
+    if (data.event_time) {
+      eventTime.value = data.event_time
+    }
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
@@ -471,50 +473,35 @@ function handleOddsChange(data, match_id) {
 
 // MQTT setup
 function setupMqttSubscriptions(matchId, sport_id) {
-  // Use wildcard subscription for all live match updates
-  const wildcardTopic = `sports/${sport_id}/match/#`
-  const unsubscribe = subscribe(wildcardTopic, (data, topic) => {
-    // Filter: only process messages for this specific match
-    const messageMatchId = data.event_id || data.match_id
+  const baseTopic = `sports/${sport_id}/match/${matchId}`
+  const topics = {
+    markets: `${baseTopic}/markets`,
+    betStop: `${baseTopic}/bet_stop`,
+    matchStatus: `${baseTopic}/match_status`,
+    scores: `${baseTopic}/scores`
+  }
 
-    if (!messageMatchId || String(messageMatchId) !== String(matchId)) {
-      // Not for this match, ignore silently
-      return
-    }
-
-    // Route based on the topic path (last segment after matchId)
-    // Topic format: feeds/live/{messageType}/{matchId}
-    const topicParts = topic.split('/')
-    const messageType = topicParts[topicParts.length - 1] // Get second-to-last segment
-
-    switch (messageType) {
-      case 'markets':
-        // Market/odds update
-        handleOddsChange(data, matchId)
-        break
-      case 'bet_stop':
-        // Bet stop/suspend
-        handleBetStop(data, matchId)
-        break
-      case 'match_status':
-        // Match status update
-        handleFixtureStatus(data, matchId)
-        break
-      case 'scores':
-        console.log("scores:", data)
-          if (data.home_score !== undefined && data.away_score !== undefined) {
-            scores.value.homeScore = data.home_score
-            scores.value.awayScore = data.away_score
-          }
-          displayTime.value = data.event_time
-          break
-      default:
-        console.warn(`📊 Unknown message type: ${messageType} on topic: ${topic}`)
-    }
-  })
-
-  // Store unsubscribe function in ref
-  unsubscribeFunctions.value = [unsubscribe]
+  const unsubscribers = [
+    subscribe(topics.markets, (data) => {
+      handleOddsChange(data, matchId)
+    }),
+    subscribe(topics.betStop, (data) => {
+      handleBetStop(data, matchId)
+    }),
+    subscribe(topics.matchStatus, (data) => {
+      handleFixtureStatus(data, matchId)
+    }),
+    subscribe(topics.scores, (data) => {
+      if (data.home_score !== undefined && data.away_score !== undefined) {
+        scores.value.homeScore = data.home_score
+        scores.value.awayScore = data.away_score
+      }
+      if (data.event_time) {
+        eventTime.value = data.event_time
+      }
+    })
+  ]
+  unsubscribeFunctions.value = unsubscribers
 }
 
 // Periodic refetch setup

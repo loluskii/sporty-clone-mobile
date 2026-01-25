@@ -93,8 +93,15 @@ export const useCouponStore = defineStore({
           return
         }
 
-        const oddsChangeTopic = `feeds/${type}/odds_change/${matchId}`
-        const betStopTopic = `feeds/${type}/bet_stop/${matchId}`
+        const sportId =
+          selection.sportId ||
+          selection.fixture?.sportID ||
+          selection.fixture?.sport_id ||
+          selection.sportID ||
+          1
+        const baseTopic = `sports/${sportId}/match/${matchId}`
+        const oddsChangeTopic = `${baseTopic}/markets`
+        const betStopTopic = `${baseTopic}/bet_stop`
         const subscriptionKey = `${type}:${matchId}`
 
         if (isAdding) {

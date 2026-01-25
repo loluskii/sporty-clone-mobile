@@ -145,7 +145,9 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
       }
       scores.value.homeScore = data.home_score
       scores.value.awayScore = data.away_score
-      setDisplayTime(data.event_time)
+      if (data.event_time) {
+        setDisplayTime(data.event_time)
+      }
       matchStatus.value = data.match_status
       return
     }

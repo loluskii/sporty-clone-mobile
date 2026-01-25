@@ -355,7 +355,9 @@ function setupMqttSubscriptions(matchId, sport_id) {
   const baseTopic = `sports/${sport_id}/match/${matchId}`
   const topics = {
     markets: `${baseTopic}/markets`,
-    betStop: `${baseTopic}/bet_stop`
+    betStop: `${baseTopic}/bet_stop`,
+    matchStatus: `${baseTopic}/match_status`,
+    scores: `${baseTopic}/scores`
   }
 
   const unsubscribers = [
@@ -364,6 +366,12 @@ function setupMqttSubscriptions(matchId, sport_id) {
     }),
     subscribe(topics.betStop, (data) => {
       handleBetStop(data, matchId)
+    }),
+    subscribe(topics.matchStatus, (data) => {
+      handleFixtureStatus(data)
+    }),
+    subscribe(topics.scores, (data) => {
+      handleFixtureStatus(data)
     })
   ]
 
@@ -690,6 +698,31 @@ function handleBetStop(data) {
     emitter.emit('showErrorMessage', {
       message: 'This event is not longer available for betting',
       next_route: 'home'
+    })
+  }
+}
+
+function handleFixtureStatus(data) {
+  const matchId = eventDetail.value?.matchID
+  const dataMatchId = data.event_id || data.match_id || data.matchId
+  if (dataMatchId && matchId && String(dataMatchId) !== String(matchId)) return
+
+  const status = data?.status ?? data?.status_code
+  const matchStatus = String(data?.match_status || '').toLowerCase()
+
+  if (
+    status === 1 ||
+    status === '1' ||
+    (matchStatus && !matchStatus.includes('not') && !matchStatus.includes('prematch'))
+  ) {
+    router.push({
+      name: 'live-fixtures-detail',
+      params: {
+        sport: route.params.sport,
+        tournament: route.params.tournament,
+        event_name: route.params.event_name,
+        event_id: route.params.event_id
+      }
     })
   }
 }
