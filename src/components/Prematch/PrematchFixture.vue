@@ -104,6 +104,7 @@ const specifierOpen = ref(false)
 
 const matchId = computed(() => props.eventData.matchID)
 const baseOutcomes = computed(() => props.eventData.outcomes || [])
+const sportId = computed(() => props.eventData?.sportID || 1)
 const eventTimeLabel = computed(() => {
   const rawDate = props.eventData?.date
   if (!rawDate) return ''
@@ -116,10 +117,23 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
   matchId,
   activeMarket: computed(() => props.activeMarket),
   baseOutcomes,
+  sportId,
   onBetStop: () => {
     const matchTime = new Date(props.eventData.date)
     const currentTime = new Date()
     if (matchTime <= currentTime) {
+      emitter.emit('remove-fixture', props.eventData.matchID)
+    }
+  },
+  onMessage: (messageType, data) => {
+    if (messageType !== 'match_status') return
+    const status = data?.status ?? data?.status_code
+    if (status === 1 || status === '1') {
+      emitter.emit('remove-fixture', props.eventData.matchID)
+      return
+    }
+    const matchStatus = String(data?.match_status || '').toLowerCase()
+    if (matchStatus && !matchStatus.includes('not') && !matchStatus.includes('prematch')) {
       emitter.emit('remove-fixture', props.eventData.matchID)
     }
   }

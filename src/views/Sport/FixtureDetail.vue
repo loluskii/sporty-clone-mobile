@@ -352,39 +352,22 @@ watch(
 
 // MQTT setup
 function setupMqttSubscriptions(matchId, sport_id) {
-  // Use wildcard subscription for all live match updates
-  const wildcardTopic = `sports/${sport_id}/match/#`
-  const unsubscribe = subscribe(wildcardTopic, (data, topic) => {
-    // Filter: only process messages for this specific match
-    const messageMatchId = data.match_id
+  const baseTopic = `sports/${sport_id}/match/${matchId}`
+  const topics = {
+    markets: `${baseTopic}/markets`,
+    betStop: `${baseTopic}/bet_stop`
+  }
 
-    if (!messageMatchId || String(messageMatchId) !== String(matchId)) {
-      // Not for this match, ignore silently
-      return
-    }
+  const unsubscribers = [
+    subscribe(topics.markets, (data) => {
+      handleOddsChange(data, matchId)
+    }),
+    subscribe(topics.betStop, (data) => {
+      handleBetStop(data, matchId)
+    })
+  ]
 
-    console.log(data)
-
-    // Route based on the topic path (last segment after matchId)
-    const topicParts = topic.split('/')
-    const messageType = topicParts[topicParts.length - 1] // Get second-to-last segment
-
-    switch (messageType) {
-      case 'markets':
-        // Market/odds update
-        handleOddsChange(data, matchId)
-        break
-      case 'bet_stop':
-        // Bet stop/suspend
-        handleBetStop(data, matchId)
-        break
-      default:
-        console.warn(`📊 Unknown message type: ${messageType} on topic: ${topic}`)
-    }
-  })
-
-  // Store unsubscribe function in ref
-  unsubscribeFunctions.value = [unsubscribe]
+  unsubscribeFunctions.value = unsubscribers
 }
 
 function setupPeriodicRefetch(matchId) {
@@ -577,85 +560,105 @@ const showFixtureAnalysis = (id, widgetName = 'headToHead.standalone') => {
 
 // Function to handle odds changes (legacy format support)
 function handleOddsChange(data, match_id) {
-  if (!data || !data.outcomes) return
+  if (!data) return
 
-  const dataMatchId = data.match_id
-
+  const dataMatchId = data.match_id || data.event_id
   if (dataMatchId && String(dataMatchId) !== String(match_id)) return
 
-  const outcomes = data.outcomes || []
-  if (outcomes.length === 0) return
+  const applyMarketUpdate = (payload) => {
+    const outcomes = payload.outcomes || []
+    if (outcomes.length === 0) return
 
-  if (eventMarkets.value) {
-    requestAnimationFrame(() => {
-      let marketFound = false
-      let shouldRemoveMarket = false
+    if (eventMarkets.value) {
+      requestAnimationFrame(() => {
+        let marketFound = false
+        let shouldRemoveMarket = false
 
-      // First, try to update existing market
-      eventMarkets.value = eventMarkets.value.map((market) => {
-        // Match by both marketID and specifier (important for markets like Handicap, Totals)
-        const marketMatches = market.marketID === data.market_id
-        const specifierMatches = (market.specifier || '') === (data.specifier || '')
+        eventMarkets.value = eventMarkets.value.map((market) => {
+          const marketMatches = market.marketID === payload.market_id
+          const specifierMatches = (market.specifier || '') === (payload.specifier || '')
 
-        if (!marketMatches || !specifierMatches) {
-          return market // Not the market we're updating
-        }
+          if (!marketMatches || !specifierMatches) {
+            return market
+          }
 
-        marketFound = true
-        // Check if market is deactivated - mark for removal
-        if (data.status_name && data.status_name.toLowerCase() === 'deactivated') {
-          shouldRemoveMarket = true
-          return null // Will be filtered out
-        }
-        // Update outcomes for matching market
-        const updatedMarket = {
-          ...market,
-          statusName: data.status_name || market.statusName,
-          outcomes: market.outcomes.map((outcome) => {
-            const updatedOutcome = outcomes.find(
-              (o) => String(o.outcome_id) === String(outcome.outcomeID)
-            )
+          marketFound = true
+          if (payload.status_name && payload.status_name.toLowerCase() === 'deactivated') {
+            shouldRemoveMarket = true
+            return null
+          }
 
-            if (updatedOutcome) {
-              return {
-                ...outcome,
-                odds: updatedOutcome.odds,
-                active: updatedOutcome.active ? 1 : 0,
-                probability: updatedOutcome.probability || outcome.probability
+          const updatedMarket = {
+            ...market,
+            statusName: payload.status_name || market.statusName,
+            outcomes: market.outcomes.map((outcome) => {
+              const updatedOutcome = outcomes.find(
+                (o) => String(o.outcome_id) === String(outcome.outcomeID)
+              )
+
+              if (updatedOutcome) {
+                return {
+                  ...outcome,
+                  odds: updatedOutcome.odds,
+                  active: updatedOutcome.active ? 1 : 0,
+                  probability: updatedOutcome.probability || outcome.probability
+                }
               }
-            }
 
-            return outcome
-          })
+              return outcome
+            })
+          }
+
+          return updatedMarket
+        }).filter(market => market !== null)
+
+        if (!marketFound && payload.status_name && payload.status_name.toLowerCase() !== 'deactivated') {
+          const newMarket = {
+            marketID: payload.market_id,
+            marketName: payload.market_name,
+            specifier: payload.specifier || '',
+            statusName: payload.status_name || 'Active',
+            sportID: payload.sport_id || 0,
+            outcomes: outcomes.map(outcome => ({
+              outcomeID: outcome.outcome_id,
+              outcomeName: outcome.outcome_name,
+              displayName: outcome.alias || outcome.outcome_name,
+              odds: outcome.odds,
+              active: outcome.active ? 1 : 0,
+              probability: outcome.probability || 0
+            })),
+          }
+
+          eventMarkets.value.push(newMarket)
         }
-
-        return updatedMarket
-      }).filter(market => market !== null) 
-
-      // If market not found, add it as a new market
-      if (!marketFound && data.status_name && data.status_name.toLowerCase() !== 'deactivated') {
-        // console.log(`➕ Adding new market: ${data.market_name} (ID: ${data.market_id}, Specifier: ${data.specifier || 'none'})`)
-
-        const newMarket = {
-          marketID: data.market_id,
-          marketName: data.market_name,
-          specifier: data.specifier || '',
-          statusName: data.status_name || 'Active',
-          sportID: data.sport_id || 0,
-          outcomes: outcomes.map(outcome => ({
-            outcomeID: outcome.outcome_id,
-            outcomeName: outcome.outcome_name,
-            displayName: outcome.alias || outcome.outcome_name,
-            odds: outcome.odds,
-            active: outcome.active ? 1 : 0,
-            probability: outcome.probability || 0
-          })),
-        }
-
-        eventMarkets.value.push(newMarket)
-      }
-    })
+      })
+    }
   }
+
+  if (Array.isArray(data.markets)) {
+    data.markets.forEach((market) => {
+      const outcomes = (market.outcomes || []).map((outcome) => ({
+        outcome_id: outcome.id ?? outcome.outcome_id ?? outcome.outcomeID,
+        outcome_name: outcome.outcome_name ?? outcome.outcomeName,
+        alias: outcome.alias,
+        odds: outcome.odds,
+        active: outcome.active,
+        probability: outcome.probability
+      }))
+
+      applyMarketUpdate({
+        market_id: market.id ?? market.market_id ?? market.marketID,
+        market_name: market.market_name ?? market.marketName,
+        specifier: market.specifiers ?? market.specifier ?? '',
+        status_name: market.status_name ?? market.statusName,
+        sport_id: market.sport_id ?? market.sportID,
+        outcomes
+      })
+    })
+    return
+  }
+
+  applyMarketUpdate(data)
 }
 
 function handleBetStop(data) {

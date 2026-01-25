@@ -168,32 +168,39 @@ export function useMatchOdds({
   onMounted(() => {
     const matchIdValue = matchId.value
     if (!matchIdValue) return
-    const wildcardTopic = `sports/${sportId}/match/#`
-    const unsubscribe = subscribe(wildcardTopic, (data, topic) => {
-      const messageMatchId = data.match_id || data.event_id
-      if (!messageMatchId || String(messageMatchId) !== String(matchIdValue)) {
-        return
-      }
-      const topicParts = topic.split('/')
-      const messageType = topicParts[topicParts.length - 1]
-      if (messageType === 'markets') {
+    const sportIdValue = sportId?.value ?? sportId ?? 1
+    const baseTopic = `sports/${sportIdValue}/match/${matchIdValue}`
+    const topics = {
+      markets: `${baseTopic}/markets`,
+      betStop: `${baseTopic}/bet_stop`,
+      matchStatus: `${baseTopic}/match_status`,
+      scores: `${baseTopic}/scores`
+    }
+
+    const unsubscribers = [
+      subscribe(topics.markets, (data) => {
         applyMarketUpdate(data)
         if (onMessage) {
-          onMessage(messageType, data)
+          onMessage('markets', data)
         }
-        return
-      }
-      if (messageType === 'bet_stop') {
+      }),
+      subscribe(topics.betStop, () => {
         applyBetStop()
-        return
-      }
-      if (onMessage) {
-        onMessage(messageType, data)
-      }
-    })
+      }),
+      subscribe(topics.matchStatus, (data) => {
+        if (onMessage) {
+          onMessage('match_status', data)
+        }
+      }),
+      subscribe(topics.scores, (data) => {
+        if (onMessage) {
+          onMessage('scores', data)
+        }
+      })
+    ]
 
     onBeforeUnmount(() => {
-      unsubscribe()
+      unsubscribers.forEach((unsubscribe) => unsubscribe())
     })
   })
 
