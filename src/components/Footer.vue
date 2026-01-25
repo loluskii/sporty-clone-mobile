@@ -31,7 +31,7 @@
             <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
               <img src="@/assets/images/facebook.png" style="height: 2rem" />
             </a>
-            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank">
+            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank" style="margin: 0 12px;">
               <img src="@/assets/images/instagram.png" style="height: 2rem" />
             </a>
             <a href="https://x.com/bet24_ng" target="_blank">
