@@ -107,7 +107,7 @@ import LiveFixture from '@/components/Live/LiveFixture.vue'
 import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights } from '@/helpers'
+import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
 import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
@@ -116,6 +116,8 @@ import emitter from '@/plugins/emitter'
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
+const accumulatedFixtures = ref([])
+const accumulatedMarkets = ref([])
 
 // Map outcome IDs to standard display names for common markets
 const outcomeNameMap = {
@@ -145,6 +147,7 @@ const {
   isLoading,
   refetch
 } = useQuery('liveData', getLiveHighlights, {
+  enabled: FEED_TOGGLE,
   refetchOnWindowFocus: false,
   refetchOnMount: true,
   refetchOnReconnect: false,
@@ -160,25 +163,28 @@ const {
   retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   onError: (err) => {
     console.error('Error fetching live data:', err)
+    isEmptyResponse.value = true
   },
   onSuccess: (response) => {
-    if (response.fixtures) {
-      // Data loaded successfully
-    } else {
-      if (completeLiveData.value?.fixtures) {
-        completeLiveData.value.fixtures = completeLiveData.value.fixtures.map((fixture) => ({
-          ...fixture,
-          outcomes: fixture.outcomes.map((outcome) => ({
-            ...outcome,
-            odds: 0,
-            active: false
-          }))
-        }))
-      }
-      isEmptyResponse.value = true
-    }
+    applyLiveData(response)
   }
 })
+
+function applyLiveData(response) {
+  if (!FEED_TOGGLE) return
+  const fixtures = response?.fixtures || response?.data?.fixtures || []
+  const markets = response?.markets || response?.data?.markets || []
+
+  if (fixtures.length > 0) {
+    accumulatedFixtures.value = fixtures
+    accumulatedMarkets.value = markets
+    isEmptyResponse.value = false
+  } else {
+    accumulatedFixtures.value = []
+    accumulatedMarkets.value = []
+    isEmptyResponse.value = true
+  }
+}
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value) {
@@ -186,7 +192,7 @@ const sportsListData = computed(() => {
   }
   const sportCountMap = new Map()
 
-  completeLiveData.value?.fixtures?.forEach((fixture) => {
+  accumulatedFixtures.value.forEach((fixture) => {
     const key = fixture.sportName
     if (sportCountMap.has(key)) {
       const sportData = sportCountMap.get(key)
@@ -205,9 +211,9 @@ const sportsListData = computed(() => {
 
 const filteredLiveData = computed(() => {
   let fixtures =
-    completeLiveData.value?.fixtures && !isEmptyResponse.value
-      ? completeLiveData.value?.fixtures
-          ?.filter((s) => s.sportID == activeSportID.value)
+    accumulatedFixtures.value.length && !isEmptyResponse.value
+      ? accumulatedFixtures.value
+          .filter((s) => s.sportID == activeSportID.value)
           .sort((a, b) => {
             if (a.tournamentID !== b.tournamentID) {
               return a.tournamentID - b.tournamentID
@@ -220,8 +226,8 @@ const filteredLiveData = computed(() => {
 })
 
 const marketsGroup = computed(() => {
-  return completeLiveData.value?.fixtures && !isEmptyResponse.value
-    ? completeLiveData.value?.markets
+  return accumulatedFixtures.value.length && !isEmptyResponse.value
+    ? accumulatedMarkets.value
     : []
 })
 
@@ -255,174 +261,6 @@ function selectMarket(market) {
   utilsStore.activeLiveMarkets = market
 }
 
-const handleMarketUpdate = (data) => {
-  console.log('⚙️ LiveView: Received markets update:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping markets update')
-    return
-  }
-
-  const dataMatchId = data.match_id || data.matchId || data.event_id || data.matchID
-  if (!dataMatchId) return
-
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(dataMatchId)
-  )
-
-  if (fixtureIndex !== -1) {
-    const fixture = completeLiveData.value.fixtures[fixtureIndex]
-    const markets = Array.isArray(data.markets)
-      ? data.markets
-      : data.market_id !== undefined && Array.isArray(data.outcomes)
-        ? [
-            {
-              id: data.market_id,
-              specifiers: data.specifier || '',
-              outcomes: data.outcomes
-            }
-          ]
-        : []
-
-    if (!markets.length) return
-
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...fixture,
-      outcomes: fixture.outcomes.map((outcome) => {
-        const market = markets.find((m) => String(m.id) === String(outcome.marketID))
-        if (!market || !Array.isArray(market.outcomes)) return outcome
-        const updatedOutcome = market.outcomes.find(
-          (o) => String(o.id ?? o.outcome_id ?? o.outcomeID) === String(outcome.outcomeID)
-        )
-        if (updatedOutcome) {
-          return {
-            ...outcome,
-            odds: updatedOutcome.odds,
-            active: updatedOutcome.active
-          }
-        }
-        return outcome
-      })
-    }
-  }
-}
-
-// Function to handle bet stops
-const handleBetStop = (data) => {
-  console.log('⚙️ LiveView: Received bet stop:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping bet stop update')
-    return
-  }
-
-  // Find and update the fixture with matching matchID
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(data.matchID)
-  )
-
-  if (fixtureIndex !== -1) {
-    console.log(`⚙️ LiveView: Processing bet stop for match ID ${data.matchID}`)
-
-    // Update all outcomes to be inactive with odds 0
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...completeLiveData.value.fixtures[fixtureIndex],
-      outcomes: completeLiveData.value.fixtures[fixtureIndex].outcomes.map((outcome) => ({
-        ...outcome,
-        odds: 0,
-        active: false
-      }))
-    }
-  }
-}
-
-const handleMatchStatus = (data) => {
-  console.log('⚙️ LiveView: Received match status:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping match status update')
-    return
-  }
-
-  const dataMatchId = data.match_id || data.matchId || data.event_id || data.matchID
-  if (!dataMatchId) return
-
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(dataMatchId)
-  )
-
-  if (fixtureIndex !== -1) {
-    const fixture = completeLiveData.value.fixtures[fixtureIndex]
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...fixture,
-      matchStatus: data.match_status || fixture.matchStatus,
-      eventTime: data.event_time || fixture.eventTime,
-      homeScore: data.home_score ?? fixture.homeScore,
-      awayScore: data.away_score ?? fixture.awayScore
-    }
-  }
-}
-
-const handleScores = (data) => {
-  console.log('⚙️ LiveView: Received scores:', data)
-
-  if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures data available, skipping scores update')
-    return
-  }
-
-  const dataMatchId = data.match_id || data.matchId || data.event_id || data.matchID
-  if (!dataMatchId) return
-
-  const fixtureIndex = completeLiveData.value.fixtures.findIndex(
-    (fixture) => String(fixture.matchID) === String(dataMatchId)
-  )
-
-  if (fixtureIndex !== -1) {
-    const fixture = completeLiveData.value.fixtures[fixtureIndex]
-    completeLiveData.value.fixtures[fixtureIndex] = {
-      ...fixture,
-      eventTime: data.event_time || fixture.eventTime,
-      homeScore: data.home_score ?? fixture.homeScore,
-      awayScore: data.away_score ?? fixture.awayScore
-    }
-  }
-}
-
-// Function to set up MQTT subscriptions
-const setupMqttSubscriptions = () => {
-  console.log('⚙️ LiveView: Setting up MQTT subscriptions')
-
-  if (!completeLiveData.value?.fixtures) {
-    console.log('⚙️ LiveView: No fixtures available for MQTT subscriptions')
-    return
-  }
-
-  // Get unique match IDs from fixtures
-  const matchIds = [
-    ...new Set(completeLiveData.value.fixtures.map((fixture) => String(fixture.matchID)))
-  ]
-
-  // Subscribe to odds changes and bet stops for each match
-  matchIds.forEach((matchId) => {
-    const fixture = completeLiveData.value.fixtures.find(
-      (item) => String(item.matchID) === String(matchId)
-    )
-    const sportId = fixture?.sportID || 1
-    const baseTopic = `sports/${sportId}/match/${matchId}`
-
-    const marketsUnsubscribe = mqttService.subscribe(`${baseTopic}/markets`, handleMarketUpdate)
-    const betStopUnsubscribe = mqttService.subscribe(`${baseTopic}/bet_stop`, handleBetStop)
-    const matchStatusUnsubscribe = mqttService.subscribe(`${baseTopic}/match_status`, handleMatchStatus)
-    const scoresUnsubscribe = mqttService.subscribe(`${baseTopic}/scores`, handleScores)
-
-    unsubscribeFunctions.value.push(
-      marketsUnsubscribe,
-      betStopUnsubscribe,
-      matchStatusUnsubscribe,
-      scoresUnsubscribe
-    )
-  })
 function toggleTournament(e, tournamentKey) {
   const childId = 'league-content-' + tournamentKey
   const childElement = document.getElementById(childId)
@@ -439,16 +277,22 @@ function toggleTournament(e, tournamentKey) {
 }
 
 const handleMatchEnded = (matchId) => {
-  if (!completeLiveData.value?.fixtures) return
+  if (!accumulatedFixtures.value.length) return
 
-  completeLiveData.value.fixtures = completeLiveData.value.fixtures.filter(
+  accumulatedFixtures.value = accumulatedFixtures.value.filter(
     (fixture) => String(fixture.matchID) !== String(matchId)
   )
 }
 
 onMounted(async () => {
-  if (completeLiveData.value && completeLiveData.value.fixtures?.length) {
-    activeSportID.value = completeLiveData.value.fixtures[0].sportID
+  if (!FEED_TOGGLE) {
+    accumulatedFixtures.value = []
+    accumulatedMarkets.value = []
+    isEmptyResponse.value = true
+    return
+  }
+  if (accumulatedFixtures.value.length) {
+    activeSportID.value = accumulatedFixtures.value[0].sportID
   }
   emitter.on('match-ended', handleMatchEnded)
 })
@@ -471,6 +315,16 @@ watch(
       ) {
         activeSportID.value = newSportsList[0].sportID
       }
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => completeLiveData.value,
+  (response) => {
+    if (response) {
+      applyLiveData(response)
     }
   },
   { immediate: true }
