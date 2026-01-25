@@ -241,7 +241,7 @@ function getImageURL(name) {
   } else if (name == 'Bundesliga') {
     return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${encodeURIComponent(name)}.png?alt=media&token=07d0069e-25b0-463b-8433-e95a62e84098'`
+    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${encodeURIComponent(name)}.png?alt=media&token=07d0069e-25b0-463b-8433-e95a62e84098`
   }
 }
 
