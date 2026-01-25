@@ -27,7 +27,7 @@
           :src="
             'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
@@ -44,7 +44,7 @@
           :src="
             'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
