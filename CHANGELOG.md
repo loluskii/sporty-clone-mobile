@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.3...v1.3.0) (2026-01-25)
+
+
+### Bug Fixes
+
+* env updated ([f6f6e46](https://github.com/zoroplay/sporty-clone-mobile/commit/f6f6e467d2bdd40a7b887cb677a9116400cb9827))
+
+
+### Features
+
+* refactor MQTT subscriptions and redesign LiveView page ([32cf56b](https://github.com/zoroplay/sporty-clone-mobile/commit/32cf56bfa0b3b0fab5348fe5c1c5258076201df8))
+
 ## [Unreleased] (2026-01-24)
 
 
