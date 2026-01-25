@@ -17,30 +17,29 @@
     </div>
     <div></div>
     <div class="payment-methods">
-      <div class="slider-wrap">
-        <div class="slider-window">
-          <div class="sliders" style="transform: translateX(0%)">
-            <div class="row">
-              <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
-                <img src="@/assets/images/facebook.png" style="height: 2rem" />
-              </a>
-              <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank">
-                <img src="@/assets/images/instagram.png" style="height: 2rem" />
-              </a>
-              <a href="https://x.com/bet24_ng" target="_blank">
-                <img src="@/assets/images/twitter.png" style="height: 2rem" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="payment-methods">
       <p>
         Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
         Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
         licensed by the National Lottery Regulatory Commission.
       </p>
+    </div>
+    
+    <div class="slider-wrap">
+      <div class="slider-window">
+        <div class="sliders" style="transform: translateX(0%)">
+          <div class="row">
+            <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
+              <img src="@/assets/images/facebook.png" style="height: 2rem" />
+            </a>
+            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank">
+              <img src="@/assets/images/instagram.png" style="height: 2rem" />
+            </a>
+            <a href="https://x.com/bet24_ng" target="_blank">
+              <img src="@/assets/images/twitter.png" style="height: 2rem" />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">
