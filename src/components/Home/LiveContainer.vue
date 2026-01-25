@@ -105,6 +105,35 @@ import {
 } from 'vue'
 import emitter from '@/plugins/emitter'
 
+const fallbackMarketsBySport = {
+  1: [
+    {
+      marketID: 1,
+      marketName: '1x2',
+      specifier: '',
+      outcomes: [
+        { outcomeName: '1', outcomeID: '1' },
+        { outcomeName: 'X', outcomeID: '2' },
+        { outcomeName: '2', outcomeID: '3' }
+      ],
+      sportID: 1
+    }
+  ],
+  2: [
+    {
+      marketID: 1,
+      marketName: '1x2',
+      specifier: '',
+      outcomes: [
+        { outcomeName: '1', outcomeID: '1' },
+        { outcomeName: 'X', outcomeID: '2' },
+        { outcomeName: '2', outcomeID: '3' }
+      ],
+      sportID: 2
+    }
+  ]
+}
+
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const loadingError = ref(false) 
@@ -217,8 +246,12 @@ const marketsGroup = computed(() => {
  * These populate the market tabs (1X2, Over/Under, etc.)
  */
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
-  return activeMarkets ? activeMarkets.sort((a,b) => a.marketID - b.marketID) : []
+  const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
+  if (markets.length) {
+    return _.sortBy(markets, 'marketID')
+  }
+
+  return fallbackMarketsBySport[activeSportID.value] || []
 })
 
 /**
