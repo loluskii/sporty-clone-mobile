@@ -493,8 +493,8 @@ function setupMqttSubscriptions(matchId, sport_id) {
     }),
     subscribe(topics.scores, (data) => {
       if (data.home_score !== undefined && data.away_score !== undefined) {
-        scores.value.homeScore = data.home_score
-        scores.value.awayScore = data.away_score
+        scores.homeScore = data.home_score
+        scores.awayScore = data.away_score
       }
       if (data.event_time) {
         eventTime.value = data.event_time
@@ -516,8 +516,16 @@ function setupPeriodicRefetch(matchId) {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res.data).length && res.data.markets.length) {
           eventMarkets.value = res.data?.market.filter((market) => market.statusName !== 'Suspended')
-          scores.homeScore = res.data.homeScore
-          scores.awayScore = res.data.awayScore
+          scores.homeScore =
+            res.data?.eventInfo?.score?.home ??
+            res.data?.eventInfo?.scores?.home ??
+            res.data.homeScore ??
+            scores.homeScore
+          scores.awayScore =
+            res.data?.eventInfo?.score?.away ??
+            res.data?.eventInfo?.scores?.away ??
+            res.data.awayScore ??
+            scores.awayScore
           eventTime.value = res.data.eventTime
 
         } 
@@ -599,8 +607,16 @@ async function getEventDetail(id) {
       marketGroups.value = res[1].data
       homeTeam.value = res[0].data.homeTeam
       awayTeam.value = res[0].data.awayTeam
-      scores.homeScore = res[0].data.homeScore
-      scores.awayScore = res[0].data.awayScore
+      scores.homeScore =
+        res[0].data?.eventInfo?.score?.home ??
+        res[0].data?.eventInfo?.scores?.home ??
+        res[0].data.homeScore ??
+        0
+      scores.awayScore =
+        res[0].data?.eventInfo?.score?.away ??
+        res[0].data?.eventInfo?.scores?.away ??
+        res[0].data.awayScore ??
+        0
       eventTime.value = res[0].data.eventTime
       startTimer()
       setupMqttSubscriptions(res[0].data.matchID, sport_id)

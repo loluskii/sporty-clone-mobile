@@ -112,8 +112,16 @@ const props = defineProps({
 
 const matchStatus = ref(props.gameData.matchStatus)
 const scores = ref({
-  homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0
+  homeScore:
+    props.gameData?.eventInfo?.score?.home ??
+    props.gameData?.eventInfo?.scores?.home ??
+    props.gameData?.homeScore ??
+    0,
+  awayScore:
+    props.gameData?.eventInfo?.score?.away ??
+    props.gameData?.eventInfo?.scores?.away ??
+    props.gameData?.awayScore ??
+    0
 })
 const matchStatusLabel = computed(() => {
   if (matchStatus.value === '1st half') return 'H1'
@@ -143,8 +151,12 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
         emitter.emit('match-ended', matchId.value)
         return
       }
-      scores.value.homeScore = data.home_score
-      scores.value.awayScore = data.away_score
+      if (data.home_score !== undefined) {
+        scores.value.homeScore = data.home_score
+      }
+      if (data.away_score !== undefined) {
+        scores.value.awayScore = data.away_score
+      }
       if (data.event_time) {
         setDisplayTime(data.event_time)
       }
@@ -243,6 +255,21 @@ watch(
       scores.value.awayScore = awayScore
     }
   }
+)
+
+watch(
+  () => props.gameData.eventInfo?.score || props.gameData.eventInfo?.scores,
+  (nextScores) => {
+    if (nextScores && typeof nextScores === 'object') {
+      if (nextScores.home !== undefined) {
+        scores.value.homeScore = nextScores.home
+      }
+      if (nextScores.away !== undefined) {
+        scores.value.awayScore = nextScores.away
+      }
+    }
+  },
+  { deep: true }
 )
 
 defineComponent({
