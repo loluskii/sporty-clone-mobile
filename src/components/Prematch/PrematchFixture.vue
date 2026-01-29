@@ -157,6 +157,7 @@ function showFixtureAnalysis(id) {
 }
 
 function addToBetslip(event, odd) {
+  if (odd.active === 0 || odd.odds <= 1) return
   const id = createID(
     event.matchID,
     odd.marketID,

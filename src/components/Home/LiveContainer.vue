@@ -95,6 +95,7 @@ import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
+import _ from "lodash"
 import {
   defineComponent,
   onMounted,

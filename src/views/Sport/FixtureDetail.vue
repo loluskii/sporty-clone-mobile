@@ -129,13 +129,13 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1 || !selection.odds
+                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               selection.displayName
                             }}</em>
-                            <em :class="{ 'm-icon-lock': selection.odds <= 1 || !selection.odds }">{{
-                              selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
+                            <em :class="{ 'm-icon-lock': selection.active === 0 || selection.odds <= 1 || !selection.odds }">{{
+                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
                           </div>
                         </template>
                       </template>
@@ -168,10 +168,10 @@
                                   ),
                                   'm-outcome-three': mg?.outcomes?.length + 1 === 3,
                                   'm-outcome-four': mg?.outcomes?.length + 1 === 4,
-                                  'm-outcome--disabled': outcome.odds <= 1 || !outcome.odds
+                                  'm-outcome--disabled': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds
                                 }">
-                                <em :class="{ 'm-icon-lock': outcome.odds <= 1 || !outcome.odds }">{{
-                                  outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2) }}</em>
+                                <em :class="{ 'm-icon-lock': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds }">{{
+                                  outcome.active === 0 || outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2) }}</em>
                               </div>
                             </template>
                           </div>
@@ -191,13 +191,13 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1 || !selection.odds
+                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               selection.displayName
                             }}</em>
-                            <em :class="selection.odds <= 1 || !selection.odds ? 'm-icon-lock' : ''">{{
-                              selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
+                            <em :class="selection.active === 0 || selection.odds <= 1 || !selection.odds ? 'm-icon-lock' : ''">{{
+                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
                           </div>
                         </template>
                       </template>
@@ -522,7 +522,7 @@ function groupByMarketID(data) {
 }
 
 function addToBetslip(market, outcome) {
-  if (outcome.odds <= 1) return
+  if (outcome.active === 0 || outcome.odds <= 1) return
   let marketId = parseInt(market.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(

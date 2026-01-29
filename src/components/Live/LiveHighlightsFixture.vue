@@ -151,6 +151,7 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
   activeMarket: computed(() => props.activeMarket),
   baseOutcomes,
   sportId: props.activeSportID || 1,
+  // Use bet_stop to end matches only after full time.
   onBetStop: () => {
     const currentTime = parseTimeToSeconds(displayTime.value)
     if (currentTime !== null && currentTime >= 90 * 60) {
@@ -198,7 +199,7 @@ const setActiveSpecifierAndClose = (spec) => {
 }
 
 function addToBetslip(event, odd) {
-  if (odd.odds <= 1) return
+  if (odd.active === 0 || odd.odds <= 1) return
   const id = createID(
     event.matchID,
     odd.marketID,

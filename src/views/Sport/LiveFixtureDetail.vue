@@ -97,13 +97,13 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1 || !selection.odds
+                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               selection.displayName
                             }}</em>
-                            <em :class="{ 'm-icon-lock': selection.odds <= 1 || !selection.odds}">{{
-                              selection.odds <= 1 || !selection.odds ? '':selection.odds.toFixed(2)
+                            <em :class="{ 'm-icon-lock': selection.active === 0 || selection.odds <= 1 || !selection.odds}">{{
+                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '':selection.odds.toFixed(2)
                             }}</em>
                           </div>
                         </template>
@@ -138,10 +138,10 @@
                                   ),
                                   'm-outcome-three': mg?.outcomes?.length + 1 === 3,
                                   'm-outcome-four': mg?.outcomes?.length + 1 === 4,
-                                  'm-outcome--disabled': outcome.odds <= 1 || !outcome.odds
+                                  'm-outcome--disabled': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds
                                 }">
-                                <em :class="{ 'm-icon-lock': outcome.odds <= 1 || !outcome.odds }">{{
-                                  outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2)
+                                <em :class="{ 'm-icon-lock': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds }">{{
+                                  outcome.active === 0 || outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2)
                                 }}</em>
                               </div>
                             </template>
@@ -162,13 +162,13 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1 || !selection.odds
+                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
                           }" @click="addToBetslip(marketGroup, selection)">
                             <em style="text-transform: capitalize">{{
                               selection.displayName
                             }}</em>
-                            <em :class="selection.odds <= 1 || !selection.odds ? 'm-icon-lock' : ''">{{
-                              selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
+                            <em :class="selection.active === 0 || selection.odds <= 1 || !selection.odds ? 'm-icon-lock' : ''">{{
+                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
                           </div>
                         </template>
                       </template>
@@ -225,6 +225,8 @@ const unsubscribeFunctions = ref([])
 const isClockStopped = ref(false)
 const marketGroups = ref()
 const selectedGroupId = ref(null) // null means "All"
+// Tracks bet_stop so API refresh doesn't re-activate markets.
+const betStopped = ref(false)
 
 // Market grouping computed properties
 const groupedMarketsByTab = computed(() => {
@@ -375,12 +377,13 @@ function handleBetStop(data) {
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) return
 
+  // Bet stop locks all outcomes until next market update.
+  betStopped.value = true
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
       ...market,
       outcomes: market.outcomes.map((outcome) => ({
         ...outcome,
-        odds: 0,
         active: 0
       }))
     }))
@@ -401,6 +404,19 @@ function handleOddsChange(data, match_id) {
     requestAnimationFrame(() => {
       let marketFound = false
       let shouldRemoveMarket = false
+      const statusName = data.status_name ? data.status_name.toLowerCase() : ''
+
+      if (betStopped.value) {
+        // First market update after bet_stop re-activates markets.
+        betStopped.value = false
+        eventMarkets.value = eventMarkets.value.map((market) => ({
+          ...market,
+          outcomes: market.outcomes.map((outcome) => ({
+            ...outcome,
+            active: 1
+          }))
+        }))
+      }
 
       // First, try to update existing market
       eventMarkets.value = eventMarkets.value.map((market) => {
@@ -415,7 +431,7 @@ function handleOddsChange(data, match_id) {
         marketFound = true
 
         // Check if market is deactivated - mark for removal
-        if (data.status_name && data.status_name.toLowerCase() === 'deactivated') {
+        if (statusName === 'deactivated') {
           shouldRemoveMarket = true
           return null // Will be filtered out
         }
@@ -433,8 +449,16 @@ function handleOddsChange(data, match_id) {
               return {
                 ...outcome,
                 odds: updatedOutcome.odds,
-                active: updatedOutcome.active ? 1 : 0,
+                active: statusName === 'suspended' ? 0 : (updatedOutcome.active ? 1 : 0),
                 probability: updatedOutcome.probability || outcome.probability
+              }
+            }
+
+            // Ensure suspended markets lock existing outcomes.
+            if (statusName === 'suspended') {
+              return {
+                ...outcome,
+                active: 0
               }
             }
 
@@ -446,7 +470,7 @@ function handleOddsChange(data, match_id) {
       }).filter(market => market !== null) // Remove deactivated markets
 
       // If market not found and not deactivated, add it as a new market
-      if (!marketFound && data.status_name && data.status_name.toLowerCase() !== 'deactivated') {
+      if (!marketFound && statusName !== 'deactivated') {
         // console.log(`➕ Adding new market: ${data.market_name} (ID: ${data.market_id}, Specifier: ${data.specifier || 'none'})`)
 
         const newMarket = {
@@ -460,7 +484,7 @@ function handleOddsChange(data, match_id) {
             outcomeName: outcome.outcome_name,
             displayName: outcome.alias || outcome.outcome_name,
             odds: outcome.odds,
-            active: outcome.active ? 1 : 0,
+            active: statusName === 'suspended' ? 0 : (outcome.active ? 1 : 0),
             probability: outcome.probability || 0
           })),
         }
@@ -515,7 +539,17 @@ function setupPeriodicRefetch(matchId) {
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res.data).length && res.data.markets.length) {
-          eventMarkets.value = res.data?.market.filter((market) => market.statusName !== 'Suspended')
+          const fetchedMarkets = res.data?.market.filter((market) => market.statusName !== 'Suspended')
+          // Preserve bet_stop state across API refreshes.
+          eventMarkets.value = betStopped.value
+            ? fetchedMarkets.map((market) => ({
+                ...market,
+                outcomes: market.outcomes.map((outcome) => ({
+                  ...outcome,
+                  active: 0
+                }))
+              }))
+            : fetchedMarkets
           scores.homeScore =
             res.data?.eventInfo?.score?.home ??
             res.data?.eventInfo?.scores?.home ??
@@ -604,6 +638,15 @@ async function getEventDetail(id) {
     if (res[0].data) {
       eventDetail.value = res[0].data
       eventMarkets.value = res[0].data?.market?.filter((market) => market.statusName !== 'Suspended')
+      if (betStopped.value && eventMarkets.value?.length) {
+        eventMarkets.value = eventMarkets.value.map((market) => ({
+          ...market,
+          outcomes: market.outcomes.map((outcome) => ({
+            ...outcome,
+            active: 0
+          }))
+        }))
+      }
       marketGroups.value = res[1].data
       homeTeam.value = res[0].data.homeTeam
       awayTeam.value = res[0].data.awayTeam
@@ -667,7 +710,7 @@ function groupByMarketID(data) {
 }
 
 function addToBetslip(market, outcome) {
-  if (outcome.odds <= 1) return
+  if (outcome.active === 0 || outcome.odds <= 1) return
   let marketId = parseInt(market.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(

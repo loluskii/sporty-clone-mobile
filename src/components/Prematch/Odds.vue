@@ -3,18 +3,18 @@
     class="m-outcome m-event-outcome-default"
     :class="[
       selectionClass,
-      odds.odds <= 1 ? 'm-outcome--disabled' : 'x',
+      isLocked ? 'm-outcome--disabled' : 'x',
       oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : ''
     ]"
   >
-    <span v-if="odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
+    <span v-if="isLocked" class="m-outcome-odds m-icon-lock"></span>
     <span v-else data-op="label-odds-amount" class="m-outcome-odds">{{
       odds.odds.toFixed(2)
     }}</span>
   </div>
 </template>
 <script setup>
-import { defineComponent, ref, watch, onMounted, onBeforeUpdate } from 'vue'
+import { defineComponent, ref, watch, onMounted, onBeforeUpdate, computed } from 'vue'
 const oddUp = ref(false)
 const oddDown = ref(false)
 const previousOdds = ref(null)
@@ -23,6 +23,10 @@ const oddsId = ref(null)
 const props = defineProps({
   odds: Object,
   selectionClass: String
+})
+
+const isLocked = computed(() => {
+  return props.odds?.active === 0 || props.odds?.odds <= 1 || !props.odds?.odds
 })
 
 defineComponent({

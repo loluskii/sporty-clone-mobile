@@ -140,6 +140,7 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
   matchId,
   activeMarket: computed(() => props.activeMarket),
   baseOutcomes,
+  // MQTT updates are handled inside useMatchOdds.
   onMessage: (messageType, data) => {
     if (messageType === 'markets' && data.sport_event_status) {
       scores.value.homeScore = data.sport_event_status.home_score
@@ -185,7 +186,7 @@ const setActiveSpecifierAndClose = (item) => {
 }
 
 function addToBetslip(event, odd) {
-  if (odd.odds <= 1) return
+  if (odd.active === 0 || odd.odds <= 1) return
   const id = createID(
     event.matchID,
     odd.marketID,
