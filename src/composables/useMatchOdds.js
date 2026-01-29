@@ -14,6 +14,10 @@ export function useMatchOdds({
   const activeSpecifier = ref('')
   const activeSpecifierKey = ref('')
   const updatedOutcomes = ref({})
+  // Tracks bet_stop state so API refreshes don't re-activate markets prematurely.
+  const betStopped = ref(false)
+  // Tracks deactivated markets so they can be hidden until API removes them.
+  const deactivatedMarkets = ref(new Set())
 
   const { subscribe } = useMqttService()
 
@@ -33,15 +37,57 @@ export function useMatchOdds({
     return items.map((outcome) => {
       const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
       const cached = updatedOutcomes.value[key]
-      if (cached) {
-        return {
-          ...outcome,
-          odds: cached.odds,
-          active: cached.active
-        }
+      const oddsValue = cached?.odds ?? outcome.odds
+      // MQTT overrides odds/active; bet_stop forces inactive regardless of API odds.
+      const activeValue = betStopped.value ? 0 : cached?.active ?? outcome.active
+      return {
+        ...outcome,
+        odds: oddsValue,
+        active: activeValue
       }
-      return outcome
     })
+  }
+
+  const buildMarketKey = (marketId, specifiers = '') => {
+    return `${marketId}-${specifiers || ''}`
+  }
+
+  const pruneUpdatedOutcomes = (items) => {
+    // Remove MQTT overrides that no longer exist in the API payload.
+    const validKeys = new Set(
+      (items || []).map(
+        (outcome) => `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+      )
+    )
+    const pruned = { ...updatedOutcomes.value }
+    Object.keys(pruned).forEach((key) => {
+      if (!validKeys.has(key)) {
+        delete pruned[key]
+      }
+    })
+    updatedOutcomes.value = pruned
+  }
+
+  const applySuspension = (marketId, specifiers = '') => {
+    // Suspended market: keep odds but force outcomes inactive.
+    const items = baseOutcomes.value || []
+    const filtered = items.filter(
+      (item) =>
+        String(item.marketID) === String(marketId) &&
+        String(item.specifier || '') === String(specifiers || '')
+    )
+    if (!filtered.length) return
+    const updatedOutcomesCopy = { ...updatedOutcomes.value }
+    filtered.forEach((outcome) => {
+      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+      updatedOutcomesCopy[key] = {
+        odds: outcome.odds,
+        active: 0,
+        timestamp: Date.now()
+      }
+    })
+    updatedOutcomes.value = updatedOutcomesCopy
+    refreshOutcomes()
   }
 
   const getSpecifiers = computed(() => {
@@ -70,7 +116,14 @@ export function useMatchOdds({
       outcomes.value = []
       return
     }
+    const marketKey = buildMarketKey(market.marketID, market.specifier || '')
+    if (deactivatedMarkets.value.has(marketKey)) {
+      outcomes.value = []
+      return
+    }
     const items = baseOutcomes.value || []
+    // Keep MQTT overrides only for outcomes still present in API.
+    pruneUpdatedOutcomes(items)
     const filtered = items.filter(
       (item) => String(item.marketID) === String(market.marketID)
     )
@@ -101,30 +154,72 @@ export function useMatchOdds({
   }
 
   const normalizeMarkets = (data) => {
+    // Normalize MQTT market payload to internal shape.
     if (data.market_id !== undefined && Array.isArray(data.outcomes)) {
       return [
         {
           id: data.market_id,
           specifiers: data.specifier || '',
+          statusName: data.status_name || data.statusName,
           outcomes: data.outcomes.map((o) => ({
             id: o.outcome_id ?? o.outcomeID ?? o.id,
+            outcomeName: o.outcome_name ?? o.outcomeName ?? o.name,
             odds: o.odds,
             active: o.active
           }))
         }
       ]
     }
-    if (Array.isArray(data.markets)) {
-      return data.markets
-    }
     return []
   }
 
   const applyMarketUpdate = (data) => {
+    // Apply a single-market MQTT update.
+    const dataStatus = data?.status_name || data?.statusName
+    if (String(dataStatus || '').toLowerCase() === 'deactivated' && data?.market_id !== undefined) {
+      const nextDeactivated = new Set(deactivatedMarkets.value)
+      nextDeactivated.add(buildMarketKey(data.market_id, data.specifier || ''))
+      deactivatedMarkets.value = nextDeactivated
+      refreshOutcomes()
+      return
+    }
+    if (String(dataStatus || '').toLowerCase() === 'suspended' && data?.market_id !== undefined) {
+      applySuspension(data.market_id, data.specifier || '')
+      return
+    }
     const markets = normalizeMarkets(data)
     if (!markets.length) return
     const updatedOutcomesCopy = { ...updatedOutcomes.value }
+
+    if (betStopped.value) {
+      // First market update after bet_stop re-activates markets.
+      betStopped.value = false
+      const items = baseOutcomes.value || []
+      items.forEach((outcome) => {
+        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
+        updatedOutcomesCopy[key] = {
+          odds: outcome.odds,
+          active: 1,
+          timestamp: Date.now()
+        }
+      })
+    }
+
     markets.forEach((marketItem) => {
+      const marketStatus = marketItem.statusName || marketItem.status_name
+      if (String(marketStatus || '').toLowerCase() === 'deactivated') {
+        const nextDeactivated = new Set(deactivatedMarkets.value)
+        nextDeactivated.add(buildMarketKey(marketItem.id, marketItem.specifiers || ''))
+        deactivatedMarkets.value = nextDeactivated
+        return
+      }
+      if (String(marketStatus || '').toLowerCase() === 'suspended') {
+        applySuspension(marketItem.id, marketItem.specifiers || '')
+        return
+      }
+      const nextDeactivated = new Set(deactivatedMarkets.value)
+      nextDeactivated.delete(buildMarketKey(marketItem.id, marketItem.specifiers || ''))
+      deactivatedMarkets.value = nextDeactivated
       const marketId = marketItem.id
       const specifiers = marketItem.specifiers || ''
       const marketOutcomes = marketItem.outcomes || []
@@ -143,24 +238,13 @@ export function useMatchOdds({
   }
 
   const applyBetStop = () => {
-    outcomes.value = outcomes.value.map((outcome) => ({
-      ...outcome,
-      odds: 0,
-      active: 0
-    }))
-    const updatedOutcomesCopy = { ...updatedOutcomes.value }
-    outcomes.value.forEach((outcome) => {
-      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
-      updatedOutcomesCopy[key] = {
-        odds: 0,
-        active: 0,
-        timestamp: Date.now()
-      }
-    })
-    updatedOutcomes.value = updatedOutcomesCopy
+    // Bet stop: lock all markets; keep odds from API.
+    betStopped.value = true
+    updatedOutcomes.value = {}
     if (onBetStop) {
       onBetStop()
     }
+    refreshOutcomes()
   }
 
   watch([activeMarket, baseOutcomes], refreshOutcomes, { immediate: true })
