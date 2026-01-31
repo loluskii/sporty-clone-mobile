@@ -121,6 +121,75 @@ const removeFixtureByMatchId = (matchId) => {
   fixtures.value = next
 }
 
+const applyValidatedSelections = (selections) => {
+  console.log('[odds-validated][Highlights] incoming', selections)
+  if (!Array.isArray(selections) || selections.length === 0) return
+  const selectionsByMatch = selections.reduce((acc, selection) => {
+    const key = String(selection.match_id ?? selection.matchID ?? selection.matchId ?? '')
+    if (!key) return acc
+    if (!acc[key]) acc[key] = []
+    acc[key].push(selection)
+    return acc
+  }, {})
+  console.log('[odds-validated][Highlights] matches', Object.keys(selectionsByMatch).length)
+
+  const next = {}
+  Object.entries(fixtures.value || {}).forEach(([key, list]) => {
+    next[key] = (list || []).map((fixture) => {
+      const fixtureMatchId = String(
+        fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id ?? ''
+      )
+      const matchSelections = selectionsByMatch[fixtureMatchId]
+      if (!matchSelections) {
+        return fixture
+      }
+      if (!Array.isArray(fixture.outcomes)) {
+        console.log('[odds-validated][Highlights] no outcomes for match', fixtureMatchId)
+        return fixture
+      }
+      if (!matchSelections || !Array.isArray(fixture.outcomes)) {
+        return fixture
+      }
+      const nextOutcomes = fixture.outcomes.map((outcome) => {
+        const match = matchSelections.find((sel) => {
+          const specifier = String(outcome.specifier || '')
+          const selSpecifier = String(sel.specifier || '')
+          return (
+            String(outcome.marketID) === String(sel.market_id) &&
+            String(outcome.outcomeID) === String(sel.outcome_id) &&
+            specifier === selSpecifier
+          )
+        })
+        if (!match) {
+          return outcome
+        }
+        console.log('[odds-validated][Highlights] update', {
+          matchId: fixtureMatchId,
+          marketId: outcome.marketID,
+          outcomeId: outcome.outcomeID,
+          specifier: outcome.specifier || '',
+          from: outcome.odds,
+          to: match.odds,
+          status: match.status_name
+        })
+        if (!match) return outcome
+        const statusName = String(match.status_name || '').toLowerCase()
+        const active =
+          statusName === 'suspended' || statusName === 'deactivated'
+            ? 0
+            : match.active ?? outcome.active
+        return {
+          ...outcome,
+          odds: match.odds ?? outcome.odds,
+          active
+        }
+      })
+      return { ...fixture, outcomes: nextOutcomes }
+    })
+  })
+  fixtures.value = next
+}
+
 watch(
   () => props.highlightsData,
   (nextValue) => {
@@ -131,10 +200,12 @@ watch(
 
 onMounted(() => {
   emitter.on('remove-fixture', removeFixtureByMatchId)
+  emitter.on('odds-validated', applyValidatedSelections)
 })
 
 onBeforeUnmount(() => {
   emitter.off('remove-fixture', removeFixtureByMatchId)
+  emitter.off('odds-validated', applyValidatedSelections)
 })
 
 // const activeMarketId = ref(props.marketsGroup.markets[0].id)

@@ -1185,6 +1185,8 @@ export const useCouponStore = defineStore({
             stake: this.coupon.totalStake,
             id: 'all'
           })
+
+          emitter.emit('odds-validated', validatedSelections)
         }
 
         // Subscribe to MQTT only for selections that are not unavailable

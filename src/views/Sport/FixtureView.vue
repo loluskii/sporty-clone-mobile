@@ -323,6 +323,75 @@ const removeFixtureByMatchId = (matchID) => {
   }
 }
 
+const applyValidatedSelections = (selections) => {
+  console.log('[odds-validated][FixtureView] incoming', selections)
+  if (!Array.isArray(selections) || selections.length === 0) return
+  const selectionsByMatch = selections.reduce((acc, selection) => {
+    const key = String(selection.match_id ?? selection.matchID ?? selection.matchId ?? '')
+    if (!key) return acc
+    if (!acc[key]) acc[key] = []
+    acc[key].push(selection)
+    return acc
+  }, {})
+  console.log('[odds-validated][FixtureView] matches', Object.keys(selectionsByMatch).length)
+
+  const updateFixture = (fixture) => {
+    const fixtureMatchId = String(
+      fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id ?? ''
+    )
+    const matchSelections = selectionsByMatch[fixtureMatchId]
+    if (!matchSelections) return fixture
+    if (!Array.isArray(fixture.outcomes)) {
+      console.log('[odds-validated][FixtureView] no outcomes for match', fixtureMatchId)
+      return fixture
+    }
+    if (!matchSelections || !Array.isArray(fixture.outcomes)) return fixture
+    const nextOutcomes = fixture.outcomes.map((outcome) => {
+      const match = matchSelections.find((sel) => {
+        const specifier = String(outcome.specifier || '')
+        const selSpecifier = String(sel.specifier || '')
+        return (
+          String(outcome.marketID) === String(sel.market_id) &&
+          String(outcome.outcomeID) === String(sel.outcome_id) &&
+          specifier === selSpecifier
+        )
+      })
+      if (!match) {
+        return outcome
+      }
+      console.log('[odds-validated][FixtureView] update', {
+        matchId: fixtureMatchId,
+        marketId: outcome.marketID,
+        outcomeId: outcome.outcomeID,
+        specifier: outcome.specifier || '',
+        from: outcome.odds,
+        to: match.odds,
+        status: match.status_name
+      })
+      if (!match) return outcome
+      const statusName = String(match.status_name || '').toLowerCase()
+      const active =
+        statusName === 'suspended' || statusName === 'deactivated'
+          ? 0
+          : match.active ?? outcome.active
+      return {
+        ...outcome,
+        odds: match.odds ?? outcome.odds,
+        active
+      }
+    })
+    return { ...fixture, outcomes: nextOutcomes }
+  }
+
+  if (Array.isArray(fixturesList.value)) {
+    fixturesList.value = fixturesList.value.map(updateFixture)
+  } else if (fixturesList.value && typeof fixturesList.value === 'object') {
+    Object.keys(fixturesList.value).forEach((tournament) => {
+      fixturesList.value[tournament] = fixturesList.value[tournament].map(updateFixture)
+    })
+  }
+}
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   const sentinel = document.querySelector('#scroll-sentinel')
@@ -331,12 +400,14 @@ onMounted(() => {
 
   // Add event listener for removing fixtures
   emitter.on('remove-fixture', removeFixtureByMatchId)
+  emitter.on('odds-validated', applyValidatedSelections)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   if (observer.value) observer.value.disconnect()
   emitter.off('remove-fixture', removeFixtureByMatchId)
+  emitter.off('odds-validated', applyValidatedSelections)
 })
 
 defineComponent({
