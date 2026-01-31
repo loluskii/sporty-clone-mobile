@@ -347,7 +347,7 @@ export const fetchCashoutForBet = async (payload) => {
 }
 
 export const performCashout = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/cashout/`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/cashout/placement`, payload))
 }
 
 export const bookBet = async (payload) => {
