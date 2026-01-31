@@ -213,28 +213,40 @@ const handleScroll = () => {
   }
 }
 
+const removeFixtureByMatchId = (matchID) => {
+  const removeFromGroups = (groups) => {
+    Object.keys(groups).forEach((date) => {
+      groups[date] = groups[date].filter(
+        (fixture) =>
+          String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+          String(matchID)
+      )
+      if (groups[date].length === 0) {
+        delete groups[date]
+      }
+    })
+  }
+
+  if (highlightsData.value && Object.keys(highlightsData.value).length) {
+    removeFromGroups(highlightsData.value)
+  }
+  if (todayData.value && Object.keys(todayData.value).length) {
+    removeFromGroups(todayData.value)
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   await getHomeData()
 
   // Add event listener for removing fixtures
-  emitter.on('remove-fixture', (matchID) => {
-    // Remove from highlights data
-    Object.keys(highlightsData.value).forEach((date) => {
-      highlightsData.value[date] = highlightsData.value[date].filter(
-        (fixture) => String(fixture.matchID) !== String(matchID)
-      )
-      // Remove empty date groups
-      if (highlightsData.value[date].length === 0) {
-        delete highlightsData.value[date]
-      }
-    })
-  })
+  emitter.on('remove-fixture', removeFixtureByMatchId)
 })
 
 onUnmounted(() => {
   // Remove scroll event listener when the component is unmounted
   window.removeEventListener('scroll', handleScroll)
+  emitter.off('remove-fixture', removeFixtureByMatchId)
 })
 
 defineComponent({

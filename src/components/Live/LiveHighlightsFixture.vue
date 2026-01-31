@@ -160,8 +160,10 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
     }
   },
   onMessage: (messageType, data) => {
+    console.log(messageType, data)
     if (messageType === 'match_status') {
-      if (data.status_code === 100) {
+      const matchStatus = String(data?.match_status || '').toLowerCase()
+      if (matchStatus === 'ended') {
         stopTimer()
         return
       }

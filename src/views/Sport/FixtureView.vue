@@ -301,6 +301,28 @@ const fetchMoreData = async () => {
   }
 }
 
+const removeFixtureByMatchId = (matchID) => {
+  if (!fixturesList.value) return
+  if (Array.isArray(fixturesList.value)) {
+    fixturesList.value = fixturesList.value.filter(
+      (fixture) =>
+        String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+        String(matchID)
+    )
+  } else {
+    Object.keys(fixturesList.value).forEach((tournament) => {
+      fixturesList.value[tournament] = fixturesList.value[tournament].filter(
+        (fixture) =>
+          String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+          String(matchID)
+      )
+      if (fixturesList.value[tournament].length === 0) {
+        delete fixturesList.value[tournament]
+      }
+    })
+  }
+}
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   const sentinel = document.querySelector('#scroll-sentinel')
@@ -308,32 +330,13 @@ onMounted(() => {
   observeElement(sentinel)
 
   // Add event listener for removing fixtures
-  emitter.on('remove-fixture', (matchID) => {
-    if (fixturesList.value) {
-      if (Array.isArray(fixturesList.value)) {
-        // For default grouping
-        fixturesList.value = fixturesList.value.filter(
-          (fixture) => String(fixture.matchID) !== String(matchID)
-        )
-      } else {
-        // For tournament grouping
-        Object.keys(fixturesList.value).forEach((tournament) => {
-          fixturesList.value[tournament] = fixturesList.value[tournament].filter(
-            (fixture) => String(fixture.matchID) !== String(matchID)
-          )
-          // Remove empty tournament groups
-          if (fixturesList.value[tournament].length === 0) {
-            delete fixturesList.value[tournament]
-          }
-        })
-      }
-    }
-  })
+  emitter.on('remove-fixture', removeFixtureByMatchId)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   if (observer.value) observer.value.disconnect()
+  emitter.off('remove-fixture', removeFixtureByMatchId)
 })
 
 defineComponent({

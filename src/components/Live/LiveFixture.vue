@@ -147,7 +147,8 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
       scores.value.awayScore = data.sport_event_status.away_score
     }
     if (messageType === 'match_status') {
-      if (data.status_code === 100) {
+      const matchStatus = String(data?.match_status || '').toLowerCase()
+      if (matchStatus === 'ended') {
         stopTimer()
         emitter.emit('match-ended', matchId.value)
         return

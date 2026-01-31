@@ -122,19 +122,14 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
     const matchTime = new Date(props.eventData.date)
     const currentTime = new Date()
     if (matchTime <= currentTime) {
-      emitter.emit('remove-fixture', props.eventData.matchID)
+      emitter.emit('remove-fixture', matchId.value)
     }
   },
   onMessage: (messageType, data) => {
     if (messageType !== 'match_status') return
-    const status = data?.status ?? data?.status_code
-    if (status === 1 || status === '1') {
-      emitter.emit('remove-fixture', props.eventData.matchID)
-      return
-    }
     const matchStatus = String(data?.match_status || '').toLowerCase()
-    if (matchStatus && !matchStatus.includes('not') && !matchStatus.includes('prematch')) {
-      emitter.emit('remove-fixture', props.eventData.matchID)
+    if (matchStatus && !matchStatus.includes('not')) {
+      emitter.emit('remove-fixture', matchId.value)
     }
   }
 })

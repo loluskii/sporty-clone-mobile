@@ -1,7 +1,7 @@
 <template>
   <div style="position: relative">
     <div class="m-bet-content">
-      <div v-if="Object.keys(highlightsData).length" class="market-wrapper">
+      <div v-if="Object.keys(fixtures).length" class="market-wrapper">
         <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
           <div class="m-tabs-nav" style="width:">
             <!-- <div class="m-tabs-ink-bar" style="display: block; width: 51.0469px; left: 0px"></div> -->
@@ -17,9 +17,9 @@
           </div>
         </div>
       </div>
-      <template v-if="Object.keys(highlightsData).length">
+      <template v-if="Object.keys(fixtures).length">
         <div
-          v-for="(group, index) in highlightsData"
+          v-for="(group, index) in fixtures"
           :key="index"
           class="x-table m-sports-table football"
         >
@@ -67,10 +67,9 @@
 </template>
 
 <script setup>
-import { defineComponent, computed, onMounted } from 'vue'
+import { defineComponent, computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { formatDate } from '@/helpers'
 import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
-import { defineEmits } from 'vue'
 import _ from 'lodash'
 import { useRouter } from 'vue-router'
 import { useUtilsStore } from '@/stores'
@@ -89,6 +88,7 @@ defineComponent({
 const emits = defineEmits(['select-market'])
 const router = useRouter()
 const utilsStore = useUtilsStore()
+const fixtures = ref(props.highlightsData || {})
 
 const getSportbyId = computed(() => {
   return utilsStore.sportsMenu.find((sport) => sport.sportID == props.activeMarket.sportID)
@@ -105,17 +105,37 @@ const selectMarket = (market) => {
   emits('select-market', market)
 }
 
-// In the parent component that renders the list of fixtures
-onMounted(() => {
-  emitter.on('remove-fixture', (matchID) => {
-    // Filter out the fixture with the given matchID
-    fixtures.value = fixtures.value.filter((fixture) => fixture.matchID !== matchID)
+const removeFixtureByMatchId = (matchId) => {
+  const current = fixtures.value || {}
+  const next = {}
+  Object.entries(current).forEach(([key, list]) => {
+    const filtered = (list || []).filter(
+      (fixture) =>
+        String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+        String(matchId)
+    )
+    if (filtered.length) {
+      next[key] = filtered
+    }
   })
+  fixtures.value = next
+}
+
+watch(
+  () => props.highlightsData,
+  (nextValue) => {
+    fixtures.value = nextValue || {}
+  },
+  { immediate: true, deep: true }
+)
+
+onMounted(() => {
+  emitter.on('remove-fixture', removeFixtureByMatchId)
 })
 
-// onBeforeUnmount(() => {
-//   emitter.off('remove-fixture');
-// });
+onBeforeUnmount(() => {
+  emitter.off('remove-fixture', removeFixtureByMatchId)
+})
 
 // const activeMarketId = ref(props.marketsGroup.markets[0].id)
 </script>
