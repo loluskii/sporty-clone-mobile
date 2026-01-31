@@ -95,7 +95,7 @@
     </div>
 </template>
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { performCashout } from '@/helpers'
 import { useUtilsStore } from '@/stores'
 import emitter from '@/plugins/emitter'
@@ -114,6 +114,7 @@ const cashingOut = ref(false)
 const sliderValue = ref(0)
 const sliderBarRef = ref(null)
 const isDragging = ref(false)
+const activePointerId = ref(null)
 
 const rawMaxCashout = computed(() => Number(props.cashoutData?.estimatedCashout || 0))
 const isCashoutAvailable = computed(() => rawMaxCashout.value > 0)
@@ -189,11 +190,17 @@ function setSliderValueFromClientX(clientX) {
 
 function onSliderPointerDown(event) {
     if (!isCashoutAvailable.value) return
+    event.preventDefault()
+    event.stopPropagation()
     isDragging.value = true
+    activePointerId.value = event.pointerId ?? null
     if (event.pointerId != null && sliderBarRef.value?.setPointerCapture) {
         sliderBarRef.value.setPointerCapture(event.pointerId)
     }
     setSliderValueFromClientX(event.clientX)
+    window.addEventListener('pointermove', onWindowPointerMove)
+    window.addEventListener('pointerup', onWindowPointerUp)
+    window.addEventListener('pointercancel', onWindowPointerUp)
 }
 
 function onSliderPointerMove(event) {
@@ -203,6 +210,21 @@ function onSliderPointerMove(event) {
 
 function onSliderPointerUp() {
     isDragging.value = false
+    activePointerId.value = null
+    window.removeEventListener('pointermove', onWindowPointerMove)
+    window.removeEventListener('pointerup', onWindowPointerUp)
+    window.removeEventListener('pointercancel', onWindowPointerUp)
+}
+
+function onWindowPointerMove(event) {
+    if (!isDragging.value) return
+    if (activePointerId.value != null && event.pointerId !== activePointerId.value) return
+    setSliderValueFromClientX(event.clientX)
+}
+
+function onWindowPointerUp(event) {
+    if (activePointerId.value != null && event.pointerId !== activePointerId.value) return
+    onSliderPointerUp()
 }
 
 async function confirmCashout() {
@@ -231,12 +253,19 @@ async function confirmCashout() {
     }
 }
 
+onBeforeUnmount(() => {
+    window.removeEventListener('pointermove', onWindowPointerMove)
+    window.removeEventListener('pointerup', onWindowPointerUp)
+    window.removeEventListener('pointercancel', onWindowPointerUp)
+})
+
 </script>
 <style type="text/css">
 .m-slider-wrapper {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
     position: relative;
+    touch-action: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -261,6 +290,7 @@ async function confirmCashout() {
     border-radius: 15px;
     display: block;
     position: relative;
+    touch-action: none;
 }
 
 .m-slider-wrapper .m-slider::after {
@@ -271,6 +301,7 @@ async function confirmCashout() {
     top: 0;
     width: 100%;
     z-index: 2;
+    pointer-events: none;
 }
 
 .m-slider-wrapper .m-slider-process {
@@ -293,6 +324,7 @@ async function confirmCashout() {
     transition: all 0s;
     will-change: transform;
     z-index: 3;
+    touch-action: none;
 }
 
 .m-slider-wrapper .m-slider-dot:after {

@@ -92,7 +92,7 @@
                                     <div class="m-score">
                                         <div class="m-score-info"><span> <span data-op="openbet-detail-period"
                                                     class="m-t-12 capitalize m-t-gray">
-                                                    {{ formatDate(event.eventDate, 'DD/MM HH:mm') }}
+                                                    {{ formatDate(event.eventDate.split('T')[0] + event.eventDate.split('T')[1], 'DD/MM HH:mm') }}
                                                 </span> <span class="m-t-12"></span></span></div>
                                     </div>
                                 </div>
