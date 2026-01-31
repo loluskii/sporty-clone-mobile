@@ -224,6 +224,8 @@ async function validateSelections() {
       stake: couponStore.coupon.totalStake,
       id: 'all'
     })
+
+    emitter.emit('odds-validated', validatedSelections)
   }
 }
 
