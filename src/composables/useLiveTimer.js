@@ -3,6 +3,7 @@ import { ref, watch, onBeforeUnmount } from 'vue'
 export function useLiveTimer(initialTime = '00:00') {
   const displayTime = ref(initialTime || '00:00')
   const timer = ref(null)
+  const hasMqttTime = ref(false)
 
   const parseTimeToSeconds = (timeStr) => {
     if (timeStr === '--:--') return null
@@ -44,7 +45,13 @@ export function useLiveTimer(initialTime = '00:00') {
     }, 1000)
   }
 
-  const setDisplayTime = (timeValue) => {
+  const setDisplayTimeFromApi = (timeValue) => {
+    if (hasMqttTime.value) return
+    displayTime.value = timeValue || '00:00'
+  }
+
+  const setDisplayTimeFromMqtt = (timeValue) => {
+    hasMqttTime.value = true
     displayTime.value = timeValue || '00:00'
   }
 
@@ -64,7 +71,9 @@ export function useLiveTimer(initialTime = '00:00') {
 
   return {
     displayTime,
-    setDisplayTime,
+    setDisplayTime: setDisplayTimeFromApi,
+    setDisplayTimeFromApi,
+    setDisplayTimeFromMqtt,
     startTimer,
     stopTimer
   }

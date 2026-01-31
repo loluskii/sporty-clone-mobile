@@ -131,7 +131,9 @@ const matchStatusLabel = computed(() => {
   return matchStatus.value
 })
 
-const { displayTime, setDisplayTime, stopTimer } = useLiveTimer(props.gameData.eventTime || '00:00')
+const { displayTime, setDisplayTimeFromApi, setDisplayTimeFromMqtt, stopTimer } = useLiveTimer(
+  props.gameData.eventTime || '00:00'
+)
 
 const specifierOpen = ref(false)
 
@@ -162,8 +164,8 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
   onMessage: (messageType, data) => {
     console.log(messageType, data)
     if (messageType === 'match_status') {
-      const matchStatus = String(data?.match_status || '').toLowerCase()
-      if (matchStatus === 'ended') {
+      const matchStatusText = String(data?.match_status || '').toLowerCase()
+      if (matchStatusText === 'ended') {
         stopTimer()
         return
       }
@@ -174,7 +176,7 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
         scores.value.awayScore = data.away_score
       }
       if (data.event_time) {
-        setDisplayTime(data.event_time)
+        setDisplayTimeFromMqtt(data.event_time)
       }
       matchStatus.value = data.match_status
       return
@@ -185,7 +187,7 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
         scores.value.awayScore = data.away_score
       }
       if (data.event_time) {
-        setDisplayTime(data.event_time)
+        setDisplayTimeFromMqtt(data.event_time)
       }
     }
   }
@@ -256,7 +258,7 @@ watch(
   () => props.gameData.eventTime,
   (nextTime) => {
     if (nextTime) {
-      setDisplayTime(nextTime)
+      setDisplayTimeFromApi(nextTime)
     }
   }
 )

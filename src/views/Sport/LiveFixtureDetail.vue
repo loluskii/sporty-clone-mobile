@@ -210,6 +210,7 @@ const scores = reactive({
   awayScore: 0
 })
 const eventTime = ref('00:00')
+const hasMqttTime = ref(false)
 const timer = ref(null)
 const isLoading = ref(false)
 const route = useRoute()
@@ -363,6 +364,7 @@ function handleFixtureStatus(data) {
   // Handle match end
   requestAnimationFrame(() => {
     if (data.event_time) {
+      hasMqttTime.value = true
       eventTime.value = data.event_time
     }
     if (eventDetail.value) {
@@ -521,6 +523,7 @@ function setupMqttSubscriptions(matchId, sport_id) {
         scores.awayScore = data.away_score
       }
       if (data.event_time) {
+        hasMqttTime.value = true
         eventTime.value = data.event_time
       }
     })
@@ -560,7 +563,9 @@ function setupPeriodicRefetch(matchId) {
             res.data?.eventInfo?.scores?.away ??
             res.data.awayScore ??
             scores.awayScore
-          eventTime.value = res.data.eventTime
+          if (!hasMqttTime.value) {
+            eventTime.value = res.data.eventTime
+          }
 
         } 
       } catch (error) {
@@ -660,7 +665,9 @@ async function getEventDetail(id) {
         res[0].data?.eventInfo?.scores?.away ??
         res[0].data.awayScore ??
         0
-      eventTime.value = res[0].data.eventTime
+      if (!hasMqttTime.value) {
+        eventTime.value = res[0].data.eventTime
+      }
       startTimer()
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
       setupPeriodicRefetch(res[0].data.matchID)
