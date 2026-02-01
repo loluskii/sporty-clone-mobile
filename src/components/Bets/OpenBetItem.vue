@@ -5,7 +5,7 @@
                 <div class="m-title" @click="isExpanded = !isExpanded">
                     <div><span style="text-transform: capitalize;" class="m-t-14 m-t-bold m-list-t-default">
                             {{ bet.betType === 'multi' ? 'Multiple' : bet.betType === 'single' ? 'Single' : bet.betType
-                                === 'system' ? 'System':bet.betType }}
+                                === 'system' ? 'System' : bet.betType }}
                         </span> <span data-op="openbet-item-live-tag" style="display: none;"><span
                                 class="m-i-live m-t-b5" data-cms-key="live"
                                 data-cms-page="common_functions">Live</span></span>
@@ -48,27 +48,55 @@
                                     <span>
                                         <span class="root">
                                             <span v-if="event.statusDescription === 'Lost'">
-                                            <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="svg-icon-base"><circle cx="12" cy="12" r="7" fill="#fff"></circle><path d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="#E41827"></path></svg>
+                                                <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
+                                                    class="svg-icon-base">
+                                                    <circle cx="12" cy="12" r="7" fill="#fff"></circle>
+                                                    <path
+                                                        d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z"
+                                                        fill="#E41827"></path>
+                                                </svg>
                                             </span>
                                             <span v-if="event.statusDescription === 'Won'">
-                                            <svg data-v-54f5b7e7="" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="won svg-icon-base"><circle cx="12" cy="12.5" r="9" fill="currentColor"></circle><path d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z" fill="#fff" stroke="#fff" stroke-width=".2"></path></svg>
+                                                <svg data-v-54f5b7e7="" viewBox="0 0 24 25" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
+                                                    class="won svg-icon-base">
+                                                    <circle cx="12" cy="12.5" r="9" fill="currentColor"></circle>
+                                                    <path
+                                                        d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z"
+                                                        fill="#fff" stroke="#fff" stroke-width=".2"></path>
+                                                </svg>
                                             </span>
                                             <span v-if="event.statusDescription === 'Pending'">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="20"
-                                                fill="#333"
-                                                class="bi bi-clock-fill"
-                                                viewBox="0 0 16 16"
-                                            >
-                                                <path
-                                                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"
-                                                />
-                                            </svg>
+                                                <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
+                                                    class="not-start svg-icon-base">
+                                                    <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24"
+                                                        height="24" style="mask-type: alpha;">
+                                                        <path fill="currentColor" d="M0 0h24v24H0z"></path>
+                                                    </mask>
+                                                    <g mask="url(#a)">
+                                                        <path
+                                                            d="M14.97 16.23l1.26-1.26-3.33-3.33V7.5h-1.8v4.86l3.87 3.87zM12 21a8.762 8.762 0 01-3.51-.709 9.089 9.089 0 01-2.857-1.924 9.089 9.089 0 01-1.924-2.857A8.764 8.764 0 013 12c0-1.245.236-2.415.709-3.51a9.089 9.089 0 011.924-2.857A9.089 9.089 0 018.49 3.709 8.764 8.764 0 0112 3c1.245 0 2.415.236 3.51.709a9.089 9.089 0 012.857 1.924 9.089 9.089 0 011.924 2.857A8.762 8.762 0 0121 12a8.762 8.762 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.762 8.762 0 0112 21zm0-1.8c1.995 0 3.694-.701 5.096-2.104C18.5 15.694 19.2 13.995 19.2 12s-.701-3.694-2.104-5.096C15.694 5.5 13.995 4.8 12 4.8s-3.694.701-5.096 2.104C5.5 8.306 4.8 10.005 4.8 12s.701 3.694 2.104 5.096C8.306 18.5 10.005 19.2 12 19.2z"
+                                                            fill="currentColor"></path>
+                                                    </g>
+                                                </svg>
                                             </span>
                                             <span v-if="event.statusDescription === 'Void' || event.statusDescription === 'Cancelled'">
-                                            <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="void svg-icon-base"><circle cx="12" cy="12" r="8" fill="#fff"></circle><mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" style="mask-type: alpha;"><path fill="#D9D9D9" d="M0 0h24v24H0z"></path></mask><g mask="url(#a)"><path d="M7.5 12.9h9v-1.8h-9v1.8zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="currentColor"></path></g></svg>
+                                                <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem"
+                                                    class="void svg-icon-base">
+                                                    <circle cx="12" cy="12" r="8" fill="#fff"></circle>
+                                                    <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24"
+                                                        height="24" style="mask-type: alpha;">
+                                                        <path fill="#D9D9D9" d="M0 0h24v24H0z"></path>
+                                                    </mask>
+                                                    <g mask="url(#a)">
+                                                        <path
+                                                            d="M7.5 12.9h9v-1.8h-9v1.8zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z"
+                                                            fill="currentColor"></path>
+                                                    </g>
+                                                </svg>
                                             </span>
                                         </span>
                                     </span>
@@ -90,10 +118,34 @@
                                             {{ event.eventName }}
                                         </span></div>
                                     <div class="m-score">
-                                        <div class="m-score-info"><span> <span data-op="openbet-detail-period"
-                                                    class="m-t-12 capitalize m-t-gray">
-                                                    {{ formatDate(event.eventDate.split('T')[0] + event.eventDate.split('T')[1], 'DD/MM HH:mm') }}
-                                                </span> <span class="m-t-12"></span></span></div>
+                                        <div class="m-score-info">
+                                            <span v-if="event.matchStatus && event.matchStatus.toLowerCase() !== ''">
+                                                <span
+                                                    class="m-t-12 capitalize m-t-gray"
+                                                    :class="event.matchStatus.toLowerCase() !== 'ended' ? 'm-t-green' : ''"
+                                                >
+                                                    {{
+                                                        event.matchStatus.toLowerCase() === 'ended'
+                                                            ? 'FT'
+                                                            : `${event.eventTime.split(':')[0]}' ${event.matchStatus}`
+                                                    }}
+                                                </span>
+                                                <span class="m-t-12">
+                                                    <span
+                                                        class="m-t-mv3"
+                                                        :class="event.matchStatus.toLowerCase() !== 'ended' ? 'm-t-green' : 'm-t-gray'"
+                                                    >
+                                                        | <span class="m-t-bold">{{ String(event.score || '').replace(':', '-') }}</span>
+                                                    </span>
+                                                </span>
+                                            </span>
+                                            <span v-else>
+                                                <span class="m-t-12 capitalize m-t-gray">
+                                                    {{ moment(event.eventDate).format('DD/MM HH:mm') }}
+                                                </span>
+                                                <span class="m-t-12"></span>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </li>
@@ -110,7 +162,7 @@
                             <div data-cms-key="stake" data-cms-page="bet_history">Stake
                             </div>
                             <div class="m-t-bold amount">
-                                {{ bet.stake }}
+                                {{ formatNumber(bet.stake) }}
                             </div>
                         </div>
                         <div class="m-money__list">
@@ -118,7 +170,7 @@
                                 Pot. Win
                             </div>
                             <div class="m-t-bold m-t-ml6 amount">
-                                {{ bet.possibleWin }}
+                                {{ formatNumber(bet.possibleWin) }}
                             </div>
                         </div>
                     </div>
@@ -148,6 +200,8 @@ import { useRouter } from 'vue-router'
 import $ from 'jquery'
 import { formatNumber, formatDate, slugify } from '@/helpers'
 import { useUtilsStore } from '@/stores'
+import moment from 'moment'
+
 
 const props = defineProps({
     bet: {
