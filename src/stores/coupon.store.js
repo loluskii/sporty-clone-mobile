@@ -68,6 +68,112 @@ export const useCouponStore = defineStore({
     betslipMode: (state) => state.mode === 'sim'
   },
   actions: {
+    getSelectionKey(selection) {
+      if (!selection) return ''
+      const selectionId = selection.selectionId || selection.id
+      if (selectionId) return String(selectionId)
+      const matchId = selection.matchId || selection.match_id || selection.fixture?.matchID || ''
+      const marketId = selection.marketId || selection.market_id || ''
+      const outcomeId = selection.outcomeId || selection.odd_id || selection.outcomeID || ''
+      const specifier = selection.specifier || ''
+      return `${matchId}:${marketId}:${outcomeId}:${specifier}`
+    },
+    hasSplitSelections(selections = this.coupon.selections) {
+      if (!Array.isArray(selections)) return false
+      const counts = {}
+      for (const selection of selections) {
+        const key = String(
+          selection?.matchId || selection?.match_id || selection?.fixture?.matchID || ''
+        )
+        if (!key) continue
+        counts[key] = (counts[key] || 0) + 1
+        if (counts[key] > 1) return true
+      }
+      return false
+    },
+    recalculateCombos() {
+      if (this.coupon.betslip_type !== 'Combo' && this.coupon.bet_type !== 'Combo') return
+      const previousCombos = Array.isArray(this.coupon.combos) ? this.coupon.combos : []
+      const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
+      const previousStakes = previousCombos
+        .map((combo) => Number(combo?.Stake ?? combo?.stake ?? 0))
+        .filter((stake) => Number.isFinite(stake) && stake > 0)
+      const hasCommonStake =
+        previousStakes.length > 0 && previousStakes.every((stake) => stake === previousStakes[0])
+      const commonStake = hasCommonStake ? previousStakes[0] : null
+      const mergedCombos = calculatedGroup.Groups.map((group) => {
+        let stake = 0
+        if (commonStake !== null) {
+          stake = commonStake
+        } else {
+          const match = previousCombos.find(
+            (combo) => Number(combo?.Grouping) === Number(group?.Grouping)
+          )
+          stake = Number(match?.Stake ?? match?.stake ?? 0) || 0
+        }
+        return {
+          ...group,
+          Stake: stake
+        }
+      })
+      this.coupon.combos = mergedCombos
+      const totalStake = mergedCombos.reduce((sum, combo) => {
+        const comboStake = Number(combo?.Stake ?? 0)
+        const combinations = Number(combo?.Combinations ?? 0)
+        if (!Number.isFinite(comboStake) || comboStake <= 0) return sum
+        if (!Number.isFinite(combinations) || combinations <= 0) return sum
+        return sum + comboStake * combinations
+      }, 0)
+      if (totalStake > 0) {
+        this.coupon.totalStake = totalStake
+        this.coupon.stake = totalStake
+      }
+    },
+    clearBankers() {
+      if (!Array.isArray(this.coupon.selections) || this.coupon.selections.length === 0) return
+      let changed = false
+      const updatedSelections = this.coupon.selections.map((selection) => {
+        if (selection.fixed) {
+          changed = true
+          return { ...selection, fixed: false }
+        }
+        return selection
+      })
+      if (!changed) return
+      this.coupon.selections = updatedSelections
+      this.recalculateCombos()
+      this.updateWinnings({
+        stake: this.coupon.totalStake,
+        id: 'all'
+      })
+    },
+    toggleBanker(selection) {
+      if (!selection) return
+      if (this.hasSplitSelections()) {
+        emitter.emit('showErrorMessage', 'Bankers are not available for split bets.')
+        return
+      }
+      const targetKey = this.getSelectionKey(selection)
+      if (!targetKey) return
+      let changed = false
+      const updatedSelections = this.coupon.selections.map((item) => {
+        if (this.getSelectionKey(item) === targetKey) {
+          const nextFixed = !item.fixed
+          if (nextFixed !== item.fixed) {
+            changed = true
+          }
+          return { ...item, fixed: nextFixed }
+        }
+        return item
+      })
+      if (!changed) return
+      this.coupon.selections = updatedSelections
+      this.recalculateCombos()
+      this.updateWinnings({
+        stake: this.coupon.totalStake,
+        id: 'all'
+      })
+    },
     manageSubscription(selection, isAdding = true) {
       try {
         if (!selection) {
@@ -330,6 +436,7 @@ export const useCouponStore = defineStore({
             //bet type
             this.coupon.bet_type = 'Split'
             this.coupon.betslip_type = 'Multiple'
+            this.clearBankers()
 
             const splitProps = await getSplitProps(this.coupon)
             //calculate winnings
@@ -376,6 +483,7 @@ export const useCouponStore = defineStore({
         this.coupon.bet_type = checkBetType(this.coupon.fixtures)
         this.coupon.betslip_type = 'Multiple'
         if (this.coupon.bet_type === 'Split') {
+          this.clearBankers()
           const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
           this.coupon.combos = calculatedGroup.Groups
         }
@@ -384,6 +492,7 @@ export const useCouponStore = defineStore({
         if (type === 'live') this.coupon.hasLive = true
 
         if (this.coupon.bet_type === 'Split') {
+          this.clearBankers()
           const splitProps = await getSplitProps(this.coupon)
 
           const minStake =
@@ -873,6 +982,9 @@ export const useCouponStore = defineStore({
     },
     setBetType(type) {
       const betslip_type = type
+      if (betslip_type !== 'Combo') {
+        this.clearBankers()
+      }
       this.coupon.betslip_type = betslip_type
       this.coupon.bet_type = betslip_type
       const minStake = betslip_type === 'Combo'
@@ -938,6 +1050,7 @@ export const useCouponStore = defineStore({
       }
 
       const buildSystemPayload = () => {
+        const selections = coupondata.selections || []
         const combos = coupondata.combos || []
         const sizedCombos = combos
           .filter((combo) => Number(combo.Grouping || combo.grouping) > 0)
@@ -951,6 +1064,7 @@ export const useCouponStore = defineStore({
         const stakes = sizedCombos.map((combo) => combo.stake)
         const unitStake =
           stakes.length && stakes.every((value) => value === stakes[0]) ? [stakes[0]] : stakes
+        const bankerSelections = selections.filter((selection) => selection.fixed)
         return {
           betType: 'system',
           stake: 0,
@@ -958,7 +1072,7 @@ export const useCouponStore = defineStore({
           system: {
             sizes,
             unitStake,
-            bankers: []
+            bankers: buildSelections(bankerSelections)
           },
           selections: buildSelections(coupondata.selections)
         }

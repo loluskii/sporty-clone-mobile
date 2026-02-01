@@ -47,6 +47,17 @@
               ></span>
             </div>
           </div>
+          <button
+            v-if="showBanker"
+            type="button"
+            class="banker-badge"
+            :class="{ active: !!selection?.fixed }"
+            :aria-pressed="selection?.fixed ? 'true' : 'false'"
+            aria-label="Select as banker"
+            @click.stop.prevent="toggleBanker"
+          >
+            B
+          </button>
         </div>
       </div>
     </div>
@@ -70,14 +81,15 @@ import { useMatchGroupStyle } from '@/composables/useMatchGroupStyle'
 import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboard'
 
 const couponStore = useCouponStore()
-const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection'])
+const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection', 'toggle-banker'])
 const router = useRouter()
 
 const props = defineProps({
   selection: Object,
   betSlipType: String,
   betType: String,
-  activeSelectionId: Number
+  activeSelectionId: Number,
+  showBanker: Boolean
 })
 const selectionRef = toRef(props, 'selection')
 const { oddUp, oddDown } = useOddsChangeIndicator(computed(() => selectionRef.value?.odds))
@@ -172,6 +184,10 @@ function goToGame() {
       event_id: props.selection.matchId
     }
   })
+}
+
+function toggleBanker() {
+  emit('toggle-banker', props.selection)
 }
 </script>
 
@@ -291,6 +307,25 @@ function goToGame() {
   padding: 0.41666667rem 0.83333333rem 0.41666667rem 0.4rem;
   padding-right: 0.83333333rem;
   position: relative;
+}
+
+.banker-badge {
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid #0d9737;
+  border-radius: 50%;
+  color: #0d9737;
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  height: 26px;
+  justify-content: center;
+  margin-left: 0.5rem;
+  width: 26px;
+}
+.banker-badge.active {
+  background: #0d9737;
+  color: #ffffff;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell {
   -webkit-box-sizing: border-box;

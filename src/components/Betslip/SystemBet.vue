@@ -17,7 +17,7 @@
         :can-edit="true"
         :tabindex="c"
         :combo="combo"
-        v-for="(combo, c) in coupon.combos"
+        v-for="(combo, c) in visibleCombos"
       />
 
     </div>
@@ -42,8 +42,13 @@ const coupon = computed(() => {
   return couponStore.coupon
 })
 
-const playAllStake = computed(() => {
+const visibleCombos = computed(() => {
   const combos = coupon.value.combos || []
+  return combos.filter((combo) => Number(combo?.Combinations ?? combo?.combinations ?? 0) > 0)
+})
+
+const playAllStake = computed(() => {
+  const combos = visibleCombos.value
   if (!combos.length) return coupon.value.totalStake
   const firstStake = combos[0]?.Stake
   const allSame = combos.every((combo) => combo?.Stake === firstStake)

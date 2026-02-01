@@ -210,7 +210,7 @@ export default class CouponCalculation {
       calculatedCouponGroups.push(group)
     }
     if (bankers.length > 0) {
-      calculatedCouponGroups[bankers.length].Combinations = 0
+      calculatedCouponGroups[bankers.length].Combinations = 1
     }
     if (!integrale) {
       for (var k = nonBankers.length; k > 0; k--) {
