@@ -36,6 +36,22 @@
         >
           <div class="m-scroll">
             <div id="j_betList" class="m-betslips-outcomes">
+              <div v-if="betSlipType === 'Combo' && canUseBankers" class="m-outcomes-banker">
+                <button
+                  type="button"
+                  class="banker-toggle"
+                  :class="{ active: bankerMode }"
+                  @click.stop="toggleBankerMode"
+                  :disabled="!canUseBankers"
+                  aria-label="Toggle banker mode"
+                >
+                  <span class="banker-knob"></span>
+                </button>
+                <span data-cms-key="banker" data-cms-page="common_functions" class="banker-text">
+                  Banker
+                </span>
+                <span class="m-banker-tip"></span>
+              </div>
               <div class="m-outcomes-list">
                 <BetListEvent
                   v-for="(selection, index) in betslipSelections"
@@ -44,7 +60,9 @@
                   :betSlipType="betSlipType"
                   :betType="betType"
                   :active-selection-id="activeSelectionInput"
+                  :show-banker="bankerMode && canUseBankers"
                   @on-selection-input="setActiveSelectionInput"
+                  @toggle-banker="toggleBankerSelection"
                   @toggle-betslip="$emit('toggle-betslip')"
                 >
                 </BetListEvent>
@@ -152,7 +170,7 @@ import BetListEvent from "@/components/Betslip/BetListEvent.vue";
 import BetListStake from "@/components/Betslip/BetListStake.vue";
 import BookBetModal from "@/components/Betslip/BookBetModal.vue";
 import SuccessBet from "@/components/Betslip/SuccessBet.vue";
-import { computed, ref, defineComponent, onMounted } from "vue";
+import { computed, ref, defineComponent, onMounted, watch } from "vue";
 import { useCouponStore, useUsersStore } from "@/stores";
 import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from "@/helpers";
 import emitter from "@/plugins/emitter";
@@ -176,6 +194,7 @@ const usersStore = useUsersStore()
 const activeSelectionInput = ref()
 const showBetSettings = ref(false)
 const simulationResults = ref(null)
+const bankerMode = ref(false)
 
 
 const betSlipType = computed(() => {
@@ -208,6 +227,22 @@ const isSimulating = computed(() => {
 
 const showBetHead = computed(() => {
   return betslipSelections.value.length > 1 && !betslipMode.value
+})
+
+const hasSplitSelections = computed(() => {
+  const counts = {}
+  return betslipSelections.value.some((selection) => {
+    const key = String(
+      selection?.matchId || selection?.match_id || selection?.fixture?.matchID || ''
+    )
+    if (!key) return false
+    counts[key] = (counts[key] || 0) + 1
+    return counts[key] > 1
+  })
+})
+
+const canUseBankers = computed(() => {
+  return betSlipType.value === 'Combo' && !hasSplitSelections.value
 })
 
 const updateBetslipMode = () => {
@@ -323,6 +358,20 @@ function setActiveSelectionInput(data) {
   activeSelectionInput.value = data
 }
 
+function toggleBankerMode() {
+  if (!canUseBankers.value) {
+    emitter.emit('showErrorMessage', 'Bankers are not available for split bets.')
+    bankerMode.value = false
+    return
+  }
+  bankerMode.value = !bankerMode.value
+}
+
+function toggleBankerSelection(selection) {
+  if (!canUseBankers.value) return
+  couponStore.toggleBanker(selection)
+}
+
 const validateSimulationMarkets = (selections) => {
   if (!betslipMode.value) return true
 
@@ -350,6 +399,16 @@ const validateSimulationMarkets = (selections) => {
 defineComponent({
   name: 'bet-list'
 })
+
+watch(
+  () => [betSlipType.value, hasSplitSelections.value],
+  ([type, hasSplit]) => {
+    if (type !== 'Combo' || hasSplit) {
+      bankerMode.value = false
+      couponStore.clearBankers()
+    }
+  }
+)
 
 onMounted(() => {})
 </script>
@@ -448,6 +507,52 @@ onMounted(() => {})
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
+}
+
+.m-outcomes-banker {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem 0.25rem;
+  justify-content: flex-end;
+}
+
+.banker-toggle {
+  background-color: #dcdee5;
+  border: none;
+  border-radius: 999px;
+  height: 20px;
+  padding: 0;
+  position: relative;
+  width: 36px;
+}
+.banker-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.banker-toggle.active {
+  background-color: var(--brand-secondary);
+}
+
+.banker-toggle .banker-knob {
+  background: #ffffff;
+  border-radius: 50%;
+  height: 16px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: transform 0.2s ease;
+  width: 16px;
+}
+
+.banker-toggle.active .banker-knob {
+  transform: translateX(16px);
+}
+
+.banker-text {
+  color: #353a45;
+  font-weight: 600;
 }
 
 .m-betslip-header .wrapper.separate-part {
