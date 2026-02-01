@@ -8,7 +8,7 @@ let mqttClient = null
 export function useMqttService() {
   const connect = () => {
     if (mqttClient) {
-      console.log('🔵 MQTT: Reusing existing connection')
+      // console.log('🔵 MQTT: Reusing existing connection')
       return mqttClient
     }
 
@@ -50,9 +50,6 @@ export function useMqttService() {
     mqttClient.on('message', (topic, message) => {
       try {
         const data = JSON.parse(message.toString())
-
-        console.log(data)
-
         // Find all callbacks that match this topic
         // Note: MQTT broker sends specific topics (e.g. "sports/1/match/123/markets")
         // but subscriptions use wildcards (e.g. "sports/1/match/#")
@@ -104,12 +101,12 @@ export function useMqttService() {
 
     if (!subscriptions.has(topic)) {
       subscriptions.set(topic, [])
-      console.log('🔵 MQTT: New subscription to topic:', topic)
+      // console.log('🔵 MQTT: New subscription to topic:', topic)
       mqttClient.subscribe(topic, (err) => {
         if (err) {
           console.error('❌ MQTT: Failed to subscribe to', topic, err)
         } else {
-          console.log('✅ MQTT: Successfully subscribed to', topic)
+          // console.log('✅ MQTT: Successfully subscribed to', topic)
         }
       })
     } else {
@@ -130,7 +127,7 @@ export function useMqttService() {
         callbacks.splice(index, 1)
 
         if (callbacks.length === 0) {
-          console.log('🧹 MQTT: Unsubscribing from topic (no more callbacks):', topic)
+          // console.log('🧹 MQTT: Unsubscribing from topic (no more callbacks):', topic)
           mqttClient?.unsubscribe(topic)
           subscriptions.delete(topic)
         }
