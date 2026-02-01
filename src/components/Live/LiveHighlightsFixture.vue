@@ -162,7 +162,7 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
     }
   },
   onMessage: (messageType, data) => {
-    console.log(messageType, data)
+    // console.log(messageType, data)
     if (messageType === 'match_status') {
       const matchStatusText = String(data?.match_status || '').toLowerCase()
       if (matchStatusText === 'ended') {
