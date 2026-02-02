@@ -26,13 +26,26 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-RUN echo 'server { \
-    listen 3007; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
+RUN echo 'server {
+    listen 3007;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+    
+    # Handle SPA routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
 }' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 3007
