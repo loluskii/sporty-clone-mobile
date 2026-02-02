@@ -185,7 +185,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'mkdir -p ~/gcp-staging-mobile/'
           
           # Copy all source files to server for local build
-          tar --exclude='.git' --exclude='node_modules' --exclude='dist' -czf /tmp/source.tar.gz .
+          tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
           scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }}:~/gcp-staging-mobile/
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'cd ~/gcp-staging-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
           
