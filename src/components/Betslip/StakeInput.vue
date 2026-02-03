@@ -118,19 +118,32 @@ const goToDeposit = () => {
 
 const updateStake = (stake) => {
   if (stake === '') {
+    // Clearing should set stake to 0, not snap back to a minimum.
     if (props.betSlipType === 'Combo') {
       const targetCombo = props.syncAll ? null : props.combo
       return couponStore.updateComboWinnings(0, targetCombo)
     }
     return couponStore.updateWinnings({
-      stake: '',
+      stake: 0,
       id: "all",
     })
   }
   const parsed = Number(stake)
-  const normalized = Number.isFinite(parsed)
-    ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
-    : minStake.value
+  // Only clamp when min/max stakes are actually configured (> 0); otherwise allow free input.
+  let normalized = Number.isFinite(parsed) ? parsed : 0
+  const minValue =
+    Number.isFinite(minStake.value) && Number(minStake.value) > 0 ? Number(minStake.value) : null
+  const maxValue =
+    Number.isFinite(maxStake.value) && Number(maxStake.value) > 0 ? Number(maxStake.value) : null
+  if (!Number.isFinite(normalized)) {
+    normalized = minValue ?? 0
+  }
+  if (minValue !== null && normalized < minValue) {
+    normalized = minValue
+  }
+  if (maxValue !== null && normalized > maxValue) {
+    normalized = maxValue
+  }
   // coupon.stake = stake;
   if(props.betSlipType === 'Combo') {
     const targetCombo = props.syncAll ? null : props.combo
