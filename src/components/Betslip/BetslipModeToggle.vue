@@ -19,7 +19,8 @@ import { useCouponStore } from '@/stores'
 
 const couponStore = useCouponStore()
 const toggleMode = () => {
-  couponStore.mode = couponStore.betslipMode ? 'real' : 'sim'
+  // Use store action to keep minimum stake in sync when toggling mode.
+  couponStore.setBetslipMode(couponStore.betslipMode ? 'real' : 'sim')
 }
 </script>
 <style scoped>
