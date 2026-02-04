@@ -266,6 +266,25 @@ export const useCouponStore = defineStore({
     setActiveKeyboardKey(key) {
       this.activeKeyboardKey = key
     },
+    setBetslipMode(nextMode) {
+      // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
+      this.mode = nextMode
+      const isCombo = this.coupon.betslip_type === 'Combo' || this.coupon.bet_type === 'Combo'
+      const minStake = isCombo
+        ? Number(this.SportsbookGlobalVariable?.comboMinStake || 0)
+        : Number(this.SportsbookGlobalVariable?.singleMinStake || 0)
+      const currentStake = Number(this.coupon.totalStake || 0)
+      if (minStake > 0 && (!Number.isFinite(currentStake) || currentStake === 0)) {
+        if (isCombo && Array.isArray(this.coupon.combos) && this.coupon.combos.length > 0) {
+          this.updateComboWinnings(minStake, null)
+        } else {
+          this.updateWinnings({
+            stake: minStake,
+            id: 'all'
+          })
+        }
+      }
+    },
     handleOddsChange(data, selection) {
       if (!data || !data.markets) return
 
@@ -308,6 +327,8 @@ export const useCouponStore = defineStore({
                 // console.log(`📊 Betslip: Outcome not active, suspending selection for match ID ${matchId}`);
                 selection.suspended = true
                 selection.unavailable = true
+                // Only require acceptance when data changes (not when adding selections).
+                this.coupon.acceptChanges = false
                 updatedAnySelection = true
               } else {
                 // If outcome is active, make sure it's not suspended
@@ -315,6 +336,8 @@ export const useCouponStore = defineStore({
                   // console.log(`📊 Betslip: Reactivating previously suspended selection for match ID ${matchId}`);
                   selection.suspended = false
                   selection.unavailable = false
+                  // Reactivations from feeds still count as data changes needing acceptance.
+                  this.coupon.acceptChanges = false
                   updatedAnySelection = true
                 }
 
@@ -323,6 +346,8 @@ export const useCouponStore = defineStore({
                   // console.log(`📊 Betslip: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
                   selection.odds = outcome.odds
                   selection.changed = true
+                  // Flip acceptChanges only on odds/availability updates.
+                  this.coupon.acceptChanges = false
                   updatedAnySelection = true
 
                   // Reset the changed flag after 5 seconds
@@ -376,6 +401,8 @@ export const useCouponStore = defineStore({
           selection.unavailable = true
           selection.odds = 0
         })
+        // Bet stop is a data change; force acceptChanges.
+        this.coupon.acceptChanges = false
 
         // Force a reactivity update
         this.updateWinnings({
@@ -385,6 +412,13 @@ export const useCouponStore = defineStore({
       }
     },
     async addToCoupon(selection) {
+      // Adding selections should not clear pending odds-change acceptance.
+      const hasPendingChanges = this.coupon.selections.some(
+        (sel) => sel?.changed || sel?.suspended || sel?.unavailable
+      )
+      if (!hasPendingChanges) {
+        this.coupon.acceptChanges = true
+      }
       const couponPayload = selection
 
       const globalVars = this.SportsbookGlobalVariable
@@ -660,7 +694,7 @@ export const useCouponStore = defineStore({
         this.coupon = coupon
       }
     },
-    updateWinnings(payload) {
+    async updateWinnings(payload) {
       const { stake, id } = payload
       const globalVars = { ...this.SportsbookGlobalVariable }
       const coupondata = JSON.parse(JSON.stringify(this.coupon))
@@ -848,6 +882,38 @@ export const useCouponStore = defineStore({
               selections: activeSelections
             }
 
+            if (this.coupon.bet_type === 'Split' && this.coupon.betslip_type === 'Multiple') {
+              // Split bets need server-calculated min/max wins based on current stake.
+              try {
+                const updated = await getSplitProps(this.coupon)
+                // Cache the latest split props so we can reuse them if the API is unavailable.
+                this.coupon.lastSplitProps = {
+                  minWin: updated.minWin,
+                  maxWin: updated.maxWin,
+                  minOdds: updated.minOdds,
+                  maxOdds: updated.maxOdds,
+                  maxBonus: updated.maxBonus
+                }
+              } catch (error) {
+                // Fall back to cached split props when the endpoint is unavailable.
+                if (this.coupon.lastSplitProps) {
+                  const cached = this.coupon.lastSplitProps
+                  this.coupon.minWin = cached.minWin
+                  this.coupon.maxWin = cached.maxWin
+                  this.coupon.minOdds = cached.minOdds
+                  this.coupon.maxOdds = cached.maxOdds
+                  this.coupon.maxBonus = cached.maxBonus
+                }
+              }
+              // Enforce non-zero minWin for split bets (avoid "0.00 ~ maxWin").
+              if (!this.coupon.minWin || Number(this.coupon.minWin) <= 0) {
+                const fallback = Number(this.coupon.maxWin || 0)
+                if (fallback > 0) {
+                  this.coupon.minWin = fallback
+                }
+              }
+              return
+            }
             // Calculate Winnings using only active selections
             const winnings = calculateWinnings(activeCoupon, globalVars, bonusList)
             this.coupon.maxWin = winnings.maxWin
@@ -980,38 +1046,61 @@ export const useCouponStore = defineStore({
         this.coupon = coupondata;
       }
     },
-    setBetType(type) {
+    async setBetType(type) {
       const betslip_type = type
       if (betslip_type !== 'Combo') {
         this.clearBankers()
       }
       this.coupon.betslip_type = betslip_type
-      this.coupon.bet_type = betslip_type
-      const minStake = betslip_type === 'Combo'
-        ? Number(this.SportsbookGlobalVariable?.comboMinStake || 0)
-        : Number(this.SportsbookGlobalVariable?.singleMinStake || 0)
+
+      // Recompute bet type based on current selections (handles Split when switching back).
+      if (betslip_type === 'Multiple') {
+        this.coupon.fixtures = groupSelections(this.coupon.selections)
+        this.coupon.bet_type = checkBetType(this.coupon.fixtures)
+      } else {
+        this.coupon.bet_type = betslip_type
+      }
+
+      // Clear stake on betslip type switch so each mode starts with a fresh input.
+      const nextStake = 0
       const selections = this.coupon.selections ? [...this.coupon.selections] : []
-      this.coupon.stake = minStake
-      this.coupon.totalStake = minStake
-      this.coupon.minStake = minStake
+      this.coupon.stake = nextStake
+      this.coupon.totalStake = nextStake
+      this.coupon.minStake = nextStake
       this.coupon.minWin = 0
       this.coupon.minBonus = 0
       this.coupon.maxWin = 0
       this.coupon.maxBonus = 0
+
       const newSelections = selections.map((item) => {
         const newItem = Object.assign({}, item)
-        newItem.stake = betslip_type === 'Single' ? minStake : ''
+        // Reset per-selection stake when toggling types.
+        newItem.stake = betslip_type === 'Single' ? 0 : ''
         return newItem
       })
       this.coupon.selections = newSelections
+
       if (betslip_type === 'Combo' && this.coupon.combos?.length) {
-        this.updateComboWinnings(minStake, null)
-      } else {
-        this.updateWinnings({
-          stake: minStake,
-          id: 'all'
-        })
+        // Clear combo stakes on switch to system bets.
+        this.coupon.combos = this.coupon.combos.map((combo) => ({
+          ...combo,
+          Stake: 0,
+          stake: 0
+        }))
+        this.updateComboWinnings(0, null)
+        return
       }
+
+      if (this.coupon.bet_type === 'Split' && betslip_type === 'Multiple') {
+        // Split requires min/max win from split props.
+        await getSplitProps(this.coupon)
+        return
+      }
+
+      this.updateWinnings({
+        stake: 0,
+        id: 'all'
+      })
     },
     async placeBet(e, type, bonusId) {
       let ele = e.target
@@ -1064,7 +1153,11 @@ export const useCouponStore = defineStore({
         const stakes = sizedCombos.map((combo) => combo.stake)
         const unitStake =
           stakes.length && stakes.every((value) => value === stakes[0]) ? [stakes[0]] : stakes
-        const bankerSelections = selections.filter((selection) => selection.fixed)
+        // Bankers payload should be an array of indexes for fixed selections.
+        const bankerSelections = selections
+          .map((selection, index) => ({ selection, index }))
+          .filter((entry) => entry.selection.fixed)
+          .map((entry) => entry.index)
         return {
           betType: 'system',
           stake: 0,
@@ -1072,7 +1165,7 @@ export const useCouponStore = defineStore({
           system: {
             sizes,
             unitStake,
-            bankers: buildSelections(bankerSelections)
+            bankers: bankerSelections
           },
           selections: buildSelections(coupondata.selections)
         }
@@ -1286,6 +1379,10 @@ export const useCouponStore = defineStore({
               selection.suspended = validatedSelection.status_name === 'Suspended'
               selection.unavailable = validatedSelection.status_name === 'Deactivated'
               selection.changed = parseFloat(oldOdds) !== validatedSelection.odds
+              // Validation odds/status changes should require acceptance.
+              if (selection.changed || selection.suspended || selection.unavailable) {
+                this.coupon.acceptChanges = false
+              }
 
               // Reset the changed flag after 1 second
               setTimeout(() => {
