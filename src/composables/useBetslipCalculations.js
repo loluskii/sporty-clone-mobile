@@ -24,16 +24,27 @@ export function useBetslipCalculations({ betSlipType, betType }) {
 
   const updateStake = (stake) => {
     if (stake === '') {
-      couponStore.coupon.stake = ''
+      // Clearing should set stake to 0, not snap back to a minimum.
+      couponStore.coupon.stake = 0
       return couponStore.updateWinnings({
-        stake: '',
+        stake: 0,
         id: 'all'
       })
     }
+    // Only clamp when min/max stakes are configured (> 0); otherwise allow free input.
     const parsed = Number(stake)
-    const normalized = Number.isFinite(parsed)
-      ? Math.min(maxStake.value || parsed, Math.max(minStake.value, parsed))
-      : minStake.value
+    let normalized = Number.isFinite(parsed) ? parsed : 0
+    const minValue = Number(minStake.value || 0) > 0 ? Number(minStake.value) : null
+    const maxValue = Number(maxStake.value || 0) > 0 ? Number(maxStake.value) : null
+    if (!Number.isFinite(normalized)) {
+      normalized = minValue ?? 0
+    }
+    if (minValue !== null && normalized < minValue) {
+      normalized = minValue
+    }
+    if (maxValue !== null && normalized > maxValue) {
+      normalized = maxValue
+    }
     couponStore.coupon.stake = normalized
     return couponStore.updateWinnings({
       stake: normalized,
@@ -92,11 +103,27 @@ export function useBetslipCalculations({ betSlipType, betType }) {
     const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
     const wth = parseFloat(SportsbookGlobalVariable.wthTax || 0)
     const isSingleBet = betSlipType.value === 'Single' && selectionsLength.value === 1
-    const isMultipleBet = betSlipType.value === 'Multiple'
+    const isMultipleBet = betSlipType.value === 'Multiple' && betType.value === 'Multiple'
     const isSystemBet = betSlipType.value === 'Combo'
     const isSplitMultiple = betSlipType.value === 'Multiple' && betType.value === 'Split'
 
     if (taxEnabled.value) {
+      if (isSplitMultiple) {
+        // Split should show a min~max range with the same tax logic applied to both ends.
+        const minOddValue = Number(couponStore.coupon.minOdds || 0)
+        const maxOddValue = Number(couponStore.coupon.maxOdds || 0)
+        const stakeBase = totalStakeAmount.value || 0
+        const stakeNet =
+          exciseTax.value > 0 ? parseFloat(stakeAfterTax.value || 0) : stakeBase
+        const wthRate = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
+        const minGross = stakeNet * (Number.isFinite(minOddValue) ? minOddValue : 0)
+        const maxGross = stakeNet * (Number.isFinite(maxOddValue) ? maxOddValue : 0)
+        const minWth = (minGross - stakeBase) * wthRate
+        const maxWth = (maxGross - stakeBase) * wthRate
+        const minNet = Math.max(0, minGross - minWth)
+        const maxNet = Math.max(0, maxGross - maxWth)
+        return `${formatNumber(minNet)} ~ ${formatNumber(maxNet)}`
+      }
       let finalPayout = stake * totalOdd
 
       if (exciseTax.value > 0) {
@@ -108,16 +135,18 @@ export function useBetslipCalculations({ betSlipType, betType }) {
       }
 
       const taxedWin = formatNumber((finalPayout + parseFloat(maxBonus.value || 0)).toFixed(2))
-      if (isSingleMulti.value || isSystemBet || isSplitMultiple) {
+      if (isSingleMulti.value || isSystemBet) {
         return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${taxedWin}`
       }
       return taxedWin
     }
 
     if (isMultipleBet || isSingleBet) {
+      // Multiple uses max win only.
       return formatNumber(parseFloat(maxWin.value || 0))
     }
-    if (isSingleMulti.value || isSystemBet || isSplitMultiple) {
+    if (isSingleMulti.value || isSystemBet) {
+      // Combo and single show a min~max range.
       return `${formatNumber(parseFloat(minWin.value || 0))} ~ ${formatNumber(
         parseFloat(maxWin.value || 0)
       )}`
