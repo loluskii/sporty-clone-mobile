@@ -17,6 +17,8 @@
       <keep-alive>
         <LiveContainer></LiveContainer>
       </keep-alive>
+      <!-- Trending Bets -->
+      <TrendingBets></TrendingBets>
       <!-- Highlights -->
       <Highlights></Highlights>
       <!-- Highlights -->
@@ -29,6 +31,7 @@ import Carousel from '@/components/Home/Carousel.vue'
 import SportsListCarousel from '@/components/Home/SportsListCarousel.vue'
 import LiveContainer from '@/components/Home/LiveContainer.vue'
 import PopularSports from '@/components/Home/PopularSports.vue'
+import TrendingBets from '@/components/Home/TrendingBets.vue'
 import Highlights from '@/components/Home/HighlightsContainer.vue'
 import emitter from '@/plugins/emitter'
 import { useUsersStore, useUtilsStore } from '../stores'
