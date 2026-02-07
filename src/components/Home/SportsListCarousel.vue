@@ -41,7 +41,7 @@
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
       </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
+      <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
             <img
