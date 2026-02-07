@@ -100,7 +100,7 @@
           <div class="featured-header-right">
             <a
               v-show="activeFeaturedTab == 'codes'"
-              href="/CodeHub"
+              href="/CodeCentral"
               class="codeHub-Icon"
               role="link"
               aria-label="see more featured code list"
