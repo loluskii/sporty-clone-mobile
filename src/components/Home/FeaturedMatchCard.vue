@@ -206,6 +206,7 @@ function addToBetslip(event, odd) {
   -ms-user-select: none;
   user-select: none;
   width: 88%;
+  border-radius: 8px;
 }
 .featuredMatchCard .top {
   -webkit-box-align: center;

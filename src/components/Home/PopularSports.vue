@@ -23,9 +23,6 @@
           })
         "
       >
-        <div class="image">
-          <img src="@/assets/images/3hrs.jpeg" style="height: 24px" alt="" srcset="" />
-        </div>
         <div class="text">football in 3 hours</div>
       </div>
       <template v-for="(match, index) in featuredTournaments" :key="index">
@@ -103,7 +100,7 @@
           <div class="featured-header-right">
             <a
               v-show="activeFeaturedTab == 'codes'"
-              href="/CodeHub"
+              href="/CodeCentral"
               class="codeHub-Icon"
               role="link"
               aria-label="see more featured code list"
@@ -655,7 +652,7 @@ onDeactivated(() => {
   width: 100%;
 }
 #featuredMatchCardBox {
-  padding: 0.8rem 1.1rem;
+  padding: 0.5rem 1.1rem;
 }
 
 .featured-widget {

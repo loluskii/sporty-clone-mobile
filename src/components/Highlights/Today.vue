@@ -112,10 +112,6 @@ const selectMarket = (market) => {
   /* width: calc(100); */
 }
 
-.m-sports .market-wrapper {
-  padding: 10px 0px !important;
-}
-
 .m-sports .nav-fixed .market-wrapper {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
