@@ -30,7 +30,7 @@ const Search = () => import('../views/Games/SearchView.vue')
 
 const CasinoView = () => import('@/views/CasinoView.vue')
 const PlayView = () => import('@/views/Games/PlayView.vue')
-const CodeHubView = () => import('@/views/CodeHubView.vue')
+const CodeCentralView = () => import('@/views/CodeHubView.vue')
 const Promotions = () => import('@/views/Promotions.vue')
 const JackpotView = () => import('../views/Games/JackpotView.vue')
 
@@ -284,11 +284,11 @@ export const router = createRouter({
       component: LoadBetView
     },
 
-    // Code Hub
+    // Code Central
     {
-      path: '/CodeHub',
-      name: 'code-hub',
-      component: CodeHubView
+      path: '/CodeCentral',
+      name: 'code-central',
+      component: CodeCentralView
     },
 
     // CMS Pages

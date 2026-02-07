@@ -12,7 +12,7 @@
       <li class="m-sports-choose-item m-snap-nav-item">
         <a @click.prevent="$router.push({ name: 'live' })">
           <div class="sport-icon">
-            <img src="@/assets/images/live.png" loading="eager" width="20" height="20" />
+            <img src="@/assets/images/icons8-live.svg" loading="eager" width="20" height="20" />
           </div>
           <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Live </span>
         </a>
@@ -40,8 +40,8 @@
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
-      </li> -->
-      <li class="m-sports-choose-item m-snap-nav-item">
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
             <img

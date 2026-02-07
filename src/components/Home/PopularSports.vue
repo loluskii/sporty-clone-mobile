@@ -100,7 +100,7 @@
           <div class="featured-header-right">
             <a
               v-show="activeFeaturedTab == 'codes'"
-              href="/CodeHub"
+              href="/CodeCentral"
               class="codeHub-Icon"
               role="link"
               aria-label="see more featured code list"
@@ -652,7 +652,7 @@ onDeactivated(() => {
   width: 100%;
 }
 #featuredMatchCardBox {
-  padding: 0.8rem 1.1rem;
+  padding: 0.5rem 1.1rem;
 }
 
 .featured-widget {

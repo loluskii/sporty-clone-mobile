@@ -1,23 +1,30 @@
 <template>
   <div class="x-load-bet">
-    <HeaderOther :headerTitle="'Code Hub'" :styles="'position: fixed; top: 0'"></HeaderOther>
+    <HeaderOther :headerTitle="'Code Central'" :styles="'position: fixed; top: 0'"></HeaderOther>
     <div class="code-hub-content">
-      <TabWrapper :active="activeTab" @set-active="setActive" />
-      <div v-if="activeTab === 'code-hub'" class="code-hub-list-container">
-        <div class="code-hub-list-filter space-from-top-navbar">
-          <!-- <OptionsContainer /> -->
-        </div>
+      <div class="code-hub-list-container">
         <div
           class="scroll-wrap scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
         >
-          <div class="code-hub-list-item-container">
-            <CodeHubItem v-for="code in codes" :code="code" :key="code.betslipId" />
+          <div v-if="!codes.length && !isLoading" class="code-hub-empty">
+            <div class="code-hub-empty-title">No trending bets yet.</div>
+            <div class="code-hub-empty-subtitle">Check back soon for new code picks.</div>
           </div>
+          <div v-else class="code-hub-list-item-container">
+            <CodeHubItem
+              v-for="(code, index) in codes"
+              :code="code"
+              :key="code.betslipId"
+              :preview-count="index === 0 ? 10 : null"
+            />
+          </div>
+          <div v-if="isLoading" class="code-hub-loading">Loading...</div>
+          <div v-if="isLoadingMore" class="code-hub-loading">Loading more...</div>
+          <div ref="loadMoreRef" class="code-hub-sentinel"></div>
           <div class="loading-more-wrapper" style="position: relative"></div>
           <div class="bottom-ele"></div>
         </div>
       </div>
-      <LoadCode v-else />
     </div>
   </div>
 </template>
@@ -25,29 +32,265 @@
 <script setup>
 import HeaderOther from '@/components/HeaderOther.vue'
 import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
-import TabWrapper from '@/components/CodeHub/TabWrapper.vue'
-import LoadCode from '@/components/CodeHub/LoadCode.vue'
-import OptionsContainer from '../components/CodeHub/OptionsContainer.vue'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { getCodeHubItems, getNext7Days } from '../helpers'
 const codes = ref([])
-const activeTab = ref('code-hub')
+const isLoading = ref(false)
+const isLoadingMore = ref(false)
+const hasMore = ref(true)
+const searchTerm = ref('')
+const currentPage = ref(1)
+const loadMoreRef = ref(null)
+let loadMoreObserver = null
+const dummyCodes = [
+  {
+    betslipId: 'W11RST',
+    totalSelections: 11,
+    total_odd: '11.14',
+    selections: [
+      {
+        id: '1',
+        outcomeName: 'Borussia Dortmund',
+        marketName: '1X2',
+        eventName: 'Wolfsburg vs Borussia Dortmund',
+        odds: '1.33'
+      },
+      {
+        id: '2',
+        outcomeName: 'Chelsea',
+        marketName: '1X2',
+        eventName: 'Wolves vs Chelsea',
+        odds: '1.32'
+      },
+      {
+        id: '3',
+        outcomeName: 'Arsenal',
+        marketName: '1X2',
+        eventName: 'Arsenal vs Sunderland',
+        odds: '1.17'
+      },
+      {
+        id: '1',
+        outcomeName: 'Borussia Dortmund',
+        marketName: '1X2',
+        eventName: 'Wolfsburg vs Borussia Dortmund',
+        odds: '1.33'
+      },
+      {
+        id: '2',
+        outcomeName: 'Chelsea',
+        marketName: '1X2',
+        eventName: 'Wolves vs Chelsea',
+        odds: '1.32'
+      },
+      {
+        id: '3',
+        outcomeName: 'Arsenal',
+        marketName: '1X2',
+        eventName: 'Arsenal vs Sunderland',
+        odds: '1.17'
+      },
+      {
+        id: '1',
+        outcomeName: 'Borussia Dortmund',
+        marketName: '1X2',
+        eventName: 'Wolfsburg vs Borussia Dortmund',
+        odds: '1.33'
+      },
+      {
+        id: '2',
+        outcomeName: 'Chelsea',
+        marketName: '1X2',
+        eventName: 'Wolves vs Chelsea',
+        odds: '1.32'
+      },
+      {
+        id: '3',
+        outcomeName: 'Arsenal',
+        marketName: '1X2',
+        eventName: 'Arsenal vs Sunderland',
+        odds: '1.17'
+      },
+      {
+        id: '1',
+        outcomeName: 'Borussia Dortmund',
+        marketName: '1X2',
+        eventName: 'Wolfsburg vs Borussia Dortmund',
+        odds: '1.33'
+      },
+      {
+        id: '2',
+        outcomeName: 'Chelsea',
+        marketName: '1X2',
+        eventName: 'Wolves vs Chelsea',
+        odds: '1.32'
+      },
+      {
+        id: '3',
+        outcomeName: 'Arsenal',
+        marketName: '1X2',
+        eventName: 'Arsenal vs Sunderland',
+        odds: '1.17'
+      },
+      {
+        id: '1',
+        outcomeName: 'Borussia Dortmund',
+        marketName: '1X2',
+        eventName: 'Wolfsburg vs Borussia Dortmund',
+        odds: '1.33'
+      },
+      {
+        id: '2',
+        outcomeName: 'Chelsea',
+        marketName: '1X2',
+        eventName: 'Wolves vs Chelsea',
+        odds: '1.32'
+      },
+      {
+        id: '3',
+        outcomeName: 'Arsenal',
+        marketName: '1X2',
+        eventName: 'Arsenal vs Sunderland',
+        odds: '1.17'
+      }
+    ]
+  },
+  {
+    betslipId: 'GH9K3L',
+    totalSelections: 8,
+    total_odd: '7.66',
+    selections: [
+      {
+        id: '4',
+        outcomeName: 'Barcelona',
+        marketName: '1X2',
+        eventName: 'Barcelona vs Mallorca',
+        odds: '1.06'
+      },
+      {
+        id: '5',
+        outcomeName: 'Napoli',
+        marketName: '1X2',
+        eventName: 'Napoli vs Empoli',
+        odds: '1.57'
+      }
+    ]
+  },
+  {
+    betslipId: 'K2P7M1',
+    totalSelections: 5,
+    total_odd: '6.44',
+    selections: [
+      {
+        id: '6',
+        outcomeName: 'PSG',
+        marketName: '1X2',
+        eventName: 'PSG vs Lille',
+        odds: '1.28'
+      },
+      {
+        id: '7',
+        outcomeName: 'Roma',
+        marketName: '1X2',
+        eventName: 'Roma vs Lazio',
+        odds: '2.10'
+      }
+    ]
+  },
+  {
+    betslipId: 'Q4T9V8',
+    totalSelections: 6,
+    total_odd: '9.21',
+    selections: [
+      {
+        id: '8',
+        outcomeName: 'Liverpool',
+        marketName: '1X2',
+        eventName: 'Liverpool vs Fulham',
+        odds: '1.43'
+      },
+      {
+        id: '9',
+        outcomeName: 'Bayern',
+        marketName: '1X2',
+        eventName: 'Bayern vs Bremen',
+        odds: '1.22'
+      }
+    ]
+  },
+  {
+    betslipId: 'Z8J5W2',
+    totalSelections: 9,
+    total_odd: '12.05',
+    selections: [
+      {
+        id: '10',
+        outcomeName: 'AC Milan',
+        marketName: '1X2',
+        eventName: 'AC Milan vs Torino',
+        odds: '1.35'
+      },
+      {
+        id: '11',
+        outcomeName: 'Inter',
+        marketName: '1X2',
+        eventName: 'Inter vs Genoa',
+        odds: '1.41'
+      }
+    ]
+  }
+]
 
-async function getCodes() {
-  let payload = {
+async function fetchCodes({ page = 1, reset = false } = {}) {
+  // Track loading state separately for initial load vs pagination.
+  isLoading.value = reset
+  isLoadingMore.value = !reset
+  const payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
-    betType: 0
+    betType: 0,
+    page: page,
+    limit: 10,
+    search: searchTerm.value || ''
   }
   const res = await getCodeHubItems(payload)
-  codes.value = res.data.data
+  const liveCodes = res?.data?.data || []
+  const nextCodes = reset ? liveCodes : [...codes.value, ...liveCodes]
+  // Use dummy codes when API returns empty.
+  codes.value = nextCodes.length ? nextCodes : dummyCodes
+  // Stop when the API returns fewer than the page size.
+  hasMore.value = liveCodes.length >= 10
+  isLoading.value = false
+  isLoadingMore.value = false
 }
 
-function setActive(data) {
-  activeTab.value = data
-}
 onMounted(async () => {
-  await getCodes()
+  // Initial load.
+  await fetchCodes({ page: 1, reset: true })
+  // Setup infinite scroll sentinel.
+  loadMoreObserver = new IntersectionObserver((entries) => {
+    const entry = entries[0]
+    if (!entry?.isIntersecting || isLoading.value || isLoadingMore.value || !hasMore.value) return
+    currentPage.value += 1
+    fetchCodes({ page: currentPage.value })
+  })
+  if (loadMoreRef.value) {
+    loadMoreObserver.observe(loadMoreRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (loadMoreObserver && loadMoreRef.value) {
+    loadMoreObserver.unobserve(loadMoreRef.value)
+  }
+  loadMoreObserver = null
+})
+
+watch(searchTerm, async () => {
+  // Reset pagination when search changes.
+  currentPage.value = 1
+  hasMore.value = true
+  await fetchCodes({ page: 1, reset: true })
 })
 </script>
 
@@ -165,64 +408,35 @@ onMounted(async () => {
   z-index: 9999;
 }
 .code-hub-content {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  /* background-color: #fafafa;
+  background-color: var(--background-general-primary); */
   margin-top: 3.66666667rem;
+  position: relative;
+  z-index: 0;
+  padding-top: 0.75rem;
 }
-.code-hub-header-right {
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
+.code-hub-search {
+  display: none;
+}
+
+.code-hub-empty {
   align-items: center;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
+  color: #6c727f;
   display: flex;
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: row;
-  -ms-flex-direction: row;
-  flex-direction: row;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  padding: 1rem;
-  padding-left: 0;
-  position: relative;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
 }
-.code-hub-header-right .z-1000 {
-  z-index: 1000;
+
+.code-hub-empty-title {
+  color: #1b1e25;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
-.code-hub-header-right::before {
-  background-color: #9ca0ab;
-  background-color: var(--line-type1-secondary);
-  content: '';
-  height: 1.33333333rem;
-  margin-right: 1rem;
-  position: relative;
-  width: 0.08333333rem;
-}
-.code-hub-header-right .custom-codes-icon {
-  color: var(--brand-highlight-text);
-  color: var(--brand-quaternary);
-  cursor: pointer;
-}
-.code-hub-header-right .custom-code-entry-hint.hint-container {
-  padding: 0.66666667rem 1rem;
-  width: 21.33333333rem;
-}
-.code-hub-header-right .custom-code-entry-hint.hint-container .hint-content {
-  font-size: 1rem;
-}
-.code-hub-header-right .custom-code-entry-hint.hint-container .svg-icon-base {
-  height: 1rem;
-  padding-left: 0.33333333rem;
-  width: 1rem;
+
+.code-hub-empty-subtitle {
+  font-size: 0.95rem;
 }
 .loading-icon-input {
   -webkit-animation: rotation-0885939a 2s infinite linear;
@@ -262,6 +476,10 @@ onMounted(async () => {
   padding: 0.66666667rem;
   position: relative;
 }
+.code-hub-list-container {
+  position: relative;
+  z-index: 0;
+}
 .code-hub-list-container
   .code-hub-list-item-intersection-observer-wrap
   + .code-hub-list-item-intersection-observer-wrap {
@@ -274,5 +492,16 @@ onMounted(async () => {
   background-color: rgba(0, 0, 0, 0.7);
   position: fixed;
   z-index: 501;
+}
+
+.code-hub-loading {
+  color: #6c727f;
+  font-size: 0.9rem;
+  padding: 1rem 0.75rem;
+  text-align: center;
+}
+
+.code-hub-sentinel {
+  height: 1px;
 }
 </style>

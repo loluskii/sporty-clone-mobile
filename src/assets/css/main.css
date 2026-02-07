@@ -348,10 +348,6 @@
 }
 
 .af-button {
-  width: 100%;
-}
-
-.af-button {
   -webkit-appearance: none;
   background: #fff;
   border: 1px solid #c4c4c4;
@@ -372,6 +368,9 @@
   white-space: nowrap;
   color: #ffffff;
   color: var(--brand-tertiary);
+  width: 100%;
+  border-radius: 5px;
+  background-color: var(--brand-secondary);
 }
 .af-button.is-disabled,
 .af-button.is-disabled:focus,
@@ -809,17 +808,7 @@
   overflow: hidden;
   position: relative;
   text-align: center;
-}
-
-.m-event-outcome-default:first-child {
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-.m-event-outcome-default:last-child {
-  margin-right: 0px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-radius: 5px;
 }
 
 .m-event-outcome-default.m-outcome--up::before {
