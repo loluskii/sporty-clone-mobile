@@ -3,29 +3,29 @@ export const brandDetails = {
   url: '',
   title: 'Bet24',
   colors: {
-    primaryColor: 'rgb(217, 37, 29)',
-    secondaryColor: 'rgb(217, 37, 29)',
+    primaryColor: '#EE3430',
+    secondaryColor: '#2A166F',
     tertiaryColor: 'rgb(222, 226 ,230)',
 
     primaryBackground: '#FFFFFF',
-    secondaryBackground: '#353A45',
+    secondaryBackground: '#ECF2FE',
 
-    primaryTextColor: '#353a45',
-    secondaryTextColor: '#0D9737',
+    primaryTextColor: '#EE3430',
+    secondaryTextColor: '#2A166F',
 
-    prematchOddBackgroundColor: 'rgb(60,71,113)',
-    prematchOddTextColor: '#f1f1f1',
-    activePrematchOddBackground: 'rgb(217, 37, 29)',
+    prematchOddBackgroundColor: '#ECF2FE',
+    prematchOddTextColor: '#0D0D0D',
+    activePrematchOddBackground: '#EE3430',
     activePrematchOddTextColor: '#fff',
 
-    liveOddBackgroundColor: '#3b4670',
+    liveOddBackgroundColor: '#150B38',
     liveOddTextColor: '#fff',
-    activeLiveOddBackground: '#ff1208',
-    activeLiveOddTextColor: '#fff',
+    activeLiveOddBackground: '#ECF2FE',
+    activeLiveOddTextColor: '#EE3430',
 
     liveContainerBackgroundColor: '#1c2745',
 
-    activeTabColor: 'rgb(217, 37, 29)',
+    activeTabColor: '#EE3430',
     highlightTextColor: 'rgb(217, 37, 29)'
   },
   fonts: {

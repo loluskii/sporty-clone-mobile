@@ -183,8 +183,7 @@ function addToBetslip(event, odd) {
 
 <style scoped>
 .featuredMatchCard {
-  /* background-color: #ffffff; */
-  background-color: rgb(28, 39, 69);
+  background-color: #ffffff;
   -webkit-box-shadow:
     0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
@@ -234,8 +233,7 @@ function addToBetslip(event, odd) {
   width: 18px;
 }
 .featuredMatchCard .top .tournamentLink {
-  color: var(--brand-highlight-text);
-  color: var(--brand-highlight-text);
+  color: #000;
   font-size: 0.83333333rem;
   margin-left: 0.5rem;
   overflow: hidden;
