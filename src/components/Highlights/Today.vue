@@ -103,7 +103,7 @@ const selectMarket = (market) => {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   position: fixed;
-  top: 7.75rem;
+  top: 7.6rem;
   -webkit-transition: top 0.3s ease !important;
   transition: top 0.3s ease !important;
   width: 100%;
