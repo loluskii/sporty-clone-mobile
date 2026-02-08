@@ -288,9 +288,9 @@ function goToGame() {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   position: relative;
-  background-color: #000e21;
+  background-color: #fff;
   /* margin: 8px; */
-  border-bottom: .5px solid #595959
+  border-bottom: .5px solid #eaecef
   /* border-radius: 9px; */
 }
 .m-bet-container.m-change-item,

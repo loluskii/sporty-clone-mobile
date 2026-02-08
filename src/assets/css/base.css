@@ -4230,7 +4230,6 @@ ins {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: #000000;
-  color: var(--c-input-text);
 }
 .m-input-wap-wrapper .m-input-wap::-webkit-input-placeholder {
   color: #9ca0ab;

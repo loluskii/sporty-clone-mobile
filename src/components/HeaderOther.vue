@@ -29,10 +29,10 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: rgb(222, 226 ,230);
+  background-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #1c2485;
+  color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -70,7 +70,6 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: var(--text-type2-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
