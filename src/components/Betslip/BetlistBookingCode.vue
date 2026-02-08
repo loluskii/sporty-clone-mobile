@@ -101,6 +101,7 @@ async function loadBet() {
 .m-default {
   overflow-y: auto;
   padding: 1.66666667rem 0;
+  background-color: #fff;
 }
 .m-default .m-default-info {
   color: #353a45;
