@@ -40,7 +40,7 @@
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
-      </li>
+      </li> --->
       <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
@@ -223,7 +223,7 @@ onMounted(() => {
 .home .m-sports-choose-item a:visited,
 .home .m-popular-item a:visited {
   color: #353a45;
-  color: var(--c-sports-banner-text);
+  /* color: var(--c-sports-banner-text); */
   display: block;
   outline: none;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -237,7 +237,7 @@ onMounted(() => {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
-  color: var(--c-sports-banner-text);
+  /* color: var(--c-sports-banner-text); */
   display: block;
   -webkit-box-flex: 0 !important;
   -webkit-flex: 0 0 auto !important;
@@ -276,7 +276,7 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon img {
   vertical-align: top;
-  filter: invert(1)
+  /* filter: invert(1) */
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon:before {
   color: #353a45;
@@ -343,18 +343,6 @@ onMounted(() => {
 .home .m-sports .m-today-tab .m-tabs-nav {
   border-bottom: none;
   min-width: 100%;
-}
-.home .m-sports .m-today-tab .m-tabs-tab {
-  color: #353a45;
-  color: var(--c-sports-prematch-market-title-text);
-  -webkit-box-flex: initial;
-  -webkit-flex: initial;
-  -ms-flex: initial;
-  flex: initial;
-  font-size: 1.066rem;
-  margin: 0;
-  padding: 0.33333333rem 0.91666667rem;
-  width: auto;
 }
 .home .m-sports .m-today-tab .m-tabs-ink-bar {
   height: 3px;

@@ -71,7 +71,7 @@ const codes = computed(() => {
 }
 
 .trending-view-all {
-  color: #0d9737;
+  color: var(--brand-secondary);
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;

@@ -56,6 +56,11 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-text-secondary',
+      config.colors.secondaryTextColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-prematch-odds-bg',
       config.colors.prematchOddBackgroundColor
     )
