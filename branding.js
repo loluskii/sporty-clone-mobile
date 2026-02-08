@@ -18,12 +18,12 @@ export const brandDetails = {
     activePrematchOddBackground: '#EE3430',
     activePrematchOddTextColor: '#fff',
 
-    liveOddBackgroundColor: '#150B38',
+    liveOddBackgroundColor: '#2a2a2a',
     liveOddTextColor: '#fff',
     activeLiveOddBackground: '#ECF2FE',
     activeLiveOddTextColor: '#EE3430',
 
-    liveContainerBackgroundColor: '#1c2745',
+    liveContainerBackgroundColor: '#150B38',
 
     activeTabColor: '#EE3430',
     highlightTextColor: 'rgb(217, 37, 29)'
