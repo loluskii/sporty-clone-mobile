@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
   gap: 0.65rem;
   height: 17rem;
   /* box-shadow: 0 12px 26px rgba(17, 24, 39, 0.2); */
-  width: 19rem;
+  min-width: 19rem;
 }
 
 .trending-card-header {
@@ -312,7 +312,7 @@ onBeforeUnmount(() => {
 }
 
 .trending-cta {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   color: #ffffff;
   border: none;
   border-radius: 0.4rem;

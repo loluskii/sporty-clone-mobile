@@ -172,8 +172,8 @@
   --c-bet-history-bet-detail-ladder: #353A45;
   --c-bet-history-status-bar-running-bg: #FFFFFF;
   --c-bet-history-ticket-detail-selection-win-bg: #353A45;
-  --c-input-text: #FFFFFF;
-  --text-default: #FFFFFF;
+  --c-input-text: #000;
+  --text-default: #000;
   --text-default-dark: #F2F3F5;
   --c-search-input-bg: #7B0911;
   --c-popular-bg-linear-color-one: #1B1E25;
@@ -3502,7 +3502,7 @@ ins {
   font-size: 14px;
   position: relative;
   border-color: #9ca0ab;
-  border-color: var(--line-type1-secondary);
+  border-radius: 5px;
 }
 
 .x-input-wap-wrapper .x-input-wap {
@@ -3523,8 +3523,6 @@ ins {
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   width: 100%;
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  color: #fafafa !important;
   border-radius: 8px;
 }
 
@@ -3738,14 +3736,12 @@ ins {
 .x-input-wap-group .x-input-wap-append,
 .x-input-wap-group .x-input-wap-prepend {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
   border-radius: 4px;
   margin-left: 10px;
   position: relative;
   vertical-align: middle;
   white-space: nowrap;
   color: #000000;
-  color: var(--c-input-text);
 }
 
 .x-input-wap-group .x-input-wap-append .x-input-wap,
@@ -4208,7 +4204,7 @@ ins {
   font-size: 14px;
   position: relative;
   border-color: #9ca0ab;
-  border-color: var(--line-type1-secondary);
+  /* border-color: var(--line-type1-secondary); */
 }
 .m-input-wap-wrapper .m-input-wap {
   -webkit-appearance: none;

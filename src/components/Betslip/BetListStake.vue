@@ -468,7 +468,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake {
-  background-color: #ffffff;
+  background-color: #fff;
   display: block;
   font-size: 1.066rem;
   overflow-x: hidden;

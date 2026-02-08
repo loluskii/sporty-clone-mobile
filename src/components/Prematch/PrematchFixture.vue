@@ -517,15 +517,11 @@ defineComponent({
   vertical-align: top;
 }
 .m-event-sport .m-event-meta .m-time {
-  color: #fff;
   -webkit-box-flex: 0;
   -webkit-flex: 0;
   -ms-flex: 0;
   flex: 0;
   white-space: nowrap;
-  padding: 3px 5px;
-  background-color: var(--brand-secondary);
-  border-radius: 5px;
 
 }
 .m-event-sport .m-event-meta .m-game-id {

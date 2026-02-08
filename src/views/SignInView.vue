@@ -183,7 +183,7 @@ onMounted(() => {
 }
 #loginStep .change-region-wrap .close {
   float: right;
-  color: white;
+
 }
 #loginStep .change-region-wrap .close::before {
   content: '\e69a';
@@ -192,7 +192,6 @@ onMounted(() => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
-  color: white;
 }
 #loginStep .change-region-wrap .close:before {
   font-size: 1.25rem;
@@ -252,7 +251,6 @@ onMounted(() => {
   border: none;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #ffffff;
   font-size: 1.3rem;
   height: 3.95833333rem;
   margin-top: 1.91666667rem;
@@ -262,7 +260,7 @@ onMounted(() => {
   border-radius: 4px;
 }
 #loginStep .login-container .login-btn {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
 }
 
 #loginStep .login-container .login-btn:disabled {

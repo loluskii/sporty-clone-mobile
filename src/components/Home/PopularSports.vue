@@ -718,7 +718,6 @@ onDeactivated(() => {
   transform-origin: 100% 100%;
   width: 0;
   border-bottom: 8px solid transparent;
-  border-right: 10px solid var(--c-featured-match-arrow-color);
   border-top: 8px solid transparent;
 }
 .featuredMatch {
