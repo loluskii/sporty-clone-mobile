@@ -38,7 +38,7 @@
                 >
                   <svg
                     viewBox="0 0 16 16"
-                    fill="#000"
+                    fill="white"
                     height="18"
                     width="18"
                     xmlns="http://www.w3.org/2000/svg"
@@ -112,6 +112,10 @@
             </ul>
             <i class="controls left-controls"></i>
             <i class="controls right-controls"></i>
+          </div>
+          <!-- Odd Change Notification -->
+          <div class="betslip-notification" v-if="!couponStore.coupon.acceptChanges">
+            <div class="change-wrong-message">Note: changes in odds or availability</div>
           </div>
         </div>
         <div
@@ -429,10 +433,9 @@ onMounted(() => {})
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
 .m-betslip-header {
-  color: #000;
-  background-color: #fafafa;
-  border-top-left-radius: 25px;
-  border-top-right-radius: 25px;
+  background: var(--background-type2-secondary);
+  color: #ffffff;
+  color: var(--text-type2-primary);
   padding: 1.33333333rem 1.33333333rem 1.3rem 1.3rem;
 }
 
@@ -534,7 +537,8 @@ onMounted(() => {})
 }
 
 #betslip-container {
-  background-color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.8);
+  font-family: Roboto;
 }
 
 #betslip-container .invisiable-item {
@@ -572,8 +576,6 @@ onMounted(() => {})
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
   width: 100%;
-  border-top-left-radius: 25px;
-  border-top-right-radius: 25px;
 }
 
 #betslip-container .m-betslips .m-loading-wrap {
@@ -639,7 +641,8 @@ onMounted(() => {})
 }
 
 #betslip-container .m-betslips .m-bet-head {
-  background-color: #fff;
+  background-color: #353a45;
+  background-color: var(--background-type2-secondary);
   margin-bottom: 2px;
   position: relative;
 }
@@ -717,11 +720,11 @@ onMounted(() => {})
 
 #betslip-container .m-betslips .m-bet-head .m-list-bet-type {
   padding: 0.33333333rem 0.41666667rem 0;
-  background-color: #fff
 }
 
 #betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item {
-  background-color: #fff;
+  background-color: #50545f;
+  background-color: var(--c-betslip-bet-type-nav-bg);
   border-top-left-radius: 0.33333333rem;
   border-top-right-radius: 0.33333333rem;
   -webkit-box-flex: 1;
@@ -733,7 +736,8 @@ onMounted(() => {})
   height: 3rem;
   line-height: 3rem;
   margin-right: 0.25rem;
-  color: #000;
+  color: #ffffff;
+  color: var(--c-betslip-tab-text);
 }
 
 #betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item:last-child {
@@ -741,8 +745,10 @@ onMounted(() => {})
 }
 
 #betslip-container .m-betslips .m-bet-head .m-list-bet-type .m-list-bet-type-item.active {
+  background-color: #fafafa;
+  background-color: var(--background-general-primary);
   color: #353a45;
-  border-bottom: 3px solid var(--brand-active-tab-bg);
+  color: var(--text-type1-primary);
 }
 
 #betslip-container
