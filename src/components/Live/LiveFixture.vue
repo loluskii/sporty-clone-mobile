@@ -72,11 +72,12 @@
               :selectionClass="
                 isSelected(
                   createID(
-                    gameData.gameID,
                     gameData.matchID,
-                    odd.outcomeName,
-                    odd.oddID,
-                    gameData.name
+                    activeMarket.marketID,
+                    odd.outcomeID,
+                    activeMarket.specifier,
+                    activeMarket.marketName,
+                    odd.outcomeName
                   ),
                   couponStore.coupon
                 )
@@ -243,7 +244,8 @@ watch(
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
+
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
