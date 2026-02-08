@@ -25,9 +25,9 @@
       <div class="homeIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
@@ -42,9 +42,9 @@
       <div class="awayIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
@@ -60,11 +60,12 @@
           :class="
             isSelected(
               createID(
-                matchDetails.gameID,
                 matchDetails.matchID,
-                market.outcomeName,
-                market.oddID,
-                matchDetails.name
+                market.marketID,
+                market.outcomeID,
+                market.specifier,
+                '1X2',
+                market.outcomeName
               ),
               couponStore.coupon
             )
@@ -100,6 +101,13 @@ const props = defineProps({
 })
 
 const getMatchOdds = computed(() => {
+  // Get unique outcomes by outcomeID first
+  const uniqueOutcomes = props.matchDetails?.outcomes
+    .filter((x) => x.marketID == props.markets[0].marketID)
+    .filter((outcome, index, self) => 
+      index === self.findIndex(o => o.outcomeID === outcome.outcomeID)
+    )
+
   // Get the latest odds from the coupon store if available
   const matchSelections = couponStore.coupon.selections.filter(
     (sel) => String(sel.matchId) === String(props.matchDetails.matchID)
@@ -107,24 +115,22 @@ const getMatchOdds = computed(() => {
 
   if (matchSelections.length > 0) {
     // If we have selections in the betslip, use their updated odds
-    return props.matchDetails?.outcomes
-      .filter((x) => x.marketID == props.markets[0].marketID)
-      .map((outcome) => {
-        const selection = matchSelections.find(
-          (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
-        )
-        return selection
-          ? {
-              ...outcome,
-              odds: selection.odds,
-              active: !selection.suspended && !selection.unavailable
-            }
-          : outcome
-      })
+    return uniqueOutcomes.map((outcome) => {
+      const selection = matchSelections.find(
+        (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
+      )
+      return selection
+        ? {
+            ...outcome,
+            odds: selection.odds,
+            active: !selection.suspended && !selection.unavailable
+          }
+        : outcome
+    })
   }
 
-  // Otherwise use the original odds
-  return props.matchDetails?.outcomes.filter((x) => x.marketID == props.markets[0].marketID)
+  // Otherwise use the original unique odds
+  return uniqueOutcomes
 })
 
 function getEncodedURI(name) {
@@ -153,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',
@@ -201,6 +207,7 @@ function addToBetslip(event, odd) {
   -ms-user-select: none;
   user-select: none;
   width: 88%;
+  border-radius: 8px;
 }
 .featuredMatchCard .top {
   -webkit-box-align: center;

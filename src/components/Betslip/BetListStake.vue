@@ -127,7 +127,7 @@
 
       <div class="m-submit">
         <div
-          class="place-bet bet-accept-change"
+          class="betslip-action bet-accept-change"
           v-if="!acceptedChanges"
           @click="handleAcceptChange"
         >
@@ -135,24 +135,37 @@
         </div>
 
         <template v-else>
-          <div v-if="!betslipMode" class="m-book-btn" @click="book">
-            <div>Book Bet</div>
+          <div class="betslip-action-row" v-if="!betslipMode">
+            <button
+              class="betslip-action betslip-action-secondary"
+              :class="{ 'bet-disabled': isSubmitting }"
+              :disabled="isSubmitting"
+              @click="book"
+            >
+              Book Bet
+            </button>
+            <button
+              class="betslip-action betslip-action-primary"
+              :class="[{ 'bet-disabled': placeBetDisabled }, { 'betslip-action-loading': isSubmitting }]"
+              @click="placeBet"
+            >
+              <span>{{ isSubmitting ? '' : 'Place Bet' }}</span>
+              <span class="betslip-action-sub" v-if="!isSubmitting">
+                {{ totalStake != 0 ? `About to pay ${totalStake}` : 'Select stake amount' }}
+              </span>
+            </button>
           </div>
-          <div
-            class="place-bet"
-            :class="[
-              {
-                'bet-disabled': placeBetDisabled,
-                'sim-theme': betslipMode
-              }
-            ]"
+          <button
+            v-else
+            class="betslip-action betslip-action-primary"
+            :class="[{ 'bet-disabled': placeBetDisabled }, { 'betslip-action-loading': isSubmitting }]"
             @click="placeBet"
           >
-            <span>{{ !betslipMode ? 'Place Bet' : 'Place Simulate Bet' }}</span>
-            <div class="m-pay-num" v-if="totalStake != 0">
-              <span>About to pay {{ totalStake }}</span>
-            </div>
-          </div>
+            <span>{{ isSubmitting ? '' : 'Place Simulate Bet' }}</span>
+            <span class="betslip-action-sub" v-if="!isSubmitting && totalStake != 0">
+              {{ totalStake != 0 ? `About to pay ${totalStake}` : 'Select stake amount' }}
+            </span>
+          </button>
         </template>
       </div>
     </div>
@@ -290,6 +303,10 @@ const maxWin = computed(() => {
 
 const betslipMode = computed(() => {
   return couponStore.betslipMode
+})
+
+const isSubmitting = computed(() => {
+  return couponStore.isBetslipLoading
 })
 
 const totalStake = computed(() => {
@@ -463,12 +480,10 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake {
-  background-color: #ffffff;
-  border-top: 0.16666667rem solid #eaecef;
+  background-color: #fff;
   display: block;
   font-size: 1.066rem;
   overflow-x: hidden;
-  padding-bottom: 5rem;
   padding-top: 0.83333333rem;
   position: relative;
   border-color: #eaecef;
@@ -551,12 +566,6 @@ onMounted(() => {
   background: var(--background-flash-odds);
   color: #ffffff;
   line-height: 1.66666667rem;
-}
-
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme,
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.real-theme {
-  background-color: rgba(13, 151, 55, 0.2);
-  background-color: var(--c-betslip-to-win-bg);
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flex {
@@ -658,15 +667,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit {
-  bottom: 0;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 0 0 env(safe-area-inset-bottom) 0;
-  position: fixed;
-  width: 100%;
-  z-index: 1;
+  padding: 0.8rem 0.667rem;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .m-book-icon,
@@ -795,22 +796,10 @@ onMounted(() => {
   color: var(--text-disable-type1-primary);
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change {
-  background: #0d9737;
-  background: var(--brand-secondary);
+.bet-accept-change {
+  background: var(--brand-highlight-text);
   color: #ffffff;
-}
-
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change:active {
-  background: #33ea6a;
+  padding: 1.1rem 0.75rem !important;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit {
@@ -889,6 +878,58 @@ onMounted(() => {
   display: inline-block;
   font-size: 1.66666667rem;
   vertical-align: top;
+}
+
+.betslip-action-row {
+  display: flex;
+  width: 100%;
+  gap: 5px
+}
+
+.betslip-action {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.betslip-action-primary {
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+
+.betslip-action-secondary {
+  background: #353a45;
+  color: #ffffff;
+  width: 40%
+}
+
+.betslip-action-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.betslip-action.bet-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Loading state for place bet button during submission. */
+.betslip-action-loading::before {
+  content: '\e654';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  margin-right: 0.35rem;
+  animation: circles 1s infinite linear;
 }
 
 .m-bet-detail-wrap

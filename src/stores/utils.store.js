@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getFixturesByTournamentId } from '@/helpers'
+import { getTopBets, getFixturesByTournamentId,FEED_TOGGLE } from '@/helpers'
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -45,6 +45,7 @@ export const useUtilsStore = defineStore({
 
   actions: {
     async fetchFeaturedGames() {
+      if(!FEED_TOGGLE) return;
       // If we have fresh data, don't fetch again
       if (this.hasFeaturedData && !this.isFeaturedStale) {
         return
@@ -61,7 +62,7 @@ export const useUtilsStore = defineStore({
       try {
         const response = await getTopBets()
 
-        if (response?.data) {
+        if (response?.data || response.data !== undefined || Object.keys(response).length > 0) {
           // Process tournaments
           const uniqueTournamentIds = new Set()
           const uniqueTournaments = []
@@ -85,6 +86,8 @@ export const useUtilsStore = defineStore({
 
           // Fetch games for each tournament
           await this.fetchTournamentGames()
+        }else{
+          return []
         }
       } catch (error) {
         console.error('Error fetching featured games:', error)

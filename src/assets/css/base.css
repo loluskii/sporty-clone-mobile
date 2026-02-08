@@ -28,7 +28,7 @@
   --text-type2-secondary: #f2f3f5;
   --text-type2-tertiary: #f1f1f1;
   --background-type1-primary: #f2f3f5;
-  --background-type1-secondary: #fafafa;
+  --background-type1-secondary: #ffffff;
   --background-type1-tertiary: #eaecef;
   --background-type1-quaternary: #ffffff;
   --background-type2-primary: #000825;
@@ -3402,7 +3402,7 @@ ins {
   font-size: 14px;
   position: relative;
   border-color: #9ca0ab;
-  border-color: var(--line-type1-secondary);
+  border-radius: 5px;
 }
 
 .x-input-wap-wrapper .x-input-wap {
@@ -3638,14 +3638,12 @@ ins {
 .x-input-wap-group .x-input-wap-append,
 .x-input-wap-group .x-input-wap-prepend {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
   border-radius: 4px;
   margin-left: 10px;
   position: relative;
   vertical-align: middle;
   white-space: nowrap;
   color: #000000;
-  color: var(--c-input-text);
 }
 
 .x-input-wap-group .x-input-wap-append .x-input-wap,
@@ -4108,7 +4106,7 @@ ins {
   font-size: 14px;
   position: relative;
   border-color: #9ca0ab;
-  border-color: var(--line-type1-secondary);
+  /* border-color: var(--line-type1-secondary); */
 }
 .m-input-wap-wrapper .m-input-wap {
   -webkit-appearance: none;

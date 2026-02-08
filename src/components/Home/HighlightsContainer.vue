@@ -116,7 +116,7 @@ import Countries from '@/components/Highlights/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getHighlights2, getToday2, getCategoriesBySport } from '@/helpers'
+import { getHighlights2, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
@@ -176,7 +176,6 @@ const getImageSrc = (sportId) => {
 
 async function setActiveSport(sid) {
   // set the active sport id
-  isLoading.value = true
   prevSportID.value = activeSportID.value
   activeSportID.value = sid
   await getHomeData()
@@ -188,6 +187,7 @@ async function setActiveSport(sid) {
 }
 
 async function getHighlightGames() {
+  if(!FEED_TOGGLE) return;
   isLoading.value = true
   if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
     const response = await getHighlights2(activeSportID.value, 1)
@@ -205,6 +205,7 @@ async function getHighlightGames() {
 }
 
 async function getTodayGames() {
+  if(!FEED_TOGGLE) return;
   isLoading.value = true
   if (!Object.keys(todaysData.value).length || prevSportID.value !== activeSportID.value) {
     const response = await getToday2(activeSportID.value, 1)
@@ -222,6 +223,7 @@ async function getTodayGames() {
 }
 
 async function getCountriesList() {
+  if(!FEED_TOGGLE) return;
   countriesData.value = (await getCategoriesBySport(activeSportID.value)).sports || []
 }
 
@@ -235,6 +237,7 @@ function getFixturesByMarkets(market) {
 }
 
 async function getHomeData() {
+  if(!FEED_TOGGLE) return;
   isLoading.value = true
   loadingError.value = false
   Promise.all([getHighlightGames(), getCountriesList()])
@@ -315,7 +318,7 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: #f1f1f1;
+  background-color: var(--brand-background-secondary);
   /* z-index: 220; */
 }
 
@@ -323,13 +326,6 @@ defineComponent({
   background-color: red;
   position: sticky;
   top: 0px;
-}
-
-.m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  padding: 5px 15px;
-  /* border: 1px solid; */
-  border-radius: 25px;
-  background-color: #fff;
 }
 
 .bounce-enter-active {

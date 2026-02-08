@@ -60,6 +60,11 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-text-secondary',
+      config.colors.secondaryTextColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-prematch-odds-bg',
       config.colors.prematchOddBackgroundColor
     )
@@ -285,11 +290,16 @@ export const getPlacedBetStatus = (status) => {
   }
 }
 
-export const createID = (event_id, provider_id, odd, id, event_name) => {
-  let oddname = String(odd).replace(/[^a-zA-Z0-9]/g, '_')
-  let eventname = String(event_name).replace(/[^a-zA-Z0-9]/g, '_')
-  return event_id + '_' + provider_id + '_' + oddname + '_' + id + '_' + eventname
+export const createID = (matchID, marketID, outcomeID, specifier = '', marketName = '', outcomeName = '') => {
+  // Create a unique ID based on match, market, outcome, specifier, and names
+  // This ensures selections are unique and human-readable
+  const cleanSpecifier = String(specifier || '').replace(/[^a-zA-Z0-9]/g, '_')
+  const cleanMarketName = String(marketName || '').replace(/\s+/g, '_')
+  const cleanOutcomeName = String(outcomeName || '').replace(/\s+/g, '_')
+
+  return `${matchID}_${marketID}_${outcomeID}${cleanSpecifier ? '_' + cleanSpecifier : ''}${cleanMarketName ? '_' + cleanMarketName : ''}${cleanOutcomeName ? '_' + cleanOutcomeName : ''}`
 }
+
 
 export const multibetCombination = (item) => {
   if (item.length === 1) {
@@ -315,6 +325,7 @@ export const min = (list) => {
 
 export const isSelected = (ele_id, coupon) => {
   let isExist = false
+  console.log(ele_id)
 
   if (coupon.selections.length > 0) {
     let count = coupon.selections.find((selection) => selection.selectionId === ele_id)
