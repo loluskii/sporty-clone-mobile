@@ -177,13 +177,6 @@ onMounted(() => {
   top: 0px;
 }
 
-.m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  padding: 5px 15px;
-  border: 1px solid;
-  border-radius: 25px;
-  background-color: #ffffff;
-}
-
 .bounce-enter-active {
   animation: bounce-in 0.3s;
 }
