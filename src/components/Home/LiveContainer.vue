@@ -393,7 +393,7 @@ onBeforeUnmount(() => {
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
   color: #ffffff;
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--brand-live-odds-text);
+  border-bottom: 0.23333333rem solid var(--brand-active-tab-bg);
 }
 .live-container .m-bet-tab {
   /* background-color: var(--brand-background-live); */

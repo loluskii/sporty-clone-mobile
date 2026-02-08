@@ -4,6 +4,7 @@
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
   font-family: 'Inter', sans-serif !important;
+  /* font-size: 13px !important; */
 }
 
 @font-face {
@@ -293,7 +294,7 @@ h4,
 h5,
 h6 {
   font-family: var(--brand-primary-font-family);
-  font-size: 100%;
+  /* font-size: 100%; */
   font-weight: 500;
 }
 
@@ -377,7 +378,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 15px;
+    font-size: 13px;
   }
 }
 @media screen and (min-width: 420px) {
@@ -387,7 +388,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 @media screen and (min-width: 450px) {
@@ -397,7 +398,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 17px;
+    font-size: 16px;
   }
 }
 @media screen and (min-width: 480px) {
@@ -558,7 +559,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 

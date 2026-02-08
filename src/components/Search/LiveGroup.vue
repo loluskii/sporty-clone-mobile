@@ -164,7 +164,7 @@ onMounted(() => {
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
   color: #ffffff;
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--c-event-normal-text);
+  border-bottom: 0.23333333rem solid var(--brand-active-tab-bg);
 }
 .live-container .m-bet-tab {
   margin-top: 0rem !important;
