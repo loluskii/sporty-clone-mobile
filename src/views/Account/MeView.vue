@@ -114,7 +114,7 @@ defineComponent({
   /* background: rgb(233, 45, 45); */
   background: linear-gradient(
     188deg,
-    var(--background-type1-secondary) 100%,
+    var(--brand-secondary) 100%,
     var(--brand-primary) 0%
   );
 }
@@ -270,7 +270,7 @@ defineComponent({
 }
 
 .me-main .header-container .header .w-d-wrap div.deposit {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   font-weight: 500;
   height: 3rem;
   line-height: 3rem;
