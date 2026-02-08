@@ -659,17 +659,7 @@ onMounted(async () => {
 </script>
 
 <style>
-.af-button--primary {
-  background: var(--brand-secondary);
-  border: 0;
-  border-radius: 2px;
-  color: #ffffff;
-  float: right;
-  font-size: 1.066rem;
-  /* font-weight: bold; */
-  /* height: 3.33333333rem; */
-  width: 100%;
-}
+
 .show-close .es-dialog-close {
   display: inline-block;
 }

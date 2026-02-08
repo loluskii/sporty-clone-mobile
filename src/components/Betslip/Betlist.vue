@@ -31,13 +31,6 @@
                 </div>
               </div>
               <div class="operate-button">
-                <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
-                <span> {{ usersStore.balance }}</span>
-              </div>
-            </div>
-            <template v-if="betslipSelections.length > 0">
-              <div style="margin: 20px 0px 20px 0px"></div>
-              <div v-if="!isSimulating" class="wrapper separate-part">
                 <div
                   @click="clearBetslip"
                   class="remove-all operate-button"
@@ -80,14 +73,8 @@
 
                   <span>Remove all</span>
                 </div>
-                <div class="wrapper separate-part" @click="showBetSettings = true">
-                  <div class="bet-settings bet-settings operate-button flex">
-                    <div class="icon icon-font-base mr-1" style="font-size: 1.33333rem"></div>
-                    <span>Bet Settings</span>
-                  </div>
-                </div>
               </div>
-            </template>
+            </div>
           </div>
         </div>
         <div v-if="betslipMode" class="betslip-notification">
