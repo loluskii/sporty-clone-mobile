@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
   gap: 0.65rem;
   height: 17rem;
   /* box-shadow: 0 12px 26px rgba(17, 24, 39, 0.2); */
-  margin-bottom: 15px;
+  width: 19rem;
 }
 
 .trending-card-header {

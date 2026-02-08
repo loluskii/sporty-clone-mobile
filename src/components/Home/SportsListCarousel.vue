@@ -33,14 +33,6 @@
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Virtuals</span>
         </a>
       </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" @click.prevent="playAviator"
-          ><div class="sport-icon">
-            <img src="@/assets/images/aviator.png" loading="eager" width="24" height="24" />
-          </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
-        </a>
-      </li> --->
       <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
@@ -67,18 +59,6 @@
             <img src="@/assets/images/promotions.png" style="height: 25px" loading="eager" />
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Promotions</span>
-        </a>
-      </li>
-      <li
-        v-for="(sport, index) in sportsList?.slice(1)"
-        :key="index"
-        class="m-sports-choose-item m-snap-nav-item"
-      >
-        <a href="" @click.prevent="setActiveSport(sport.sportID)"
-          ><div class="sport-icon">
-            <img :src="getImageSrc(sport.sportID)" loading="lazy" width="22" height="22" />
-          </div>
-          <span class="sport-text"> {{ sport.sportName }} </span>
         </a>
       </li>
     </ul>
