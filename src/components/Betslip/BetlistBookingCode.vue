@@ -89,7 +89,6 @@ async function loadBet() {
     errorMesssage.value = error
   }
 }
-
 </script>
 
 <style scoped>
@@ -102,6 +101,7 @@ async function loadBet() {
 .m-default {
   overflow-y: auto;
   padding: 1.66666667rem 0;
+  background-color: #fff;
 }
 .m-default .m-default-info {
   color: #353a45;
@@ -247,7 +247,6 @@ async function loadBet() {
 .share-code-btn--disabled {
   background: #dcdee5;
   color: #9ca0ab;
-  color: var(--text-disable-type1-primary);
 }
 .share-code-btn--disabled:active {
   background: #dcdee5;

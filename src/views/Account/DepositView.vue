@@ -296,18 +296,6 @@ onUnmounted(() => {
 <style>
 @import url('@/assets/css/deposit.css');
 
-.af-button--primary {
-  background: var(--brand-secondary);
-  border: 0;
-  border-radius: 8px;
-  color: #ffffff;
-  float: right;
-  font-size: 1.066rem;
-  /* font-weight: bold; */
-  /* height: 3.33333333rem; */
-  width: 100%;
-}
-
 .bank-transfer-card {
   margin-bottom: 1.66666667rem;
   padding: 1rem 1.33333333rem 1.33333333rem;

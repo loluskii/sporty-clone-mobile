@@ -506,6 +506,7 @@ onMounted(() => {
   padding-left: 1px;
   padding-right: 1px;
   width: 100%;
+  border-radius: 5px;
 }
 #enterMobile .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
   content: '\e654';
@@ -537,7 +538,7 @@ onMounted(() => {
 }
 
 #enterMobile .enter-mobile-container .enter-mobile-btn {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   color: white;
   border: none;
   -webkit-box-sizing: border-box;
