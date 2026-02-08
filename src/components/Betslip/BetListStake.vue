@@ -150,8 +150,8 @@
               @click="placeBet"
             >
               <span>{{ isSubmitting ? '' : 'Place Bet' }}</span>
-              <span class="betslip-action-sub" v-if="!isSubmitting && totalStake != 0">
-                About to pay {{ totalStake }}
+              <span class="betslip-action-sub" v-if="!isSubmitting">
+                {{ totalStake != 0 ? `About to pay ${totalStake}` : 'Select stake amount' }}
               </span>
             </button>
           </div>
@@ -163,7 +163,7 @@
           >
             <span>{{ isSubmitting ? '' : 'Place Simulate Bet' }}</span>
             <span class="betslip-action-sub" v-if="!isSubmitting && totalStake != 0">
-              About to pay {{ totalStake }}
+              {{ totalStake != 0 ? `About to pay ${totalStake}` : 'Select stake amount' }}
             </span>
           </button>
         </template>
@@ -468,7 +468,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake {
-  background-color: #000e21;
+  background-color: #ffffff;
   display: block;
   font-size: 1.066rem;
   overflow-x: hidden;
@@ -554,11 +554,6 @@ onMounted(() => {
   background: var(--background-flash-odds);
   color: #ffffff;
   line-height: 1.66666667rem;
-}
-
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme,
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win.real-theme {
-  background-color: rgb(217, 37, 29, 0.2);
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .flex {
@@ -785,22 +780,10 @@ onMounted(() => {
   color: var(--text-disable-type1-primary);
 }
 
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change {
+.bet-accept-change {
   background: var(--brand-highlight-text);
-  background: var(--brand-secondary);
   color: #ffffff;
-}
-
-.m-bet-detail-wrap
-  .m-betslips-stake-wrapper
-  .m-betslips-stake
-  .m-submit
-  .place-bet.bet-accept-change:active {
-  background: #33ea6a;
+  padding: 1.1rem 0.75rem !important;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit {
@@ -900,7 +883,7 @@ onMounted(() => {
 }
 
 .betslip-action-primary {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   color: #ffffff;
 }
 

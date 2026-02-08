@@ -30,7 +30,6 @@
               @click="isH2HShowing = false"
               :class="isH2HShowing ? '' : 'active'"
             >
-              <i class="m-icon m-icon-market"></i>
               <span class="m-text">Markets</span>
             </li>
             <li
@@ -38,7 +37,6 @@
               :class="!isH2HShowing ? '' : 'active'"
               @click="showFixtureAnalysis(eventDetail.matchID)"
             >
-              <i class="m-icon m-icon-stat"></i>
               <span class="m-text">Stats</span>
             </li>
           </ul>
@@ -57,7 +55,6 @@
                     <span class="text" style="text-transform: capitalize"
                       >{{ marketGroup.marketName }}
                     </span>
-                    <span class="m-icon-tips"></span>
                   </div>
                   <div class="m-table market-content">
                     <div
@@ -76,14 +73,7 @@
                             class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
                               'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.gameID,
-                                  eventDetail.matchID,
-                                  selection.outcomeName,
-                                  selection.oddID,
-                                  eventDetail.name,
-                                  marketGroup.specifier
-                                ),
+                                createID(eventDetail.matchID, marketGroup.marketID, selection.outcomeID, marketGroup.specifier, marketGroup.marketName, selection.outcomeName),
                                 couponStore.coupon
                               ),
                               'm-outcome-two': market.length === 2,
@@ -148,14 +138,7 @@
                                 @click="addToBetslip(mg, outcome)"
                                 :class="{
                                   'm-outcome--checked': isSelected(
-                                    createID(
-                                      eventDetail.gameID,
-                                      eventDetail.matchID,
-                                      outcome.outcomeName,
-                                      outcome.oddID,
-                                      eventDetail.name,
-                                      mg.specifier
-                                    ),
+                                    createID(eventDetail.matchID, mg.marketID, outcome.outcomeID, mg.specifier, mg.marketName, outcome.outcomeName),
                                     couponStore.coupon
                                   ),
                                   'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
@@ -180,14 +163,7 @@
                             class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
                               'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.gameID,
-                                  eventDetail.matchID,
-                                  selection.outcomeName,
-                                  selection.oddID,
-                                  eventDetail.name,
-                                  marketGroup.specifier
-                                ),
+                                createID(eventDetail.matchID, marketGroup.marketID, selection.outcomeID, marketGroup.specifier, marketGroup.marketName, selection.outcomeName),
                                 couponStore.coupon
                               ),
                               'm-outcome-two': market.length === 2,
@@ -504,14 +480,7 @@ function addToBetslip(market, outcome) {
     )
     return
   }
-  const id = createID(
-    eventDetail.value.gameID,
-    eventDetail.value.matchID,
-    outcome.outcomeName,
-    outcome.oddID,
-    eventDetail.value.name,
-    market.specifier
-  )
+  const id = createID(eventDetail.value.matchID, market.marketID, outcome.outcomeID, market.specifier, market.marketName, outcome.outcomeName)
   const data = {
     fixture: eventDetail.value,
     market_name: market.marketName,
@@ -676,10 +645,6 @@ onMounted(() => {
   min-height: 15rem;
 }
 
-.x-prematch-detail .m-tab-navs {
-  padding-bottom: 0.41666667rem;
-}
-
 .x-prematch-detail .m-tab-navs .m-icon-market::before {
   content: '\e66e';
   font-family: 'iconfont' !important;
@@ -708,19 +673,20 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title {
-  margin: 0 0.83333333rem;
+  padding: 0 0.83333333rem;
+  background-color: var(--brand-background-secondary)
 }
 
 .x-prematch-detail .m-event-title .m-event-league {
   color: #353a45;
-  font-size: 0.83333333rem;
+  font-size: 0.93333333rem;
   line-height: normal;
   padding-top: 0.33333333rem;
 }
 
 .x-prematch-detail .m-event-title .m-event-league.link {
   color: var(--brand-highlight-text);
-  text-decoration: underline;
+  font-weight: bold;
 }
 
 .x-prematch-detail .m-event-title .m-event-league.more-top-space {
@@ -729,8 +695,7 @@ onMounted(() => {
 
 .x-prematch-detail .m-event-title .m-event-title-team {
   color: #353a45;
-  color: var(--text-default-dark);
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .x-prematch-detail .m-event-title .m-event-title-team > div {
@@ -741,10 +706,9 @@ onMounted(() => {
 
 .x-prematch-detail .m-event-title .m-event-time-wrap {
   color: #353a45;
-  color: var(--text-default-dark);
-  font-size: 0.83333333rem;
+  font-size: 1rem;
   line-height: 0.91666667rem;
-  padding: 0.33333333rem 0;
+  padding: 0.5rem 0 1rem;
 }
 
 .x-prematch-detail .m-event-title .m-event-time-wrap > span {
@@ -876,14 +840,13 @@ onMounted(() => {
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
-  padding: 1.25rem 0.83333333rem;
   width: 100%;
 }
 
 .m-tab-navs > li {
-  background-color: #eaecef;
-  background-color: var(--background-type1-tertiary);
-  border-radius: 0.16666667rem;
+  /* background-color: #eaecef;
+  background-color: var(--background-type1-tertiary); */
+  /* border-radius: 0.16666667rem; */
   color: #353a45;
   color: var(--text-type1-primary);
   -webkit-box-flex: 1;
@@ -891,12 +854,11 @@ onMounted(() => {
   -ms-flex: auto;
   flex: auto;
   font-size: 1rem;
-  height: 2.33333333rem;
-  line-height: 2.33333333rem;
   margin-right: 1px;
   position: relative;
   text-align: center;
-  width: 33.33%;
+  width: 50%;
+  padding: 0.83333333rem;
 }
 
 .m-tab-navs > li:last-child {
@@ -904,10 +866,8 @@ onMounted(() => {
 }
 
 .m-tab-navs > li.active {
-  background-color: #1b1e25;
-  background-color: var(--c-prematch-active-tab-bg);
-  color: #ffffff;
-  color: var(--c-prematch-active-tab-text);
+  color: var(--brand-highlight-text);
+  border-bottom: 2px solid var(--brand-primary);
 }
 
 .m-tab-navs > li.active .m-icon:before {

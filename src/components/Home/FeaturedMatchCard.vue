@@ -60,12 +60,12 @@
           :class="
             isSelected(
               createID(
-                matchDetails.gameID,
                 matchDetails.matchID,
-                market.outcomeName,
-                market.oddID,
-                matchDetails.name,
-                market.specifier
+                market.marketID,
+                market.outcomeID,
+                market.specifier,
+                '1X2',
+                market.outcomeName
               ),
               couponStore.coupon
             )
@@ -159,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',

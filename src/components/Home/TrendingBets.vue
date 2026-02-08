@@ -61,7 +61,7 @@ const codes = computed(() => {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .trending-title {
@@ -75,7 +75,7 @@ const codes = computed(() => {
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .trending-cards {
@@ -83,7 +83,6 @@ const codes = computed(() => {
   gap: 0.83333333rem;
   overflow-x: auto;
   overflow-y: visible;
-  padding: 1rem 0.75rem 1.25rem;
   scroll-padding: 0.75rem;
 }
 
