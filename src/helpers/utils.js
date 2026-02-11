@@ -1,6 +1,6 @@
 import moment from 'moment'
 // import _ from 'lodash'
-import { getSplitPropsData } from '@/helpers'
+// Split props are computed locally since the API endpoint is deprecated.
 // import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
@@ -432,13 +432,61 @@ export const checkBetType = (grouped) => {
 }
 
 export const getSplitProps = async (couponData) => {
-  const { data } = await getSplitPropsData(couponData)
-  couponData.noOfCombos = data.noOfCombos
-  couponData.minOdds = data.minOdds
-  couponData.maxOdds = data.maxOdds
-  couponData.maxBonus = data.maxBonus
-  couponData.minWin = data.minWin
-  couponData.maxWin = data.maxWin
+  // Preserve previous values so split wins don't drop to 0 if data is incomplete.
+  const previous = {
+    minOdds: Number(couponData?.minOdds || 0),
+    maxOdds: Number(couponData?.maxOdds || 0),
+    minWin: Number(couponData?.minWin || 0),
+    maxWin: Number(couponData?.maxWin || 0),
+    maxBonus: Number(couponData?.maxBonus || 0),
+    minBonus: Number(couponData?.minBonus || 0),
+    minStake: couponData?.minStake ?? ''
+  }
+  // Compute split props locally: one selection per match group.
+  const selections = couponData?.selections || []
+  const grouped = {}
+  selections.forEach((selection) => {
+    const key = String(
+      selection?.matchId || selection?.match_id || selection?.fixture?.matchID || ''
+    )
+    if (!key) return
+    grouped[key] = grouped[key] || []
+    grouped[key].push(selection)
+  })
+
+  const groups = Object.values(grouped)
+  const noOfCombos =
+    groups.length > 0 ? groups.reduce((acc, group) => acc * group.length, 1) : 0
+
+  let minOdds = 0
+  let maxOdds = 0
+  if (groups.length > 0) {
+    minOdds = 1
+    maxOdds = 1
+    groups.forEach((group) => {
+      const odds = group
+        .map((item) => Number(item?.odds))
+        .filter((value) => Number.isFinite(value))
+      if (!odds.length) return
+      // For split odds range, use min odds and sum of odds per match group (Sportybet behavior).
+      minOdds *= Math.min(...odds)
+      maxOdds *= odds.reduce((sum, value) => sum + value, 0)
+    })
+  }
+
+  const stake = Number(couponData?.stake || couponData?.totalStake || 0)
+  const minWin = Number.isFinite(stake) && minOdds > 0 ? minOdds * stake : previous.minWin
+  const maxWin = Number.isFinite(stake) && maxOdds > 0 ? maxOdds * stake : previous.maxWin
+
+  couponData.noOfCombos = noOfCombos
+  couponData.minOdds = minOdds > 0 ? Number(minOdds.toFixed(2)) : previous.minOdds
+  couponData.maxOdds = maxOdds > 0 ? Number(maxOdds.toFixed(2)) : previous.maxOdds
+  couponData.maxBonus = previous.maxBonus || 0
+  couponData.minWin = Number(minWin.toFixed(2))
+  couponData.maxWin = Number(maxWin.toFixed(2))
+  // Only set minStake if we already have a stake; otherwise let callers fallback to globals.
+  couponData.minStake = stake > 0 ? stake : previous.minStake
+  couponData.minBonus = previous.minBonus || 0
   return couponData
 }
 

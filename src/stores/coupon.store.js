@@ -62,7 +62,13 @@ export const useCouponStore = defineStore({
       source: 'mobile'
     },
     activeSubscriptions: [], // Will store objects with topic and unsubscribe function
-    activeKeyboardKey: null
+    activeKeyboardKey: null,
+    // Persist stake per betslip type to avoid drift when switching modes.
+    betslipStakeCache: {
+      Single: null,
+      Multiple: null,
+      Combo: null
+    }
   }),
   getters: {
     betslipMode: (state) => state.mode === 'sim'
@@ -265,6 +271,11 @@ export const useCouponStore = defineStore({
     },
     setActiveKeyboardKey(key) {
       this.activeKeyboardKey = key
+    },
+    setStakeCache(betslipType, value) {
+      if (!this.betslipStakeCache || !betslipType) return
+      const normalized = Number(value)
+      this.betslipStakeCache[betslipType] = Number.isFinite(normalized) ? normalized : null
     },
     setBetslipMode(nextMode) {
       // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
@@ -708,6 +719,8 @@ export const useCouponStore = defineStore({
       if (stake === '') {
         this.coupon.stake = ''
         this.coupon.totalStake = ''
+        // Clearing stake should also clear the cached value for this mode.
+        this.setStakeCache(this.coupon.betslip_type, null)
 
         if (this.coupon.betslip_type == 'Single') {
           if (id === 'all') {
@@ -803,6 +816,8 @@ export const useCouponStore = defineStore({
             this.coupon.maxWin = maxWin
             this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
             this.coupon.totalStake = totalStake
+            // Persist per-bet stake for Single mode.
+            this.setStakeCache('Single', stake)
           } else if (id === 'single') {
             // For single selection bet
             const selection = this.coupon.selections[0]
@@ -817,6 +832,8 @@ export const useCouponStore = defineStore({
               this.coupon.totalStake = parseFloat(stake)
               this.coupon.maxWin = 0
             }
+            // Persist per-bet stake for Single mode.
+            this.setStakeCache('Single', stake)
           } else {
             // For updating a specific selection
             const index = this.coupon.selections.findIndex((i) => i.selectionId === id)
@@ -852,6 +869,8 @@ export const useCouponStore = defineStore({
               this.coupon.maxWin = maxWin
               this.coupon.minWin = minWin.length > 0 ? Math.min(...minWin) : 0
               this.coupon.totalStake = totalStake
+              // Persist per-bet stake for Single mode.
+              this.setStakeCache('Single', stake)
             }
           }
 
@@ -923,6 +942,10 @@ export const useCouponStore = defineStore({
           }
         }
       }
+      // Persist stake for Multiple mode after recalculation.
+      if (this.coupon.betslip_type === 'Multiple') {
+        this.setStakeCache('Multiple', this.coupon.totalStake)
+      }
     },
     updateComboWinnings(val, combo) {
       let coupondata = { ...this.coupon };
@@ -934,6 +957,8 @@ export const useCouponStore = defineStore({
       }
 
       if(!combo) {// update all combo stake
+        // Persist per-line stake for Combo mode.
+        this.setStakeCache('Combo', stake)
         let total = 0
         coupondata.totalStake = stake;
         coupondata.exciseDuty = coupondata.totalStake * 0 / 100;
@@ -977,6 +1002,8 @@ export const useCouponStore = defineStore({
         this.coupon = coupondata;
 
       } else {// update single combo stake
+        // Persist per-line stake for Combo mode.
+        this.setStakeCache('Combo', stake)
         let stakeValue = Number(stake);
         if (!Number.isFinite(stakeValue)) {
           stakeValue = 0;
@@ -1061,8 +1088,15 @@ export const useCouponStore = defineStore({
         this.coupon.bet_type = betslip_type
       }
 
-      // Clear stake on betslip type switch so each mode starts with a fresh input.
-      const nextStake = 0
+      const minStake = betslip_type === 'Combo'
+        ? Number(this.SportsbookGlobalVariable?.comboMinStake || 0)
+        : Number(this.SportsbookGlobalVariable?.singleMinStake || 0)
+      const cachedStake = this.betslipStakeCache?.[betslip_type]
+      // Restore the last stake for this mode; fall back to min stake on first visit.
+      const nextStake =
+        Number.isFinite(Number(cachedStake)) && Number(cachedStake) > 0
+          ? Number(cachedStake)
+          : Number(minStake || 0)
       const selections = this.coupon.selections ? [...this.coupon.selections] : []
       this.coupon.stake = nextStake
       this.coupon.totalStake = nextStake
@@ -1075,30 +1109,32 @@ export const useCouponStore = defineStore({
       const newSelections = selections.map((item) => {
         const newItem = Object.assign({}, item)
         // Reset per-selection stake when toggling types.
-        newItem.stake = betslip_type === 'Single' ? 0 : ''
+        newItem.stake = betslip_type === 'Single' ? nextStake : ''
         return newItem
       })
       this.coupon.selections = newSelections
 
       if (betslip_type === 'Combo' && this.coupon.combos?.length) {
-        // Clear combo stakes on switch to system bets.
+        // Restore combo stakes on switch to system bets.
         this.coupon.combos = this.coupon.combos.map((combo) => ({
           ...combo,
-          Stake: 0,
-          stake: 0
+          Stake: nextStake,
+          stake: nextStake
         }))
-        this.updateComboWinnings(0, null)
+        this.updateComboWinnings(nextStake, null)
         return
       }
 
       if (this.coupon.bet_type === 'Split' && betslip_type === 'Multiple') {
         // Split requires min/max win from split props.
         await getSplitProps(this.coupon)
+        // Persist stake for Multiple mode on split.
+        this.setStakeCache('Multiple', this.coupon.totalStake)
         return
       }
 
       this.updateWinnings({
-        stake: 0,
+        stake: nextStake,
         id: 'all'
       })
     },
@@ -1300,6 +1336,8 @@ export const useCouponStore = defineStore({
           source: 'mobile'
         }
         this.coupon = coupon
+        // Clear cached stakes when betslip is emptied.
+        this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
       } catch (error) {
         // console.error("📊 Betslip: Error in clearBetslip:", error);
         // Still try to reset the coupon state even if cleanup fails
@@ -1324,6 +1362,8 @@ export const useCouponStore = defineStore({
           source: 'mobile'
         }
         this.activeSubscriptions = []
+        // Clear cached stakes when betslip is emptied.
+        this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
       }
     },
     resubscribeToAllSelections() {
