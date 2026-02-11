@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.1...v1.3.2) (2026-02-11)
+
+
+### Bug Fixes
+
+* update GCP_SERVER_IP and GCP_SERVER_USER to STAGING_SERVER_IP and STAGING_SERVER_USER ([3d2ff97](https://github.com/zoroplay/sporty-clone-mobile/commit/3d2ff977ae948ef806f729b35c4898c650fe4887))
+
 ## [1.3.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.0...v1.3.1) (2026-02-02)
 
 
