@@ -80,7 +80,7 @@
                                 >
                                     <span v-if="!cashingOut"><span>Confirm</span>
                                         <span class="money">
-                                            {{ SportsbookGlobalVariable.CurrencyCode }}
+                                            {{ cashoutData.currency }}
                                             {{ displayCashout }}
                                         </span>
                                     </span>
@@ -237,11 +237,11 @@ async function confirmCashout() {
             percent: Math.min(1, Math.max(0.1, percent)),
             source: 'mobile'
         })
-        if (res.success) {
-            emitter.emit('showDialogueToaster', 'Cashout Successful!')
+        if (res.status_code === 200) {
+            emitter.emit('showDialogueToaster', res.status_description)
             emit('cashout-success', res)
         } else {
-            emitter.emit('showDialogueToaster', res.message)
+            emitter.emit('showDialogueToaster', res.status_description)
             emit('cashout-failed', res)
         }
     } catch (error) {
