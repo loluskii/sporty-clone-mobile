@@ -1217,7 +1217,7 @@
 .m-event-live .m-market-cell .m-market .m-outcome--checked {
   background-color: var(--brand-active-live-odds-bg);
   /* background-color: var(--brand-quinary); */
-  color: #ffffff;
+  color: var(--brand-active-live-odds-text);
 }
 
 .m-event-live .m-market-cell .m-market .m-outcome--checked:before {

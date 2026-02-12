@@ -21,7 +21,7 @@ export const brandDetails = {
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
     liveOddTextColor: '#ebc600',
     activeLiveOddBackground: '#FFD700',
-    activeLiveOddTextColor: '#fff',
+    activeLiveOddTextColor: '#121212',
 
     liveContainerBackgroundColor: '#1B1E25',
 
