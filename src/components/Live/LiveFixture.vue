@@ -370,8 +370,12 @@ function addToBetslip(event, odd) {
   const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
 
   let marketId = parseInt(odd.marketID)
+  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
+    emitter.emit(
+      'showErrorMessage',
       'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
     )
+    return
   }
   const data = {
     fixture: event,
