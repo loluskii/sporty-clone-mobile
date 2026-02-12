@@ -17,6 +17,8 @@
           @clear="clearBetslip"
           @open-settings="showBetSettings = true"
         />
+        <!-- Temporary build marker to confirm deployed bundle -->
+        <div class="betslip-build-tag">betslip-build: 2026-02-12</div>
         <div v-if="betslipMode" class="betslip-notification">
           <div class="sim-operate-sync-to-real-tip">
             <b>SIMULATE</b> allows you to play your selections in a virtual format
@@ -891,6 +893,12 @@ onMounted(() => {})
 
 #betslip-container .m-betslips .m-input .m-input-wrapper .currency em {
   margin-right: 0.33333333rem;
+}
+
+.betslip-build-tag {
+  color: #6c727f;
+  font-size: 0.75rem;
+  padding: 0 1.33333333rem 0.33333333rem;
 }
 
 .submit {

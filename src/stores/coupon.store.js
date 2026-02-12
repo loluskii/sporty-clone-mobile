@@ -1475,14 +1475,14 @@ export const useCouponStore = defineStore({
       }
     },
   },
-  persist: {
-    storage: localStorage,
-    afterRestore: (ctx) => {
-      // Resubscribe to MQTT topics for all selections in the betslip
-      if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
-        // console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
-        ctx.store.resubscribeToAllSelections()
-      }
-    }
-  }
+  // persist: {
+  //   storage: localStorage,
+  //   afterRestore: (ctx) => {
+  //     // Resubscribe to MQTT topics for all selections in the betslip
+  //     if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
+  //       // console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
+  //       ctx.store.resubscribeToAllSelections()
+  //     }
+  //   }
+  // }
 })

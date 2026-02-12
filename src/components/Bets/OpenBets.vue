@@ -104,33 +104,6 @@ function handleCashout(bet) {
     cashoutData.value = bet
 }
 
-// Poll cashout amounts for all open bets
-// async function pollCashoutAmounts() {
-//     if (!openBets.value || openBets.value.length === 0) return
-
-//     try {
-//         const updatedBets = await Promise.all(
-//             openBets.value.map(async (bet) => {
-//                 const cashoutResponse = await fetchCashoutForBet({betId: bet.id, source: "mobile"})
-//                 if (cashoutResponse && cashoutResponse.status_code === 200) {
-//                     return { ...bet, cashOutAmount: cashoutResponse.data.payout }
-//                 }
-//                 return bet
-//             })
-//         )
-//         openBets.value = updatedBets
-//     } catch (error) {
-//         console.error('Error polling cashout amounts:', error)
-//     }
-// }
-
-// function startCashoutPolling() {
-//     // Initial fetch
-//     pollCashoutAmounts()
-//     // Start interval
-//     cashoutPollInterval.value = setInterval(pollCashoutAmounts, POLL_INTERVAL)
-// }
-
 onMounted(() => {
     getCodes()
 })
