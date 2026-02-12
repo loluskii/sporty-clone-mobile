@@ -4,7 +4,6 @@
       <div class="m-event-meta">
         <div>
           <span class="m-time" style="margin-right: 5px">{{ eventData.eventTime }}</span>
-          <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span>
           <span class="m-league-name"
             >{{ eventData.tournament }} - {{ eventData.categoryName }}</span
           >
@@ -76,13 +75,14 @@
                   :selectionClass="
                     isSelected(
                       createID(
-                        eventData.gameID,
                         eventData.matchID,
-                        odd.outcomeName,
-                        odd.oddID,
-                        eventData.name,
-                        odd.specifier
+                        activeMarket.marketID,
+                        odd.outcomeID,
+                        activeMarket.specifier,
+                        activeMarket.marketName,
+                        odd.outcomeName
                       ),
+                      
                       couponStore.coupon
                     )
                       ? 'm-outcome--checked'
@@ -435,7 +435,7 @@ function handleFixtureStatus(data) {
 }
 
 function addToBetslip(event, odd) {
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,props.activeMarket.marketName,odd.outcomeName)
   let marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
@@ -471,9 +471,7 @@ defineComponent({
 </script>
 <style scoped>
 .m-event-sport {
-  border-top: 1px solid #eaecef;
-  border-color: #eaecef;
-  border-color: var(--brand-border-type1);
+  border-bottom: .5px solid #dedede;
   display: block;
   padding: 0.66666667rem 0;
 }
@@ -519,13 +517,12 @@ defineComponent({
   vertical-align: top;
 }
 .m-event-sport .m-event-meta .m-time {
-  color: #353a45;
-  color: var(--c-event-sport-time-text);
   -webkit-box-flex: 0;
   -webkit-flex: 0;
   -ms-flex: 0;
   flex: 0;
   white-space: nowrap;
+
 }
 .m-event-sport .m-event-meta .m-game-id {
   -webkit-box-flex: 0;
@@ -589,7 +586,6 @@ defineComponent({
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
-  color: var(--c-event-sport-team-text);
   padding-right: 0.83333333rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -636,16 +632,6 @@ defineComponent({
   color: #ffffff !important;
 }
 
-.m-sports-table .m-date-row {
-  background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  height: 2rem;
-  line-height: 2rem;
-  padding: 0 0.83333333rem;
-  z-index: 25 !important;
-}
 .m-sports-table .m-date-row .m-date {
   color: #353a45;
   color: var(--text-type1-primary);

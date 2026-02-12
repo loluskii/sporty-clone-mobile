@@ -318,7 +318,7 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: #f1f1f1;
+  background-color: var(--brand-background-secondary);
   /* z-index: 220; */
 }
 
@@ -326,13 +326,6 @@ defineComponent({
   background-color: red;
   position: sticky;
   top: 0px;
-}
-
-.m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  padding: 5px 15px;
-  /* border: 1px solid; */
-  border-radius: 25px;
-  background-color: #fff;
 }
 
 .bounce-enter-active {
