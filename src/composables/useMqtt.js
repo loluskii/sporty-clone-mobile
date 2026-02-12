@@ -15,9 +15,9 @@ export function useMqttService() {
     const clientId = `${import.meta.env.VITE_MQTT_CLIENTID}-${Math.random().toString(36).substr(2, 9)}`
     const host = import.meta.env.VITE_MQTT_HOST
     const port = import.meta.env.VITE_MQTT_PORT
-    const mqttUrl = import.meta.env.VITE_MQTT_URI
-    const username = import.meta.env.VITE_MQTT_USERNAME
-    const password = import.meta.env.VITE_MQTT_PASSWORD
+    const mqttUrl = "wss://emqx.prod.sportsbookengine.com/mqtt"
+    const username = "feeds"
+    const password = "sportsbook123"
 
     mqttClient = mqtt.connect(mqttUrl, {
       clientId,
