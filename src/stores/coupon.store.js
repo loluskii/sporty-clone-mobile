@@ -710,14 +710,6 @@ export const useCouponStore = defineStore({
       const globalVars = { ...this.SportsbookGlobalVariable }
       const coupondata = JSON.parse(JSON.stringify(this.coupon))
       const bonusList = this.sportsbookBonusList
-      // Debug: trace stake updates across bet types (remove after investigation).
-      console.log('[betslip][updateWinnings]', {
-        betslipType: this.coupon.betslip_type,
-        betType: this.coupon.bet_type,
-        stake,
-        totalStake: this.coupon.totalStake,
-        combos: this.coupon.combos?.length || 0
-      })
 
       // Filter out suspended or unavailable selections
       const activeSelections = this.coupon.selections.filter((selection) => {
@@ -963,14 +955,6 @@ export const useCouponStore = defineStore({
       } else {
         stake = val
       }
-      // Debug: trace combo stake edits and combo line count (remove after investigation).
-      console.log('[betslip][updateComboWinnings]', {
-        betslipType: this.coupon.betslip_type,
-        betType: this.coupon.bet_type,
-        stake,
-        combos: coupondata.combos?.length || 0,
-        groupings: coupondata.Groupings?.length || 0
-      })
 
       if(!combo) {// update all combo stake
         // Persist per-line stake for Combo mode.
@@ -1095,13 +1079,6 @@ export const useCouponStore = defineStore({
         this.clearBankers()
       }
       this.coupon.betslip_type = betslip_type
-      // Debug: trace betslip type switches (remove after investigation).
-      console.log('[betslip][setBetType]', {
-        betslipType: betslip_type,
-        betType: this.coupon.bet_type,
-        stake: this.coupon.totalStake,
-        combos: this.coupon.combos?.length || 0
-      })
 
       // Recompute bet type based on current selections (handles Split when switching back).
       if (betslip_type === 'Multiple') {
