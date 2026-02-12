@@ -170,10 +170,12 @@ export default class CouponCalculation {
   }
   calcCombinations = function (coupon) {
     // console.log('calculating combinations', coupon);
-    var maxCombinationForCoupon = Math.min(
-      import.meta.env.VITE_MaxCombinationsByGrouping,
-      import.meta.env.VITE_MaxCouponCombinations
-    )
+    // Ensure env-based limits are numeric; fall back to a high ceiling when undefined.
+    var maxCombinationsByGrouping = Number(import.meta.env.VITE_MaxCombinationsByGrouping)
+    var maxCouponCombinations = Number(import.meta.env.VITE_MaxCouponCombinations)
+    if (!Number.isFinite(maxCombinationsByGrouping)) maxCombinationsByGrouping = 1000000
+    if (!Number.isFinite(maxCouponCombinations)) maxCouponCombinations = 1000000
+    var maxCombinationForCoupon = Math.min(maxCombinationsByGrouping, maxCouponCombinations)
     if (
       coupon.selections.length > 0 &&
       coupon.selections.filter(function (o) {
@@ -258,10 +260,12 @@ export default class CouponCalculation {
   }
 
   calcPotentialWins = function (coupon, bonusList, MinBonusOdd) {
-    var maxCombinationForCoupon = Math.min(
-      import.meta.env.VITE_MaxCombinationsByGrouping,
-      import.meta.env.VITE_MaxCouponCombinations
-    )
+    // Ensure env-based limits are numeric; fall back to a high ceiling when undefined.
+    var maxCombinationsByGrouping = Number(import.meta.env.VITE_MaxCombinationsByGrouping)
+    var maxCouponCombinations = Number(import.meta.env.VITE_MaxCouponCombinations)
+    if (!Number.isFinite(maxCombinationsByGrouping)) maxCombinationsByGrouping = 1000000
+    if (!Number.isFinite(maxCouponCombinations)) maxCouponCombinations = 1000000
+    var maxCombinationForCoupon = Math.min(maxCombinationsByGrouping, maxCouponCombinations)
     var oddsForSlotKeyMap = this.getOddsForSlotKeyMap(coupon)
     var bankers = []
     var nonBankers = []
