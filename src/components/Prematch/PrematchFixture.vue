@@ -561,12 +561,8 @@ defineComponent({
   color: var(--brand-prematch-odds-text);
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
-}
-.m-event-sport .m-market-cell .m-market .m-outcome--checked:before {
-  color: #ffffff !important;
-  color: var(--brand-tertiary) !important;
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--disabled {
   background-color: #dcdee5;
