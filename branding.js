@@ -8,7 +8,7 @@ export const brandDetails = {
     tertiaryColor: '#FF0000',
 
     primaryBackground: '#FFFFFF',
-    secondaryBackground: '#353A45',
+    secondaryBackground: '#f5f5f5',
 
     primaryTextColor: '#353a45',
     secondaryTextColor: '#ebc600',
