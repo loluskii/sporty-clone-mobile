@@ -86,7 +86,6 @@
 .x-table {
   display: block;
   width: 100%;
-  background-color: #ffffff;
 }
 
 .x-table .x-table-row {
@@ -179,7 +178,6 @@
 }
 .af-select.af-select-open .af-select-title {
   border-color: var(--brand-highlight-text);
-  border-color: var(--brand-secondary);
 }
 .af-select.disable {
   background-color: #dcdee5;
@@ -233,7 +231,6 @@
 .af-checkbox.pc-header .check-stroke-wrapper.checked {
   border: 1px solid var(--brand-highlight-text) !important;
   border-color: var(--brand-highlight-text) !important;
-  border-color: var(--brand-secondary) !important;
 }
 
 .af-checkbox.pc-header input[type='checkbox'] + .check-stroke-wrapper {
@@ -306,7 +303,7 @@
 }
 
 .af-checkbox input[type='checkbox']:checked + .check-stroke-wrapper {
-  background-color: var(--brand-highlight-text);
+  background-color: #0d9737;
   background-color: var(--brand-secondary);
 }
 
@@ -509,7 +506,6 @@
 
 .af-button--success {
   background-color: var(--brand-highlight-text);
-  background-color: var(--brand-secondary);
   color: #ffffff;
 }
 .af-button--success:active {
@@ -1525,9 +1521,13 @@
   margin-right: 0;
 }
 
+.market-content .m-outcome.m-outcome--checked {
+  background-color: var(--brand-active-prematch-odds-bg);
+  color: #ffffff;
+}
+
 .market-content .m-outcome.m-outcome--checked:before {
   color: #ffffff;
-  color: var(--brand-tertiary);
 }
 
 .market-content .m-outcome.m-outcome--disabled {
@@ -1922,7 +1922,7 @@
 .m-event-specifiers-order .af-select-item.active {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
-  color: var(--brand-highlight-text);
+  color: #0d9737;
 }
 
 .m-pin-code-wrapper {

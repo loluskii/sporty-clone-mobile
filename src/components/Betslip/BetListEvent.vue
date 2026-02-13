@@ -297,7 +297,6 @@ function goToGame() {
 .m-bet-container.m-item-error,
 .m-bet-container.m-sim-invalid {
   background-color: #ffe3e5;
-  background-color: var(--c-betslip-item-warning-bg);
 }
 .m-bet-container .m-outcomes-color {
   height: 100%;
