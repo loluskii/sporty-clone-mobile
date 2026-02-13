@@ -624,7 +624,6 @@ defineComponent({
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
   background-color: var(--background-type1-primary);
-  color: #eaecef;
 }
 .m-event-list .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;

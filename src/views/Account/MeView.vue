@@ -49,19 +49,20 @@
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/transaction.4d2d40c644.svg"
               class="transaction-wrap-item-img"
+              style="filter: invert(1)"
             /><span style="color: #eaecef;">Transactions</span>
           </div>
           <div class="transaction-wrap-item gift" @click="$router.push({ name: 'account-bonus' })">
             <img
               src="//s.sporty.net/global/main/brand/sportybet/mobile/images/gift.0c7224b2a3.svg"
               class="transaction-wrap-item-img"
+              style="filter: invert(1)"
             /><span>Bonus</span>
           </div>
         </div>
         <div class="list-wrap" v-if="authStore.isAuthenticated">
           <div
             class="item"
-            style="color: #ccc"
             @click="$router.push({ name: 'account-pending-withdrawals' })"
           >
             <svg
@@ -299,7 +300,6 @@ defineComponent({
 
 .me-main .body {
   color: #fff;
-  color: var(--text-default);
 }
 
 .me-main .body .transaction-wrap {
