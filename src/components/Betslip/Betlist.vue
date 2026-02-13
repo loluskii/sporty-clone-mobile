@@ -293,7 +293,6 @@ async function placeBet(e) {
 
   try {
     const res = await couponStore.placeBet(e, 'bet', bonusId)
-    console.log(res)
     couponStore.isBetslipLoading = false
 
     if (res?.status_code === 200) {

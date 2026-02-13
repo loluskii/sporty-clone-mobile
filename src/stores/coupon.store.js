@@ -494,7 +494,6 @@ export const useCouponStore = defineStore({
             const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(minStake)
             const maxWinnings = parseFloat(splitProps.maxOdds) * parseFloat(minStake)
 
-            console.log(minWinnings, maxWinnings)
             //calculate bonus
             this.coupon.minBonus = calculateBonus(this.coupon, globalVars, bonusList)
 
@@ -1275,7 +1274,6 @@ export const useCouponStore = defineStore({
           this.isBetslipLoading = false
           return res
         } catch (error) {
-          console.log(error)
           emitter.emit('showErrorMessage', error)
         }
       } else if (type == 'book') {
@@ -1378,7 +1376,6 @@ export const useCouponStore = defineStore({
           }
         })
 
-        console.log('📊 Betslip: Successfully resubscribed to all selections')
       } catch (error) {
         console.error('📊 Betslip: Error resubscribing to selections:', error)
       }
@@ -1469,7 +1466,6 @@ export const useCouponStore = defineStore({
 
         // Clear the subscriptions array
         this.activeSubscriptions = []
-        console.log('📊 Betslip: Successfully unsubscribed from all selections')
       } catch (error) {
         console.error('📊 Betslip: Error in unsubscribeAll:', error)
       }
