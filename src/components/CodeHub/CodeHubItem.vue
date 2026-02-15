@@ -125,7 +125,7 @@ const displaySelections = computed(() => {
   return expanded.slice(0, props.previewCount)
 })
 
-function addToBetslip(code) {
+async function addToBetslip(code) {
   addToBetslipLoading.value = true
   setTimeout(() => {
     addToBetslipLoading.value = false
