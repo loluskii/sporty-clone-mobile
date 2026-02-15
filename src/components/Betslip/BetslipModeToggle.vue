@@ -8,7 +8,7 @@
     @click="toggleMode"
   >
     <span class="mode-label mode-label--real">REAL</span>
-    <span class="mode-label mode-label--sim">SIMULATE</span>
+    <span class="mode-label mode-label--sim">SIM</span>
     <span class="mode-thumb">
       {{ couponStore.betslipMode ? 'SIM' : 'REAL' }}
     </span>
@@ -93,3 +93,6 @@ const toggleMode = () => {
   transform: translateX(74px);
 }
 </style>
+
+
+

@@ -1,24 +1,29 @@
 <template>
   <div id="Simulate">
-    <SimulationHeader
+    <!-- Shared Pitch (first event only when multiple selections) -->
+    <SimulationPitch
+      v-if="showSharedPitch && firstSelection"
+      :selection="firstSelection"
+      :simulation-data="simulationData[firstSelection.matchId || firstSelection.match_id]"
+      :current-time="currentTime"
       :timer-ended="timerEnded"
-      :timer-display="timerDisplay"
-      :is-winner="isWinner"
-      :simulation-results="simulationResults"
+      @pause="handlePause"
     />
 
     <!-- Simulation Events -->
     <div class="ticket-wrapper">
       <div class="ticket">
         <div class="events-container">
-      <SimulationEvent
-        v-for="selection in couponStore.coupon.selections"
-        :key="selection.matchId || selection.match_id"
-        :selection="selection"
-        :simulation-data="simulationData[selection.matchId || selection.match_id]"
-        :current-time="currentTime"
-        :timer-ended="timerEnded"
-      />
+          <SimulationEvent
+            v-for="selection in couponStore.coupon.selections"
+            :key="selection.matchId || selection.match_id"
+            :selection="selection"
+            :simulation-data="simulationData[selection.matchId || selection.match_id]"
+            :current-time="currentTime"
+            :timer-ended="timerEnded"
+            :show-pitch="!showSharedPitch"
+            @pause="handlePause"
+          />
         </div>
       </div>
     </div>
@@ -34,9 +39,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCouponStore, useUtilsStore } from '@/stores'
-import SimulationHeader from './SimulationHeader.vue'
 import SimulationEvent from './SimulationEvent.vue'
 import SimulationControls from './SimulationControls.vue'
+import SimulationPitch from './SimulationPitch.vue'
 
 // Store and Props
 const couponStore = useCouponStore()
@@ -57,6 +62,7 @@ const INITIAL_DELAY = 1000 // milliseconds
 // Reactive State
 const currentTime = ref(0)
 const intervalId = ref(0)
+const isPaused = ref(false)
 
 // Computed Properties
 const normalizedResults = computed(() => {
@@ -114,22 +120,13 @@ const simulationData = computed(() => {
 
 const timerStarted = computed(() => currentTime.value > 0)
 const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
+const selections = computed(() => couponStore.coupon.selections || [])
+const firstSelection = computed(() => selections.value[0])
+const showSharedPitch = computed(() => selections.value.length > 1)
 const betSummary = computed(() => {
   return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
 })
 
-const isWinner = computed(() => {
-  const statusCode = Number(betSummary.value?.statusCode)
-  if (statusCode === 2) return true
-  if (statusCode === 1 && Number(betSummary.value?.amountWon || 0) > 0) return true
-  return false
-})
-
-const timerDisplay = computed(() => {
-  if (!timerStarted.value) return 'Starting Game...'
-  const minute = Math.min(90, Math.round(currentTime.value * 10))
-  return `${minute}'`
-})
 
 // Methods
 const handleSimulationExit = (action) => {
@@ -144,12 +141,20 @@ const handleSimulationExit = (action) => {
   }
 }
 
+const handlePause = (value) => {
+  isPaused.value = value
+}
+
 // Lifecycle Hooks
 onMounted(() => {
   currentTime.value = 0
 
+  // Let kickoff overlay show before the clock starts.
   setTimeout(() => {
     intervalId.value = setInterval(() => {
+      if (isPaused.value) {
+        return
+      }
       if (currentTime.value >= SIMULATION_DURATION) {
         currentTime.value = SIMULATION_DURATION
         clearInterval(intervalId.value)
@@ -157,7 +162,7 @@ onMounted(() => {
       }
       currentTime.value = +(currentTime.value + 0.1).toFixed(1)
     }, UPDATE_INTERVAL)
-  }, INITIAL_DELAY)
+  }, INITIAL_DELAY + 1200)
 })
 
 onUnmounted(() => {
@@ -214,5 +219,10 @@ onUnmounted(() => {
 #Simulate .flex-center {
   align-items: center;
   display: flex;
+}
+
+
+.events-container{
+  padding: 13px;
 }
 </style>

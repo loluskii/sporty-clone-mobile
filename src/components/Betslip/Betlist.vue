@@ -17,13 +17,6 @@
           @clear="clearBetslip"
           @open-settings="showBetSettings = true"
         />
-        <!-- Temporary build marker to confirm deployed bundle -->
-        <div class="betslip-build-tag">betslip-build: 2026-02-12</div>
-        <div v-if="betslipMode" class="betslip-notification">
-          <div class="sim-operate-sync-to-real-tip">
-            <b>SIMULATE</b> allows you to play your selections in a virtual format
-          </div>
-        </div>
         <BetslipTabs
           v-if="showBetHead"
           :bet-slip-type="betSlipType"

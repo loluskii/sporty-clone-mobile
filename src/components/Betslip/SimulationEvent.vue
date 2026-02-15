@@ -1,73 +1,33 @@
 <template>
-  <div class="simulate-card pd-h-16 sim-card-mb-8" style="position: relative">
-    <!-- Status Icon -->
-    <span
-      v-if="timerEnded && hasResultStatus"
-      class="status-icon"
-      :class="{ win: isSelectionWinner }"
-      style="position: absolute; top: 5px; right: 5px"
-    >
-      <template v-if="simulationData?.status === 1">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          fill="green"
-          class="bi bi-shield-fill-check"
-          viewBox="0 0 16 16"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m2.146 5.146a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793z"
-          />
-        </svg>
-      </template>
-      <template v-else>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          fill="red"
-          class="bi bi-x-octagon-fill"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"
-          />
-        </svg>
-      </template>
-    </span>
-
-    <!-- Match Details -->
-    <div class="team-match size-12 pd-v-15">
-      <span class="teamName size-12">{{ selection.homeTeam }}</span>
-      <div class="teamScore">
-        <template v-if="!timerEnded">
-          <span class="teamScore__current">
-            {{ currentScore.home }} - {{ currentScore.away }}
-          </span>
-        </template>
-        <template v-else>
-          <span class="teamScore__finished">
-            {{ finalScoreText }}
-          </span>
-        </template>
+  <div class="sim-event-card">
+    <div class="sim-event-top">
+      <div class="sim-team sim-team-home" :title="homeTeamName">{{ homeTeamName }}</div>
+      <div class="sim-score">
+        <span class="sim-score-value">{{ displayScore.home }} - {{ displayScore.away }}</span>
+        <span v-if="timerEnded" class="sim-score-status">FT</span>
       </div>
-      <span class="teamName size-12">{{ selection.awayTeam }}</span>
+      <div class="sim-team sim-team-away" :title="awayTeamName">{{ awayTeamName }}</div>
     </div>
 
-    <!-- Bet Details -->
-    <div class="event-bet pd-t-10 pd-b-12">
-      <div class="info">
-        <span class="type__name">{{ selection.marketName }}</span>
-        <div class="info-odds">{{ selection.outcomeName }} @ {{ selection.odds }}</div>
-      </div>
+    <SimulationPitch
+      v-if="showPitch"
+      :selection="selection"
+      :simulation-data="simulationData"
+      :current-time="currentTime"
+      :timer-ended="timerEnded"
+      @pause="emit('pause', $event)"
+    />
+
+    <div class="sim-bet-details">
+      <div class="sim-bet-market">{{ selection.marketName }}</div>
+      <div class="sim-bet-odds">{{ selection.outcomeName }} @ {{ selection.odds }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import SimulationPitch from './SimulationPitch.vue'
 
 const props = defineProps({
   selection: {
@@ -85,134 +45,127 @@ const props = defineProps({
   timerEnded: {
     type: Boolean,
     required: true
+  },
+  showPitch: {
+    type: Boolean,
+    default: true
   }
 })
+
+const emit = defineEmits(['pause'])
+
+const goalTimeline = computed(() => props.simulationData?.goalEvents || [])
+const currentMinute = computed(() => Math.min(90, Math.round(props.currentTime * 10)))
 
 const currentScore = computed(() => {
   if (!props.simulationData) return { home: 0, away: 0 }
-
-  const currentMinute = Math.round(props.currentTime * 10)
   return {
-    home: props.simulationData.goalEvents.filter(
-      (g) => g.team === 'home' && g.time <= currentMinute
-    ).length,
-    away: props.simulationData.goalEvents.filter(
-      (g) => g.team === 'away' && g.time <= currentMinute
-    ).length
+    home: goalTimeline.value.filter((g) => g.team === 'home' && g.time <= currentMinute.value).length,
+    away: goalTimeline.value.filter((g) => g.team === 'away' && g.time <= currentMinute.value).length
   }
 })
 
-const hasResultStatus = computed(() => Number.isFinite(Number(props.simulationData?.status)))
-const isSelectionWinner = computed(() => Number(props.simulationData?.status) === 1)
-
-const finalScoreText = computed(() => {
-  if (props.simulationData?.finalScoreText) return props.simulationData.finalScoreText
-  if (props.simulationData?.finalScore) {
-    return `${props.simulationData.finalScore.home} - ${props.simulationData.finalScore.away}`
+const displayScore = computed(() => {
+  if (props.timerEnded && props.simulationData?.finalScore) {
+    return {
+      home: props.simulationData.finalScore.home,
+      away: props.simulationData.finalScore.away
+    }
   }
-  return '0 - 0'
+  return currentScore.value
+})
+
+const homeTeamName = computed(() => {
+  if (props.selection.homeTeam) return props.selection.homeTeam
+  if (props.selection.home) return props.selection.home
+  if (props.selection.eventName && props.selection.eventName.includes(' vs ')) {
+    return props.selection.eventName.split(' vs ')[0]
+  }
+  return 'Home'
+})
+
+const awayTeamName = computed(() => {
+  if (props.selection.awayTeam) return props.selection.awayTeam
+  if (props.selection.away) return props.selection.away
+  if (props.selection.eventName && props.selection.eventName.includes(' vs ')) {
+    return props.selection.eventName.split(' vs ')[1]
+  }
+  return 'Away'
 })
 </script>
 
 <style scoped>
-.simulate-card {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-}
-
-.simulate-card .teamScore {
+.sim-event-card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.08);
+  padding: 0.9rem;
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 15px;
+}
+
+.sim-event-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  width: 6rem;
+  gap: 0.5rem;
   font-family: 'Roboto-Bold';
 }
 
-.simulate-card .teamScore .teamScore__finished {
-  font-weight: bold;
-}
-
-.simulate-card .teamScore .teamScore__half {
-  color: #9ca0ab;
-  color: var(--text-type1-secondary);
-  font-family: 'Roboto-Medium';
-}
-
-.team-match {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  text-align: center;
-  border-bottom: 1px solid #eaecef;
-  border-bottom-color: #eaecef;
-  font-family: 'Roboto-Medium';
-}
-
-.team-match .teamName {
-  flex: 1.3;
-}
-
-.team-match .teamScore {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
-  font-family: 'Roboto-Bold';
-}
-
-.event-bet {
-  display: flex;
-  font-family: 'Roboto-Regular';
-}
-
-.event-bet .info {
+.sim-team {
+  font-size: 0.95rem;
+  color: #1b1e25;
+  text-overflow: unset;
+  overflow: visible;
+  white-space: normal;
   word-break: break-word;
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #9ca0ab;
-  color: var(--text-type1-secondary);
 }
 
-.event-bet .info div {
-  width: 50%;
+.sim-team-home {
+  text-align: left;
 }
 
-.event-bet .info > div:first-child {
-  text-align: center;
-}
-
-.event-bet .info > div:last-child {
+.sim-team-away {
   text-align: right;
 }
 
-.event-bet .info .info-odds {
-  margin-left: 10px;
+.sim-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
 }
 
-.size-12 {
-  font-size: 1rem;
+.sim-score-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
 }
 
-.pd-v-15 {
-  padding: 1.25rem 0;
+.sim-score-status {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+  color: #9ca0ab;
 }
 
-.pd-t-10 {
-  padding-top: 0.83333333rem;
+
+.sim-bet-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #6c727f;
 }
 
-.pd-b-12 {
-  padding-bottom: 1rem;
+.sim-bet-market {
+  font-weight: 600;
+  color: #1b1e25;
 }
 
-.pd-h-16 {
-  padding: 0 1.33333333rem;
-}
-
-.sim-card-mb-8:not(:last-child) {
-  margin-bottom: 0.66666667rem;
+.sim-bet-odds {
+  text-align: right;
 }
 </style>

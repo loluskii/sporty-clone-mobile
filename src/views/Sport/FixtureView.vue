@@ -141,7 +141,7 @@ async function getTournamentFixtures(sid) {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getSportHighlights({ page: page.value, sid: id, per_page: 50, category_id: cat.tournament_id })
+        getSportHighlights({ page: page.value, sid: sid, per_page: 50, category_id: cat.tournament_id })
       )
     )
     const fixtures = results.reduce((acc, res) => {
