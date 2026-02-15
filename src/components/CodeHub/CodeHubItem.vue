@@ -133,7 +133,6 @@ async function addToBetslip(code) {
     } else {
       const res = await loadBetslipByCode(code)
       addToBetslipLoading.value = false
-      isLoading.value = false
       if (res.success) {
         if (res.data.selections.length) {
           couponStore.coupon.selections = res.data.selections
