@@ -158,7 +158,7 @@ async function addToBetslip(code) {
     }
   } catch (error) {
     console.log(error)
-    emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+    emitter.emit('showDialogueToaster', error)
   }
 }
 
