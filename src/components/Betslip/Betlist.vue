@@ -1091,9 +1091,7 @@ onMounted(() => {})
 }
 
 .m-flexibet-confirm {
-  background-color: var(--background-type2-secondary);
   bottom: 0;
-  padding-top: 2.16666667rem;
   position: relative;
   width: 100%;
 }
