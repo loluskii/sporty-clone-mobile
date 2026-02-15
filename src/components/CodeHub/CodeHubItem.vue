@@ -131,9 +131,8 @@ async function addToBetslip(code) {
     if (couponStore.coupon.selections.length) {
       emitter.emit('showBetslipConfirmation', code)
     } else {
-      const res = await loadBetslipByCode(code)
+      const res = await loadBetslipByCode(code.betslipId)
       addToBetslipLoading.value = false
-      isLoading.value = false
       if (res.success) {
         if (res.data.selections.length) {
           couponStore.coupon.selections = res.data.selections
@@ -159,7 +158,7 @@ async function addToBetslip(code) {
     }
   } catch (error) {
     console.log(error)
-    emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+    emitter.emit('showDialogueToaster', error)
   }
 }
 
