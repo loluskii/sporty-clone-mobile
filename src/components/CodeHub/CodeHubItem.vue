@@ -131,7 +131,7 @@ async function addToBetslip(code) {
     if (couponStore.coupon.selections.length) {
       emitter.emit('showBetslipConfirmation', code)
     } else {
-      const res = await loadBetslipByCode(code)
+      const res = await loadBetslipByCode(code.betslipId)
       addToBetslipLoading.value = false
       if (res.success) {
         if (res.data.selections.length) {
