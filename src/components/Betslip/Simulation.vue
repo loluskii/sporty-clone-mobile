@@ -11,14 +11,14 @@
     <div class="ticket-wrapper">
       <div class="ticket">
         <div class="events-container">
-          <SimulationEvent
-            v-for="selection in couponStore.coupon.selections"
-            :key="selection.matchId"
-            :selection="selection"
-            :simulation-data="simulationData[selection.matchId]"
-            :current-time="currentTime"
-            :timer-ended="timerEnded"
-          />
+      <SimulationEvent
+        v-for="selection in couponStore.coupon.selections"
+        :key="selection.matchId || selection.match_id"
+        :selection="selection"
+        :simulation-data="simulationData[selection.matchId || selection.match_id]"
+        :current-time="currentTime"
+        :timer-ended="timerEnded"
+      />
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCouponStore, useUtilsStore } from '@/stores'
 import SimulationHeader from './SimulationHeader.vue'
 import SimulationEvent from './SimulationEvent.vue'
@@ -59,35 +59,50 @@ const currentTime = ref(0)
 const intervalId = ref(0)
 
 // Computed Properties
+const normalizedResults = computed(() => {
+  return props.simulationResults?.data || props.simulationResults || {}
+})
+
 const simulationData = computed(() => {
   try {
-    const events = JSON.parse(props.simulationResults.events)
-    return events.reduce((acc, ev) => {
-      const matchId = Number(ev.reference)
-      const playout = ev.playout
+    const rawEvents = normalizedResults.value?.events
+    const events = Array.isArray(rawEvents)
+      ? rawEvents
+      : typeof rawEvents === 'string'
+        ? JSON.parse(rawEvents)
+        : []
 
-      const goalEvents = [
-        ...(playout.homeCompetitorGoals?.map((time) => ({
-          time: time / 10,
-          team: 'home'
-        })) || []),
-        ...(playout.awayCompetitorGoals?.map((time) => ({
-          time: time / 10,
-          team: 'away'
-        })) || [])
-      ].sort((a, b) => a.time - b.time)
+    return events.reduce((acc, ev) => {
+      if (!ev) return acc
+
+      // New payload shape.
+      const matchId = Number(ev.match_id || ev.matchId)
+      const timeline = Array.isArray(ev.timeline) ? ev.timeline : []
+      const goalEvents = timeline
+        .filter((item) => item?.type === 'goal')
+        .map((item) => ({
+          time: Number(item.minute || 0),
+          team: item.team === 'away' ? 'away' : 'home'
+        }))
+        .sort((a, b) => a.time - b.time)
+
+      let finalScore = { home: Number(ev.home_goals || 0), away: Number(ev.away_goals || 0) }
+      if (typeof ev.final_score === 'string' && ev.final_score.includes('-')) {
+        const [home, away] = ev.final_score.split('-').map((value) => Number(value))
+        if (Number.isFinite(home) && Number.isFinite(away)) {
+          finalScore = { home, away }
+        }
+      }
 
       acc[matchId] = {
         goalEvents,
-        finalScore: {
-          home: playout.homeCompetitorScore,
-          away: playout.awayCompetitorScore
-        },
-        halfTime: {
-          home: playout.homeCompetitorHalfTimeScore,
-          away: playout.awayCompetitorHalfTimeScore
-        },
-        status: ev.status
+        timeline,
+        homeGoals: finalScore.home,
+        awayGoals: finalScore.away,
+        finalScoreText: `${finalScore.home}-${finalScore.away}`,
+        finalScore,
+        halfTime: null,
+        status: ev.status ?? ev.statusCode ?? null
       }
       return acc
     }, {})
@@ -99,16 +114,21 @@ const simulationData = computed(() => {
 
 const timerStarted = computed(() => currentTime.value > 0)
 const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
-const isWinner = computed(() => props.simulationResults.statusCode === 2)
+const betSummary = computed(() => {
+  return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
+})
+
+const isWinner = computed(() => {
+  const statusCode = Number(betSummary.value?.statusCode)
+  if (statusCode === 2) return true
+  if (statusCode === 1 && Number(betSummary.value?.amountWon || 0) > 0) return true
+  return false
+})
 
 const timerDisplay = computed(() => {
   if (!timerStarted.value) return 'Starting Game...'
-  return `${currentTime.value * 10}'`
-})
-
-const formattedWinAmount = computed(() => {
-  const amount = props.simulationResults.possibleWin
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`
+  const minute = Math.min(90, Math.round(currentTime.value * 10))
+  return `${minute}'`
 })
 
 // Methods

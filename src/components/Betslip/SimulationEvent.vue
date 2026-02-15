@@ -2,7 +2,7 @@
   <div class="simulate-card pd-h-16 sim-card-mb-8" style="position: relative">
     <!-- Status Icon -->
     <span
-      v-if="timerEnded"
+      v-if="timerEnded && hasResultStatus"
       class="status-icon"
       :class="{ win: isSelectionWinner }"
       style="position: absolute; top: 5px; right: 5px"
@@ -49,11 +49,7 @@
         </template>
         <template v-else>
           <span class="teamScore__finished">
-            {{ simulationData?.finalScore.home }} -
-            {{ simulationData?.finalScore.away }}
-          </span>
-          <span class="teamScore__half">
-            ({{ simulationData?.halfTime.home }} - {{ simulationData?.halfTime.away }})
+            {{ finalScoreText }}
           </span>
         </template>
       </div>
@@ -95,17 +91,27 @@ const props = defineProps({
 const currentScore = computed(() => {
   if (!props.simulationData) return { home: 0, away: 0 }
 
+  const currentMinute = Math.round(props.currentTime * 10)
   return {
     home: props.simulationData.goalEvents.filter(
-      (g) => g.team === 'home' && g.time <= props.currentTime
+      (g) => g.team === 'home' && g.time <= currentMinute
     ).length,
     away: props.simulationData.goalEvents.filter(
-      (g) => g.team === 'away' && g.time <= props.currentTime
+      (g) => g.team === 'away' && g.time <= currentMinute
     ).length
   }
 })
 
-const isSelectionWinner = computed(() => props.simulationData?.status === 1)
+const hasResultStatus = computed(() => Number.isFinite(Number(props.simulationData?.status)))
+const isSelectionWinner = computed(() => Number(props.simulationData?.status) === 1)
+
+const finalScoreText = computed(() => {
+  if (props.simulationData?.finalScoreText) return props.simulationData.finalScoreText
+  if (props.simulationData?.finalScore) {
+    return `${props.simulationData.finalScore.home} - ${props.simulationData.finalScore.away}`
+  }
+  return '0 - 0'
+})
 </script>
 
 <style scoped>
