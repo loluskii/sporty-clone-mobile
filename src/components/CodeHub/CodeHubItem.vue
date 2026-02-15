@@ -127,42 +127,40 @@ const displaySelections = computed(() => {
 
 async function addToBetslip(code) {
   addToBetslipLoading.value = true
-  setTimeout(() => {
-    addToBetslipLoading.value = false
-    try {
-      if (couponStore.coupon.selections.length) {
-        emitter.emit('showBetslipConfirmation', code)
-      } else {
-        const res = await loadBetslipByCode(bookingCode.value)
-        isLoading.value = false
-        if (res.success) {
-          if (res.data.selections.length) {
-            couponStore.coupon.selections = res.data.selections
-            couponStore.coupon.totalOdds = res.data.totalOdd
-            couponStore.coupon.totalStake = res.data.stake
-            couponStore.coupon.stake = res.data.stake
-            couponStore.coupon.maxWin = res.data.possibleWin
-            couponStore.coupon.source = 'mobile'
-            if (res.data.selections.length === 1) {
-              couponStore.coupon.bet_type = 'Single'
-              couponStore.coupon.betslip_type = 'Single'
-            } else {
-              couponStore.coupon.bet_type = 'Multiple'
-              couponStore.coupon.betslip_type = 'Multiple'
-            }
+  try {
+    if (couponStore.coupon.selections.length) {
+      emitter.emit('showBetslipConfirmation', code)
+    } else {
+      const res = await loadBetslipByCode(bookingCode.value)
+      addToBetslipLoading.value = false
+      isLoading.value = false
+      if (res.success) {
+        if (res.data.selections.length) {
+          couponStore.coupon.selections = res.data.selections
+          couponStore.coupon.totalOdds = res.data.totalOdd
+          couponStore.coupon.totalStake = res.data.stake
+          couponStore.coupon.stake = res.data.stake
+          couponStore.coupon.maxWin = res.data.possibleWin
+          couponStore.coupon.source = 'mobile'
+          if (res.data.selections.length === 1) {
+            couponStore.coupon.bet_type = 'Single'
+            couponStore.coupon.betslip_type = 'Single'
           } else {
-            emitter.emit('showDialogueToaster', 'All selections have expired')
+            couponStore.coupon.bet_type = 'Multiple'
+            couponStore.coupon.betslip_type = 'Multiple'
           }
         } else {
-          throw new Error(res.message)
+          emitter.emit('showDialogueToaster', 'All selections have expired')
         }
-        emitter.emit('openBetslip')
+      } else {
+        throw new Error(res.message)
       }
-    } catch (error) {
-      console.log(error)
-      emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+      emitter.emit('openBetslip')
     }
-  }, 1000)
+  } catch (error) {
+    console.log(error)
+    emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+  }
 }
 
 function shareCode(data) {
