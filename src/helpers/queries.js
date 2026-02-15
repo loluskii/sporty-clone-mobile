@@ -217,7 +217,7 @@ export const getLiveCountBySport = async (sid) => {
 }
 
 export const getSportHighlights = async (payload) => {
-  const { sid = 1, page = 1, per_page = 20, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority' } = payload;
+  const { sid = 1, page = 1, per_page = 30, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority' } = payload;
   const params = new URLSearchParams({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end })
   return parseData(
     fetchWrapper.get(
