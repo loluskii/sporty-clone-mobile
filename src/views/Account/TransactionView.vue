@@ -413,8 +413,7 @@ onMounted(async () => {
   z-index: 20;
 }
 #transaction-list-container .list-bg {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: #fff;
 }
 #transaction-list-container .trans-select {
   position: absolute;
@@ -566,7 +565,7 @@ onMounted(async () => {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: rgb(222, 226 ,230);
+  background-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
