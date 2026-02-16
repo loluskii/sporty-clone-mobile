@@ -32,7 +32,7 @@
         <LoadingSpinner v-show="isLoading"></LoadingSpinner>
         <LoadingError v-show="loadingError"></LoadingError>
       </template>
-      <template v-else-if="!isLoading && !isEmptyResponse">
+<template v-else-if="!isLoading && !isEmptyResponse">
         <div style="position: relative">
           <div class="m-bet-content">
             <div class="m-market-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: auto">
@@ -60,31 +60,27 @@
                         <span>{{ getOutcomeDisplayName(activeMarket.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
                       </div>
                     </template>
-                  </div>
-                </div>
-              </div>
-              <LiveHighlightsFixture
-                v-for="(fixture, index) in filteredLiveData"
-                :gameData="fixture"
-                :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`"
-                :activeMarket="activeMarket"
-              ></LiveHighlightsFixture>
-            </div>
-            <div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">
-              <a class=""> View All Live {{ totalFixtures }} </a>
-            </div>
-          </div>
-        </div>
-      </template>
-      <div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
-        <div style="white-space: pre-line">
-          <p>Sorry, there are no games currently available</p>
-          <p>in this category. Please try later.</p>
-          <p>Thank you.</p>
-        </div>
-      </div>
-    </div>
+</div>
+</div>
+</div>
+<LiveHighlightsFixture v-for="(fixture, index) in filteredLiveData" :gameData="fixture"
+  :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`" :activeMarket="activeMarket"></LiveHighlightsFixture>
+</div>
+<div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">
+  <a class=""> View All Live {{ totalFixtures }} </a>
+</div>
+</div>
+</div>
+</template>
+<div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
+  <div style="white-space: pre-line">
+    <p>Sorry, there are no games currently available</p>
+    <p>in this category. Please try later.</p>
+    <p>Thank you.</p>
   </div>
+</div>
+</div>
+</div>
 </template>
 <script setup>
 import LiveHighlightsFixture from '@/components/Live/LiveHighlightsFixture.vue'
@@ -429,6 +425,7 @@ onBeforeUnmount(() => {
   color: #ffffff;
   /* color: var(--text-type2-primary); */
 }
+
 .live-container .m-market-tab {
   background-color: #000825;
   background-color: var(--brand-background-live);
@@ -442,6 +439,7 @@ onBeforeUnmount(() => {
 .live-container .m-market-tab .m-tabs-nav .m-tabs-ink-bar {
   background-color: var(--brand-highlight-text);
 }
+
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab {
   color: #ffffff;
   -webkit-box-flex: initial;
@@ -453,16 +451,19 @@ onBeforeUnmount(() => {
   margin-right: 0;
   padding: 1.33333333rem 0.83333333rem;
 }
+
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
   color: var(--brand-highlight-text);
   font-weight: bold;
   border-bottom: 0.23333333rem solid var(--brand-highlight-text)
 }
+
 .live-container .m-bet-tab {
   /* background-color: var(--brand-background-live); */
   background-color: var(--brand-background-live);
   padding-bottom: 10px;
 }
+
 .live-container .m-bet-tab .x-live-title {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -480,7 +481,8 @@ onBeforeUnmount(() => {
   z-index: 200;
   background: var(--brand-background-live);
 }
-.live-container .m-bet-tab .x-live-title > span {
+
+.live-container .m-bet-tab .x-live-title>span {
   border-right: 1px solid;
   font-size: 1.5rem;
   font-weight: bold;
@@ -490,6 +492,7 @@ onBeforeUnmount(() => {
   border-right-color: #9ca0ab;
   border-right-color: var(--text-type2-tertiary);
 }
+
 .live-container .m-bet-tab .m-sport-type {
   /* background-color: #1b1e25; */
   /* background-color: var(--brand-background-live); */
@@ -498,21 +501,25 @@ onBeforeUnmount(() => {
   -ms-flex: 1;
   flex: 1;
 }
+
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
   font-weight: normal;
   line-height: 1;
 }
+
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item.active {
   color: var(--brand-highlight-text);
   font-weight: bold;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell {
   background-color: #000e21;
   color: #9ca0ab;
@@ -527,6 +534,7 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   padding: 0 0.83333333rem;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name {
   display: -webkit-box;
   display: -webkit-flex;
@@ -534,7 +542,8 @@ onBeforeUnmount(() => {
   display: flex;
   width: 55%;
 }
-.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name > div {
+
+.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name>div {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -543,12 +552,14 @@ onBeforeUnmount(() => {
   line-height: 2rem;
   text-align: center;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table.tennis .m-info-cell {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding-right: 0.83333333rem;
   width: 26%;
 }
+
 .live-container .m-bet-tab .m-bet-content .view-all a,
 .live-container .m-bet-tab .m-bet-content .view-all a:hover,
 .live-container .m-bet-tab .m-bet-content .view-all a:visited,
@@ -557,9 +568,11 @@ onBeforeUnmount(() => {
   /* color: var(--c-event-normal-text); */
   text-decoration: none;
 }
+
 .live-container .no-data:before {
   color: rgba(234, 236, 239, 0.15);
 }
+
 .live-container .m-loading.dark {
   /* background-color: #1b1e25; */
   background-color: var(--brand-background-live);
