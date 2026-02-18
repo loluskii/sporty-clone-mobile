@@ -6,9 +6,7 @@
         <LoadingSpinner></LoadingSpinner>
       </div>
     </template>
-    <div v-if="errorState" class="error-message">
-      Failed to load Game. Please try again later.
-    </div>
+    <div v-if="errorState" class="error-message">Failed to load Game. Please try again later.</div>
   </div>
 </template>
 
@@ -98,7 +96,6 @@ onMounted(async () => {
     next()
   })
 })
-
 </script>
 
 <style scoped>
