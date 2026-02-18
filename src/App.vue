@@ -331,7 +331,7 @@ defineComponent({
           <div class="loading-overlay">
             <div class="loading-spinner">
               <img
-                src="/default.png"
+                src="/logo.png"
                 class="scaling-image"
                 style="height: 60px; margin-bottom: 20px"
                 alt="logo"
@@ -364,7 +364,7 @@ defineComponent({
             <div class="loading-overlay" v-if="isLoading">
               <div class="loading-spinner">
                 <img
-                  src="/default.png"
+                  src="/logo.png"
                   class="scaling-image"
                   style="height: 60px; margin-bottom: 20px"
                   alt="logo"
