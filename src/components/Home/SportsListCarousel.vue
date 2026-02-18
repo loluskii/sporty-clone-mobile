@@ -160,7 +160,10 @@ function openVirtual() {
 }
 
 async function playAviator() {
-  window.location.href = ""
+  return router.push({
+    name: 'game-play',
+    params: { game_name: slugify('Aviator'), game_id: 2158 }
+  })
 }
 
 function playSmatVirtual() {
