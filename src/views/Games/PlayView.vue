@@ -1,22 +1,13 @@
 <template>
   <div class="game-play">
-    <HeaderCasinoPlay @open-leave-modal="showRecommendedGames = true"></HeaderCasinoPlay>
-    <LoadingSpinner v-if="isLoading"></LoadingSpinner>
-    <iframe
-      v-if="!isLoading"
-      title="casino"
-      style="border-style: none; width: 100%; height: calc(100% - 60px)"
-      :src="gameURL"
-    />
-    <div class="recommended-games">
-      <!-- Leave Confirmation Popup -->
-      <leaveCasinoPopup
-        :show-popup="showRecommendedGames"
-        @exit="exitGame"
-        @continue="showRecommendedGames = false"
-        :games-list="gamesList"
-        @select-game="moveToNewGame"
-      />
+    <template v-if="isLoading">
+      <div>
+        <img src="/default.png" alt="" style="height: 50px" />
+        <LoadingSpinner></LoadingSpinner>
+      </div>
+    </template>
+    <div v-if="errorState" class="error-message">
+      Failed to load Game. Please try again later.
     </div>
   </div>
 </template>
@@ -43,6 +34,7 @@ const gamesList = ref([])
 const confirmLeave = ref(null)
 const bonus = ref(null)
 const previousRoute = ref(null)
+const errorState = ref(false)
 
 watch(
   () => [route.params.game_id],
@@ -62,7 +54,7 @@ async function getCasinoURL() {
 
     let payload = {
       gameId: parseInt(game_id),
-      clientId: import.meta.env.VITE_CLIENT_ID,
+      clientId: 9,
       username,
       userId: id,
       demo: false,
@@ -90,35 +82,13 @@ async function getCasinoURL() {
           })
         : await getCasinoStartUrl(payload, 'real')
 
-    gameURL.value = res.url
+    return window.open(res.url)
   } catch (error) {
+    errorState.value = true
     console.error(error)
   } finally {
     isLoading.value = false
   }
-}
-
-async function moveToNewGame(game) {
-  showRecommendedGames.value = false
-  return router.push({
-    name: 'game-play',
-    params: { game_name: slugify(game.title), game_id: game.id }
-  })
-}
-
-async function getRecommendedGames() {
-  const res = await gamesByTopCategory(11)
-  let recommended = res.data && res.data.filter((g) => g.id.toString() !== route.params.gameId)
-  gamesList.value = recommended.slice(0, 10)
-}
-
-const exitGame = () => {
-  if (utilsStore.previousRoute && utilsStore.previousRoute.includes('Play')) {
-    return router.push('/Games')
-  } else if (utilsStore.previousRoute && !utilsStore.previousRoute.includes('Play')) {
-    return router.push(utilsStore.previousRoute)
-  }
-  return router.push('/')
 }
 
 onMounted(async () => {
@@ -129,17 +99,6 @@ onMounted(async () => {
   })
 })
 
-onBeforeMount(async () => {
-  await getRecommendedGames()
-})
-
-onBeforeRouteLeave((to, from, next) => {
-  if (route.params.game_id === 'smat_virtual' || showRecommendedGames.value) {
-    next()
-  } else {
-    showRecommendedGames.value = true
-  }
-})
 </script>
 
 <style scoped>
@@ -147,5 +106,17 @@ onBeforeRouteLeave((to, from, next) => {
   background-color: black;
   height: 100vh;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.error-message {
+  color: #ff4444;
+  text-align: center;
+  padding: 1rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 8px;
+  margin: 1rem 15px;
+  font-size: 0.95rem;
 }
 </style>
