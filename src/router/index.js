@@ -44,7 +44,7 @@ const LoadingComponent = {
 }
 
 // Add route preloading for frequently accessed routes
-const preloadRoutes = ['home', 'az_menu', 'live', 'casino-games']
+const preloadRoutes = ['home', 'az_menu', 'live', 'casino']
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
