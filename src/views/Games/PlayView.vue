@@ -82,7 +82,7 @@ async function getCasinoURL() {
           })
         : await getCasinoStartUrl(payload, 'real')
 
-    return window.open(res.url)
+    window.location.href = res.url
   } catch (error) {
     errorState.value = true
     console.error(error)
