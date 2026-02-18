@@ -5,7 +5,7 @@ const CACHE_NAME = `sporty-clone-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/default.png',
+  '/logo.png',
   '/loader.gif',
   '/assets/css/base.css',
   '/assets/css/main.css',
