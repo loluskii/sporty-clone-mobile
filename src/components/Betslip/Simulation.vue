@@ -19,6 +19,7 @@
             :key="selection.matchId || selection.match_id"
             :selection="selection"
             :simulation-data="simulationData[selection.matchId || selection.match_id]"
+            :selection-result="selectionResultsMap[selectionKey(selection)]"
             :current-time="currentTime"
             :timer-ended="timerEnded"
             :show-pitch="!showSharedPitch"
@@ -118,6 +119,39 @@ const simulationData = computed(() => {
   }
 })
 
+const selectionResults = computed(() => {
+  const results =
+    normalizedResults.value?.selections ||
+    normalizedResults.value?.selectionStatus ||
+    normalizedResults.value?.selectionResults ||
+    []
+  if (Array.isArray(results)) return results
+  const candidate = Object.values(normalizedResults.value || {}).find(
+    (value) =>
+      Array.isArray(value) &&
+      value.some(
+        (item) =>
+          item &&
+          typeof item === 'object' &&
+          'won' in item &&
+          ('gameID' in item || 'matchID' in item || 'matchId' in item)
+      )
+  )
+  return Array.isArray(candidate) ? candidate : []
+})
+
+const selectionResultsMap = computed(() => {
+  return selectionResults.value.reduce((acc, item) => {
+    if (!item) return acc
+    const matchId = item.gameID ?? item.matchID ?? item.matchId
+    const marketId = item.marketID ?? item.marketId
+    const outcomeId = item.outcomeID ?? item.outcomeId
+    if (matchId == null || marketId == null || outcomeId == null) return acc
+    acc[`${matchId}:${marketId}:${outcomeId}`] = item
+    return acc
+  }, {})
+})
+
 const timerStarted = computed(() => currentTime.value > 0)
 const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
 const selections = computed(() => couponStore.coupon.selections || [])
@@ -127,6 +161,13 @@ const betSummary = computed(() => {
   return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
 })
 
+const selectionKey = (selection) => {
+  if (!selection) return ''
+  const matchId = selection.matchId || selection.match_id || ''
+  const marketId = selection.marketId || selection.market_id || ''
+  const outcomeId = selection.outcomeId || selection.outcomeID || ''
+  return `${matchId}:${marketId}:${outcomeId}`
+}
 
 // Methods
 const handleSimulationExit = (action) => {

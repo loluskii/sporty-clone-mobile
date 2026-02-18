@@ -8,7 +8,7 @@ export const AUTH_EXCLUDE_LIST = []
 export const WTH_PERC = 0
 export const APP_KEY = 'SBE'
 export const SIM_ALLOWED_MARKETS = [
-  1, 10, 18, 19, 20, 21, 26, 29, 35, 37, 45, 47, 60, 63, 75, 81, 98, 548,
+  1, 10,11,16, 18,26, 29,45,60, 68,74, 75, 80, 83, 90, 94,95
 ];
 export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true

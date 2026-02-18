@@ -144,7 +144,7 @@ async function getHighlightGames() {
     const response = await getSportHighlights({
       sid: activeSportID.value, 
       today: tabView.value === 'today' ? 1 : 0,
-      order_type: tabView.value === 'today' ? 'time' : 'priority',
+      order_type: tabView.value === 'today' ? 'time' : 'priority|desc',
     })
     if (response.data.fixtures && response.data.markets) {
       fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])

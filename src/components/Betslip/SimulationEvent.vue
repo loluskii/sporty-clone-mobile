@@ -20,7 +20,15 @@
 
     <div class="sim-bet-details">
       <div class="sim-bet-market">{{ selection.marketName }}</div>
-      <div class="sim-bet-odds">{{ selection.outcomeName }} @ {{ selection.odds }}</div>
+      <div class="sim-bet-odds">
+        <span>{{ selection.outcomeName }} @ {{ selection.odds }}</span>
+        <span
+          v-if="showResultIcon"
+          class="sim-result-icon"
+          :class="resultClass"
+          aria-hidden="true"
+        ></span>
+      </div>
     </div>
   </div>
 </template>
@@ -49,6 +57,10 @@ const props = defineProps({
   showPitch: {
     type: Boolean,
     default: true
+  },
+  selectionResult: {
+    type: Object,
+    default: null
   }
 })
 
@@ -91,6 +103,17 @@ const awayTeamName = computed(() => {
     return props.selection.eventName.split(' vs ')[1]
   }
   return 'Away'
+})
+
+const resultClass = computed(() => {
+  const won = props.selectionResult?.won
+  if (won === 1 || won === '1') return 'win'
+  if (won === 0 || won === '0') return 'lose'
+  return ''
+})
+
+const showResultIcon = computed(() => {
+  return Boolean(resultClass.value) && props.timerEnded
 })
 </script>
 
@@ -158,6 +181,7 @@ const awayTeamName = computed(() => {
   gap: 0.5rem;
   font-size: 0.85rem;
   color: #6c727f;
+  align-items: center;
 }
 
 .sim-bet-market {
@@ -167,5 +191,46 @@ const awayTeamName = computed(() => {
 
 .sim-bet-odds {
   text-align: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
+
+.sim-result-icon {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  height: 1rem;
+  justify-content: center;
+  position: relative;
+  width: 1rem;
+}
+
+.sim-result-icon.win {
+  background: #0d9737;
+}
+
+/* .sim-result-icon.win::before {
+  content: '';
+  width: 0.35rem;
+  height: 0.6rem;
+  border: 2px solid #ffffff;
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(45deg);
+  margin-top: -0.05rem;
+} */
+
+.sim-result-icon.lose {
+  background: #b42318;
+}
+
+/* .sim-result-icon.lose::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  transform: rotate(45deg);
+} */
 </style>
