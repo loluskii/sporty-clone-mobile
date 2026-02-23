@@ -21,23 +21,17 @@
               :class="{ active: upMode === 'none' }"
               @click="setUpMode('none')"
             >
-              1X2 Base
+              {{ baseLabel }}
             </button>
             <button
+              v-for="option in modeOptions"
+              :key="option.key"
               class="up-mode-tab"
               type="button"
-              :class="{ active: upMode === '2up' }"
-              @click="setUpMode('2up')"
+              :class="{ active: upMode === option.key }"
+              @click="setUpMode(option.key)"
             >
-              2UP
-            </button>
-            <button
-              class="up-mode-tab"
-              type="button"
-              :class="{ active: upMode === '1up' }"
-              @click="setUpMode('1up')"
-            >
-              1UP
+              {{ option.label }}
             </button>
           </div>
         </div>
@@ -108,6 +102,8 @@ const {
   setUpMode,
   resetUpMode,
   showUpToggle,
+  modeOptions,
+  baseLabel,
   effectiveMarket,
   filteredFixtures,
   sanitizeMarkets

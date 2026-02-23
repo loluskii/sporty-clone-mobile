@@ -25,23 +25,17 @@
             :class="{ active: upMode === 'none' }"
             @click="setUpMode('none')"
           >
-            1X2 Base
+            {{ baseLabel }}
           </button>
           <button
+            v-for="option in modeOptions"
+            :key="option.key"
             class="up-mode-tab"
             type="button"
-            :class="{ active: upMode === '2up' }"
-            @click="setUpMode('2up')"
+            :class="{ active: upMode === option.key }"
+            @click="setUpMode(option.key)"
           >
-            2UP
-          </button>
-          <button
-            class="up-mode-tab"
-            type="button"
-            :class="{ active: upMode === '1up' }"
-            @click="setUpMode('1up')"
-          >
-            1UP
+            {{ option.label }}
           </button>
         </div>
       </div>
@@ -112,6 +106,18 @@ const props = defineProps({
   upMode: {
     type: String,
     default: 'none'
+  },
+  showUpToggle: {
+    type: Boolean,
+    default: false
+  },
+  modeOptions: {
+    type: Array,
+    default: () => []
+  },
+  baseLabel: {
+    type: String,
+    default: 'Base'
   }
 })
 defineComponent({
@@ -123,31 +129,14 @@ const router = useRouter()
 const utilsStore = useUtilsStore()
 const fixtures = ref(props.highlightsData || {})
 const upMode = computed(() => props.upMode || 'none')
+const modeOptions = computed(() => props.modeOptions || [])
+const baseLabel = computed(() => props.baseLabel || 'Base')
 
 const getSportbyId = computed(() => {
   return utilsStore.sportsMenu.find((sport) => sport.sport_id == props.activeMarket.sportID)
 })
 
-const hasDerivedMarkets = computed(() => {
-  const groups = props.highlightsData || {}
-  const lists = Object.values(groups)
-  return lists.some((list) =>
-    (list || []).some((fixture) => {
-      const derived =
-        fixture?.derived_market_id ||
-        fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.length > 0
-    })
-  )
-})
-
-const showUpToggle = computed(() => {
-  return (
-    Number(props.activeMarket?.sportID || 0) === 1 &&
-    Number(props.activeMarket?.marketID || 0) === 1 &&
-    hasDerivedMarkets.value
-  )
-})
+const showUpToggle = computed(() => props.showUpToggle)
 
 const displayMarket = computed(() => {
   return props.effectiveMarket || props.activeMarket || {}
@@ -165,7 +154,7 @@ const selectMarket = (market) => {
 }
 
 const setUpMode = (mode) => {
-  // Emit exclusive 1UP/2UP toggle state to parent.
+  // Emit exclusive derived-market toggle state to parent.
   const nextMode = props.upMode === mode ? 'none' : mode
   emits('set-up-mode', nextMode)
 }

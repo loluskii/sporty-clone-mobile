@@ -55,23 +55,17 @@
                 :class="{ active: upMode === 'none' }"
                 @click="setUpMode('none')"
               >
-                1X2 Base
+                {{ baseLabel }}
               </button>
               <button
+                v-for="option in modeOptions"
+                :key="option.key"
                 class="up-mode-tab"
                 type="button"
-                :class="{ active: upMode === '2up' }"
-                @click="setUpMode('2up')"
+                :class="{ active: upMode === option.key }"
+                @click="setUpMode(option.key)"
               >
-                2UP
-              </button>
-              <button
-                class="up-mode-tab"
-                type="button"
-                :class="{ active: upMode === '1up' }"
-                @click="setUpMode('1up')"
-              >
-                1UP
+                {{ option.label }}
               </button>
             </div>
             <div class="x-table x-live-table football">
@@ -116,7 +110,6 @@
 <script setup>
 import LiveHighlightsFixture from '@/components/Live/LiveHighlightsFixture.vue'
 import { useUtilsStore } from '@/stores/utils.store'
-import { useCouponStore } from '@/stores'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
@@ -167,7 +160,6 @@ const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const loadingError = ref(false) 
 const utilsStore = useUtilsStore()
-const couponStore = useCouponStore()
 // Keep a writable ref to the active market for up-mode state changes.
 const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
 const totalFixtures = ref(1) 
@@ -277,6 +269,8 @@ const {
   setUpMode,
   resetUpMode,
   showUpToggle,
+  modeOptions,
+  baseLabel,
   effectiveMarket,
   filteredFixtures,
   sanitizeMarkets

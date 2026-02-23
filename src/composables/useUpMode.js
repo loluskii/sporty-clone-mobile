@@ -1,8 +1,13 @@
 import { computed, ref, watch } from 'vue'
 
-const DERIVED_MARKET_IDS = {
-  '1up': 60100,
-  '2up': 60200
+export const DEFAULT_DERIVED_MARKET_CONFIG = {
+  1: {
+    baseLabel: '1X2 Base',
+    modes: [
+      { key: '2up', id: 60200, label: '2UP' },
+      { key: '1up', id: 60100, label: '1UP' }
+    ]
+  }
 }
 
 const flattenFixtures = (fixtures) => {
@@ -13,18 +18,52 @@ const flattenFixtures = (fixtures) => {
   return []
 }
 
+const getDerivedIds = (config) => {
+  return Object.values(config || {}).flatMap((entry) =>
+    (entry?.modes || []).map((mode) => Number(mode.id)).filter((id) => Number.isFinite(id))
+  )
+}
+
 export const useUpMode = ({
   fixtures,
   activeMarket,
   marketsGroup,
-  enabledSportId = 1
+  enabledSportId = 1,
+  derivedMarketConfig = DEFAULT_DERIVED_MARKET_CONFIG
 }) => {
   const upMode = ref('none')
 
+  const allDerivedIds = computed(() => {
+    return new Set(getDerivedIds(derivedMarketConfig))
+  })
+
+  const activeConfig = computed(() => {
+    const marketId = Number(activeMarket?.value?.marketID || 0)
+    return derivedMarketConfig?.[marketId] || null
+  })
+
+  const modeOptions = computed(() => {
+    return activeConfig.value?.modes || []
+  })
+
+  const baseLabel = computed(() => {
+    return activeConfig.value?.baseLabel || 'Base'
+  })
+
+  const modeIdMap = computed(() => {
+    const map = new Map()
+    modeOptions.value.forEach((option) => {
+      map.set(option.key, Number(option.id))
+    })
+    return map
+  })
+
   const hasDerivedMarkets = computed(() => {
+    const targetIds = modeOptions.value.map((option) => Number(option.id))
+    if (!targetIds.length) return false
     return flattenFixtures(fixtures?.value).some((fixture) => {
       const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.length > 0
+      return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
     })
   })
 
@@ -32,7 +71,7 @@ export const useUpMode = ({
     const marketId = Number(activeMarket?.value?.marketID || 0)
     const marketSportId = Number(activeMarket?.value?.sportID || activeMarket?.value?.sportId || 0)
     if (enabledSportId && marketSportId !== enabledSportId) return false
-    return marketId === 1
+    return Boolean(activeConfig.value) && marketId > 0
   })
 
   const showUpToggle = computed(() => {
@@ -40,15 +79,16 @@ export const useUpMode = ({
   })
 
   const sanitizeMarkets = (list = []) => {
+    const derivedIds = allDerivedIds.value
     return (list || []).filter((market) => {
       const marketId = Number(market.marketID)
-      return marketId !== DERIVED_MARKET_IDS['1up'] && marketId !== DERIVED_MARKET_IDS['2up']
+      return !derivedIds.has(marketId)
     })
   }
 
   const filterFixturesByUpMode = (list, mode) => {
     if (!list || mode === 'none') return list
-    const targetId = DERIVED_MARKET_IDS[mode]
+    const targetId = modeIdMap.value.get(mode)
     if (!targetId) return list
     if (Array.isArray(list)) {
       return list.filter((fixture) => {
@@ -76,7 +116,7 @@ export const useUpMode = ({
   const effectiveMarket = computed(() => {
     if (upMode.value === 'none') return activeMarket?.value
     const baseMarket = activeMarket?.value || {}
-    const derivedMarketId = DERIVED_MARKET_IDS[upMode.value]
+    const derivedMarketId = modeIdMap.value.get(upMode.value)
     return {
       ...baseMarket,
       marketID: derivedMarketId,
@@ -88,10 +128,22 @@ export const useUpMode = ({
   })
 
   const setUpMode = (mode) => {
+    if (mode === 'none') {
+      upMode.value = 'none'
+      return
+    }
+    const validModes = new Set(modeOptions.value.map((option) => option.key))
+    if (!validModes.has(mode)) {
+      upMode.value = 'none'
+      return
+    }
     const nextMode = upMode.value === mode ? 'none' : mode
     upMode.value = nextMode
     if (nextMode !== 'none' && marketsGroup?.value) {
-      const baseMarket = marketsGroup.value.find((market) => Number(market.marketID) === 1)
+      const baseMarketId = Number(activeMarket?.value?.marketID || 0)
+      const baseMarket = marketsGroup.value.find(
+        (market) => Number(market.marketID) === baseMarketId
+      )
       if (baseMarket && activeMarket) {
         activeMarket.value = baseMarket
       }
@@ -105,7 +157,7 @@ export const useUpMode = ({
   watch(
     () => activeMarket?.value?.marketID,
     (marketId) => {
-      if (Number(marketId || 0) !== 1) {
+      if (!derivedMarketConfig?.[Number(marketId || 0)]) {
         upMode.value = 'none'
       }
     }
@@ -116,6 +168,8 @@ export const useUpMode = ({
     setUpMode,
     resetUpMode,
     showUpToggle,
+    modeOptions,
+    baseLabel,
     effectiveMarket,
     filteredFixtures,
     sanitizeMarkets
