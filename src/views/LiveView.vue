@@ -33,7 +33,7 @@
       </div>
 
       <!-- Markets Navigation -->
-      <div v-if="Object.keys(filteredLiveData).length" class="m-sanp-nav-container">
+      <div v-if="Object.keys(groupedFixtures).length" class="m-sanp-nav-container">
         <div class="m-snap-nav-wrap m-mkt-type" style="overflow: auto">
           <ul class="m-snap-nav flex">
             <li
@@ -76,9 +76,9 @@
       </div>
 
       <!-- Fixtures List -->
-      <div v-if="Object.keys(filteredLiveData).length" class="m-bet-content">
+      <div v-if="Object.keys(groupedFixtures).length" class="m-bet-content">
         <div
-          v-for="(fixtures, tournamentKey) in filteredLiveData"
+          v-for="(fixtures, tournamentKey) in groupedFixtures"
           :key="tournamentKey"
           class="m-league event-league"
         >
@@ -134,17 +134,19 @@ import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
-import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
+import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount, toRef } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
+import { useUpMode } from '@/composables/useUpMode'
 
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
 const accumulatedFixtures = ref([])
 const accumulatedMarkets = ref([])
-const upMode = ref('none')
+// Keep a writable ref to the active market for up-mode state changes.
+const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
 
 // Map outcome IDs to standard display names for common markets
 const outcomeNameMap = {
@@ -236,28 +238,18 @@ const sportsListData = computed(() => {
   return Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
 })
 
-const filteredLiveData = computed(() => {
-  let fixtures =
-    accumulatedFixtures.value.length && !isEmptyResponse.value
-      ? accumulatedFixtures.value
-          .filter((s) => s.sportID == activeSportID.value)
-          .sort((a, b) => {
-            if (a.tournamentID !== b.tournamentID) {
-              return a.tournamentID - b.tournamentID
-            }
-            return 0
-          })
-      : []
-
-  if (upMode.value !== 'none') {
-    const targetId = upMode.value === '1up' ? 60100 : 60200
-    fixtures = fixtures.filter((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.map(Number).includes(targetId)
-    })
-  }
-
-  return _.groupBy(fixtures, 'tournament')
+// Base fixtures list for the active sport before applying up-mode filtering.
+const sportFixtures = computed(() => {
+  return accumulatedFixtures.value.length && !isEmptyResponse.value
+    ? accumulatedFixtures.value
+        .filter((s) => s.sportID == activeSportID.value)
+        .sort((a, b) => {
+          if (a.tournamentID !== b.tournamentID) {
+            return a.tournamentID - b.tournamentID
+          }
+          return 0
+        })
+    : []
 })
 
 const marketsGroup = computed(() => {
@@ -266,57 +258,46 @@ const marketsGroup = computed(() => {
     : []
 })
 
+const {
+  upMode,
+  setUpMode,
+  resetUpMode,
+  showUpToggle,
+  effectiveMarket,
+  filteredFixtures,
+  sanitizeMarkets
+} = useUpMode({
+  fixtures: sportFixtures,
+  activeMarket,
+  marketsGroup,
+  enabledSportId: 1
+})
+
+// Group fixtures after up-mode filtering to keep tournament sections intact.
+const groupedFixtures = computed(() => {
+  return _.groupBy(filteredFixtures.value || [], 'tournament')
+})
+
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value
+  // Strip derived markets from tabs to keep the base list clean.
+  const activeMarkets = sanitizeMarkets(marketsGroup.value)
     .filter((s) => s.sportID == activeSportID.value)
-    .filter((market) => {
-      const marketId = Number(market.marketID)
-      return marketId !== 60100 && marketId !== 60200
-    })
   return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
-})
-
-const activeMarket = computed(() => {
-  return utilsStore.activeLiveMarkets
-})
-
-const effectiveMarket = computed(() => {
-  if (upMode.value === 'none') return activeMarket.value
-  const baseMarket = activeMarket.value || {}
-  const derivedMarketId = upMode.value === '1up' ? 60100 : 60200
-  return {
-    ...baseMarket,
-    marketID: derivedMarketId,
-    marketName: baseMarket.marketName ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}` : baseMarket.marketName,
-    outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
-  }
-})
-
-const hasDerivedMarkets = computed(() => {
-  return accumulatedFixtures.value.some((fixture) => {
-    const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-    return Array.isArray(derived) && derived.length > 0
-  })
-})
-
-const showUpToggle = computed(() => {
-  return (
-    Number(activeMarket.value?.marketID || 0) === 1 &&
-    hasDerivedMarkets.value
-  )
 })
 
 watch(activeSportMarkets, (newValue) => {
   if (newValue.length) {
-    utilsStore.activeLiveMarkets = newValue[0]
+    // Keep store in sync with the active market selection.
+    activeMarket.value = newValue[0]
   } else {
-    utilsStore.activeLiveMarkets = []
+    activeMarket.value = []
   }
 })
 
 function setActiveSport(sid) {
   activeSportID.value = parseInt(sid)
-  upMode.value = 'none'
+  // Reset up-mode when the active sport changes.
+  resetUpMode()
   document.getElementById('live_' + sid)?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
@@ -325,27 +306,9 @@ function setActiveSport(sid) {
 }
 
 function selectMarket(market) {
-  utilsStore.activeLiveMarkets = market
+  // Use the shared active market ref so up-mode stays consistent.
+  activeMarket.value = market
 }
-
-const setUpMode = (mode) => {
-  upMode.value = mode
-  if (upMode.value !== 'none') {
-    const baseMarket = activeSportMarkets.value.find((market) => Number(market.marketID) === 1)
-    if (baseMarket) {
-      utilsStore.activeLiveMarkets = baseMarket
-    }
-  }
-}
-
-watch(
-  () => activeMarket.value?.marketID,
-  (marketId) => {
-    if (Number(marketId || 0) !== 1) {
-      upMode.value = 'none'
-    }
-  }
-)
 
 function toggleTournament(e, tournamentKey) {
   const childId = 'league-content-' + tournamentKey
@@ -400,6 +363,8 @@ watch(
         !newSportsList.some((sport) => sport.sportID === activeSportID.value)
       ) {
         activeSportID.value = newSportsList[0].sportID
+        // Reset up-mode when the auto-selected sport changes.
+        resetUpMode()
       }
     }
   },

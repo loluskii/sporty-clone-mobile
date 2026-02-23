@@ -43,9 +43,9 @@
         </div>
       </div>
       <div class="m-bet-content" style="position: relative">
-        <FixtureGroupingTournament :fixtures-list="displayFixturesList" :active-market="effectiveMarket"
+        <FixtureGroupingTournament :fixtures-list="filteredFixtures" :active-market="effectiveMarket"
           v-if="fixtureGroupingType === 'tournament'" />
-        <FixtureGroupingDefault :fixtures-list="displayFixturesList" :active-market="effectiveMarket" v-else />
+        <FixtureGroupingDefault :fixtures-list="filteredFixtures" :active-market="effectiveMarket" v-else />
         <LoadingSpinner v-show="fetchingMore"></LoadingSpinner>
       </div>
     </template>
@@ -84,6 +84,7 @@ import {
   FEED_TOGGLE
 } from '@/helpers'
 import emitter from '@/plugins/emitter'
+import { useUpMode } from '@/composables/useUpMode'
 
 const isEmptyResponse = computed(() => {
   const list = fixturesList.value
@@ -101,12 +102,26 @@ const fixturesList = ref(null)
 
 const marketsGroup = ref({})
 const activeMarket = ref({})
-const upMode = ref('none')
+
+const {
+  upMode,
+  setUpMode,
+  resetUpMode,
+  showUpToggle,
+  effectiveMarket,
+  filteredFixtures,
+  sanitizeMarkets
+} = useUpMode({
+  fixtures: fixturesList,
+  activeMarket,
+  marketsGroup,
+  enabledSportId: 1
+})
 
 watch(
   () => [route.name, route.params.sport, route.query.period, route.query.startDate, route.query.endDate],
   () => {
-    upMode.value = 'none'
+    resetUpMode()
   }
 )
 
@@ -130,77 +145,8 @@ const getActiveSport = computed(() => {
   return getSportbyName(route.params.sport)
 })
 
-const sanitizeMarkets = (markets = []) => {
-  return (markets || []).filter((market) => {
-    const marketId = Number(market.marketID)
-    return marketId !== 60100 && marketId !== 60200
-  })
-}
-
-const hasDerivedMarkets = computed(() => {
-  const list = fixturesList.value
-  if (!list) return false
-  if (Array.isArray(list)) {
-    return list.some((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.length > 0
-    })
-  }
-  return Object.values(list).some((group) =>
-    (group || []).some((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.length > 0
-    })
-  )
-})
-
-const showUpToggle = computed(() => {
-  return (
-    Number(activeMarket.value?.marketID || 0) === 1 &&
-    hasDerivedMarkets.value
-  )
-})
-
-const filterFixturesByUpMode = (list, mode) => {
-  if (!list || mode === 'none') return list
-  const targetId = mode === '1up' ? 60100 : 60200
-  if (Array.isArray(list)) {
-    return list.filter((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.map(Number).includes(targetId)
-    })
-  }
-  const next = {}
-  Object.entries(list).forEach(([key, group]) => {
-    const filtered = (group || []).filter((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.map(Number).includes(targetId)
-    })
-    if (filtered.length) {
-      next[key] = filtered
-    }
-  })
-  return next
-}
-
-const displayFixturesList = computed(() => {
-  return filterFixturesByUpMode(fixturesList.value, upMode.value)
-})
-
-const effectiveMarket = computed(() => {
-  if (upMode.value === 'none') return activeMarket.value
-  const baseMarket = activeMarket.value || {}
-  const derivedMarketId = upMode.value === '1up' ? 60100 : 60200
-  return {
-    ...baseMarket,
-    marketID: derivedMarketId,
-    marketName: baseMarket.marketName ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}` : baseMarket.marketName,
-    outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
-  }
-})
-
 const fixtureGroupingType = computed(() => {
-  return displayFixturesList.value !== null && !Array.isArray(displayFixturesList.value)
+  return filteredFixtures.value !== null && !Array.isArray(filteredFixtures.value)
     ? 'tournament'
     : 'default'
 })
@@ -337,25 +283,6 @@ async function fetchFixturesByActiveSport(id, period = null) {
 async function selectMarket(market) {
   activeMarket.value = market
 }
-
-const setUpMode = (mode) => {
-  upMode.value = mode
-  if (upMode.value !== 'none') {
-    const baseMarket = marketsGroup.value.find((market) => Number(market.marketID) === 1)
-    if (baseMarket) {
-      activeMarket.value = baseMarket
-    }
-  }
-}
-
-watch(
-  () => activeMarket.value?.marketID,
-  (marketId) => {
-    if (Number(marketId || 0) !== 1) {
-      upMode.value = 'none'
-    }
-  }
-)
 
 const isScrolled = ref(false)
 const isTop = ref(false)
