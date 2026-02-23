@@ -90,7 +90,7 @@ import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
 import { getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
-import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
+import { defineComponent, onMounted, ref, onUnmounted, computed,watch } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
 
@@ -270,6 +270,15 @@ const handleScroll = () => {
     isTop.value = false
   }
 }
+
+watch(
+  () => activeMarket.value?.marketID,
+  (marketId) => {
+    if (Number(marketId || 0) !== 1) {
+      upMode.value = 'none'
+    }
+  }
+)
 
 const removeFixtureByMatchId = (matchID) => {
   const removeFromGroups = (groups) => {

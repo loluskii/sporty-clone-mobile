@@ -4,7 +4,7 @@
     <HeaderGame :SportsName="getActiveSport"></HeaderGame>
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
-      <div v-show="marketsGroup?.length" class="m-sanp-nav-container" id="m-sanp-nav-container">
+      <div v-show="marketsGroup?.length" class="m-snap-nav-container" id="m-sanp-nav-container">
         <div class="m-snap-nav-wrap m-sport-type has-live" :class="{ 'm-sport-type-fixed': isTop }"
           style="overflow: auto">
           <ul class="m-snap-nav flex">
@@ -14,13 +14,38 @@
               {{ market.marketName === '1x2' ? '1X2':market.marketName }}
             </li>
           </ul>
-          <!-- <i class="controls left-controls"></i> <i class="controls right-controls"></i> -->
+          <div v-if="showUpToggle" class="up-mode-bar">
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === 'none' }"
+              @click="setUpMode('none')"
+            >
+              1X2 Base
+            </button>
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === '2up' }"
+              @click="setUpMode('2up')"
+            >
+              2UP
+            </button>
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === '1up' }"
+              @click="setUpMode('1up')"
+            >
+              1UP
+            </button>
+          </div>
         </div>
       </div>
       <div class="m-bet-content" style="position: relative">
-        <FixtureGroupingTournament :fixtures-list="fixturesList" :active-market="activeMarket"
+        <FixtureGroupingTournament :fixtures-list="displayFixturesList" :active-market="effectiveMarket"
           v-if="fixtureGroupingType === 'tournament'" />
-        <FixtureGroupingDefault :fixtures-list="fixturesList" :active-market="activeMarket" v-else />
+        <FixtureGroupingDefault :fixtures-list="displayFixturesList" :active-market="effectiveMarket" v-else />
         <LoadingSpinner v-show="fetchingMore"></LoadingSpinner>
       </div>
     </template>
@@ -76,6 +101,14 @@ const fixturesList = ref(null)
 
 const marketsGroup = ref({})
 const activeMarket = ref({})
+const upMode = ref('none')
+
+watch(
+  () => [route.name, route.params.sport, route.query.period, route.query.startDate, route.query.endDate],
+  () => {
+    upMode.value = 'none'
+  }
+)
 
 const isLoading = ref(false)
 const loadingError = ref(false)
@@ -87,12 +120,6 @@ const container = ref(null)
 const isLastPage = ref(false)
 const lastPage = ref(null)
 
-const fixtureGroupingType = computed(() => {
-  return fixturesList.value !== null && !Array.isArray(fixturesList.value)
-    ? 'tournament'
-    : 'default'
-})
-
 // const filterQuery = ref()
 
 const getSportbyName = (name) => {
@@ -101,6 +128,81 @@ const getSportbyName = (name) => {
 
 const getActiveSport = computed(() => {
   return getSportbyName(route.params.sport)
+})
+
+const sanitizeMarkets = (markets = []) => {
+  return (markets || []).filter((market) => {
+    const marketId = Number(market.marketID)
+    return marketId !== 60100 && marketId !== 60200
+  })
+}
+
+const hasDerivedMarkets = computed(() => {
+  const list = fixturesList.value
+  if (!list) return false
+  if (Array.isArray(list)) {
+    return list.some((fixture) => {
+      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.length > 0
+    })
+  }
+  return Object.values(list).some((group) =>
+    (group || []).some((fixture) => {
+      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.length > 0
+    })
+  )
+})
+
+const showUpToggle = computed(() => {
+  return (
+    Number(activeMarket.value?.marketID || 0) === 1 &&
+    hasDerivedMarkets.value
+  )
+})
+
+const filterFixturesByUpMode = (list, mode) => {
+  if (!list || mode === 'none') return list
+  const targetId = mode === '1up' ? 60100 : 60200
+  if (Array.isArray(list)) {
+    return list.filter((fixture) => {
+      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.map(Number).includes(targetId)
+    })
+  }
+  const next = {}
+  Object.entries(list).forEach(([key, group]) => {
+    const filtered = (group || []).filter((fixture) => {
+      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.map(Number).includes(targetId)
+    })
+    if (filtered.length) {
+      next[key] = filtered
+    }
+  })
+  return next
+}
+
+const displayFixturesList = computed(() => {
+  return filterFixturesByUpMode(fixturesList.value, upMode.value)
+})
+
+const effectiveMarket = computed(() => {
+  if (upMode.value === 'none') return activeMarket.value
+  const baseMarket = activeMarket.value || {}
+  const derivedMarketId = upMode.value === '1up' ? 60100 : 60200
+  return {
+    ...baseMarket,
+    marketID: derivedMarketId,
+    marketName: baseMarket.marketName ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}` : baseMarket.marketName,
+    outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
+  }
+})
+
+const fixtureGroupingType = computed(() => {
+  return displayFixturesList.value !== null && !Array.isArray(displayFixturesList.value)
+    ? 'tournament'
+    : 'default'
 })
 
 watch(
@@ -152,8 +254,9 @@ async function getTournamentFixtures(sid) {
     }, {})
 
     fixturesList.value = { ...fixtures }
-    marketsGroup.value = results[0].value?.data.markets
-    activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+    const filteredMarkets = sanitizeMarkets(results[0].value?.data.markets || [])
+    marketsGroup.value = filteredMarkets
+    activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
     isLoading.value = false
   } catch (error) {
     console.error('Error fetching fixtures:', error)
@@ -171,8 +274,9 @@ async function getCategoryFixtures(sid, cid) {
       isPaginated.value = true
       fixturesList.value = _.groupBy(fixtures, 'tournament')
       isLastPage.value = lastPage.value === page.value
-      marketsGroup.value = markets
-      activeMarket.value = marketsGroup.value ? marketsGroup.value[0] : []
+      const filteredMarkets = sanitizeMarkets(markets || [])
+      marketsGroup.value = filteredMarkets
+      activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
       isLoading.value = false
     } else {
       throw Error
@@ -216,8 +320,9 @@ async function fetchFixturesByActiveSport(id, period = null) {
         ? [...fixturesList.value, ...fixtures]
         : [...fixtures]
       isLastPage.value = lastPage.value === page.value
-      marketsGroup.value = markets
-      activeMarket.value = marketsGroup.value.length ? marketsGroup.value[0] : {}
+      const filteredMarkets = sanitizeMarkets(markets || [])
+      marketsGroup.value = filteredMarkets
+      activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
     } else {
       throw Error
     }
@@ -232,6 +337,25 @@ async function fetchFixturesByActiveSport(id, period = null) {
 async function selectMarket(market) {
   activeMarket.value = market
 }
+
+const setUpMode = (mode) => {
+  upMode.value = mode
+  if (upMode.value !== 'none') {
+    const baseMarket = marketsGroup.value.find((market) => Number(market.marketID) === 1)
+    if (baseMarket) {
+      activeMarket.value = baseMarket
+    }
+  }
+}
+
+watch(
+  () => activeMarket.value?.marketID,
+  (marketId) => {
+    if (Number(marketId || 0) !== 1) {
+      upMode.value = 'none'
+    }
+  }
+)
 
 const isScrolled = ref(false)
 const isTop = ref(false)
@@ -461,6 +585,30 @@ defineComponent({
   transform: rotate(180deg);
 }
 
+.up-mode-bar {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--brand-active-tab-bg);;
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.62rem 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.up-mode-tab.active {
+  border-bottom-color: var(--brand-active-tab-bg);
+}
+
 .m-event-list .m-topnav .trans-select {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -668,7 +816,6 @@ defineComponent({
   -webkit-transition: top 0.3s;
   transition: top 0.3s;
   z-index: 100;
-  padding: 10px 0;
   border-bottom: 1px solid #eaecef;
 }
 
