@@ -46,6 +46,32 @@
               {{ market.marketName }}
             </li>
           </ul>
+          <div v-if="showUpToggle" class="up-mode-bar">
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === 'none' }"
+              @click="setUpMode('none')"
+            >
+              1X2 Base
+            </button>
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === '2up' }"
+              @click="setUpMode('2up')"
+            >
+              2UP
+            </button>
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === '1up' }"
+              @click="setUpMode('1up')"
+            >
+              1UP
+            </button>
+          </div>
         </div>
       </div>
 
@@ -71,9 +97,9 @@
                   <span class="live-indicator">LIVE</span>
                 </div>
                 <div class="x-table-cell market-title">
-                  <template v-for="(outcome, o) in _.sortBy(activeMarket?.outcomes || [], 'outcomeID')" :key="o">
+                  <template v-for="(outcome, o) in _.sortBy(effectiveMarket?.outcomes || [], 'outcomeID')" :key="o">
                     <div class="outcome-name">
-                      <span>{{ getOutcomeDisplayName(activeMarket?.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
+                      <span>{{ getOutcomeDisplayName(effectiveMarket?.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
                     </div>
                   </template>
                 </div>
@@ -84,7 +110,7 @@
                 v-for="(fixture, index) in fixtures"
                 :key="fixture.matchID"
                 :gameData="fixture"
-                :activeMarket="activeMarket"
+                :activeMarket="effectiveMarket"
               />
             </div>
           </div>
@@ -118,6 +144,7 @@ const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
 const accumulatedFixtures = ref([])
 const accumulatedMarkets = ref([])
+const upMode = ref('none')
 
 // Map outcome IDs to standard display names for common markets
 const outcomeNameMap = {
@@ -222,6 +249,14 @@ const filteredLiveData = computed(() => {
           })
       : []
 
+  if (upMode.value !== 'none') {
+    const targetId = upMode.value === '1up' ? 60100 : 60200
+    fixtures = fixtures.filter((fixture) => {
+      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.map(Number).includes(targetId)
+    })
+  }
+
   return _.groupBy(fixtures, 'tournament')
 })
 
@@ -232,12 +267,43 @@ const marketsGroup = computed(() => {
 })
 
 const activeSportMarkets = computed(() => {
-  let activeMarkets = marketsGroup.value.filter((s) => s.sportID == activeSportID.value)
+  let activeMarkets = marketsGroup.value
+    .filter((s) => s.sportID == activeSportID.value)
+    .filter((market) => {
+      const marketId = Number(market.marketID)
+      return marketId !== 60100 && marketId !== 60200
+    })
   return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
 })
 
 const activeMarket = computed(() => {
   return utilsStore.activeLiveMarkets
+})
+
+const effectiveMarket = computed(() => {
+  if (upMode.value === 'none') return activeMarket.value
+  const baseMarket = activeMarket.value || {}
+  const derivedMarketId = upMode.value === '1up' ? 60100 : 60200
+  return {
+    ...baseMarket,
+    marketID: derivedMarketId,
+    marketName: baseMarket.marketName ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}` : baseMarket.marketName,
+    outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
+  }
+})
+
+const hasDerivedMarkets = computed(() => {
+  return accumulatedFixtures.value.some((fixture) => {
+    const derived = fixture?.derived_market_id || fixture?.derived_market_ids
+    return Array.isArray(derived) && derived.length > 0
+  })
+})
+
+const showUpToggle = computed(() => {
+  return (
+    Number(activeMarket.value?.marketID || 0) === 1 &&
+    hasDerivedMarkets.value
+  )
 })
 
 watch(activeSportMarkets, (newValue) => {
@@ -250,6 +316,7 @@ watch(activeSportMarkets, (newValue) => {
 
 function setActiveSport(sid) {
   activeSportID.value = parseInt(sid)
+  upMode.value = 'none'
   document.getElementById('live_' + sid)?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
@@ -260,6 +327,25 @@ function setActiveSport(sid) {
 function selectMarket(market) {
   utilsStore.activeLiveMarkets = market
 }
+
+const setUpMode = (mode) => {
+  upMode.value = mode
+  if (upMode.value !== 'none') {
+    const baseMarket = activeSportMarkets.value.find((market) => Number(market.marketID) === 1)
+    if (baseMarket) {
+      utilsStore.activeLiveMarkets = baseMarket
+    }
+  }
+}
+
+watch(
+  () => activeMarket.value?.marketID,
+  (marketId) => {
+    if (Number(marketId || 0) !== 1) {
+      upMode.value = 'none'
+    }
+  }
+)
 
 function toggleTournament(e, tournamentKey) {
   const childId = 'league-content-' + tournamentKey
@@ -416,6 +502,31 @@ defineComponent({
   position: sticky;
   top: 4.5rem;
   z-index: 100;
+}
+
+.up-mode-bar {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #9ca0ab;
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.62rem 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.up-mode-tab.active {
+  border-bottom-color: var(--brand-secondary);
+  color: #ffffff;
 }
 
 .m-mkt-type .m-sport-type-item {
