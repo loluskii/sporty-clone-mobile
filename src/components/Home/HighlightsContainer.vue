@@ -62,6 +62,9 @@
               :activeMarket="activeMarket"
               :effectiveMarket="effectiveMarket"
               :upMode="upMode"
+              :showUpToggle="showUpToggle"
+              :modeOptions="modeOptions"
+              :baseLabel="baseLabel"
               @select-market="getFixturesByMarkets"
               @set-up-mode="setUpMode"
               v-if="!isLoading && !loadingError"
@@ -101,6 +104,11 @@ const highlightsData = ref([])
 const todayData = ref([]);
 const fixturesList = ref([])
 const countriesData = ref([])
+// Track last selected market per tab for consistent UX.
+const activeMarketByTab = ref({
+  highlights: null,
+  today: null
+})
 
 const tabList = ["Highlights", "Today", "Countries"];
 const tabView = ref('highlights')
@@ -119,6 +127,9 @@ const {
   upMode,
   setUpMode,
   resetUpMode,
+  showUpToggle,
+  modeOptions,
+  baseLabel,
   effectiveMarket,
   filteredFixtures,
   sanitizeMarkets
@@ -149,6 +160,8 @@ async function setActiveSport(sid) {
   prevSportID.value = activeSportID.value
   activeSportID.value = sid
   resetUpMode()
+  // Clear cached market selection when sport changes to avoid mismatches.
+  activeMarketByTab.value = { highlights: null, today: null }
   await getHomeData()
   document.getElementById('highlights_' + sid).scrollIntoView({
     behavior: 'smooth',
@@ -161,8 +174,9 @@ async function getHighlightGames() {
   if(!FEED_TOGGLE) return;
   // Check if current tab already has data cached
   const currentTabHasData = tabView.value === 'today' ? Object.keys(todayData.value).length : Object.keys(highlightsData.value).length
+  const currentTabHasMarkets = Array.isArray(marketsGroup.value) && marketsGroup.value.length
   const isNewActiveSport = activeSportID.value !== prevSportID.value
-  if(!currentTabHasData || isNewActiveSport) {
+  if(!currentTabHasData || !currentTabHasMarkets || isNewActiveSport) {
     // Fetch data only if current tab doesn't have it
     isLoading.value = true
     const response = await getSportHighlights({
@@ -179,11 +193,16 @@ async function getHighlightGames() {
         highlightsData.value = fixturesList.value
       }
       
+      // Hard reset the active market to avoid stale specifier state when swapping tabs.
+      activeMarket.value = {}
       const filteredMarkets = sanitizeMarkets(response.data.markets || [])
-      marketsGroup.value = filteredMarkets.length ? filteredMarkets : marketsGroup.value
-      if (!activeMarket.value?.marketID && marketsGroup.value?.length) {
-        activeMarket.value = marketsGroup.value[0]
-      }
+      marketsGroup.value = filteredMarkets.length ? filteredMarkets : []
+      const cachedMarketId = activeMarketByTab.value[tabView.value]
+      const nextMarket =
+        marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
+        marketsGroup.value[0] ||
+        {}
+      activeMarket.value = nextMarket
     } else {
       if(tabView.value === 'today') {
         todayData.value = []
@@ -195,6 +214,15 @@ async function getHighlightGames() {
   } else {
     // Use cached data
     fixturesList.value = tabView.value === 'today' ? todayData.value : highlightsData.value
+    // Hard reset the active market to avoid stale specifier state when reusing cached markets.
+    activeMarket.value = {}
+    marketsGroup.value = marketsGroup.value || []
+    const cachedMarketId = activeMarketByTab.value[tabView.value]
+    const nextMarket =
+      marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
+      marketsGroup.value[0] ||
+      {}
+    activeMarket.value = nextMarket
   }
   isLoading.value = false
 }
@@ -206,6 +234,7 @@ async function getCountriesList() {
 
 function getFixturesByMarkets(market) {
   activeMarket.value = market
+  activeMarketByTab.value[tabView.value] = market?.marketID || null
 }
 
 async function getHomeData() {
