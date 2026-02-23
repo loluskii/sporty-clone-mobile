@@ -11,7 +11,7 @@
             <li v-for="(market, m) in marketsGroup" :key="m"
               :class="market.marketID === activeMarket.marketID ? 'active' : ''"
               class="m-sport-type-item m-snap-nav-item" @click="selectMarket(market)">
-              {{ market.marketName }}
+              {{ market.marketName === '1x2' ? '1X2':market.marketName }}
             </li>
           </ul>
           <!-- <i class="controls left-controls"></i> <i class="controls right-controls"></i> -->
@@ -646,15 +646,12 @@ defineComponent({
   font-size: 1.066rem;
   font-weight: normal;
   padding: 0.61666667rem 1.25rem;
+  text-transform: capitalize;
   /* border-radius: 30px; */
 }
 
 .m-event-list .m-sport-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--c-prematch-tab-name-active);
-}
-
-.m-event-list .m-sport-type .m-sport-type-item:first-child {
-  margin-left: 0.83333333rem;
+  border-bottom: 3px solid var(--brand-active-tab-bg);
 }
 
 .m-event-list .m-sport-type .m-sport-type-item:last-child {
