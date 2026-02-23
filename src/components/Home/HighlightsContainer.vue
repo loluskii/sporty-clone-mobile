@@ -56,11 +56,14 @@
         <div v-show="tabView !== 'countries'" class="m-tabs-tabpane">
           <div class="m-highlights-wrap" style="position: relative">
             <Highlights
-              :highlightsData="highlightsData"
+              :highlightsData="displayHighlightsData"
               :view="tabView"
               :marketsGroup="marketsGroup"
               :activeMarket="activeMarket"
+              :effectiveMarket="effectiveMarket"
+              :upMode="upMode"
               @select-market="getFixturesByMarkets"
+              @set-up-mode="setUpMode"
               v-if="!isLoading && !loadingError"
             ></Highlights>
 
@@ -81,8 +84,8 @@
 </template>
 <script setup>
 import { useUtilsStore } from '@/stores/utils.store'
-import Highlights from '@/components/Highlights/Highlights.vue'
-import Countries from '@/components/Highlights/Countries.vue'
+import Highlights from '@/components/Home/Highlights.vue'
+import Countries from '@/components/Home/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
@@ -104,9 +107,9 @@ const prevTabView = ref('')
 
 const prevSportID = ref(1)
 const activeSportID = ref(1)
-
 const marketsGroup = ref({})
 const activeMarket = ref({})
+const upMode = ref('none')
 
 const isLoading = ref(false)
 const loadingError = ref(false)
@@ -114,6 +117,8 @@ const loadingError = ref(false)
 function setActiveTab(tab) {
   prevTabView.value = tabView.value
   tabView.value = tab.toLowerCase()
+  // Reset 1UP/2UP when switching tabs so each tab starts with full fixtures.
+  upMode.value = 'none'
   tab === 'countries' ? getCountriesList() : getHighlightGames()
 }
 
@@ -144,7 +149,7 @@ async function getHighlightGames() {
     const response = await getSportHighlights({
       sid: activeSportID.value, 
       today: tabView.value === 'today' ? 1 : 0,
-      order_type: tabView.value === 'today' ? 'time' : 'priority|desc',
+      order_type: tabView.value === 'today' ? 'time|desc' : 'priority|desc'
     })
     if (response.data.fixtures && response.data.markets) {
       fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
@@ -155,14 +160,20 @@ async function getHighlightGames() {
         highlightsData.value = fixturesList.value
       }
       
-      marketsGroup.value = response.data.markets
-      activeMarket.value = response.data.markets[0]
+      const filteredMarkets = (response.data.markets || []).filter((market) => {
+        const marketId = Number(market.marketID)
+        return marketId !== 60100 && marketId !== 60200
+      })
+      marketsGroup.value = filteredMarkets.length ? filteredMarkets : marketsGroup.value
+      if (!activeMarket.value?.marketID && marketsGroup.value?.length) {
+        activeMarket.value = marketsGroup.value[0]
+      }
     } else {
       if(tabView.value === 'today') {
         todayData.value = []
       } else {
         highlightsData.value = []
-      }
+      }gre
       marketsGroup.value = []
     }
   } else {
@@ -179,6 +190,53 @@ async function getCountriesList() {
 
 function getFixturesByMarkets(market) {
   activeMarket.value = market
+}
+
+const filterFixturesByUpMode = (groups, mode) => {
+  if (mode === 'none') return groups
+  const targetId = mode === '1up' ? 60100 : 60200
+  const next = {}
+  Object.entries(groups || {}).forEach(([key, list]) => {
+    const filtered = (list || []).filter((fixture) => {
+      const derived =
+        fixture?.derived_market_id ||
+        fixture?.derived_market_ids
+      if (!Array.isArray(derived)) return false
+      return derived.map(Number).includes(targetId)
+    })
+    if (filtered.length) {
+      next[key] = filtered
+    }
+  })
+  return next
+}
+
+const displayHighlightsData = computed(() => {
+  const source = tabView.value === 'today' ? todayData.value : highlightsData.value
+  return filterFixturesByUpMode(source || {}, upMode.value)
+})
+
+
+const effectiveMarket = computed(() => {
+  if (upMode.value === 'none') return activeMarket.value
+  const baseMarket = activeMarket.value || {}
+  const derivedMarketId = upMode.value === '1up' ? 60100 : 60200
+  return {
+    ...baseMarket,
+    marketID: derivedMarketId,
+    marketName: baseMarket.marketName ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}` : baseMarket.marketName,
+    outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
+  }
+})
+
+const setUpMode = (mode) => {
+  upMode.value = mode
+  if (upMode.value !== 'none') {
+    const baseMarket = marketsGroup.value.find((market) => Number(market.marketID) === 1)
+    if (baseMarket) {
+      activeMarket.value = baseMarket
+    }
+  }
 }
 
 async function getHomeData() {

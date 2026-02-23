@@ -2,19 +2,47 @@
   <div style="position: relative">
     <div class="m-bet-content">
       <div v-if="Object.keys(fixtures).length" class="market-wrapper">
-        <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
-          <div class="m-tabs-nav" style="width:">
-            <!-- <div class="m-tabs-ink-bar" style="display: block; width: 51.0469px; left: 0px"></div> -->
-            <div
-              v-for="(market, m) in marketsGroup"
-              :key="m"
-              class="m-tabs-tab"
-              :class="market.marketID === activeMarket.marketID ? 'm-tab-active' : ''"
-              @click="selectMarket(market)"
-            >
-              {{ market.marketName }}
+        <div class="market-header">
+          <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
+            <div class="m-tabs-nav" style="width:">
+              <!-- <div class="m-tabs-ink-bar" style="display: block; width: 51.0469px; left: 0px"></div> -->
+              <div
+                v-for="(market, m) in marketsGroup"
+                :key="m"
+                class="m-tabs-tab"
+                :class="market.marketID === activeMarket.marketID ? 'm-tab-active' : ''"
+                @click="selectMarket(market)"
+              >
+                {{ market.marketName }}
+              </div>
             </div>
           </div>
+        </div>
+        <div v-if="showUpToggle" class="up-mode-bar">
+          <button
+            class="up-mode-tab"
+            type="button"
+            :class="{ active: upMode === 'none' }"
+            @click="setUpMode('none')"
+          >
+            1X2 Base
+          </button>
+          <button
+            class="up-mode-tab"
+            type="button"
+            :class="{ active: upMode === '2up' }"
+            @click="setUpMode('2up')"
+          >
+            2UP
+          </button>
+          <button
+            class="up-mode-tab"
+            type="button"
+            :class="{ active: upMode === '1up' }"
+            @click="setUpMode('1up')"
+          >
+            1UP
+          </button>
         </div>
       </div>
       <template v-if="Object.keys(fixtures).length">
@@ -29,14 +57,14 @@
             </div>
             <div class="x-table-cell market-title">
               <div
-                v-if="activeMarket.specifier !== ''"
+                v-if="displayMarket.specifier !== ''"
                 style="text-transform: capitalize"
                 class="each-module is-multiline"
               >
-                {{ activeMarket.specifier }}
+                {{ displayMarket.specifier }}
               </div>
               <template
-                v-for="(market, m) in _.sortBy(activeMarket.outcomes, 'outcomeID')"
+                v-for="(market, m) in _.sortBy(displayMarket.outcomes, 'outcomeID')"
                 :key="m"
               >
                 <div>
@@ -49,7 +77,7 @@
             v-for="(event, index) in group"
             :key="index"
             :eventData="event"
-            :activeMarket="activeMarket"
+            :activeMarket="displayMarket"
           ></PrematchFixture>
         </div>
       </template>
@@ -79,30 +107,67 @@ import emitter from '@/plugins/emitter'
 const props = defineProps({
   highlightsData: Object,
   marketsGroup: Object,
-  activeMarket: Object
+  activeMarket: Object,
+  effectiveMarket: Object,
+  upMode: {
+    type: String,
+    default: 'none'
+  }
 })
 defineComponent({
   name: 'highlights-games'
 })
 
-const emits = defineEmits(['select-market'])
+const emits = defineEmits(['select-market', 'set-up-mode'])
 const router = useRouter()
 const utilsStore = useUtilsStore()
 const fixtures = ref(props.highlightsData || {})
+const upMode = computed(() => props.upMode || 'none')
 
 const getSportbyId = computed(() => {
-  return utilsStore.sportsMenu.find((sport) => sport.sportID == props.activeMarket.sportID)
+  return utilsStore.sportsMenu.find((sport) => sport.sport_id == props.activeMarket.sportID)
+})
+
+const hasDerivedMarkets = computed(() => {
+  const groups = props.highlightsData || {}
+  const lists = Object.values(groups)
+  return lists.some((list) =>
+    (list || []).some((fixture) => {
+      const derived =
+        fixture?.derived_market_id ||
+        fixture?.derived_market_ids
+      return Array.isArray(derived) && derived.length > 0
+    })
+  )
+})
+
+const showUpToggle = computed(() => {
+  return (
+    Number(props.activeMarket?.sportID || 0) === 1 &&
+    Number(props.activeMarket?.marketID || 0) === 1 &&
+    hasDerivedMarkets.value
+  )
+})
+
+const displayMarket = computed(() => {
+  return props.effectiveMarket || props.activeMarket || {}
 })
 
 function viewMore() {
   return router.push({
     name: 'fixtures-by-sports',
-    params: { sport: slugify(getSportbyId.value.sportName) }
+    params: { sport: slugify(getSportbyId.value.sport_name) }
   })
 }
 
 const selectMarket = (market) => {
   emits('select-market', market)
+}
+
+const setUpMode = (mode) => {
+  // Emit exclusive 1UP/2UP toggle state to parent.
+  const nextMode = props.upMode === mode ? 'none' : mode
+  emits('set-up-mode', nextMode)
 }
 
 const removeFixtureByMatchId = (matchId) => {
@@ -226,8 +291,42 @@ onBeforeUnmount(() => {
   /* width: calc(100); */
 }
 
-.m-sports .market-wrapper {
-  padding: 10px 0px !important;
+.market-header {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.market-header .m-today-tab {
+  flex: 1;
+  min-width: 0;
+}
+
+.up-mode-bar {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.4rem 0;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 2rem;
+}
+
+
+.up-mode-tab.active {
+  border-bottom-color: var(--c-prematch-tab-name-active);
 }
 
 .m-sports .nav-fixed .market-wrapper {
