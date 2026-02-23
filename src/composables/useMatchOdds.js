@@ -131,7 +131,12 @@ export function useMatchOdds({
     uniqueFiltered = applyUpdates(uniqueFiltered)
 
     if (market.specifier && market.specifier !== '') {
-      let specifierKey = activeSpecifierKey.value || uniqueFiltered[0]?.specifier || ''
+      const availableSpecifiers = uniqueFiltered.map((item) => item.specifier || '')
+      // If the previous specifier doesn't exist in the new market, fall back to the first one.
+      let specifierKey = activeSpecifierKey.value
+      if (!specifierKey || !availableSpecifiers.includes(specifierKey)) {
+        specifierKey = uniqueFiltered[0]?.specifier || ''
+      }
       if (specifierKey) {
         uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === specifierKey)
         activeSpecifierKey.value = specifierKey
