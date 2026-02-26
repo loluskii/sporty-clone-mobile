@@ -270,11 +270,11 @@ export const useCouponStore = defineStore({
           (s) => s.displayName === "X" && s.gameId !== data.gameId
         ).length;
         if (currentDraws >= maxNoOfDraws) {
-          toast.error(`You can not add more than ${maxNoOfDraws} draws`);
+          emitter.emit('showErrorMessage', `You can not add more than ${maxNoOfDraws} draws`)
           return;
         }
       }
-      
+
       if (!couponData.selections.length) {
         
         couponData.selections.push(data)
