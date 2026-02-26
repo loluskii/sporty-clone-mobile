@@ -14,9 +14,7 @@
               <div class="m-event-league">
                 <div class="m-event-title-time">
                   <p class="category-league">
-                    <span v-if="eventDetail?.country !== ''">{{
-                      eventDetail.country
-                    }}</span>
+                    <span v-if="eventDetail?.country !== ''">{{ eventDetail.country }}</span>
                     - {{ eventDetail.tournament }}
                   </p>
                 </div>
@@ -27,12 +25,14 @@
               <div class="m-event-team-wrap">
                 <div class="home-team-name">
                   <span class="team">{{ eventDetail.homeTeam }}</span>
-                  <span class="score"><em class="setScore">{{ scores.homeScore }}</em>
+                  <span class="score"
+                    ><em class="setScore">{{ scores.homeScore }}</em>
                   </span>
                 </div>
                 <div class="away-team-name">
                   <span class="team">{{ eventDetail.awayTeam }}</span>
-                  <span class="score"><em class="setScore">{{ scores.awayScore }}</em>
+                  <span class="score"
+                    ><em class="setScore">{{ scores.awayScore }}</em>
                   </span>
                 </div>
               </div>
@@ -40,27 +40,46 @@
           </div>
           <div class="m-event-tracker">
             <div class="event-tracker-button-wrapper">
-              <span class="match-tracker" :class="{ active: isLiveTrackerShowing }"
-                @click="openWidget('lmtPlus')"></span>
+              <span
+                class="match-tracker"
+                :class="{ active: isLiveTrackerShowing }"
+                @click="openWidget('lmtPlus')"
+              ></span>
               <span class="match-statistics" @click="openWidget('Statistics')"></span>
             </div>
           </div>
         </div>
 
         <div class="live-match event-detail">
-          <div class="m-snap-nav-wrap m-group" style="overflow: hidden;">
-            <ul class="m-snap-nav flex" style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);">
-              <li class="m-sport-group-item m-snap-nav-item" :class="{ active: selectedGroupId === null }"
-                @click="selectedGroupId = null">
+          <div class="m-snap-nav-wrap m-group" style="overflow: hidden">
+            <ul
+              class="m-snap-nav flex"
+              style="
+                transform: translate(0px, 0px) translateZ(0px);
+                transition-duration: 350ms;
+                transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
+              "
+            >
+              <li
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: selectedGroupId === null }"
+                @click="selectedGroupId = null"
+              >
                 <span>All</span>
               </li>
-              <li v-for="group in sortedMarketGroups" :key="group.id" class="m-sport-group-item m-snap-nav-item"
-                :class="{ active: selectedGroupId === group.id }" @click="selectedGroupId = group.id">
+              <li
+                v-for="group in sortedMarketGroups"
+                :key="group.id"
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: selectedGroupId === group.id }"
+                @click="selectedGroupId = group.id"
+              >
                 <span>{{ group.name }}</span>
               </li>
-            </ul> <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+            </ul>
+            <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
-          <div v-if="(!matchHasEnded && !isLoading)" class="m-sport-market">
+          <div v-if="!matchHasEnded && !isLoading" class="m-sport-market">
             <div v-if="hasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
@@ -72,103 +91,195 @@
               </div>
             </div>
             <div v-else class="m-sport-market">
-              <div v-for="(marketGroup, index) in displayGroupedMarkets" :key="index"
-                :data-key="'market-' + marketGroup.marketID">
+              <div
+                v-for="(marketGroup, index) in displayGroupedMarkets"
+                :key="index"
+                :data-key="'market-' + marketGroup.marketID"
+              >
                 <div class="m-market m-detail-market-default">
                   <div class="m-market-title">
                     <span class="dis-icon"></span>
-                    <span class="text" style="text-transform: capitalize;">{{ marketGroup.marketName }} </span>
+                    <span class="text" style="text-transform: capitalize"
+                      >{{ cleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
+                    </span>
                   </div>
                   <div class="m-table market-content">
-                    <div class="m-table-row" v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)" :key="m">
-                      <template v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''">
-                        <template v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd">
-                          <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
-                            'm-outcome--checked': isSelected(
-                              createID(
-                                eventDetail.matchID,
-                                selection.marketID,
-                                selection.outcomeID,
-                                selection.specifier,
-                                marketGroup.marketName,
-                                selection.outcomeName
+                    <div
+                      class="m-table-row"
+                      v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
+                      :key="m"
+                    >
+                      <template
+                        v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
+                      >
+                        <template
+                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
+                          :key="odd"
+                        >
+                          <div
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
+                            :class="{
+                              'm-outcome--checked': isSelected(
+                                createID(
+                                  eventDetail.matchID,
+                                  selection.marketID,
+                                  selection.outcomeID,
+                                  selection.specifier,
+                                  marketGroup.marketName,
+                                  selection.outcomeName
+                                ),
+                                couponStore.coupon
                               ),
-                              couponStore.coupon
-                            ),
-                            'm-outcome-two': market.length === 2,
-                            'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
-                          }" @click="addToBetslip(marketGroup, selection)">
-                            <em style="text-transform: capitalize">{{
-                              selection.displayName
-                            }}</em>
-                            <em :class="{ 'm-icon-lock': selection.active === 0 || selection.odds <= 1 || !selection.odds}">{{
-                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '':selection.odds.toFixed(2)
-                            }}</em>
+                              'm-outcome-two': market.length === 2,
+                              'm-outcome-three': market.length === 3,
+                              'm-outcome--disabled':
+                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                            }"
+                            @click="addToBetslip(marketGroup, selection)"
+                          >
+                            <em style="text-transform: capitalize">{{ selection.displayName }}</em>
+                            <em
+                              :class="{
+                                'm-icon-lock':
+                                  selection.active === 0 || selection.odds <= 1 || !selection.odds
+                              }"
+                              >{{
+                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                                  ? ''
+                                  : selection.odds.toFixed(2)
+                              }}</em
+                            >
                           </div>
                         </template>
                       </template>
                       <template v-else>
-                        <div class="m-table" v-if="isTotalOrHandicap(marketGroup)">
-                          
-                          <div v-for="(mg, idx) in marketGroup.markets" class="m-table-row" :key="idx">
-                            <!-- {{ mg }} -->
+                        <div class="m-table" v-if="getMarketColumns(marketGroup)">
+                          <!-- TITLE-DRIVEN LAYOUT -->
+                          <div class="m-table-row">
+                            <!-- blank label cell — only when there is a specifier label -->
                             <div
-                              class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
-                              :class="{
-                                'm-outcome-three': mg?.outcomes?.length + 1 === 3,
-                                'm-outcome-four': mg?.outcomes?.length + 1 === 4
-                              }">
-                              <em>{{ getSpecifierValue(mg.specifier) }}</em>
+                              v-if="getMarketColumns(marketGroup).specifierLabel !== null"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                            ></div>
+                            <!-- column headers from title -->
+                            <div
+                              v-for="col in getMarketColumns(marketGroup).columns"
+                              :key="col"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
+                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                            >
+                              {{ col }}
                             </div>
-                            <template v-for="(outcome, o) in mg?.outcomes" :key="o">
+                          </div>
+                          <!-- one row per specifier variant -->
+                          <div
+                            v-for="(mg, idx) in marketGroup.markets"
+                            class="m-table-row"
+                            :key="idx"
+                          >
+                            <!-- row label — only when there is a specifier label -->
+                            <div
+                              v-if="getMarketColumns(marketGroup).specifierLabel !== null"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                            >
+                              <em>{{
+                                getRowLabel(mg, getMarketColumns(marketGroup).specifierLabel)
+                              }}</em>
+                            </div>
+                            <template
+                              v-for="col in getMarketColumns(marketGroup).columns"
+                              :key="col"
+                            >
                               <div
+                                v-if="findOutcomeForColumn(mg.outcomes, col)"
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
-                                @click="addToBetslip(mg, outcome)" :class="{
-                                  'm-outcome--checked': isSelected(
-                                    createID(
-                                      eventDetail.matchID,
-                                      outcome.marketID,
-                                      outcome.outcomeID,
-                                      outcome.specifier,
-                                      mg.marketName,
-                                      outcome.outcomeName
+                                :class="[
+                                  colClass(getMarketColumns(marketGroup).totalCols),
+                                  {
+                                    'm-outcome--checked': isSelected(
+                                      createID(
+                                        eventDetail.matchID,
+                                        findOutcomeForColumn(mg.outcomes, col).marketID,
+                                        findOutcomeForColumn(mg.outcomes, col).outcomeID,
+                                        findOutcomeForColumn(mg.outcomes, col).specifier,
+                                        mg.marketName,
+                                        findOutcomeForColumn(mg.outcomes, col).outcomeName
+                                      ),
+                                      couponStore.coupon
                                     ),
-                                    couponStore.coupon
-                                  ),
-                                  'm-outcome-three': mg?.outcomes?.length + 1 === 3,
-                                  'm-outcome-four': mg?.outcomes?.length + 1 === 4,
-                                  'm-outcome--disabled': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds
-                                }">
-                                <em :class="{ 'm-icon-lock': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds }">{{
-                                  outcome.active === 0 || outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2)
-                                }}</em>
+                                    'm-outcome--disabled':
+                                      findOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                      findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                      !findOutcomeForColumn(mg.outcomes, col).odds
+                                  }
+                                ]"
+                                @click="addToBetslip(mg, findOutcomeForColumn(mg.outcomes, col))"
+                              >
+                                <em
+                                  :class="{
+                                    'm-icon-lock':
+                                      findOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                      findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                      !findOutcomeForColumn(mg.outcomes, col).odds
+                                  }"
+                                  >{{
+                                    findOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                    findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                    !findOutcomeForColumn(mg.outcomes, col).odds
+                                      ? ''
+                                      : findOutcomeForColumn(mg.outcomes, col).odds.toFixed(2)
+                                  }}</em
+                                >
                               </div>
+                              <div
+                                v-else
+                                class="m-table-cell m-outcome-only-odds"
+                                :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                              ></div>
                             </template>
                           </div>
                         </div>
-                        <template v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd" v-else>
-                          <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
-                            'm-outcome--checked': isSelected(
-                              createID(
-                                eventDetail.matchID,
-                                selection.marketID,
-                                selection.outcomeID,
-                                selection.specifier,
-                                marketGroup.marketName,
-                                selection.outcomeName
+                        <template
+                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
+                          :key="odd"
+                          v-else
+                        >
+                          <div
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
+                            :class="{
+                              'm-outcome--checked': isSelected(
+                                createID(
+                                  eventDetail.matchID,
+                                  selection.marketID,
+                                  selection.outcomeID,
+                                  selection.specifier,
+                                  marketGroup.marketName,
+                                  selection.outcomeName
+                                ),
+                                couponStore.coupon
                               ),
-                              couponStore.coupon
-                            ),
-                            'm-outcome-two': market.length === 2,
-                            'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.active === 0 || selection.odds <= 1 || !selection.odds
-                          }" @click="addToBetslip(marketGroup, selection)">
-                            <em style="text-transform: capitalize">{{
-                              selection.displayName
-                            }}</em>
-                            <em :class="selection.active === 0 || selection.odds <= 1 || !selection.odds ? 'm-icon-lock' : ''">{{
-                              selection.active === 0 || selection.odds <= 1 || !selection.odds ? '' : selection.odds.toFixed(2) }}</em>
+                              'm-outcome-two': market.length === 2,
+                              'm-outcome-three': market.length === 3,
+                              'm-outcome--disabled':
+                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                            }"
+                            @click="addToBetslip(marketGroup, selection)"
+                          >
+                            <em style="text-transform: capitalize">{{ selection.displayName }}</em>
+                            <em
+                              :class="
+                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                                  ? 'm-icon-lock'
+                                  : ''
+                              "
+                              >{{
+                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                                  ? ''
+                                  : selection.odds.toFixed(2)
+                              }}</em
+                            >
                           </div>
                         </template>
                       </template>
@@ -238,7 +349,7 @@ const groupedMarketsByTab = computed(() => {
   const grouped = {}
 
   // Initialize groups
-  marketGroups.value.forEach(group => {
+  marketGroups.value.forEach((group) => {
     grouped[group.id] = {
       ...group,
       markets: []
@@ -246,8 +357,8 @@ const groupedMarketsByTab = computed(() => {
   })
 
   // Group markets
-  eventMarkets.value.forEach(market => {
-    marketGroups.value.forEach(group => {
+  eventMarkets.value.forEach((market) => {
+    marketGroups.value.forEach((group) => {
       if (group.marketIDs.includes(market.marketID)) {
         if (!grouped[group.id]) {
           grouped[group.id] = {
@@ -298,14 +409,13 @@ const hasNoMarketsInSelectedGroup = computed(() => {
     return false // "All" tab always shows markets if they exist
   }
 
-  const group = marketGroups.value.find(g => g.id === selectedGroupId.value)
+  const group = marketGroups.value.find((g) => g.id === selectedGroupId.value)
   if (!group) {
     return false
   }
 
   // Check if marketIDs only contains [0] or is empty
-  return group.marketIDs.length === 0 ||
-    (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
+  return group.marketIDs.length === 0 || (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
 })
 
 // Other computed properties
@@ -421,55 +531,57 @@ function handleOddsChange(data, match_id) {
       }
 
       // First, try to update existing market
-      eventMarkets.value = eventMarkets.value.map((market) => {
-        // Match by both marketID and specifier (important for markets like Handicap, Totals)
-        const marketMatches = market.marketID === data.market_id
-        const specifierMatches = (market.specifier || '') === (data.specifier || '')
+      eventMarkets.value = eventMarkets.value
+        .map((market) => {
+          // Match by both marketID and specifier (important for markets like Handicap, Totals)
+          const marketMatches = market.marketID === data.market_id
+          const specifierMatches = (market.specifier || '') === (data.specifier || '')
 
-        if (!marketMatches || !specifierMatches) {
-          return market // Not the market we're updating
-        }
+          if (!marketMatches || !specifierMatches) {
+            return market // Not the market we're updating
+          }
 
-        marketFound = true
+          marketFound = true
 
-        // Check if market is deactivated - mark for removal
-        if (statusName === 'deactivated') {
-          shouldRemoveMarket = true
-          return null // Will be filtered out
-        }
+          // Check if market is deactivated - mark for removal
+          if (statusName === 'deactivated') {
+            shouldRemoveMarket = true
+            return null // Will be filtered out
+          }
 
-        // Update outcomes for matching market
-        const updatedMarket = {
-          ...market,
-          statusName: data.status_name || market.statusName,
-          outcomes: market.outcomes.map((outcome) => {
-            const updatedOutcome = outcomes.find(
-              (o) => String(o.outcome_id) === String(outcome.outcomeID)
-            )
+          // Update outcomes for matching market
+          const updatedMarket = {
+            ...market,
+            statusName: data.status_name || market.statusName,
+            outcomes: market.outcomes.map((outcome) => {
+              const updatedOutcome = outcomes.find(
+                (o) => String(o.outcome_id) === String(outcome.outcomeID)
+              )
 
-            if (updatedOutcome) {
-              return {
-                ...outcome,
-                odds: updatedOutcome.odds,
-                active: statusName === 'suspended' ? 0 : (updatedOutcome.active ? 1 : 0),
-                probability: updatedOutcome.probability || outcome.probability
+              if (updatedOutcome) {
+                return {
+                  ...outcome,
+                  odds: updatedOutcome.odds,
+                  active: statusName === 'suspended' ? 0 : updatedOutcome.active ? 1 : 0,
+                  probability: updatedOutcome.probability || outcome.probability
+                }
               }
-            }
 
-            // Ensure suspended markets lock existing outcomes.
-            if (statusName === 'suspended') {
-              return {
-                ...outcome,
-                active: 0
+              // Ensure suspended markets lock existing outcomes.
+              if (statusName === 'suspended') {
+                return {
+                  ...outcome,
+                  active: 0
+                }
               }
-            }
 
-            return outcome
-          })
-        }
+              return outcome
+            })
+          }
 
-        return updatedMarket
-      }).filter(market => market !== null) // Remove deactivated markets
+          return updatedMarket
+        })
+        .filter((market) => market !== null) // Remove deactivated markets
 
       // If market not found and not deactivated, add it as a new market
       if (!marketFound && statusName !== 'deactivated') {
@@ -481,14 +593,14 @@ function handleOddsChange(data, match_id) {
           specifier: data.specifier || '',
           statusName: data.status_name || 'Active',
           sportID: data.sport_id || 0,
-          outcomes: outcomes.map(outcome => ({
+          outcomes: outcomes.map((outcome) => ({
             outcomeID: outcome.outcome_id,
             outcomeName: outcome.outcome_name,
             displayName: outcome.alias || outcome.outcome_name,
             odds: outcome.odds,
-            active: statusName === 'suspended' ? 0 : (outcome.active ? 1 : 0),
+            active: statusName === 'suspended' ? 0 : outcome.active ? 1 : 0,
             probability: outcome.probability || 0
-          })),
+          }))
         }
 
         eventMarkets.value.push(newMarket)
@@ -542,7 +654,9 @@ function setupPeriodicRefetch(matchId) {
       try {
         const res = await getFixtureMarkets(matchId)
         if (Object.keys(res.data).length && res.data.markets.length) {
-          const fetchedMarkets = res.data?.market.filter((market) => market.statusName !== 'Suspended')
+          const fetchedMarkets = res.data?.market.filter(
+            (market) => market.statusName !== 'Suspended'
+          )
           // Preserve bet_stop state across API refreshes.
           eventMarkets.value = betStopped.value
             ? fetchedMarkets.map((market) => ({
@@ -566,8 +680,7 @@ function setupPeriodicRefetch(matchId) {
           if (!hasMqttTime.value) {
             eventTime.value = res.data.eventTime
           }
-
-        } 
+        }
       } catch (error) {
         // Silently handle periodic refetch errors
       }
@@ -627,11 +740,79 @@ watch(
   { immediate: true }
 )
 
-function isTotalOrHandicap(market) {
+// Parse title string into { specifierLabel, columns }
+function getTitleInfo(title) {
+  if (!title) return null
+  const parts = title.split(',')
+  if (parts.length < 2) return null
+  return { specifierLabel: parts[0], columns: parts.slice(1) }
+}
+
+// Match an outcome to a column name by displayName convention
+function findOutcomeForColumn(outcomes, col) {
+  const colLower = col.toLowerCase().trim()
   return (
-    (market.specifier.includes('total') && market.markets[0].outcomes.length === 2) ||
-    market.specifier.includes('hcp')
+    outcomes.find((o) => {
+      const dn = o.displayName?.toLowerCase() ?? ''
+      if (colLower === 'home') return /^1[\s(]|^1$/.test(o.displayName)
+      if (colLower === 'away') return /^2[\s(]|^2$/.test(o.displayName)
+      if (colLower === 'draw') return /^x[\s(]|^x$/i.test(o.displayName)
+      return dn.startsWith(colLower)
+    }) ?? null
   )
+}
+
+// Get available columns for a market group based on title field
+function getMarketColumns(marketGroup) {
+  const title = marketGroup.markets[0]?.title
+  const titleInfo = getTitleInfo(title)
+  if (!titleInfo || titleInfo.columns.length === 0) return null
+
+  const sampleOutcomes = marketGroup.markets[0].outcomes
+  let specifierLabel = titleInfo.specifierLabel
+  let candidateCols = titleInfo.columns
+
+  // If the first title element matches an outcome, it is a column not a label (e.g. "1,None,2")
+  if (findOutcomeForColumn(sampleOutcomes, specifierLabel) !== null) {
+    specifierLabel = null
+    candidateCols = [titleInfo.specifierLabel, ...titleInfo.columns]
+  }
+
+  const availableCols = candidateCols.filter(
+    (col) => findOutcomeForColumn(sampleOutcomes, col) !== null
+  )
+  if (availableCols.length === 0) return null
+
+  // totalCols = outcome columns + 1 label column (only when specifierLabel exists)
+  const totalCols = availableCols.length + (specifierLabel !== null ? 1 : 0)
+  return { specifierLabel, columns: availableCols, totalCols }
+}
+
+// Get row label: for Handicap use home hcp value; otherwise extract from specifier
+function getRowLabel(market, specifierLabel) {
+  if (specifierLabel?.toLowerCase() === 'handicap') {
+    const homeOutcome = market.outcomes?.find((o) => /^1[\s(]/.test(o.displayName))
+    if (homeOutcome) return getHcpFromDisplayName(homeOutcome.displayName)
+  }
+  return getSpecifierDisplayValue(market.specifier)
+}
+
+// CSS width class based on total number of cells in a row
+function colClass(n) {
+  if (n <= 2) return 'm-outcome-two'
+  if (n === 3) return 'm-outcome-three'
+  return 'm-outcome-four'
+}
+
+// Extract the meaningful display value from a specifier ("total=18.5" → "18.5", "setnr=1|total=8.5" → "8.5")
+function getSpecifierDisplayValue(specifier) {
+  if (!specifier) return ''
+  const totalMatch = specifier.match(/total=([\d.]+)/)
+  if (totalMatch) return totalMatch[1]
+  const hcpMatch = specifier.match(/hcp=([+-]?[\d.]+)/)
+  if (hcpMatch) return hcpMatch[1]
+  const parts = specifier.split('|')
+  return parts[parts.length - 1].split('=').pop()
 }
 
 async function getEventDetail(id) {
@@ -642,7 +823,9 @@ async function getEventDetail(id) {
     isLoading.value = false
     if (res[0].data) {
       eventDetail.value = res[0].data
-      eventMarkets.value = res[0].data?.market?.filter((market) => market.statusName !== 'Suspended')
+      eventMarkets.value = res[0].data?.market?.filter(
+        (market) => market.statusName !== 'Suspended'
+      )
       if (betStopped.value && eventMarkets.value?.length) {
         eventMarkets.value = eventMarkets.value.map((market) => ({
           ...market,
@@ -671,7 +854,7 @@ async function getEventDetail(id) {
       startTimer()
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
       setupPeriodicRefetch(res[0].data.matchID)
-    } 
+    }
   } catch (error) {
     console.log(error)
     eventDetail.value = null
@@ -701,18 +884,18 @@ function groupByMarketID(data) {
   const groupedMarkets = {}
   data.forEach((marketGroup) => {
     const { marketID, marketName, specifier } = marketGroup
-    if (!groupedMarkets[marketID]) {
-      groupedMarkets[marketID] = {
+    const key = `${marketID}`
+    if (!groupedMarkets[key]) {
+      groupedMarkets[key] = {
         marketID,
         marketName,
         specifier,
         markets: [marketGroup]
       }
     } else {
-      groupedMarkets[marketID].markets.push(marketGroup)
+      groupedMarkets[key].markets.push(marketGroup)
     }
   })
-  console.log(Object.values(groupedMarkets))
   return Object.values(groupedMarkets)
 }
 
@@ -773,28 +956,49 @@ const openWidget = (widgetName) => {
   }
 }
 
-function getSpecifierValue(specifier) {
-  // Check if the specifier includes 'total=', 'hcp=', 'nr=' or 'variant=' and contains a numeric value after the '='
-  if (!specifier.includes('|') && /total=|hcp=|goalnr=|nr=|variant=/.test(specifier)) {
-    const value = specifier.split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2)
+function getHcpFromDisplayName(displayName) {
+  const match = displayName.match(/\(([^)]+)\)/)
+  return match ? match[1] : displayName
+}
+
+function toOrdinal(n) {
+  const num = parseInt(n)
+  if (isNaN(num)) return String(n)
+  const v = num % 100
+  const suffix = (v >= 11 && v <= 13) ? 'th' : ['th', 'st', 'nd', 'rd', 'th'][Math.min(num % 10, 4)]
+  return num + suffix
+}
+
+function cleanMarketName(name, specifier) {
+  if (!name.includes('=') || name.indexOf('=') > 20) return name
+
+  // Parse specifier into key-value map
+  const specMap = {}
+  if (specifier) {
+    specifier.split('|').forEach((part) => {
+      const eqIdx = part.indexOf('=')
+      if (eqIdx > -1) specMap[part.slice(0, eqIdx)] = part.slice(eqIdx + 1)
+    })
   }
 
-  // Check if specifier contains 'total' and includes '|'
-  if (specifier.includes('|') && specifier.includes('total')) {
-    const value = specifier.split('|')[0].split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.split('=')[1]
+  // Strip the leading specifier junk (everything before the ordinal suffix th/st/nd/rd)
+  let cleaned = name.replace(/^[\d\w|=.\-]+(?=th\s|st\s|nd\s|rd\s)/i, '')
+
+  // Capture ordinal suffix, reconstruct it from specifier (e.g. setnr=2 → "2nd")
+  let ordinalPrefix = ''
+  const ordinalMatch = cleaned.match(/^(th|st|nd|rd)\s/i)
+  if (ordinalMatch) {
+    cleaned = cleaned.replace(/^(?:th|st|nd|rd)\s*/i, '')
+    const setnr = specMap.setnr || Object.values(specMap)[0]
+    if (setnr) ordinalPrefix = toOrdinal(setnr) + ' '
   }
 
-  // Handle combined specifier
-  const specs = specifier.split('|')
-  if (specs.length > 1) {
-    const combo2 = specs[1].split('=').pop()
-    return combo2
-  }
+  // Replace {!key} with ordinal value, {key} with plain value
+  cleaned = cleaned.replace(/\{!(\w+)\}/g, (_, key) => (specMap[key] ? toOrdinal(specMap[key]) : ''))
+  cleaned = cleaned.replace(/\{(\w+)\}/g, (_, key) => specMap[key] ?? '')
 
-  // Default case
-  return specifier.split('=')[0]
+  cleaned = (ordinalPrefix + cleaned).replace(/\s{2,}/g, ' ').trim()
+  return cleaned || name
 }
 
 defineComponent({
@@ -868,7 +1072,7 @@ defineComponent({
   margin-left: auto;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span {
   border-radius: 2px;
   display: inline-block;
   height: 1.66666667rem;
@@ -878,16 +1082,16 @@ defineComponent({
   color: var(--disable-brand-secondary);
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span:last-child {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span:last-child {
   margin-right: 0px;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span::before {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span::before {
   display: inline-block;
   vertical-align: top;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.live-stream::before {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.live-stream::before {
   background: url(//s.sporty.net/global/main/modules/common-wap/assets/img/stv.b89a6457ad.png);
   background-position: top left;
   background-size: 100% 100%;
@@ -898,7 +1102,7 @@ defineComponent({
   width: 1.06666667rem;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.match-tracker::before {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
   content: '\e64f';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -907,11 +1111,14 @@ defineComponent({
   font-style: normal;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.match-tracker::before {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
   color: #ffb404;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.match-statistics::before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.match-statistics::before {
   content: '\e64a';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -920,15 +1127,18 @@ defineComponent({
   font-style: normal;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.match-statistics::before {
+.m-event-detail-wrap
+  .m-event-tracker
+  .event-tracker-button-wrapper
+  > span.match-statistics::before {
   color: #03bdff;
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.active {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active {
   background-color: var(--brand-secondary);
 }
 
-.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper>span.active:before {
+.m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active:before {
   color: #353a45;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
@@ -1034,31 +1244,73 @@ defineComponent({
   color: var(--text-type2-primary);
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome {
   background: rgba(214, 235, 220, 0.13);
   color: var(--brand-secondary);
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome--checked {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome--checked {
   background-color: var(--brand-secondary);
   color: #ffffff;
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome--checked:before {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome--checked:before {
   color: #ffffff !important;
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome--disabled {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome--disabled {
   background: #22252d;
   color: #50545f;
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome--up:before,
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome--down:before {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome--up:before,
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome--down:before {
   color: #33ea6a;
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome-combo-title {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome-combo-title {
   background-color: rgba(234, 236, 239, 0.15);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -1066,7 +1318,13 @@ defineComponent({
   font-size: 1rem;
 }
 
-.m-event-detail-wrap .event-detail .m-sport-market .m-market .market-content .m-table-row .m-outcome-combo-column-title {
+.m-event-detail-wrap
+  .event-detail
+  .m-sport-market
+  .m-market
+  .market-content
+  .m-table-row
+  .m-outcome-combo-column-title {
   background-color: rgba(234, 236, 239, 0.15);
   color: #f2f3f5;
 }
@@ -1094,14 +1352,14 @@ defineComponent({
   margin: 0 0.83333333rem;
 }
 
-.m-event-team-wrap>div {
+.m-event-team-wrap > div {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
 }
 
-.m-event-team-wrap>div>span {
+.m-event-team-wrap > div > span {
   display: block;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
@@ -1126,8 +1384,8 @@ defineComponent({
   justify-content: stretch;
 }
 
-.m-event-team-wrap .home-team-name>span,
-.m-event-team-wrap .away-team-name>span {
+.m-event-team-wrap .home-team-name > span,
+.m-event-team-wrap .away-team-name > span {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
