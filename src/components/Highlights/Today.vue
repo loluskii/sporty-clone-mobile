@@ -99,28 +99,11 @@ const selectMarket = (market) => {
 </script>
 
 <style scoped>
-.home .m-sports .m-today-tab .m-tabs-tab {
-  color: #353a45;
-  color: var(--c-sports-prematch-market-title-text);
-  -webkit-box-flex: initial;
-  -webkit-flex: initial;
-  -ms-flex: initial;
-  flex: initial;
-  font-size: 1.066rem;
-  margin: 0;
-  padding: 0.33333333rem 0.91666667rem;
-  /* width: calc(100); */
-}
-
-.m-sports .market-wrapper {
-  padding: 10px 0px !important;
-}
-
 .m-sports .nav-fixed .market-wrapper {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   position: fixed;
-  top: 7.75rem;
+  top: 7.6rem;
   -webkit-transition: top 0.3s ease !important;
   transition: top 0.3s ease !important;
   width: 100%;

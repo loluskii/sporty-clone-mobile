@@ -1,5 +1,5 @@
 <template>
-  <div style="background-color: #1b1e25">
+  <div>
     <HeaderOther :headerTitle="'Details'"></HeaderOther>
     <div class="m-event-detail-wrap">
       <template v-if="isLoading">
@@ -21,7 +21,7 @@
                   </p>
                 </div>
                 <div class="event-time">
-                  <span>{{ eventDetail.eventTime !== '--:--' ? eventTime : '' }}</span>
+                  <span>{{ matchHasEnded ? 'Finished' : `${eventTime} ${eventDetail.matchStatus}` }}</span>
                 </div>
               </div>
               <div class="m-event-team-wrap">
@@ -82,12 +82,12 @@
                           :class="{
                             'm-outcome--checked': isSelected(
                               createID(
-                                eventDetail.gameID,
+                                eventDetail.matchID,
                                 marketGroup.marketID,
-                                selection.outcomeName,
                                 selection.outcomeID,
-                                eventDetail.name,
-                                marketGroup.specifier
+                                marketGroup.specifier,
+                                marketGroup.marketName,
+                                selection.outcomeName
                               ),
                               couponStore.coupon
                             ),
@@ -152,12 +152,12 @@
                               :class="{
                                 'm-outcome--checked': isSelected(
                                   createID(
-                                    eventDetail.gameID,
+                                    eventDetail.matchID,
                                     mg.marketID,
-                                    outcome.outcomeName,
-                                    outcome.outcomID,
-                                    eventDetail.name,
-                                    mg.specifier
+                                    outcome.outcomeID,
+                                    mg.specifier,
+                                    mg.marketName,
+                                    outcome.outcomeName
                                   ),
                                   couponStore.coupon
                                 ),
@@ -183,12 +183,12 @@
                           :class="{
                             'm-outcome--checked': isSelected(
                               createID(
-                                eventDetail.gameID,
+                                eventDetail.matchID,
                                 marketGroup.marketID,
-                                selection.outcomeName,
-                                selection.outcomID,
-                                eventDetail.name,
-                                marketGroup.specifier
+                                selection.outcomeID,
+                                marketGroup.specifier,
+                                marketGroup.marketName,
+                                selection.outcomeName
                               ),
                               couponStore.coupon
                             ),
@@ -271,7 +271,7 @@ const isClockStopped = ref(false)
 
 // Computed properties
 const matchHasEnded = computed(() => {
-  return eventDetail.value?.statusCode === 3
+  return eventDetail.value?.status === 3
 })
 
 const noMarkets = computed(() => {
@@ -696,23 +696,6 @@ function isTotalOrHandicap(market) {
 }
 
 const getMarketCode = (name) => {
-  const homeTeamRegex = new RegExp(homeTeam.value, 'gi')
-  const awayTeamRegex = new RegExp(awayTeam.value, 'gi')
-  const drawRegex = /draw/gi
-  const orRegex = /or/gi
-
-  // Replace home team name with '1'
-  name = name.replace(homeTeamRegex, '1')
-
-  // Replace away team name with '2'
-  name = name.replace(awayTeamRegex, '2')
-
-  // Replace 'draw' with 'X'
-  name = name.replace(drawRegex, 'X')
-
-  // Replace 'or' with '/'
-  name = name.replace(orRegex, '/')
-
   return name.trim()
 }
 
@@ -843,14 +826,8 @@ function addToBetslip(market, outcome) {
     return
   }
 
-  const id = createID(
-    eventDetail.value.gameID,
-    marketId,
-    outcome.outcomeName,
-    outcome.oddID || outcome.outcomeID,
-    eventDetail.value.name,
-    market.specifier
-  )
+  const id = createID(eventDetail.value.matchID, market.marketID, outcome.outcomeID, market.specifier, market.marketName, outcome.outcomeName)
+
   const data = {
     fixture: eventDetail.value,
     market_name: market.marketName,
@@ -1075,7 +1052,7 @@ defineComponent({
   padding-bottom: 1.25rem;
 }
 .m-event-detail-wrap .m-event-title .m-event-league {
-  color: var(--brand-secondary);
+  color: var(--brand-primary);
   line-height: 1.2;
   overflow: hidden;
   padding: 0.66666667rem 0;
@@ -1100,7 +1077,6 @@ defineComponent({
 .m-event-detail-wrap .m-event-title .m-event-title-time .category-league {
   overflow: hidden;
   padding-left: 0.66666667rem;
-  text-decoration: underline;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1132,8 +1108,8 @@ defineComponent({
   .market-content
   .m-table-row
   .m-outcome {
-  background: rgba(214, 235, 220, 0.13);
-  color: var(--brand-secondary);
+  background: var(--brand-live-odds-bg);
+  color: #fff;
 }
 .m-event-detail-wrap
   .event-detail
@@ -1142,8 +1118,8 @@ defineComponent({
   .market-content
   .m-table-row
   .m-outcome--checked {
-  background-color: var(--brand-secondary);
-  color: #ffffff;
+  background-color: var(--brand-active-live-odds-bg);
+  color: var(--brand-active-live-odds-text);
 }
 .m-event-detail-wrap
   .event-detail
@@ -1248,6 +1224,7 @@ defineComponent({
   -webkit-justify-content: stretch;
   -ms-flex-pack: stretch;
   justify-content: stretch;
+  align-items: center;
 }
 .m-event-team-wrap .home-team-name > span,
 .m-event-team-wrap .away-team-name > span {
@@ -1255,8 +1232,8 @@ defineComponent({
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
-  height: 1.83333333rem;
-  line-height: 1.83333333rem;
+  /* height: 1.83333333rem;
+  line-height: 1.83333333rem; */
 }
 .m-event-team-wrap .home-team-name .score,
 .m-event-team-wrap .away-team-name .score {
@@ -1302,7 +1279,7 @@ defineComponent({
   line-height: 1.2;
   margin-right: 0.16666667rem;
   overflow: hidden;
-  padding: 0.25rem 0 0.25rem 0.41666667rem;
+  padding: 0.85rem;
   width: 50%;
 }
 

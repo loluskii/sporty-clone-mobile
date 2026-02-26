@@ -28,9 +28,9 @@ const SearchView = () => import('@/views/SearchView.vue')
 const GroupView = () => import('@/views/Games/GroupView.vue')
 const Search = () => import('../views/Games/SearchView.vue')
 
-const GamesView = () => import('@/views/Games/GamesView.vue')
+const CasinoView = () => import('@/views/CasinoView.vue')
 const PlayView = () => import('@/views/Games/PlayView.vue')
-const CodeHubView = () => import('@/views/CodeHubView.vue')
+const CodeCentralView = () => import('@/views/CodeHubView.vue')
 const Promotions = () => import('@/views/Promotions.vue')
 const JackpotView = () => import('../views/Games/JackpotView.vue')
 
@@ -44,7 +44,7 @@ const LoadingComponent = {
 }
 
 // Add route preloading for frequently accessed routes
-const preloadRoutes = ['home', 'az_menu', 'live', 'casino-games']
+const preloadRoutes = ['home', 'az_menu', 'live', 'casino']
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,6 +60,11 @@ export const router = createRouter({
         showBetslipCount: true,
         preload: true // Preload home page
       }
+    },
+    {
+      path: '/ref/:code',
+      name: 'ref-signup',
+      component: SignUpView
     },
     {
       path: '/search',
@@ -211,9 +216,9 @@ export const router = createRouter({
 
     // Casino
     {
-      path: '/Games',
-      name: 'casino-games',
-      component: GamesView,
+      path: '/Casino',
+      name: 'casino',
+      component: CasinoView,
       meta: { showMobileNavigation: true }
     },
     {
@@ -280,11 +285,11 @@ export const router = createRouter({
       component: LoadBetView
     },
 
-    // Code Hub
+    // Code Central
     {
-      path: '/CodeHub',
-      name: 'code-hub',
-      component: CodeHubView
+      path: '/CodeCentral',
+      name: 'code-central',
+      component: CodeCentralView
     },
 
     // CMS Pages

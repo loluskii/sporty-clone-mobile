@@ -23,9 +23,6 @@
           })
         "
       >
-        <div class="image">
-          <img src="@/assets/images/3hrs.jpeg" style="height: 24px" alt="" srcset="" />
-        </div>
         <div class="text">football in 3 hours</div>
       </div>
       <template v-for="(match, index) in featuredTournaments" :key="index">
@@ -60,89 +57,9 @@
         <div role="tablist" aria-label="featured widgets tabs" class="featured-nav-list">
           <div class="featured-header-left">
             <span role="heading" aria-label="featured widgets title" class="featured-title"
-              >Featured</span
+              >Featured Matches</span
             >
-            <div role="group" aria-label="featured widget tablist container" class="tabList">
-              <div
-                class="m-snap-nav-wrap"
-                role="tablist"
-                aria-label="featured widget tabs"
-                style="overflow: hidden"
-              >
-                <ul class="m-snap-nav flex">
-                  <li
-                    class="featured-nav-item m-snap-nav-item"
-                    :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
-                    @click="setActiveTab('featuredMatches')"
-                    role="tab"
-                    aria-label="featured matches"
-                  >
-                    <span
-                      class="feature-nav-span"
-                      :class="activeFeaturedTab == 'featuredMatches' ? 'active' : ''"
-                      >Matches</span
-                    >
-                  </li>
-                  <li
-                    class="featured-nav-item m-snap-nav-item"
-                    @click="setActiveTab('featuredGames')"
-                    :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
-                    role="tab"
-                    aria-label="featured games"
-                  >
-                    <span
-                      class="feature-nav-span"
-                      :class="activeFeaturedTab == 'featuredGames' ? 'active' : ''"
-                      >Casino</span
-                    >
-                  </li>
-                  <li
-                    class="featured-nav-item m-snap-nav-item"
-                    @click="setActiveTab('codes')"
-                    :class="activeFeaturedTab == 'codes' ? 'active' : ''"
-                    role="tab"
-                    aria-label="codes"
-                  >
-                    <span
-                      class="feature-nav-span"
-                      :class="activeFeaturedTab == 'codes' ? 'active' : ''"
-                      >Codes</span
-                    >
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="featured-header-right">
-            <a
-              v-show="activeFeaturedTab == 'codes'"
-              href="/CodeHub"
-              class="codeHub-Icon"
-              role="link"
-              aria-label="see more featured code list"
-              ><svg
-                data-v-4834e13a=""
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                color="#0D9737"
-                class="svg-icon-base"
-                style="height: 1.66667rem; width: 1.66667rem"
-              >
-                <path
-                  d="M21.162 10.058c0-.338.002-3.732-.028-4.074A3.246 3.246 0 0017.88 3.01c-1.226-.002-2.473 0-3.68 0h-1.84c-.516 0-1.038-.002-1.547-.005-1.32-.007-2.683-.014-4.026.026A3.68 3.68 0 005.1 3.51a3.063 3.063 0 00-1.219 1.292c-.246.497-.372 1.083-.375 1.743-.009 3.23-.007 6.514-.002 9.69l.002 1.204c.003.335.033.626.092.889a3.55 3.55 0 001.24 2.013c.548.433 1.195.668 1.837.668.052 0 .101-.003.153-.005.496-.03 4.99-.023 5.482-.016.26.004.53.007.794.007.65-.003.797-.37.806-.68a.704.704 0 00-.175-.52c-.139-.146-.357-.223-.626-.225-.42-.005-4.83-.003-5.243-.003h-.842c-1.265-.004-2.057-.766-2.067-1.987a928.92 928.92 0 01-.002-11.135c.002-.572.208-1.093.583-1.46.373-.366.882-.556 1.472-.549 2.377.026 4.793.021 7.128.016 1.17-.002 2.379-.004 3.567-.002 1.273.002 2.013.75 2.03 2.05 0 .05 0 3.146.002 3.198.002.32.007.651.044.977.045.375.31.617.668.617.021 0 .043 0 .061-.003.42-.033.666-.307.661-.736a5.867 5.867 0 01-.01-.494z"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  stroke-width=".4"
-                ></path>
-                <path
-                  d="M17.048 9.117H6.851a.719.719 0 01-.717-.717c0-.394.32-.717.717-.717h10.197a.717.717 0 110 1.434zM9.537 15.03H6.85a.719.719 0 01-.717-.717c0-.394.32-.717.717-.717h2.686c.393 0 .717.321.717.717a.72.72 0 01-.717.717zm11.301 4.798l-2.54-3.023a3.665 3.665 0 10-6.64-2.142 3.665 3.665 0 005.592 3.119l2.491 2.967a.716.716 0 001.097-.921zm-7.891-5.165a2.38 2.38 0 012.376-2.377 2.38 2.38 0 012.377 2.377 2.38 2.38 0 01-2.377 2.376 2.38 2.38 0 01-2.376-2.377z"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  stroke-width=".4"
-                ></path>
-              </svg>
-            </a>
+            
           </div>
         </div>
         <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch bg-white">
@@ -190,14 +107,6 @@
           </template>
           <LoadingSpinner v-else></LoadingSpinner>
         </div>
-        <FeaturedGamesContainer
-          v-show="activeFeaturedTab == 'featuredGames'"
-          :featuredCasinogames="featuredCasinogames"
-          :featuredCasino="featuredCasino"
-          :activeCasinoCategory="activeCasinoCategory"
-          @set-active-category="setActiveCategory"
-          :casinoIsLoading="casinoIsLoadingGames"
-        ></FeaturedGamesContainer>
         <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
     </div>
@@ -265,7 +174,7 @@ function getImageURL(name) {
   } else if (name == 'Bundesliga') {
     return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Top%20Leagues%2F${name}.png?alt=media`
+    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${name}.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'`
   }
 }
 
@@ -384,7 +293,9 @@ onMounted(async () => {
   // Only fetch if we don't have data or it's stale
   if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
     await utilsStore.fetchFeaturedGames().then(() => {
-      setActiveTournament(featuredTournaments.value[0])
+      if(featuredTournaments.value.length){
+        setActiveTournament(featuredTournaments.value[0])
+      }
     })
   }
 })
@@ -582,100 +493,13 @@ onDeactivated(() => {
   line-height: 1.75rem;
   margin: 0 0.83333333rem;
 }
-.home .m-sports .m-today-tab {
-  border-bottom: 1px solid #f2f3f5;
-  border-color: #f2f3f5;
-  border-color: var(--c-prematch-tab-border);
-}
-.home .m-sports .m-today-tab .m-tabs-nav {
-  border-bottom: none;
-  min-width: 100%;
-}
-.home .m-sports .m-today-tab .m-tabs-tab {
-  color: #353a45;
-  color: var(--c-sports-prematch-market-title-text);
-  -webkit-box-flex: initial;
-  -webkit-flex: initial;
-  -ms-flex: initial;
-  flex: initial;
-  font-size: 1.066rem;
-  margin: 0;
-  padding: 0.33333333rem 0.91666667rem;
-  width: auto;
-}
-.home .m-sports .m-today-tab .m-tabs-ink-bar {
-  height: 3px;
-}
-.home .m-sports .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: relative;
-}
-.home .m-sports .nav-fixed .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: fixed;
-  top: 7.75rem;
-  -webkit-transition: top 0.3s ease !important;
-  transition: top 0.3s ease !important;
-  width: 100%;
-  z-index: 100;
-}
-.home .m-sports .nav-fixed .market-wrapper:after {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  content: '';
-  height: 4rem;
-  left: 0;
-  position: absolute;
-  top: -4rem;
-  width: 100%;
-}
-.home .m-sports .nav-fixed.nav-up .market-wrapper {
-  top: 11.41666667rem;
-}
-.home .m-sports .nav-up .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: fixed;
-  top: 11.41666667rem;
-  z-index: 200;
-}
-.home .m-sport-bet-error {
-  padding: 0.83333333rem;
-}
-.home .view-all {
-  margin: 0 2rem 0 0.83333333rem;
-  padding: 1.41666667rem 0;
-  text-align: right;
-}
-.home .view-all a {
-  font-size: 1rem;
-  line-height: 1.066rem;
-  position: relative;
-}
-.home .view-all a::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.home .view-all a::before {
-  display: inline-block;
-  font-size: 1rem;
-  position: absolute;
-  right: -1.33333333rem;
-  top: 0;
-}
 .featured-match-placeholder {
   min-height: 14.58333333rem;
   position: relative;
   width: 100%;
 }
 #featuredMatchCardBox {
-  padding: 0.8rem 1.1rem;
+  padding: 0.5rem 1.1rem;
 }
 
 .featured-widget {
@@ -735,10 +559,10 @@ onDeactivated(() => {
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
-  -webkit-box-pack: center;
+  /* -webkit-box-pack: center;
   -webkit-justify-content: center;
   -ms-flex-pack: center;
-  justify-content: center;
+  justify-content: center; */
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
@@ -771,7 +595,7 @@ onDeactivated(() => {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  border-right: solid 0.5px;
+  /* border-right: solid 0.5px; */
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -864,7 +688,6 @@ onDeactivated(() => {
   align-items: center;
   border: 1px solid;
   border-color: #dcdee5;
-  border-color: var(--c-featured-match-category-border);
   border-radius: 1.16666667rem;
   display: -webkit-inline-box;
   display: -webkit-inline-flex;
@@ -896,7 +719,6 @@ onDeactivated(() => {
   transform-origin: 100% 100%;
   width: 0;
   border-bottom: 8px solid transparent;
-  border-right: 10px solid var(--c-featured-match-arrow-color);
   border-top: 8px solid transparent;
 }
 .featuredMatch {
@@ -1071,7 +893,7 @@ onDeactivated(() => {
 }
 
 .topTournamentCard {
-  background-color: white;
+  background-color: #ffffff;
   padding: 5px;
   border-top: 3px solid orangered;
   display: flex;
@@ -1080,6 +902,7 @@ onDeactivated(() => {
   -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   margin-right: 15px;
+  color: #121212;
 }
 
 .topTournamentCard:last-of-type {

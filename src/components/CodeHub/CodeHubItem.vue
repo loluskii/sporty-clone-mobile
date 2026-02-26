@@ -1,110 +1,165 @@
 <template>
-  <div class="code-hub-list-item-intersection-observer-wrap" style="">
-    <div class="code-hub-list-item">
-      <div role="table" class="booking-code-list-item">
-        <div role="row" class="header">
-          <div role="rowheader" class="code flex-1">{{ code.betslipId }}</div>
-          <div class="folds text-center flex-1">
-            <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
-          </div>
-          <div class="odds text-right flex-1">
-            <span class="label">Odds:</span><span>{{ code.total_odd }}</span>
-          </div>
+  <div class="code-hub-item">
+    <div class="trending-card">
+      <div class="trending-card-header">
+        <div class="trending-code-wrap">
+          <button class="trending-code" type="button" @click="copyCode(code.betslipId)">
+            {{ code.betslipId }}
+          </button>
+          <!-- Use icon font classes to avoid encoding issues across builds. -->
+          <button class="trending-copy" type="button" @click="copyCode(code.betslipId)">
+            <span class="iconfont icon-content_copy" aria-hidden="true"></span>
+          </button>
         </div>
-        <div role="row" class="content">
-          <div
-            tabindex="-1"
-            class="semi-transparent-linear-gradient-scrolling-animation-container"
-          ></div>
-          <div class="scroll-level">
-            <CodeSelectionItem
-              v-for="selection in code.selections"
-              :key="selection.id"
-              :data="selection"
-            />
-          </div>
-          <div class="prevent-scroll left"></div>
-          <div class="prevent-scroll right"></div>
+        <div class="trending-meta">
+          <span class="trending-folds">{{ code.totalSelections }} Fold</span>
+          <span class="trending-odds">{{ code.total_odd }}</span>
         </div>
-        <div role="row" class="booking-code-action-bar">
-          <div
-            role="button"
-            tabindex="0"
-            class="button loading-button-container share-button"
-            @click="shareCode(code)"
-          >
+      </div>
+
+      <div class="trending-selections">
+        <div
+          v-for="selection in displaySelections"
+          :key="selection.id"
+          class="trending-selection"
+        >
+          <div class="trending-selection-info">
+            <div class="trending-selection-name">{{ selection.outcomeName }}</div>
+            <div class="trending-selection-market">
+              {{ selection.marketName }} &middot; {{ selection.eventName }}
+            </div>
+          </div>
+          <div class="trending-selection-odds">{{ selection.odds }}</div>
+        </div>
+      </div>
+
+      <div class="trending-card-footer">
+        <button class="trending-cta" @click="openDrawer(code)">View bet</button>
+      </div>
+    </div>
+
+    <Transition name="trending-drawer">
+      <div v-if="drawerOpen" class="trending-drawer-overlay" @click="closeDrawer">
+        <div class="trending-drawer" @click.stop>
+          <div class="trending-drawer-header">
+            <div class="trending-drawer-code">
+              <button
+                class="trending-code"
+                type="button"
+                @click="copyCode(activeCode?.betslipId)"
+              >
+                {{ activeCode?.betslipId }}
+              </button>
+              <button class="trending-copy" type="button" @click="copyCode(activeCode?.betslipId)">
+                <span class="iconfont icon-content_copy" aria-hidden="true"></span>
+              </button>
+            </div>
+            <button class="trending-drawer-close" type="button" @click="closeDrawer">
+              &times;
+            </button>
+          </div>
+          <div class="trending-drawer-meta">
+            <span>{{ activeCode?.totalSelections }} Selections</span>
+            <span class="trending-drawer-odds">{{ activeCode?.total_odd }}</span>
+          </div>
+          <div class="trending-drawer-list">
             <div
-              v-if="shareCodeLoading"
-              class="loading-icon-container share-loading-icon-container"
+              v-for="selection in activeCode?.selections || []"
+              :key="selection.id"
+              class="trending-drawer-item"
             >
-              <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px"></div>
+              <div class="trending-drawer-info">
+                <div class="trending-drawer-name">{{ selection.outcomeName }}</div>
+                <div class="trending-drawer-market">
+                  {{ selection.marketName }} &middot; {{ selection.eventName }}
+                </div>
+              </div>
+              <div class="trending-drawer-odd">{{ selection.odds }}</div>
             </div>
-            <span v-else class="loading-button-click-area share-button-click-area mr-auto"
-              ><div class="mr-8 icon-font-base" style="font-size: 12px"></div>
-              <span>Share</span></span
-            >
           </div>
-          <div
-            data-op="add-to-betslip"
-            role="button"
-            tabindex="0"
-            class="button loading-button-container add-to-betslip-button"
-            @click="addToBetslip(code)"
-          >
-            <div v-if="addToBetslipLoading" class="loading-icon-container">
-              <div class="loading-icon icon-font-base" role="alert" style="font-size: 12px"></div>
-            </div>
-            <span v-else class="loading-button-click-area"
-              ><span data-cms-key="add_to_betslip" data-cms-page="page_code_hub"
-                >Add to Betslip</span
-              ></span
-            >
+          <div class="trending-drawer-actions">
+            <button class="trending-drawer-share" type="button" @click="shareCode(activeCode)">
+              <span class="trending-share-icon iconfont icon-share-fb" aria-hidden="true"></span>
+            </button>
+            <button class="trending-drawer-add" type="button" @click="addToBetslip(activeCode)">
+              Add to betslip
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import CodeSelectionItem from './CodeSelectionItem.vue'
 import { useCouponStore } from '@/stores'
-import { ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import emitter from '@/plugins/emitter'
-const props = defineProps(['code'])
+import { loadBetslipByCode } from '../../helpers/queries'
+
+const props = defineProps({
+  code: {
+    type: Object,
+    required: true
+  },
+  previewCount: {
+    type: Number,
+    default: null
+  }
+})
 
 const addToBetslipLoading = ref(false)
 const shareCodeLoading = ref(false)
 const couponStore = useCouponStore()
+const copiedCode = ref('')
+const drawerOpen = ref(false)
+const activeCode = ref(null)
+// Expand selections for preview-only UI checks (e.g., 10 selections).
+const displaySelections = computed(() => {
+  const selections = props.code?.selections || []
+  if (!props.previewCount || selections.length >= props.previewCount) return selections
+  const expanded = []
+  while (expanded.length < props.previewCount) {
+    expanded.push(...selections)
+  }
+  return expanded.slice(0, props.previewCount)
+})
 
-function addToBetslip(code) {
+async function addToBetslip(code) {
   addToBetslipLoading.value = true
-  setTimeout(() => {
-    addToBetslipLoading.value = false
-    try {
-      if (couponStore.coupon.selections.length) {
-        emitter.emit('showBetslipConfirmation', code)
-      } else {
-        couponStore.coupon.selections = code.selections
-        couponStore.coupon.totalOdds = parseFloat(code.totalOdd)
-        couponStore.coupon.totalStake = parseFloat(code.stake)
-        couponStore.coupon.stake = parseFloat(code.stake)
-        couponStore.coupon.maxWin = parseFloat(code.possibleWin)
-        couponStore.coupon.source = code.source
-        if (code.selections.length === 1) {
-          couponStore.coupon.bet_type = 'Single'
-          couponStore.coupon.betslip_type = 'Single'
+  try {
+    if (couponStore.coupon.selections.length) {
+      emitter.emit('showBetslipConfirmation', code)
+    } else {
+      const res = await loadBetslipByCode(code.betslipId)
+      addToBetslipLoading.value = false
+      if (res.success) {
+        if (res.data.selections.length) {
+          couponStore.coupon.selections = res.data.selections
+          couponStore.coupon.totalOdds = res.data.totalOdd
+          couponStore.coupon.totalStake = res.data.stake
+          couponStore.coupon.stake = res.data.stake
+          couponStore.coupon.maxWin = res.data.possibleWin
+          couponStore.coupon.source = 'mobile'
+          if (res.data.selections.length === 1) {
+            couponStore.coupon.bet_type = 'Single'
+            couponStore.coupon.betslip_type = 'Single'
+          } else {
+            couponStore.coupon.bet_type = 'Multiple'
+            couponStore.coupon.betslip_type = 'Multiple'
+          }
         } else {
-          couponStore.coupon.bet_type = 'Multiple'
-          couponStore.coupon.betslip_type = 'Multiple'
+          emitter.emit('showDialogueToaster', 'All selections have expired')
         }
-        emitter.emit('openBetslip')
+      } else {
+        throw new Error(res.message)
       }
-    } catch (error) {
-      console.log(error)
-      emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+      emitter.emit('openBetslip')
     }
-  }, 1000)
+  } catch (error) {
+    console.log(error)
+    emitter.emit('showDialogueToaster', error)
+  }
 }
 
 function shareCode(data) {
@@ -114,188 +169,301 @@ function shareCode(data) {
     emitter.emit('showBookBetModal', { data: data })
   }, 1000)
 }
+
+function copyCode(code) {
+  copiedCode.value = code
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).catch(() => {})
+  }
+}
+
+function openDrawer(code) {
+  // Open the details drawer instead of adding to betslip directly.
+  activeCode.value = code
+  drawerOpen.value = true
+}
+
+function closeDrawer() {
+  drawerOpen.value = false
+  activeCode.value = null
+}
+
+function setBodyScrollLocked(locked) {
+  document.body.classList.toggle('no-scroll', locked)
+}
+
+watch(drawerOpen, (isOpen) => {
+  setBodyScrollLocked(isOpen)
+})
+
+onBeforeUnmount(() => {
+  setBodyScrollLocked(false)
+})
 </script>
 
-<style>
-.booking-code-list-item {
-  -webkit-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  max-height: 17.33333333rem;
-  position: relative;
-  color: #353a45;
+<style scoped>
+.drawer-lock {
+  overflow: hidden;
 }
-.booking-code-list-item .header {
-  background-color: #d6ebdc;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
+.code-hub-item {
+  width: 100%;
+}
+
+.trending-card {
+  background: rgba(15, 18, 24, 0.04);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
   display: flex;
-  -webkit-flex-shrink: 0;
-  -ms-flex-negative: 0;
-  flex-shrink: 0;
-  font-size: 1.06666667rem;
-  font-weight: 700;
-  -webkit-box-pack: justify;
-  -webkit-justify-content: space-between;
-  -ms-flex-pack: justify;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.65rem;
+  height: 17rem;
+  /* box-shadow: 0 12px 26px rgba(17, 24, 39, 0.2); */
+  min-width: 19rem;
+}
+
+.trending-card-header {
+  display: flex;
   justify-content: space-between;
-  padding: 0.125rem 1rem;
-}
-.booking-code-list-item .header .label {
-  display: inline-block;
-  font-size: 1rem;
-  font-weight: 400;
-  -webkit-transform: scale(0.85);
-  -ms-transform: scale(0.85);
-  transform: scale(0.85);
-  color: #9ca0ab;
-  color: var(--text-disable-type1-primary);
-}
-.booking-code-list-item .code {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.booking-code-list-item .content {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-  -ms-flex-positive: 1;
-  flex-grow: 1;
-  overflow: hidden;
-  position: relative;
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-}
-.booking-code-list-item .content .code-selection-item {
-  min-height: 2.66666667rem;
-}
-.booking-code-list-item .content .scroll-level {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  height: 100%;
-  overflow: auto;
-  padding: 0.66666667rem 1rem 0;
-  position: relative;
-  row-gap: 0.5rem;
-}
-.booking-code-list-item .content .prevent-scroll {
-  background-color: transparent;
-  height: 100%;
-  position: absolute;
-  top: 0;
-}
-.booking-code-list-item .content .prevent-scroll.left {
-  left: 0;
-  width: 2.5rem;
-}
-.booking-code-list-item .content .prevent-scroll.right {
-  right: 0;
-  width: 1.33333333rem;
-}
-.booking-code-list-item .flex-1 {
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-}
-.booking-code-list-item .text-center {
-  text-align: center;
-}
-.booking-code-list-item .text-right {
-  text-align: right;
-}
-.booking-code-action-bar {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-flex-shrink: 0;
-  -ms-flex-negative: 0;
-  flex-shrink: 0;
-  height: 2.66666667rem;
-}
-.booking-code-action-bar .share-button {
-  background-color: #f2f3f5;
-  color: #0d9737;
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-  -webkit-flex-basis: 121px;
-  -ms-flex-preferred-size: 121px;
-  flex-basis: 121px;
-  overflow: hidden;
-}
-.booking-code-action-bar .share-button .share-loading-icon-container {
-  left: 1rem;
-}
-.booking-code-action-bar .share-button .share-button-click-area {
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
   align-items: center;
-  display: -webkit-inline-box;
-  display: -webkit-inline-flex;
-  display: -ms-inline-flexbox;
+}
+
+.trending-code-wrap {
   display: inline-flex;
-  -webkit-box-pack: left;
-  -webkit-justify-content: left;
-  -ms-flex-pack: left;
-  justify-content: left;
-  padding: 0.33333333rem 0.66666667rem 0.33333333rem 0;
+  align-items: center;
+  gap: 0.35rem;
 }
-.booking-code-action-bar .share-button .mr-auto {
-  margin-right: auto;
-}
-.booking-code-action-bar .edit-button {
-  background-color: #096b27;
-  color: #ffffff;
 
-  -webkit-box-flex: 0;
-  -webkit-flex: 0 0 2.66666667rem;
-  -ms-flex: 0 0 2.66666667rem;
-  flex: 0 0 2.66666667rem;
-  padding: 0;
+.trending-code {
+  color: #1b1e25;
+  font-weight: 800;
+  padding: 0rem 0.75rem;
+  border-radius: 0.4rem;
+  font-size: 1.2rem;
+  border: none;
+  background: transparent;
 }
-.booking-code-action-bar .add-to-betslip-button {
-  background-color: #0d9737;
-  background-color: var(--brand-secondary);
-  color: #ffffff;
 
-  max-width: 11.08333333rem;
-  min-width: 10rem;
-  padding: 0 1rem;
+.trending-copy {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #1b1e25;
+  font-family: 'iconfont' !important;
+  display: inline-flex;
+  align-items: center;
 }
-.booking-code-action-bar .mr-8 {
-  margin-right: 0.66666667rem;
+
+.trending-meta {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #6c727f;
+}
+
+.trending-folds {
+  font-weight: 600;
+}
+
+.trending-odds {
+  font-weight: 700;
+  color: #1b1e25;
+}
+
+.trending-selections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  flex: 1;
+  scrollbar-width: none;
+}
+.trending-selections::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.trending-selection {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 0.35rem;
+  padding: 0.45rem 0.5rem;
+}
+
+.trending-selection-name {
+  font-weight: 600;
+  color: #1b1e25;
+  font-size: 0.92rem;
+}
+
+.trending-selection-market {
+  color: #6c727f;
+  font-size: 0.8rem;
+}
+
+.trending-selection-odds {
+  font-weight: 700;
+  color: #1b1e25;
+}
+
+.trending-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  margin-top: auto;
+}
+
+.trending-cta {
+  background: var(--brand-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  font-weight: 600;
+}
+
+.trending-drawer-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+}
+
+.trending-drawer {
+  background: #ffffff;
+  border-radius: 1rem 1rem 0 0;
+  padding: 1rem;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.trending-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.trending-drawer-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.trending-drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c727f;
+}
+
+.trending-drawer-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #6c727f;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.trending-drawer-odds {
+  font-weight: 700;
+  color: #1b1e25;
+}
+
+.trending-drawer-list {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.trending-drawer-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.trending-drawer-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eaecef;
+}
+
+.trending-drawer-name {
+  font-weight: 600;
+  color: #1b1e25;
+}
+
+.trending-drawer-market {
+  color: #6c727f;
+  font-size: 0.85rem;
+}
+
+.trending-drawer-odd {
+  font-weight: 700;
+  color: #1b1e25;
+}
+
+.trending-drawer-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.trending-drawer-share,
+.trending-drawer-add {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  font-weight: 700;
+}
+
+.trending-drawer-share {
+  flex: 0 0 30%;
+  background: #eaecef;
+  color: #353a45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trending-drawer-add {
+  flex: 0 0 70%;
+  background: var(--brand-secondary);
+  color: #ffffff;
+}
+
+.trending-share-icon {
+  font-size: 1.2rem;
+}
+
+.trending-drawer-enter-active,
+.trending-drawer-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.trending-drawer-enter-from,
+.trending-drawer-leave-to {
+  opacity: 0;
 }
 </style>

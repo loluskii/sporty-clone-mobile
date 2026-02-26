@@ -49,6 +49,7 @@ defineProps({
   justify-content: space-between;
   padding: 0 1.33333333rem 0 1.66666667rem;
   width: 100%;
+  z-index: 9999;
 }
 .m-nav-secondary .m-nav-left {
   -webkit-box-align: end;

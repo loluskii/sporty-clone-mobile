@@ -87,7 +87,7 @@
           </router-link>
         </div>
         <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-games' }">
+          <router-link :to="{ name: 'casino' }">
             <svg
               width="25"
               height="25"
@@ -143,121 +143,6 @@
           </router-link>
         </div>
       </template>
-      <template v-else>
-        <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-games' }">
-            <svg
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon"
-            >
-              <path
-                d="M6.15625 20.5208C6.72627 20.5208 7.21102 20.3216 7.61049 19.923C8.00997 19.5244 8.20925 19.0397 8.20833 18.4688C8.20742 17.8978 8.00814 17.4135 7.61049 17.0159C7.21284 16.6182 6.7281 16.4185 6.15625 16.4167C5.5844 16.4148 5.10011 16.6146 4.70338 17.0159C4.30664 17.4172 4.1069 17.9015 4.10417 18.4688C4.10143 19.036 4.30117 19.5208 4.70338 19.923C5.10558 20.3252 5.58988 20.5245 6.15625 20.5208ZM6.15625 8.20833C6.72627 8.20833 7.21102 8.00905 7.61049 7.61049C8.00997 7.21193 8.20925 6.72719 8.20833 6.15625C8.20742 5.58532 8.00814 5.10102 7.61049 4.70338C7.21284 4.30573 6.7281 4.10599 6.15625 4.10417C5.5844 4.10234 5.10011 4.30208 4.70338 4.70338C4.30664 5.10467 4.1069 5.58896 4.10417 6.15625C4.10143 6.72354 4.30117 7.20828 4.70338 7.61049C5.10558 8.0127 5.58988 8.21198 6.15625 8.20833ZM12.3125 14.3646C12.8825 14.3646 13.3673 14.1653 13.7667 13.7667C14.1662 13.3682 14.3655 12.8834 14.3646 12.3125C14.3637 11.7416 14.1644 11.2573 13.7667 10.8596C13.3691 10.462 12.8843 10.2622 12.3125 10.2604C11.7407 10.2586 11.2564 10.4583 10.8596 10.8596C10.4629 11.2609 10.2632 11.7452 10.2604 12.3125C10.2577 12.8798 10.4574 13.3645 10.8596 13.7667C11.2618 14.169 11.7461 14.3682 12.3125 14.3646ZM18.4688 20.5208C19.0388 20.5208 19.5235 20.3216 19.923 19.923C20.3225 19.5244 20.5217 19.0397 20.5208 18.4688C20.5199 17.8978 20.3206 17.4135 19.923 17.0159C19.5253 16.6182 19.0406 16.4185 18.4688 16.4167C17.8969 16.4148 17.4126 16.6146 17.0159 17.0159C16.6191 17.4172 16.4194 17.9015 16.4167 18.4688C16.4139 19.036 16.6137 19.5208 17.0159 19.923C17.4181 20.3252 17.9024 20.5245 18.4688 20.5208ZM18.4688 8.20833C19.0388 8.20833 19.5235 8.00905 19.923 7.61049C20.3225 7.21193 20.5217 6.72719 20.5208 6.15625C20.5199 5.58532 20.3206 5.10102 19.923 4.70338C19.5253 4.30573 19.0406 4.10599 18.4688 4.10417C17.8969 4.10234 17.4126 4.30208 17.0159 4.70338C16.6191 5.10467 16.4194 5.58896 16.4167 6.15625C16.4139 6.72354 16.6137 7.20828 17.0159 7.61049C17.4181 8.0127 17.9024 8.21198 18.4688 8.20833ZM2.73611 24.625C1.98368 24.625 1.33978 24.3573 0.804417 23.822C0.269051 23.2866 0.000912037 22.6422 0 21.8889V2.73611C0 1.98368 0.268139 1.33978 0.804417 0.804417C1.34069 0.269051 1.98459 0.000912037 2.73611 0H21.8889C22.6413 0 23.2857 0.268139 23.822 0.804417C24.3582 1.34069 24.6259 1.98459 24.625 2.73611V21.8889C24.625 22.6413 24.3573 23.2857 23.822 23.822C23.2866 24.3582 22.6422 24.6259 21.8889 24.625H2.73611Z"
-              />
-            </svg>
-            <span class="label" data-cms-key="games">Home</span>
-          </router-link>
-        </div>
-        <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-providers' }">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              stroke="#626262"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-gem icon providers"
-            >
-              <path d="M6 3h12l4 6-10 13L2 9Z" />
-              <path d="M11 3 8 9l4 13 4-13-3-6" />
-              <path d="M2 9h20" />
-            </svg>
-            <span class="label" data-cms-key="games">Providers</span>
-          </router-link>
-        </div>
-        <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-search' }">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              stroke="#626262"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-scan-search icon providers"
-            >
-              <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-              <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="m16 16-1.9-1.9" />
-            </svg>
-            <span class="label" data-cms-key="games">Search</span>
-          </router-link>
-        </div>
-        <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-category' }">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#626262"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-component icon category"
-            >
-              <path
-                d="M15.536 11.293a1 1 0 0 0 0 1.414l2.376 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"
-              />
-              <path
-                d="M2.297 11.293a1 1 0 0 0 0 1.414l2.377 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414L6.088 8.916a1 1 0 0 0-1.414 0z"
-              />
-              <path
-                d="M8.916 17.912a1 1 0 0 0 0 1.415l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.415l-2.377-2.376a1 1 0 0 0-1.414 0z"
-              />
-              <path
-                d="M8.916 4.674a1 1 0 0 0 0 1.414l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"
-              />
-            </svg>
-            <span class="label" data-cms-key="games">Categories</span>
-          </router-link>
-        </div>
-        <div class="m-btn-button">
-          <router-link :to="{ name: 'home' }">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#6c6c6c"
-              stroke-width="3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-circle-x"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="m15 9-6 6" />
-              <path d="m9 9 6 6" />
-            </svg>
-            <span class="label" data-cms-key="games">Exit Casino</span>
-          </router-link>
-        </div>
-      </template>
     </div>
   </div>
 </template>
@@ -298,7 +183,7 @@ function showBetslip() {
 
 const routeIsCasino = computed(() => {
   let route_names = [
-    'casino-games',
+    'casino',
     'casino-search',
     'games-by-category',
     'casino-providers',

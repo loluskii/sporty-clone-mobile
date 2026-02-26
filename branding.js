@@ -8,20 +8,20 @@ export const brandDetails = {
     tertiaryColor: '#FF0000',
 
     primaryBackground: '#FFFFFF',
-    secondaryBackground: '#353A45',
+    secondaryBackground: '#f5f5f5',
 
     primaryTextColor: '#353a45',
     secondaryTextColor: '#ebc600',
 
     prematchOddBackgroundColor: '#e0e1ff',
     prematchOddTextColor: '#000245',
-    activePrematchOddBackground: '#0D9737',
+    activePrematchOddBackground: '#FFD700',
     activePrematchOddTextColor: '#fff',
 
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
     liveOddTextColor: '#ebc600',
-    activeLiveOddBackground: '#32ce62',
-    activeLiveOddTextColor: '#fff',
+    activeLiveOddBackground: '#FFD700',
+    activeLiveOddTextColor: '#121212',
 
     liveContainerBackgroundColor: '#1B1E25',
 

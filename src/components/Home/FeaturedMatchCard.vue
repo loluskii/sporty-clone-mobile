@@ -25,9 +25,9 @@
       <div class="homeIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
@@ -42,9 +42,9 @@
       <div class="awayIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
           "
         />
       </div>
@@ -60,12 +60,12 @@
           :class="
             isSelected(
               createID(
-                matchDetails.gameID,
                 matchDetails.matchID,
-                market.outcomeName,
-                market.oddID,
-                matchDetails.name,
-                market.specifier
+                market.marketID,
+                market.outcomeID,
+                market.specifier,
+                '1X2',
+                market.outcomeName
               ),
               couponStore.coupon
             )
@@ -159,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.gameID, event.matchID, odd.outcomeName, odd.oddID, event.name, odd.specifier)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',
@@ -207,6 +207,7 @@ function addToBetslip(event, odd) {
   -ms-user-select: none;
   user-select: none;
   width: 88%;
+  border-radius: 8px;
 }
 .featuredMatchCard .top {
   -webkit-box-align: center;

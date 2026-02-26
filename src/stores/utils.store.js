@@ -62,7 +62,7 @@ export const useUtilsStore = defineStore({
       try {
         const response = await getTopBets()
 
-        if (response?.data) {
+        if (response?.data || response.data !== undefined || Object.keys(response).length > 0) {
           // Process tournaments
           const uniqueTournamentIds = new Set()
           const uniqueTournaments = []
@@ -86,6 +86,8 @@ export const useUtilsStore = defineStore({
 
           // Fetch games for each tournament
           await this.fetchTournamentGames()
+        }else{
+          return []
         }
       } catch (error) {
         console.error('Error fetching featured games:', error)
