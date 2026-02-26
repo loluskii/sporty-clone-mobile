@@ -264,6 +264,17 @@ export const useCouponStore = defineStore({
       let couponData = { ...this.coupon }
       const bonusList = [...this.sportsbookBonusList]
 
+      const maxNoOfDraws = globalVars.maxNoOfDraws;
+      if (maxNoOfDraws && data.displayName === "X") {
+        const currentDraws = couponData.selections.filter(
+          (s) => s.displayName === "X" && s.gameId !== data.gameId
+        ).length;
+        if (currentDraws >= maxNoOfDraws) {
+          toast.error(`You can not add more than ${maxNoOfDraws} draws`);
+          return;
+        }
+      }
+      
       if (!couponData.selections.length) {
         
         couponData.selections.push(data)
