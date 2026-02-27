@@ -325,7 +325,6 @@ export const min = (list) => {
 
 export const isSelected = (ele_id, coupon) => {
   let isExist = false
-  console.log(ele_id)
 
   if (coupon.selections.length > 0) {
     let count = coupon.selections.find((selection) => selection.selectionId === ele_id)
