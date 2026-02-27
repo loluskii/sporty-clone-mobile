@@ -325,9 +325,6 @@ const hasMqttTime = ref(false)
 const timer = ref(null)
 const isLoading = ref(false)
 const route = useRoute()
-const refetchInterval = ref(null)
-const REFETCH_INTERVAL_MS = 60000 // 60 seconds
-
 const couponStore = useCouponStore()
 const homeTeam = ref()
 const awayTeam = ref()
@@ -471,11 +468,11 @@ const startTimer = () => {
 
 // MQTT handlers
 function handleFixtureStatus(data) {
-  // Handle match end
   requestAnimationFrame(() => {
     if (data.event_time) {
       hasMqttTime.value = true
       eventTime.value = data.event_time
+      startTimer() // restart from MQTT time, discarding stale interval
     }
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
@@ -503,110 +500,79 @@ function handleBetStop(data) {
 }
 
 function handleOddsChange(data, match_id) {
-  if (!data || !data.outcomes) return
+  if (!data || !eventMarkets.value) return
 
   const dataMatchId = data.match_id
   if (String(dataMatchId) !== String(match_id)) return
 
+  const statusName = data.status_name ? data.status_name.toLowerCase() : ''
   const outcomes = data.outcomes || []
-  if (outcomes.length === 0) return
 
-  // Use requestAnimationFrame for DOM updates
-  if (eventMarkets.value) {
-    requestAnimationFrame(() => {
-      let marketFound = false
-      let shouldRemoveMarket = false
-      const statusName = data.status_name ? data.status_name.toLowerCase() : ''
+  requestAnimationFrame(() => {
+    // Lift bet_stop lock — first odds message after bet_stop re-activates all markets
+    if (betStopped.value) {
+      betStopped.value = false
+      eventMarkets.value = eventMarkets.value.map((market) => ({
+        ...market,
+        outcomes: market.outcomes.map((o) => ({ ...o, active: 1 }))
+      }))
+    }
 
-      if (betStopped.value) {
-        // First market update after bet_stop re-activates markets.
-        betStopped.value = false
-        eventMarkets.value = eventMarkets.value.map((market) => ({
-          ...market,
-          outcomes: market.outcomes.map((outcome) => ({
-            ...outcome,
-            active: 1
-          }))
-        }))
-      }
+    let marketFound = false
 
-      // First, try to update existing market
-      eventMarkets.value = eventMarkets.value
-        .map((market) => {
-          // Match by both marketID and specifier (important for markets like Handicap, Totals)
-          const marketMatches = market.marketID === data.market_id
-          const specifierMatches = (market.specifier || '') === (data.specifier || '')
+    eventMarkets.value = eventMarkets.value
+      .map((market) => {
+        const marketMatches = market.marketID === data.market_id
+        const specifierMatches = (market.specifier || '') === (data.specifier || '')
 
-          if (!marketMatches || !specifierMatches) {
-            return market // Not the market we're updating
-          }
+        if (!marketMatches || !specifierMatches) return market
 
-          marketFound = true
+        marketFound = true
 
-          // Check if market is deactivated - mark for removal
-          if (statusName === 'deactivated') {
-            shouldRemoveMarket = true
-            return null // Will be filtered out
-          }
+        // Deactivated or settled → remove market entirely
+        if (statusName === 'deactivated' || statusName === 'settled' || statusName === 'handedover') return null
 
-          // Update outcomes for matching market
-          const updatedMarket = {
+        // Suspended → zero out all odds
+        if (statusName === 'suspended') {
+          return {
             ...market,
-            statusName: data.status_name || market.statusName,
-            outcomes: market.outcomes.map((outcome) => {
-              const updatedOutcome = outcomes.find(
-                (o) => String(o.outcome_id) === String(outcome.outcomeID)
-              )
-
-              if (updatedOutcome) {
-                return {
-                  ...outcome,
-                  odds: updatedOutcome.odds,
-                  active: statusName === 'suspended' ? 0 : updatedOutcome.active ? 1 : 0,
-                  probability: updatedOutcome.probability || outcome.probability
-                }
-              }
-
-              // Ensure suspended markets lock existing outcomes.
-              if (statusName === 'suspended') {
-                return {
-                  ...outcome,
-                  active: 0
-                }
-              }
-
-              return outcome
-            })
+            outcomes: market.outcomes.map((o) => ({ ...o, odds: 0, active: 0 }))
           }
-
-          return updatedMarket
-        })
-        .filter((market) => market !== null) // Remove deactivated markets
-
-      // If market not found and not deactivated, add it as a new market
-      if (!marketFound && statusName !== 'deactivated') {
-        // console.log(`➕ Adding new market: ${data.market_name} (ID: ${data.market_id}, Specifier: ${data.specifier || 'none'})`)
-
-        const newMarket = {
-          marketID: data.market_id,
-          marketName: data.market_name,
-          specifier: data.specifier || '',
-          statusName: data.status_name || 'Active',
-          sportID: data.sport_id || 0,
-          outcomes: outcomes.map((outcome) => ({
-            outcomeID: outcome.outcome_id,
-            outcomeName: outcome.outcome_name,
-            displayName: outcome.alias || outcome.outcome_name,
-            odds: outcome.odds,
-            active: statusName === 'suspended' ? 0 : outcome.active ? 1 : 0,
-            probability: outcome.probability || 0
-          }))
         }
 
-        eventMarkets.value.push(newMarket)
-      }
-    })
-  }
+        // Active → update only odds for matched outcomes
+        return {
+          ...market,
+          outcomes: market.outcomes.map((o) => {
+            const update = outcomes.find((u) => String(u.outcome_id) === String(o.outcomeID))
+            return update ? { ...o, odds: update.odds, active: update.active ? 1 : 0 } : o
+          })
+        }
+      })
+      .filter(Boolean)
+
+    // New market from MQTT — insert it (only if not deactivated/suspended)
+    if (!marketFound && statusName !== 'deactivated' && outcomes.length > 0) {
+      eventMarkets.value.push({
+        marketID: data.market_id,
+        marketName: data.market_name,
+        specifier: data.specifier || '',
+        title: data.title || undefined,
+        statusName: data.status_name || 'Active',
+        sportID: data.sport_id || 0,
+        outcomes: outcomes.map((o) => ({
+          outcomeID: o.outcome_id,
+          outcomeName: o.outcome_name,
+          displayName: o.alias || o.outcome_name,
+          odds: statusName === 'suspended' ? 0 : o.odds,
+          active: statusName === 'suspended' ? 0 : (o.active ? 1 : 0),
+          probability: o.probability || 0,
+          marketID: data.market_id,
+          specifier: data.specifier || ''
+        }))
+      })
+    }
+  })
 }
 
 // MQTT setup
@@ -643,53 +609,6 @@ function setupMqttSubscriptions(matchId, sport_id) {
   unsubscribeFunctions.value = unsubscribers
 }
 
-// Periodic refetch setup
-function setupPeriodicRefetch(matchId) {
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value)
-  }
-
-  refetchInterval.value = setInterval(async () => {
-    if (!matchHasEnded.value) {
-      try {
-        const res = await getFixtureMarkets(matchId)
-        if (Object.keys(res.data).length && res.data.markets.length) {
-          const fetchedMarkets = res.data?.market.filter(
-            (market) => market.statusName !== 'Suspended'
-          )
-          // Preserve bet_stop state across API refreshes.
-          eventMarkets.value = betStopped.value
-            ? fetchedMarkets.map((market) => ({
-                ...market,
-                outcomes: market.outcomes.map((outcome) => ({
-                  ...outcome,
-                  active: 0
-                }))
-              }))
-            : fetchedMarkets
-          scores.homeScore =
-            res.data?.eventInfo?.score?.home ??
-            res.data?.eventInfo?.scores?.home ??
-            res.data.homeScore ??
-            scores.homeScore
-          scores.awayScore =
-            res.data?.eventInfo?.score?.away ??
-            res.data?.eventInfo?.scores?.away ??
-            res.data.awayScore ??
-            scores.awayScore
-          if (!hasMqttTime.value) {
-            eventTime.value = res.data.eventTime
-          }
-        }
-      } catch (error) {
-        // Silently handle periodic refetch errors
-      }
-    } else {
-      clearInterval(refetchInterval.value)
-    }
-  }, REFETCH_INTERVAL_MS)
-}
-
 // Lifecycle hooks
 onMounted(() => {
   let script = document.createElement('script')
@@ -704,12 +623,6 @@ onUnmounted(() => {
   if (unsubscribeFunctions.value.length > 0) {
     unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
     unsubscribeFunctions.value = []
-  }
-
-  // Clean up intervals
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value)
-    refetchInterval.value = null
   }
 
   if (timer.value) {
@@ -824,36 +737,19 @@ async function getEventDetail(id) {
     if (res[0].data) {
       eventDetail.value = res[0].data
       eventMarkets.value = res[0].data?.market?.filter(
-        (market) => market.statusName !== 'Suspended'
+        (market) => !['Suspended', 'HandedOver', 'Settled'].includes(market.statusName)
       )
-      if (betStopped.value && eventMarkets.value?.length) {
-        eventMarkets.value = eventMarkets.value.map((market) => ({
-          ...market,
-          outcomes: market.outcomes.map((outcome) => ({
-            ...outcome,
-            active: 0
-          }))
-        }))
-      }
       marketGroups.value = res[1].data
       homeTeam.value = res[0].data.homeTeam
       awayTeam.value = res[0].data.awayTeam
-      scores.homeScore =
-        res[0].data?.eventInfo?.score?.home ??
-        res[0].data?.eventInfo?.scores?.home ??
-        res[0].data.homeScore ??
-        0
-      scores.awayScore =
-        res[0].data?.eventInfo?.score?.away ??
-        res[0].data?.eventInfo?.scores?.away ??
-        res[0].data.awayScore ??
-        0
+      scores.homeScore =res[0].data.homeScore
+      scores.awayScore = res[0].data.awayScore
+
       if (!hasMqttTime.value) {
         eventTime.value = res[0].data.eventTime
       }
       startTimer()
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
-      setupPeriodicRefetch(res[0].data.matchID)
     }
   } catch (error) {
     console.log(error)
@@ -884,7 +780,12 @@ function groupByMarketID(data) {
   const groupedMarkets = {}
   data.forEach((marketGroup) => {
     const { marketID, marketName, specifier } = marketGroup
-    const key = `${marketID}`
+    // Clean the name before keying so garbled specifier-prefixed names
+    // (e.g. "hcp=3.5|handicap" and "hcp=-1.5|handicap") collapse into
+    // the same group, while genuinely different markets with the same
+    // marketID (e.g. "1st goal scored" vs "2nd goal scored") stay separate.
+    const cleanedName = cleanMarketName(marketName, specifier)
+    const key = `${marketID}|${cleanedName}`
     if (!groupedMarkets[key]) {
       groupedMarkets[key] = {
         marketID,
