@@ -197,7 +197,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "3"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 10,
@@ -217,7 +217,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "9"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 11,
@@ -233,7 +233,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "5"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 18,
@@ -249,7 +249,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "13"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 14,
@@ -269,7 +269,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "1713"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 29,
@@ -285,7 +285,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "76"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 19,
@@ -301,7 +301,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "13"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   },
   {
     "marketID": 26,
@@ -317,7 +317,7 @@ const fallbackMarketsBySport =[
             "outcomeID": "72"
         }
     ],
-    "sportID": 0
+    "sportID": 1
   }
 ]
   
@@ -437,7 +437,7 @@ const activeSportMarkets = computed(() => {
     return _.sortBy(markets, 'marketID')
   }
 
-  return fallbackMarketsBySport[0];
+  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value);
 })
 
 const activeMarket = computed(() => {
