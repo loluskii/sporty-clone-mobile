@@ -318,6 +318,22 @@ const fallbackMarketsBySport =[
         }
     ],
     "sportID": 1
+  },
+  {
+    "marketID": 18,
+    "marketName": "Over/Under",
+    "specifier": "total",
+    "outcomes": [
+        {
+            "outcomeName": "Over",
+            "outcomeID": "12"
+        },
+        {
+            "outcomeName": "Under",
+            "outcomeID": "13"
+        }
+    ],
+    "sportID": 2
   }
 ]
   
@@ -564,6 +580,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   margin-right: 0;
   padding: 1.33333333rem 0.83333333rem;
+  text-transform: capitalize;
 }
 
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
