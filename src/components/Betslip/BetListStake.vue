@@ -116,6 +116,38 @@
         </div>
       </div>
 
+      <!-- 1UP/2UP selection controls (UI only for now; mutually exclusive). -->
+      <div v-if="showUpToggle" class="bonus mg-b-10 up-toggle-row">
+        <span class="up-toggle-label">2UP</span>
+        <button
+          class="up-toggle-trigger"
+          type="button"
+          :aria-expanded="upPanelOpen ? 'true' : 'false'"
+          @click="toggleUpPanel"
+        >
+          <span class="up-toggle-current">{{ upToggleLabel }}</span>
+          <span class="up-toggle-caret" :class="{ open: upPanelOpen }"></span>
+        </button>
+      </div>
+      <div v-if="showUpToggle && upPanelOpen" class="up-toggle-panel">
+        <button
+          type="button"
+          class="up-toggle-option"
+          :class="{ active: upMode === '1up' }"
+          @click="setUpMode('1up')"
+        >
+          1UP
+        </button>
+        <button
+          type="button"
+          class="up-toggle-option"
+          :class="{ active: upMode === '2up' }"
+          @click="setUpMode('2up')"
+        >
+          2UP
+        </button>
+      </div>
+
       <div class="potential-win bold real-theme">
         <span data-cms-key="potential_win" data-cms-page="component_betslip">Potential Win</span>
         <span>
@@ -164,7 +196,7 @@ import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 import { useBetslipCalculations } from '@/composables/useBetslipCalculations'
 import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, onMounted, toRefs } from 'vue'
+import { computed, onMounted, ref, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -198,6 +230,32 @@ const {
 } = useBetslipCalculations({ betSlipType, betType })
 const keyboardKey = 'betlist:total'
 const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
+const upPanelOpen = ref(false)
+// UI-only exclusive mode selector for 1UP/2UP.
+const upMode = ref('none')
+
+const upToggleLabel = computed(() => {
+  if (upMode.value === '1up') return '1UP'
+  if (upMode.value === '2up') return '2UP'
+  return 'Select'
+})
+
+const showUpToggle = computed(() => {
+  const selections = couponStore.coupon.selections || []
+  if (!selections.length) return false
+  const hasFootball = selections.some(
+    (selection) => String(selection.sportId || selection.fixture?.sportID || '') === '1'
+  )
+  if (!hasFootball) return false
+  return selections.some((selection) => {
+    const derived =
+      selection.derivedMarketIds ||
+      selection.derived_market_id ||
+      selection.fixture?.derived_market_id ||
+      selection.fixture?.derived_market_ids
+    return Array.isArray(derived) && derived.length > 0
+  })
+})
 
 const goToDeposit = () => {
   emit('toggle-betslip')
@@ -237,6 +295,15 @@ const toggleKeyboard = () => {
 const betslipMode = computed(() => {
   return couponStore.betslipMode
 })
+
+const toggleUpPanel = () => {
+  upPanelOpen.value = !upPanelOpen.value
+}
+
+const setUpMode = (mode) => {
+  // Exclusive selection: clicking the same mode clears it.
+  upMode.value = upMode.value === mode ? 'none' : mode
+}
 
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
@@ -425,6 +492,86 @@ onMounted(() => {
   display: -ms-flexbox;
   display: flex;
   padding: 0 1.33333333rem;
+}
+
+/* 1UP/2UP UI block. */
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-label {
+  color: #353a45;
+  color: var(--text-type1-primary);
+  font-weight: 700;
+  min-width: 30%;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-trigger {
+  align-items: center;
+  background: #f2f3f5;
+  background: var(--background-type1-primary);
+  border: 1px solid #eaecef;
+  border: 1px solid var(--line-type1-primary);
+  border-radius: 0.5rem;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font-weight: 600;
+  justify-content: space-between;
+  padding: 0.25rem 0.66666667rem;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-current {
+  font-size: 0.95rem;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-caret {
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+  border-top: 4px solid #353a45;
+  border-top-color: var(--text-type1-primary);
+  height: 0;
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+  width: 0;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-caret.open {
+  transform: rotate(180deg);
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-panel {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.33333333rem 0.83333333rem;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-option {
+  align-items: center;
+  background: #f9fafb;
+  background: var(--background-general-primary);
+  border: 1px solid #eaecef;
+  border: 1px solid var(--line-type1-primary);
+  border-radius: 0.5rem;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.4rem;
+  justify-content: center;
+  min-width: 3.5rem;
+  padding: 0.25rem 0.6rem;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .up-toggle-option.active {
+  background: #1b1e25;
+  background: var(--text-type1-tertiary);
+  border-color: #1b1e25;
+  border-color: var(--text-type1-tertiary);
+  color: #ffffff;
 }
 
 .m-bet-detail-wrap

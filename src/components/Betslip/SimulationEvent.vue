@@ -54,6 +54,10 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
+  scorePhase: {
+    type: Number,
+    default: 0
+  },
   showPitch: {
     type: Boolean,
     default: true
@@ -67,14 +71,15 @@ const props = defineProps({
 const emit = defineEmits(['pause'])
 
 const goalTimeline = computed(() => props.simulationData?.goalEvents || [])
-const currentMinute = computed(() => Math.min(90, Math.round(props.currentTime * 10)))
-
-const currentScore = computed(() => {
-  if (!props.simulationData) return { home: 0, away: 0 }
-  return {
-    home: goalTimeline.value.filter((g) => g.team === 'home' && g.time <= currentMinute.value).length,
-    away: goalTimeline.value.filter((g) => g.team === 'away' && g.time <= currentMinute.value).length
+const halfScores = computed(() => {
+  if (!props.simulationData) {
+    return { h1Home: 0, h1Away: 0, h2Home: 0, h2Away: 0 }
   }
+  const h1Home = goalTimeline.value.filter((g) => g.team === 'home' && g.time <= 45).length
+  const h1Away = goalTimeline.value.filter((g) => g.team === 'away' && g.time <= 45).length
+  const h2Home = goalTimeline.value.filter((g) => g.team === 'home' && g.time > 45).length
+  const h2Away = goalTimeline.value.filter((g) => g.team === 'away' && g.time > 45).length
+  return { h1Home, h1Away, h2Home, h2Away }
 })
 
 const displayScore = computed(() => {
@@ -84,7 +89,25 @@ const displayScore = computed(() => {
       away: props.simulationData.finalScore.away
     }
   }
-  return currentScore.value
+  if (props.scorePhase === 0) {
+    return { home: 0, away: 0 }
+  }
+  if (props.scorePhase === 1) {
+    return { home: halfScores.value.h1Home, away: 0 }
+  }
+  if (props.scorePhase === 2) {
+    return { home: halfScores.value.h1Home, away: halfScores.value.h1Away }
+  }
+  if (props.scorePhase === 3) {
+    return {
+      home: halfScores.value.h1Home + halfScores.value.h2Home,
+      away: halfScores.value.h1Away
+    }
+  }
+  return {
+    home: halfScores.value.h1Home + halfScores.value.h2Home,
+    away: halfScores.value.h1Away + halfScores.value.h2Away
+  }
 })
 
 const homeTeamName = computed(() => {

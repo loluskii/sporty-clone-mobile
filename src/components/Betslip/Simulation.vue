@@ -7,6 +7,7 @@
       :simulation-data="simulationData[firstSelection.matchId || firstSelection.match_id]"
       :current-time="currentTime"
       :timer-ended="timerEnded"
+      :score-phase="scorePhase"
       @pause="handlePause"
     />
 
@@ -22,6 +23,7 @@
             :selection-result="selectionResultsMap[selectionKey(selection)]"
             :current-time="currentTime"
             :timer-ended="timerEnded"
+            :score-phase="scorePhase"
             :show-pitch="!showSharedPitch"
             @pause="handlePause"
           />
@@ -55,10 +57,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['exit'])
-// Constants
-const SIMULATION_DURATION = 9 // seconds
-const UPDATE_INTERVAL = 250 // milliseconds
-const INITIAL_DELAY = 1000 // milliseconds
+// Constants: match duration equals GIF timeline.
+const KICKOFF_DURATION = 3 // seconds
+const CLIP_DURATION = 4 // seconds per team clip
+const HALFTIME_DURATION = 1 // seconds
+const BANNER_OFFSET = 3.8 // seconds into each clip
+const SIMULATION_DURATION =
+  KICKOFF_DURATION + CLIP_DURATION + CLIP_DURATION + HALFTIME_DURATION + CLIP_DURATION + CLIP_DURATION
+const UPDATE_INTERVAL = 100 // milliseconds
 
 // Reactive State
 const currentTime = ref(0)
@@ -169,6 +175,26 @@ const selectionKey = (selection) => {
   return `${matchId}:${marketId}:${outcomeId}`
 }
 
+const scorePhase = computed(() => {
+  const h1HomeBanner = KICKOFF_DURATION + BANNER_OFFSET
+  const h1AwayBanner = KICKOFF_DURATION + CLIP_DURATION + BANNER_OFFSET
+  const h2HomeBanner =
+    KICKOFF_DURATION + CLIP_DURATION + CLIP_DURATION + HALFTIME_DURATION + BANNER_OFFSET
+  const h2AwayBanner =
+    KICKOFF_DURATION +
+    CLIP_DURATION +
+    CLIP_DURATION +
+    HALFTIME_DURATION +
+    CLIP_DURATION +
+    BANNER_OFFSET
+
+  if (currentTime.value < h1HomeBanner) return 0
+  if (currentTime.value < h1AwayBanner) return 1
+  if (currentTime.value < h2HomeBanner) return 2
+  if (currentTime.value < h2AwayBanner) return 3
+  return 4
+})
+
 // Methods
 const handleSimulationExit = (action) => {
   if (action === 'skip') {
@@ -189,21 +215,18 @@ const handlePause = (value) => {
 // Lifecycle Hooks
 onMounted(() => {
   currentTime.value = 0
-
-  // Let kickoff overlay show before the clock starts.
-  setTimeout(() => {
-    intervalId.value = setInterval(() => {
-      if (isPaused.value) {
-        return
-      }
-      if (currentTime.value >= SIMULATION_DURATION) {
-        currentTime.value = SIMULATION_DURATION
-        clearInterval(intervalId.value)
-        return
-      }
-      currentTime.value = +(currentTime.value + 0.1).toFixed(1)
-    }, UPDATE_INTERVAL)
-  }, INITIAL_DELAY + 1200)
+  intervalId.value = setInterval(() => {
+    if (isPaused.value) {
+      return
+    }
+    if (currentTime.value >= SIMULATION_DURATION) {
+      currentTime.value = SIMULATION_DURATION
+      clearInterval(intervalId.value)
+      return
+    }
+    const nextValue = currentTime.value + UPDATE_INTERVAL / 1000
+    currentTime.value = +nextValue.toFixed(1)
+  }, UPDATE_INTERVAL)
 })
 
 onUnmounted(() => {

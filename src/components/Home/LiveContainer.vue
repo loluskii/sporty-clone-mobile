@@ -72,10 +72,7 @@
               <div class="x-table-row m-name-row">
                 <div class="x-table-cell m-name-cell">
                   <div class="m-name">
-                    <template
-                      v-for="(market, m) in effectiveMarket.outcomes"
-                      :key="m"
-                    >
+                    <template v-for="(market, m) in effectiveMarket.outcomes" :key="m">
                       <div class="market-name">
                         <span> {{ market.outcomeName }} </span>
                       </div>
@@ -97,7 +94,10 @@
           </div>
         </div>
       </template>
-      <div v-else-if="!isLoading && (isEmptyResponse || accumulatedFixtures.length === 0)" class="no-data">
+      <div
+        v-else-if="!isLoading && (isEmptyResponse || accumulatedFixtures.length === 0)"
+        class="no-data"
+      >
         <div style="white-space: pre-line">
           <p>Sorry, there are no games currently available</p>
           <p>in this category. Please try later.</p>
@@ -114,16 +114,8 @@ import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
-import _ from "lodash"
-import {
-  defineComponent,
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  computed,
-  toRef,
-  watch
-} from 'vue'
+import _ from 'lodash'
+import { defineComponent, onMounted, onBeforeUnmount, ref, computed, toRef, watch } from 'vue'
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
 
@@ -134,49 +126,271 @@ const fallbackMarketsBySport = {
       marketName: '1x2',
       specifier: '',
       outcomes: [
-        { outcomeName: '1', outcomeID: '1' },
-        { outcomeName: 'X', outcomeID: '2' },
-        { outcomeName: '2', outcomeID: '3' }
+        {
+          outcomeName: '1',
+          outcomeID: '1'
+        },
+        {
+          outcomeName: 'X',
+          outcomeID: '2'
+        },
+        {
+          outcomeName: '2',
+          outcomeID: '3'
+        }
       ],
-      sportID: 1
+      sportID: 0
+    },
+    {
+      marketID: 10,
+      marketName: 'DC',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: '12',
+          outcomeID: '10'
+        },
+        {
+          outcomeName: 'X2',
+          outcomeID: '11'
+        },
+        {
+          outcomeName: '1X',
+          outcomeID: '9'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 11,
+      marketName: 'draw no bet',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: '1',
+          outcomeID: '4'
+        },
+        {
+          outcomeName: '2',
+          outcomeID: '5'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 18,
+      marketName: 'Over/Under',
+      specifier: 'total',
+      outcomes: [
+        {
+          outcomeName: 'Over',
+          outcomeID: '12'
+        },
+        {
+          outcomeName: 'Under',
+          outcomeID: '13'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 14,
+      marketName: 'handicap',
+      specifier: 'handicap',
+      outcomes: [
+        {
+          outcomeName: '1',
+          outcomeID: '1711'
+        },
+        {
+          outcomeName: 'X',
+          outcomeID: '1712'
+        },
+        {
+          outcomeName: '2',
+          outcomeID: '1713'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 29,
+      marketName: 'GG/NG',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: 'GG',
+          outcomeID: '74'
+        },
+        {
+          outcomeName: 'NG',
+          outcomeID: '76'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 19,
+      marketName: 'Home Over/Under',
+      specifier: 'total',
+      outcomes: [
+        {
+          outcomeName: 'Over',
+          outcomeID: '12'
+        },
+        {
+          outcomeName: 'Under',
+          outcomeID: '13'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 26,
+      marketName: 'odd/even',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: 'Odd',
+          outcomeID: '70'
+        },
+        {
+          outcomeName: 'Even',
+          outcomeID: '72'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 60100,
+      marketName: '1x2 - 1up',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: '1',
+          outcomeID: '1'
+        },
+        {
+          outcomeName: 'X',
+          outcomeID: '2'
+        },
+        {
+          outcomeName: '2',
+          outcomeID: '3'
+        }
+      ],
+      sportID: 0
+    },
+    {
+      marketID: 60200,
+      marketName: '1x2 - 2up',
+      specifier: '',
+      outcomes: [
+        {
+          outcomeName: '1',
+          outcomeID: '1'
+        },
+        {
+          outcomeName: 'X',
+          outcomeID: '2'
+        },
+        {
+          outcomeName: '2',
+          outcomeID: '3'
+        }
+      ],
+      sportID: 0
     }
   ],
   2: [
     {
-      marketID: 1,
-      marketName: '1x2',
-      specifier: '',
-      outcomes: [
-        { outcomeName: '1', outcomeID: '1' },
-        { outcomeName: 'X', outcomeID: '2' },
-        { outcomeName: '2', outcomeID: '3' }
-      ],
-      sportID: 2
-    }
+    marketID: 186,
+    marketName: 'winner',
+    specifier: '',
+    outcomes: [
+      {
+        outcomeName: '1',
+        outcomeID: '4'
+      },
+      {
+        outcomeName: '2',
+        outcomeID: '5'
+      }
+    ],
+    sportID: 2
+  },
+  ],
+  5:[
+    {
+    marketID: 192,
+    marketName: 'Home to win a set',
+    specifier: '',
+    outcomes: [
+      {
+        outcomeName: 'yes',
+        outcomeID: '74'
+      },
+      {
+        outcomeName: 'no',
+        outcomeID: '76'
+      }
+    ],
+    sportID: 0
+  },
+  {
+    marketID: 187,
+    marketName: 'game handicap',
+    specifier: 'handicap',
+    outcomes: [
+      {
+        outcomeName: '1 (-4.5)',
+        outcomeID: '1714'
+      },
+      {
+        outcomeName: '2 (+4.5)',
+        outcomeID: '1715'
+      }
+    ],
+    sportID: 0
+  },
+  {
+    marketID: 190,
+    marketName: 'Home Over/Under games',
+    specifier: 'total',
+    outcomes: [
+      {
+        outcomeName: 'over 12.5',
+        outcomeID: '12'
+      },
+      {
+        outcomeName: 'under 12.5',
+        outcomeID: '13'
+      }
+    ],
+    sportID: 0
+  }
   ]
 }
 
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
-const loadingError = ref(false) 
+const loadingError = ref(false)
 const utilsStore = useUtilsStore()
 // Keep a writable ref to the active market for up-mode state changes.
 const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
-const totalFixtures = ref(1) 
+const totalFixtures = ref(1)
 const accumulatedFixtures = ref([])
-const accumulatedMarkets = ref([]) 
+const accumulatedMarkets = ref([])
 
-const {
-  isLoading,
-  refetch: refetchLiveData
-} = useQuery('liveData', getLiveHighlights, {
+const { isLoading, refetch: refetchLiveData } = useQuery('liveData', getLiveHighlights, {
   enabled: FEED_TOGGLE,
   refetchOnWindowFocus: false,
   refetchOnMount: true,
   refetchOnReconnect: false,
   staleTime: 0, // Always fetch fresh data (don't use cache)
   cacheTime: 300000, // Keep in cache for 5 minutes after unmount
-  refetchInterval: 60000, // Auto-refresh every 1 minute
+  // Rely on MQTT updates for live odds; avoid periodic API refreshes.
+  refetchInterval: false,
   retry: (failureCount, error) => {
     // Don't retry on 4xx errors
     if (error.response && error.response.status >= 400 && error.response.status < 500) {
@@ -210,7 +424,6 @@ const {
     }
   }
 })
-
 
 const sportsListData = computed(() => {
   if (isEmptyResponse.value || accumulatedFixtures.value.length === 0) {
@@ -258,9 +471,9 @@ const marketsGroup = computed(() => {
     return []
   }
 
-  return accumulatedMarkets.value.map(m => ({
+  return accumulatedMarkets.value.map((m) => ({
     ...m,
-    outcomes: [...m.outcomes].sort((a,b) => a.outcomeID - b.outcomeID)
+    outcomes: [...m.outcomes].sort((a, b) => a.outcomeID - b.outcomeID)
   }))
 })
 
@@ -292,8 +505,9 @@ const visibleFixtures = computed(() => {
  */
 const activeSportMarkets = computed(() => {
   // Strip derived markets from tabs to keep the base list clean.
-  const markets = sanitizeMarkets(marketsGroup.value)
-    .filter((m) => m.sportID === activeSportID.value)
+  const markets = sanitizeMarkets(marketsGroup.value).filter(
+    (m) => m.sportID === activeSportID.value
+  )
   if (markets.length) {
     return _.sortBy(markets, 'marketID')
   }
@@ -321,7 +535,10 @@ watch(activeSportMarkets, (newValue) => {
 watch(
   sportsListData,
   (newSportsList) => {
-    if (newSportsList.length > 0 && !newSportsList.some((sport) => sport.sportID === activeSportID.value)) {
+    if (
+      newSportsList.length > 0 &&
+      !newSportsList.some((sport) => sport.sportID === activeSportID.value)
+    ) {
       activeSportID.value = newSportsList[0].sportID
       // Reset up-mode when the auto-selected sport changes.
       resetUpMode()
@@ -404,6 +621,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   margin-right: 0;
   padding: 1.33333333rem 0.83333333rem;
+  text-transform: capitalize;
 }
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
   color: #ffffff;
