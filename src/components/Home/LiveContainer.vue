@@ -178,35 +178,149 @@ const getOutcomeDisplayName = (marketName, outcomeID, originalName) => {
   return originalName
 }
 
-const fallbackMarketsBySport = {
-  1: [
-    {
-      marketID: 1,
-      marketName: '1x2',
-      specifier: '',
-      outcomes: [
-        { outcomeName: '1', outcomeID: '1' },
-        { outcomeName: 'X', outcomeID: '2' },
-        { outcomeName: '2', outcomeID: '3' }
-      ],
-      sportID: 1
-    }
-  ],
-  2: [
-    {
-      marketID: 1,
-      marketName: '1x2',
-      specifier: '',
-      outcomes: [
-        { outcomeName: '1', outcomeID: '1' },
-        { outcomeName: 'X', outcomeID: '2' },
-        { outcomeName: '2', outcomeID: '3' }
-      ],
-      sportID: 2
-    }
-  ]
-}
-
+const fallbackMarketsBySport =[
+  {
+    "marketID": 1,
+    "marketName": "1x2",
+    "specifier": "",
+    "outcomes": [
+        {
+            "outcomeName": "1",
+            "outcomeID": "1"
+        },
+        {
+            "outcomeName": "X",
+            "outcomeID": "2"
+        },
+        {
+            "outcomeName": "2",
+            "outcomeID": "3"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 10,
+    "marketName": "DC",
+    "specifier": "",
+    "outcomes": [
+        {
+            "outcomeName": "12",
+            "outcomeID": "10"
+        },
+        {
+            "outcomeName": "X2",
+            "outcomeID": "11"
+        },
+        {
+            "outcomeName": "1X",
+            "outcomeID": "9"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 11,
+    "marketName": "draw no bet",
+    "specifier": "",
+    "outcomes": [
+        {
+            "outcomeName": "1",
+            "outcomeID": "4"
+        },
+        {
+            "outcomeName": "2",
+            "outcomeID": "5"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 18,
+    "marketName": "Over/Under",
+    "specifier": "total",
+    "outcomes": [
+        {
+            "outcomeName": "Over",
+            "outcomeID": "12"
+        },
+        {
+            "outcomeName": "Under",
+            "outcomeID": "13"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 14,
+    "marketName": "handicap",
+    "specifier": "handicap",
+    "outcomes": [
+        {
+            "outcomeName": "1",
+            "outcomeID": "1711"
+        },
+        {
+            "outcomeName": "X",
+            "outcomeID": "1712"
+        },
+        {
+            "outcomeName": "2",
+            "outcomeID": "1713"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 29,
+    "marketName": "GG/NG",
+    "specifier": "",
+    "outcomes": [
+        {
+            "outcomeName": "GG",
+            "outcomeID": "74"
+        },
+        {
+            "outcomeName": "NG",
+            "outcomeID": "76"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 19,
+    "marketName": "Home Over/Under",
+    "specifier": "total",
+    "outcomes": [
+        {
+            "outcomeName": "Over",
+            "outcomeID": "12"
+        },
+        {
+            "outcomeName": "Under",
+            "outcomeID": "13"
+        }
+    ],
+    "sportID": 0
+  },
+  {
+    "marketID": 26,
+    "marketName": "odd/even",
+    "specifier": "",
+    "outcomes": [
+        {
+            "outcomeName": "Odd",
+            "outcomeID": "70"
+        },
+        {
+            "outcomeName": "Even",
+            "outcomeID": "72"
+        }
+    ],
+    "sportID": 0
+  }
+]
+  
 const activeSportID = ref(1)
 const isEmptyResponse = ref(false)
 const loadingError = ref(false)
@@ -323,7 +437,7 @@ const activeSportMarkets = computed(() => {
     return _.sortBy(markets, 'marketID')
   }
 
-  return fallbackMarketsBySport[activeSportID.value] || []
+  return fallbackMarketsBySport[0];
 })
 
 const activeMarket = computed(() => {
