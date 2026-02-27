@@ -512,7 +512,7 @@ const activeSportMarkets = computed(() => {
     return _.sortBy(markets, 'marketID')
   }
 
-  return fallbackMarketsBySport[activeSportID.value] || []
+  return sanitizeMarkets(fallbackMarketsBySport[activeSportID.value] || [])
 })
 
 /**
@@ -631,27 +631,35 @@ onBeforeUnmount(() => {
 
 .live-container .up-mode-bar {
   display: flex;
-  gap: 0;
-  padding: 0.5rem 0;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
   width: 100%;
 }
 
 .live-container .up-mode-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
   color: #ffffff;
   cursor: pointer;
-  flex: 1;
-  font-size: 0.9rem;
+  flex: 0 0 auto;
+  font-size: 0.85rem;
   font-weight: 700;
-  padding: 0.4rem 0;
+  letter-spacing: 0.02em;
+  min-width: 5.75rem;
   text-align: center;
   text-transform: uppercase;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .live-container .up-mode-tab.active {
-  border-bottom-color: var(--c-prematch-tab-name-active);
+  background-color: var(--brand-live-odds-text);
+  border-color: var(--brand-live-odds-text);
+  color: #0b0f17;
 }
 .live-container .m-bet-tab {
   /* background-color: var(--brand-background-live); */

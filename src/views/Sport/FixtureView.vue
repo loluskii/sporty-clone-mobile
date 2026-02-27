@@ -510,26 +510,37 @@ defineComponent({
 
 .up-mode-bar {
   display: flex;
-  gap: 0;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0rem 0.6rem;
   width: 100%;
 }
 
 .up-mode-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: var(--brand-active-tab-bg);;
+  background: #f1f3f6;
+  background: var(--background-general-secondary);
+  border: 1px solid #d8dde5;
+  border-radius: 999px;
+  color: #353a45;
+  color: var(--text-type1-primary);
   cursor: pointer;
-  flex: 1;
+  flex: 0 0 auto;
   font-size: 0.9rem;
   font-weight: 700;
-  padding: 0.62rem 0;
+  min-width: 5.75rem;
   text-align: center;
   text-transform: uppercase;
+  line-height: 2rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .up-mode-tab.active {
-  border-bottom-color: var(--brand-active-tab-bg);
+  background-color: var(--c-prematch-tab-name-active);
+  border-color: var(--c-prematch-tab-name-active);
+  color: #ffffff;
 }
 
 .m-event-list .m-topnav .trans-select {

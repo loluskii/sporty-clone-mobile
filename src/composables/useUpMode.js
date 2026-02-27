@@ -4,8 +4,8 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
   1: {
     baseLabel: '1X2 Base',
     modes: [
-      { key: '2up', id: 60200, label: '2UP' },
-      { key: '1up', id: 60100, label: '1UP' }
+      { key: '1up', id: 60100, label: '1UP' },
+      { key: '2up', id: 60200, label: '2UP' }
     ]
   }
 }

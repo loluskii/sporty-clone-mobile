@@ -108,14 +108,14 @@ const activeSportID = computed(() => {
 })
 
 const getActiveSport = computed(() => {
-  return sportsList.value.find((x) => x.sportID == activeSportID.value)
+  return sportsList.value.find((x) => x.sport_id == activeSportID.value)
 })
 
 function setActiveSport(id) {
   utilsStore.sportID = id
   router.push({
     name: 'sports',
-    query: { sport: slugify(getActiveSport.value.sportName) }
+    query: { sport: slugify(getActiveSport.value.sport_name) }
   })
 }
 

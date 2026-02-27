@@ -28,7 +28,7 @@
                         $router.push({
                           name: 'fixtures-by-tournaments',
                           params: {
-                            sport: getActiveSport.sportName,
+                            sport: getActiveSport.sport_name,
                             categories: 'sr:category:' + activeCategory.category_id,
                             tournaments: 'sr:tournament:' + tournament.tournament_id
                           }
@@ -63,7 +63,7 @@ const activeCategory = ref(null)
 
 const getActiveSport = computed(() => {
   const active = props.activeSportID
-  return utilsStore.sportsMenu.find((x) => x.sportID == active)
+  return utilsStore.sportsMenu.find((x) => x.sport_id == active)
 })
 
 async function showChild(index, country) {
