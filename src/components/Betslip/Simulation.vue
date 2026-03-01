@@ -60,8 +60,7 @@ const emit = defineEmits(['exit'])
 // Constants: match duration equals GIF timeline.
 const KICKOFF_DURATION = 3 // seconds
 const CLIP_DURATION = 4 // seconds per team clip
-const HALFTIME_DURATION = 1 // seconds
-const BANNER_OFFSET = 3.8 // seconds into each clip
+const HALFTIME_DURATION = 2 // seconds
 const SIMULATION_DURATION =
   KICKOFF_DURATION + CLIP_DURATION + CLIP_DURATION + HALFTIME_DURATION + CLIP_DURATION + CLIP_DURATION
 const UPDATE_INTERVAL = 100 // milliseconds
@@ -176,17 +175,10 @@ const selectionKey = (selection) => {
 }
 
 const scorePhase = computed(() => {
-  const h1HomeBanner = KICKOFF_DURATION + BANNER_OFFSET
-  const h1AwayBanner = KICKOFF_DURATION + CLIP_DURATION + BANNER_OFFSET
-  const h2HomeBanner =
-    KICKOFF_DURATION + CLIP_DURATION + CLIP_DURATION + HALFTIME_DURATION + BANNER_OFFSET
-  const h2AwayBanner =
-    KICKOFF_DURATION +
-    CLIP_DURATION +
-    CLIP_DURATION +
-    HALFTIME_DURATION +
-    CLIP_DURATION +
-    BANNER_OFFSET
+  const h1HomeBanner = KICKOFF_DURATION + CLIP_DURATION
+  const h1AwayBanner = h1HomeBanner + CLIP_DURATION
+  const h2HomeBanner = h1AwayBanner + HALFTIME_DURATION + CLIP_DURATION
+  const h2AwayBanner = h2HomeBanner + CLIP_DURATION
 
   if (currentTime.value < h1HomeBanner) return 0
   if (currentTime.value < h1AwayBanner) return 1
