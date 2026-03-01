@@ -7,7 +7,6 @@
       :simulation-data="simulationData[firstSelection.matchId || firstSelection.match_id]"
       :current-time="currentTime"
       :timer-ended="timerEnded"
-      :score-phase="scorePhase"
       @pause="handlePause"
     />
 
@@ -41,14 +40,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useCouponStore, useUtilsStore } from '@/stores'
+import { useCouponStore } from '@/stores'
 import SimulationEvent from './SimulationEvent.vue'
 import SimulationControls from './SimulationControls.vue'
 import SimulationPitch from './SimulationPitch.vue'
 
 // Store and Props
 const couponStore = useCouponStore()
-const { SportsbookGlobalVariable } = useUtilsStore()
 const props = defineProps({
   simulationResults: {
     type: Object,
@@ -60,9 +58,12 @@ const emit = defineEmits(['exit'])
 // Constants: match duration equals GIF timeline.
 const KICKOFF_DURATION = 3 // seconds
 const CLIP_DURATION = 4 // seconds per team clip
+const GOAL_BANNER_DURATION = 1 // seconds after each clip
 const HALFTIME_DURATION = 2 // seconds
 const SIMULATION_DURATION =
-  KICKOFF_DURATION + CLIP_DURATION + CLIP_DURATION + HALFTIME_DURATION + CLIP_DURATION + CLIP_DURATION
+  KICKOFF_DURATION +
+  (CLIP_DURATION + GOAL_BANNER_DURATION) * 4 +
+  HALFTIME_DURATION
 const UPDATE_INTERVAL = 100 // milliseconds
 
 // Reactive State
@@ -162,9 +163,6 @@ const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
 const selections = computed(() => couponStore.coupon.selections || [])
 const firstSelection = computed(() => selections.value[0])
 const showSharedPitch = computed(() => selections.value.length > 1)
-const betSummary = computed(() => {
-  return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
-})
 
 const selectionKey = (selection) => {
   if (!selection) return ''
@@ -176,9 +174,9 @@ const selectionKey = (selection) => {
 
 const scorePhase = computed(() => {
   const h1HomeBanner = KICKOFF_DURATION + CLIP_DURATION
-  const h1AwayBanner = h1HomeBanner + CLIP_DURATION
-  const h2HomeBanner = h1AwayBanner + HALFTIME_DURATION + CLIP_DURATION
-  const h2AwayBanner = h2HomeBanner + CLIP_DURATION
+  const h1AwayBanner = h1HomeBanner + GOAL_BANNER_DURATION + CLIP_DURATION
+  const h2HomeBanner = h1AwayBanner + GOAL_BANNER_DURATION + HALFTIME_DURATION + CLIP_DURATION
+  const h2AwayBanner = h2HomeBanner + GOAL_BANNER_DURATION + CLIP_DURATION
 
   if (currentTime.value < h1HomeBanner) return 0
   if (currentTime.value < h1AwayBanner) return 1

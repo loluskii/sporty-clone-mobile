@@ -8,12 +8,13 @@
         alt="Simulation pitch"
       />
 
-      <div v-if="goalOverlay && showBanners" class="sim-goal-overlay">
+      <div v-if="goalOverlay" class="sim-goal-overlay">
         <div
           class="sim-goal-panel"
           :class="{
             'sim-goal-panel--start': isStartOverlay,
-            'sim-goal-panel--fulltime': isFulltimeOverlay
+            'sim-goal-panel--fulltime': isFulltimeOverlay,
+            'sim-goal-panel--halftime': overlayVariant === 'halftime'
           }"
         >
           <template v-if="isStartOverlay">
@@ -109,15 +110,10 @@ const props = defineProps({
   timerEnded: {
     type: Boolean,
     required: true
-  },
-  scorePhase: {
-    type: Number,
-    default: 0
   }
 })
 
 const goalOverlay = ref(false)
-const showBanners = ref(true)
 const goalTitle = ref('')
 const goalSubtitle = ref('')
 const goalMeta = ref('')
@@ -128,8 +124,12 @@ const fulltimeShown = ref(false)
 const halftimeShown = ref(false)
 const startShown = ref(false)
 const overlayVariant = ref('')
-const preSwitchedStage = ref('')
-const halftimeSwapped = ref(false)
+const bannerShown = ref({
+  h1_home: false,
+  h1_away: false,
+  h2_home: false,
+  h2_away: false
+})
 // Style tweak for the SIM_START match-title banner.
 const isStartOverlay = computed(() => goalOverlay.value && overlayVariant.value === 'start')
 // Style tweak for the full-time banner layout.
@@ -146,15 +146,20 @@ const gifToken = ref(0)
 const START_DURATION = 3
 const CLIP_DURATION = 4
 const HALFTIME_DURATION = 2
+const GOAL_BANNER_DURATION = 1
 
 const startEnd = START_DURATION
-const h1HomeEnd = startEnd + CLIP_DURATION
-const h1AwayEnd = h1HomeEnd + CLIP_DURATION
-const halftimeMid = h1AwayEnd + 1
-const halftimeEnd = h1AwayEnd + HALFTIME_DURATION
-const h2HomeEnd = halftimeEnd + CLIP_DURATION
-const h2AwayEnd = h2HomeEnd + CLIP_DURATION
-const fulltimeTime = h2AwayEnd
+const h1HomeClipEnd = startEnd + CLIP_DURATION
+const h1HomeBannerEnd = h1HomeClipEnd + GOAL_BANNER_DURATION
+const h1AwayClipEnd = h1HomeBannerEnd + CLIP_DURATION
+const h1AwayBannerEnd = h1AwayClipEnd + GOAL_BANNER_DURATION
+const halftimeMid = h1AwayBannerEnd + 1
+const halftimeEnd = h1AwayBannerEnd + HALFTIME_DURATION
+const h2HomeClipEnd = halftimeEnd + CLIP_DURATION
+const h2HomeBannerEnd = h2HomeClipEnd + GOAL_BANNER_DURATION
+const h2AwayClipEnd = h2HomeBannerEnd + CLIP_DURATION
+const h2AwayBannerEnd = h2AwayClipEnd + GOAL_BANNER_DURATION
+const fulltimeTime = h2AwayBannerEnd
 
 const goalTimeline = computed(() => props.simulationData?.goalEvents || [])
 
@@ -243,17 +248,29 @@ const getGoalsInHalf = (team, half) => {
   })
 }
 
+const getLastGoalMinute = (team, half) => {
+  const goals = getGoalsInHalf(team, half)
+  if (!goals.length) return null
+  return goals[goals.length - 1].time
+}
+
+const showTeamBanner = (team, half) => {
+  const halfGoals = getGoalsInHalf(team, half).length
+  const totalGoals =
+    half === 1
+      ? getGoalsInHalf(team, 1).length
+      : getGoalsInHalf(team, 1).length + getGoalsInHalf(team, 2).length
+  const isGoal = halfGoals > 0
+  const title = isGoal ? `Goal! x${totalGoals}` : 'No Goal'
+  const subtitle = team === 'away' ? awayTeamName.value : homeTeamName.value
+  const minute = isGoal ? getLastGoalMinute(team, half) : null
+  const meta = isGoal && minute ? `${minute}'` : `H${half}`
+  showOverlay({ title, subtitle, meta }, { duration: GOAL_BANNER_DURATION * 1000, variant: 'goal' })
+}
+
 const showOverlay = ({ title, subtitle, meta, score }, options = {}) => {
-  // Debug: track banner visibility timing.
-  console.log('[sim-pitch] showOverlay', {
-    title,
-    subtitle,
-    meta,
-    score,
-    variant: options.variant || '',
-    duration: Number.isFinite(options.duration) ? options.duration : 1600,
-    time: props.currentTime
-  })
+  // Cancel any pending dismiss timers from previous overlays.
+  while (overlayTimers.length) clearTimeout(overlayTimers.pop())
   goalTitle.value = title
   goalSubtitle.value = subtitle
   goalMeta.value = meta
@@ -276,8 +293,6 @@ const showOverlay = ({ title, subtitle, meta, score }, options = {}) => {
 
 const setGif = (nextGif) => {
   if (!nextGif) return
-  // Debug: track gif swaps.
-  console.log('[sim-pitch] setGif', { nextGif, time: props.currentTime })
   currentGif.value = nextGif
   gifToken.value += 1
 }
@@ -303,18 +318,20 @@ const preloadGifs = () => {
 const currentStage = computed(() => {
   const t = props.currentTime
   if (t < startEnd) return 'start'
-  if (t < h1HomeEnd) return 'h1_home'
-  if (t < h1AwayEnd) return 'h1_away'
+  if (t < h1HomeClipEnd) return 'h1_home_clip'
+  if (t < h1HomeBannerEnd) return 'h1_home_banner'
+  if (t < h1AwayClipEnd) return 'h1_away_clip'
+  if (t < h1AwayBannerEnd) return 'h1_away_banner'
   if (t < halftimeMid) return 'halftime_intro'
   if (t < halftimeEnd) return 'halftime_swap'
-  if (t <= h2HomeEnd) return 'h2_home'
-  if (t < h2AwayEnd) return 'h2_away'
+  if (t < h2HomeClipEnd) return 'h2_home_clip'
+  if (t < h2HomeBannerEnd) return 'h2_home_banner'
+  if (t < h2AwayClipEnd) return 'h2_away_clip'
+  if (t < h2AwayBannerEnd) return 'h2_away_banner'
   return 'fulltime'
 })
 
 watch(currentStage, (stage) => {
-  // Debug: track stage transitions.
-  console.log('[sim-pitch] stage', { stage, time: props.currentTime })
   if (stage === 'start') {
     setGif(gifMap.start)
     if (!startShown.value) {
@@ -332,16 +349,26 @@ watch(currentStage, (stage) => {
     }
     return
   }
-  if (stage === 'h1_home') {
+  if (stage === 'h1_home_clip') {
     const team = 'home'
     const half = 1
     setGif(getGoalsInHalf(team, half).length ? gifMap.home.goal[half] : gifMap.home.noGoal[half])
     return
   }
-  if (stage === 'h1_away') {
+  if (stage === 'h1_home_banner' && !bannerShown.value.h1_home) {
+    bannerShown.value.h1_home = true
+    showTeamBanner('home', 1)
+    return
+  }
+  if (stage === 'h1_away_clip') {
     const team = 'away'
     const half = 1
     setGif(getGoalsInHalf(team, half).length ? gifMap.away.goal[half] : gifMap.away.noGoal[half])
+    return
+  }
+  if (stage === 'h1_away_banner' && !bannerShown.value.h1_away) {
+    bannerShown.value.h1_away = true
+    showTeamBanner('away', 1)
     return
   }
   if (stage === 'halftime_intro' && !halftimeShown.value) {
@@ -356,31 +383,26 @@ watch(currentStage, (stage) => {
     )
     return
   }
-  if (stage === 'halftime_swap' && !halftimeSwapped.value) {
-    halftimeSwapped.value = true
-    // After 1s of halftime, switch to the H2 clip under the banner.
-    overlayTimers.push(
-      setTimeout(() => {
-        preSwitchedStage.value = 'h2_home'
-        setGif(getGoalsInHalf('home', 2).length ? gifMap.home.goal[2] : gifMap.home.noGoal[2])
-      }, 1000)
-    )
-    return
-  }
-  if (stage === 'h2_home') {
-    if (preSwitchedStage.value === stage) {
-      preSwitchedStage.value = ''
-      return
-    }
+  if (stage === 'h2_home_clip') {
     const team = 'home'
     const half = 2
     setGif(getGoalsInHalf(team, half).length ? gifMap.home.goal[half] : gifMap.home.noGoal[half])
     return
   }
-  if (stage === 'h2_away') {
+  if (stage === 'h2_home_banner' && !bannerShown.value.h2_home) {
+    bannerShown.value.h2_home = true
+    showTeamBanner('home', 2)
+    return
+  }
+  if (stage === 'h2_away_clip') {
     const team = 'away'
     const half = 2
     setGif(getGoalsInHalf(team, half).length ? gifMap.away.goal[half] : gifMap.away.noGoal[half])
+    return
+  }
+  if (stage === 'h2_away_banner' && !bannerShown.value.h2_away) {
+    bannerShown.value.h2_away = true
+    showTeamBanner('away', 2)
     return
   }
   if (stage === 'fulltime' && !fulltimeShown.value) {
@@ -398,6 +420,8 @@ watch(currentStage, (stage) => {
   }
 })
 
+// Goal/no-goal banners are now staged after each clip via currentStage.
+
 onBeforeUnmount(() => {
   overlayTimers.forEach((timer) => clearTimeout(timer))
 })
@@ -405,7 +429,6 @@ onBeforeUnmount(() => {
 onMounted(() => {
   preloadGifs()
   setGif(gifMap.start)
-  halftimeSwapped.value = false
   if (currentStage.value === 'start' && !startShown.value) {
     startShown.value = true
     const eventLabel = props.selection.eventName || `${homeTeamName.value} vs ${awayTeamName.value}`
@@ -422,9 +445,21 @@ onMounted(() => {
 
 watch(
   () => props.currentTime,
-  (value) => {
-    if (value < halftimeMid) {
-      halftimeSwapped.value = false
+  (value, oldValue) => {
+    if (value <= 0.1 && oldValue > 1) {
+      // Reset banner state on replay so halftime/start/fulltime show again.
+      startShown.value = false
+      halftimeShown.value = false
+      fulltimeShown.value = false
+      ftPinned.value = false
+      bannerShown.value = {
+        h1_home: false,
+        h1_away: false,
+        h2_home: false,
+        h2_away: false
+      }
+      overlayVariant.value = ''
+      goalOverlay.value = false
     }
   }
 )
