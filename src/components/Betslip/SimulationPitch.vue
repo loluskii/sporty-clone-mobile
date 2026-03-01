@@ -461,8 +461,7 @@ const progressPercent = computed(() => {
 
 .sim-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #f3ff00, #26ff6b);
-  box-shadow: 0 0 10px rgba(38, 255, 107, 0.6);
+  background: linear-gradient(90deg, #00d4ff, #4ea1ff);
   border-radius: 999px;
   transition: width 100ms linear;
 }
