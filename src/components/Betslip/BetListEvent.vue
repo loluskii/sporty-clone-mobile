@@ -260,7 +260,7 @@ function toggleBanker() {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   text-align: center;
-  width: 3rem;
+  width: 2rem;
   padding-top: 0.41667rem;
 }
 .m-bet-container .m-outcomes-row .m-outcomes-opt::before {
@@ -274,7 +274,7 @@ function toggleBanker() {
 .m-bet-container .m-outcomes-row .m-outcomes-opt:before {
   color: #000000;
   color: var(--c-betslip-item-cross-icon);
-  font-size: 1.33333333rem;
+  font-size: 1.13333333rem;
 }
 .m-bet-container .m-outcomes-row .m-outcome-right {
   -webkit-box-flex: 1;

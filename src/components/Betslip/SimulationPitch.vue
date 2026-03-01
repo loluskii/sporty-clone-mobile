@@ -248,12 +248,6 @@ const getGoalsInHalf = (team, half) => {
   })
 }
 
-const getLastGoalMinute = (team, half) => {
-  const goals = getGoalsInHalf(team, half)
-  if (!goals.length) return null
-  return goals[goals.length - 1].time
-}
-
 const showTeamBanner = (team, half) => {
   const halfGoals = getGoalsInHalf(team, half).length
   const totalGoals =
@@ -263,9 +257,7 @@ const showTeamBanner = (team, half) => {
   const isGoal = halfGoals > 0
   const title = isGoal ? `Goal! x${totalGoals}` : 'No Goal'
   const subtitle = team === 'away' ? awayTeamName.value : homeTeamName.value
-  const minute = isGoal ? getLastGoalMinute(team, half) : null
-  const meta = isGoal && minute ? `${minute}'` : `H${half}`
-  showOverlay({ title, subtitle, meta }, { duration: GOAL_BANNER_DURATION * 1000, variant: 'goal' })
+  showOverlay({ title, subtitle }, { duration: GOAL_BANNER_DURATION * 1000, variant: 'goal' })
 }
 
 const showOverlay = ({ title, subtitle, meta, score }, options = {}) => {
@@ -376,8 +368,7 @@ watch(currentStage, (stage) => {
     showOverlay(
       {
         title: 'HALF TIME',
-        subtitle: getScoreAt(45),
-        meta: "45'"
+        subtitle: getScoreAt(45)
       },
       { duration: HALFTIME_DURATION * 1000, variant: 'halftime' }
     )
