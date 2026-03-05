@@ -6,6 +6,7 @@ import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import BookBetModal from '@/components/Betslip/BookBetModal.vue'
+import WinModal from '@/components/WinModal.vue'
 import {
   fetchBonusList,
   fetchGlobalVars,
@@ -57,6 +58,15 @@ const depositWithdrawalShown = ref(false)
 const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
+// Centralized handler to close betslip from child features (e.g., simulation end).
+const closeBetslip = async () => {
+  if (!showBetslip.value) return
+  await toggleBetslip()
+}
+// Win modal state shared across app (simulation uses this now, other flows can reuse).
+const winModalShown = ref(false)
+const winModalAmount = ref(0)
+const winModalCurrency = ref('')
 
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
@@ -102,6 +112,16 @@ function showToaster(data) {
   dialogueShown.value = true
   dialogueMessage.value = data
   dialogueType.value = 'toaster'
+}
+
+function showWinModal(data = {}) {
+  winModalShown.value = true
+  winModalAmount.value = data?.amount ?? 0
+  winModalCurrency.value = data?.currency ?? ''
+}
+
+function hideWinModal() {
+  winModalShown.value = false
 }
 
 function showDepositWithdrawal(data) {
@@ -322,6 +342,8 @@ onMounted(async () => {
   emitter.on('showCustomDatePicker', toggleDatePicker)
   emitter.on('showBookBetModal', toggleBookBetModal)
   emitter.on('showDepositWithdrawalModal', showDepositWithdrawal)
+  emitter.on('showWinModal', showWinModal)
+  emitter.on('closeBetslip', closeBetslip)
 })
 
 defineComponent({
@@ -358,12 +380,18 @@ defineComponent({
               <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
               <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
                 :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
-              <CasinoDialog v-if="
-                utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
-              " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
-              <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
-                :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
-            </div>
+                <CasinoDialog v-if="
+                  utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
+                " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
+                <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
+                  :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
+                <WinModal
+                  v-if="winModalShown"
+                  :amount="winModalAmount"
+                  :currency="winModalCurrency"
+                  @close="hideWinModal"
+                />
+              </div>
             <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
           </div>
 

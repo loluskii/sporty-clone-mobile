@@ -39,14 +39,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useCouponStore } from '@/stores'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useCouponStore, useUtilsStore } from '@/stores'
 import SimulationEvent from './SimulationEvent.vue'
 import SimulationControls from './SimulationControls.vue'
 import SimulationPitch from './SimulationPitch.vue'
+import emitter from '@/plugins/emitter'
 
 // Store and Props
 const couponStore = useCouponStore()
+const { SportsbookGlobalVariable } = useUtilsStore()
 const props = defineProps({
   simulationResults: {
     type: Object,
@@ -70,6 +72,8 @@ const UPDATE_INTERVAL = 100 // milliseconds
 const currentTime = ref(0)
 const intervalId = ref(0)
 const isPaused = ref(false)
+// Ensure the win modal fires only once per simulation run.
+const winModalTriggered = ref(false)
 
 // Computed Properties
 const normalizedResults = computed(() => {
@@ -163,6 +167,10 @@ const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
 const selections = computed(() => couponStore.coupon.selections || [])
 const firstSelection = computed(() => selections.value[0])
 const showSharedPitch = computed(() => selections.value.length > 1)
+// Cache the primary bet summary for the win modal.
+const betSummary = computed(() => {
+  return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
+})
 
 const selectionKey = (selection) => {
   if (!selection) return ''
@@ -217,6 +225,27 @@ onMounted(() => {
     const nextValue = currentTime.value + UPDATE_INTERVAL / 1000
     currentTime.value = +nextValue.toFixed(1)
   }, UPDATE_INTERVAL)
+})
+
+watch(timerEnded, (ended) => {
+  if (!ended || winModalTriggered.value) return
+  winModalTriggered.value = true
+  const amountWon = Number(betSummary.value?.amountWon || 0)
+  if (Number.isFinite(amountWon) && amountWon > 0) {
+    emitter.emit('showWinModal', {
+      amount: amountWon,
+      currency: SportsbookGlobalVariable?.Currency || ''
+    })
+    // Close the betslip only when there is a win.
+    handleSimulationExit('close')
+    emitter.emit('closeBetslip')
+  }
+})
+
+watch(currentTime, (value) => {
+  if (value <= 0.1) {
+    winModalTriggered.value = false
+  }
 })
 
 onUnmounted(() => {
