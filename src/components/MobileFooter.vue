@@ -237,7 +237,7 @@ a {
 }
 
 .m-bottom-nav .m-bottom-fixed {
-  background-color: #313131;
+  background-color: #2A2A2A;
   padding-top: 10px;
   padding-bottom: 10px;
   bottom: 0;

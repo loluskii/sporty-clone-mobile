@@ -618,7 +618,7 @@ defineComponent({
 }
 
 .m-tab-active {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-active-tab-bg);
   color: #ffffff !important;
 }
 

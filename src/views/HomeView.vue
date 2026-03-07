@@ -18,7 +18,7 @@
         <LiveContainer></LiveContainer>
       </keep-alive>
       <!-- Trending Bets -->
-      <TrendingBets></TrendingBets>
+      <!-- <TrendingBets></TrendingBets> -->
       <!-- Highlights -->
       <Highlights></Highlights>
       <!-- Highlights -->
@@ -103,7 +103,7 @@ onMounted(async () => {})
   padding: 3px 10px;
   border-radius: 25px;
   background-color: white;
-  color: var(--brand-text-secondary)
+  color: #0d0d0d;
 }
 .m-sports .m-sports-title .filter-control {
   -webkit-box-align: center;
