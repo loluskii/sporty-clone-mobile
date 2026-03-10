@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  sportsbook-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: west-zaza-mobile
+    ports:
+      - "3010:3010"
+    networks:
+      - sbenet
+    restart: unless-stopped
+
+networks:
+  sbenet:
+    external: true
