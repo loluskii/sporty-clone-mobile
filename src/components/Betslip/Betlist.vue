@@ -165,8 +165,9 @@ import BetListEvent from "@/components/Betslip/BetListEvent.vue";
 import BetListStake from "@/components/Betslip/BetListStake.vue";
 import BookBetModal from "@/components/Betslip/BookBetModal.vue";
 import SuccessBet from "@/components/Betslip/SuccessBet.vue";
-import { computed, ref, defineComponent, onMounted, watch } from "vue";
+import { computed, ref, defineComponent, onMounted, watch, provide } from "vue";
 import { useCouponStore, useUsersStore } from "@/stores";
+import { useBetslipUpMode } from "@/composables/useBetslipUpMode";
 import { formatNumber, SIM_ENABLED, SIM_ALLOWED_MARKETS, awardBonus } from "@/helpers";
 import emitter from "@/plugins/emitter";
 import BetlistBookingCode from "./BetlistBookingCode.vue";
@@ -178,6 +179,8 @@ import SystemBet from "./SystemBet.vue";
 
 const emit = defineEmits(['toggle-betslip', 'update-betcount'])
 const couponStore = useCouponStore()
+const betslipUpMode = useBetslipUpMode()
+provide('betslipUpMode', betslipUpMode)
 const { SportsbookGlobalVariable } = useUtilsStore()
 const show = ref(false)
 const placeBetStatus = ref(false)

@@ -37,6 +37,21 @@
             <div class="m-market-desc-wrapper">
               <div class="m-market-desc">{{ selection.marketName }}</div>
 
+              <div
+                v-if="selection.isDerived"
+                class="selection-2up-checkbox af-checkbox"
+                @click.stop="setUpMode('2up')"
+              >
+                <label>
+                  <input type="checkbox" :checked="upMode === '2up'" readonly />
+                  <span
+                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '2up' }]"
+                    style="width: 14px; height: 14px"
+                  ><svg viewBox="-1.5 -1.5 15 14"><polyline points="1 6.29411765 4.5 10 11 1"></polyline></svg></span>
+                  <span class="label span-no-warp">2UP</span>
+                </label>
+              </div>
+
               <span
                 tabindex="0"
                 class="m-keybord-input"
@@ -72,7 +87,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, toRef } from 'vue'
+import { defineProps, defineEmits, computed, toRef, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCouponStore } from '@/stores'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
@@ -83,6 +98,7 @@ import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboa
 const couponStore = useCouponStore()
 const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection', 'toggle-banker'])
 const router = useRouter()
+const { upMode, setUpMode } = inject('betslipUpMode', { upMode: { value: 'none' }, setUpMode: () => {} })
 
 const props = defineProps({
   selection: Object,
@@ -105,6 +121,7 @@ const { isKeyboardVisible, openKeyboard, hideKeyboard, onKeyClick } = useSelecti
 const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
 })
+
 
 const selectionIsUnavailable = computed(() => {
   // If explicitly marked as unavailable
@@ -641,6 +658,28 @@ function toggleBanker() {
 }
 .m-bet-container:last-child .m-outcome-right {
   border: 0px;
+}
+
+.selection-2up-checkbox {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 0.33rem;
+  cursor: pointer;
+}
+.selection-2up-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.selection-2up-checkbox input[type='checkbox'] {
+  display: none;
+}
+.selection-2up-checkbox .label {
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .m-keybord-input {

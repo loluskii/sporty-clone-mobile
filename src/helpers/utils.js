@@ -185,7 +185,11 @@ export const getDataFromPayload = (couponPayload) => {
     stake: 0,
     suspended: false,
     unavailable: false,
-    changed: false
+    changed: false,
+    isDerived: (() => {
+      const ids = couponPayload.fixture.derived_market_ids || couponPayload.fixture.derived_market_id
+      return Array.isArray(ids) && ids.length > 0
+    })()
   }
 
   // if (couponPayload?.type === 'live') {

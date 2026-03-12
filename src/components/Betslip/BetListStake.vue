@@ -8,23 +8,23 @@
             {{ isSingleMulti ? 'Stake per bet (' + selectionsLength + ' bets)' : 'Total Stake' }}
           </span>
 
-          <span style="text-align: end;">
+          <span style="text-align: end">
             <span class="currency"
               ><em>{{ SportsbookGlobalVariable.Currency }}</em></span
             >
             <span
               tabindex="0"
-              :class="{'m-keybord-input multiple-stake-input': betSlipType !== 'Combo'}"
+              :class="{ 'm-keybord-input multiple-stake-input': betSlipType !== 'Combo' }"
               v-html="stakeDisplay"
               @click="toggleKeyboard"
             ></span>
           </span>
-
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
-            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ totalStakeDisplay }} to
-            place this bet. Please deposit an additional {{ amountNeededToStake }}
+            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }}
+            {{ totalStakeDisplay }} to place this bet. Please deposit an additional
+            {{ amountNeededToStake }}
           </p>
           <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
             <a class="m-deposit-link">
@@ -38,6 +38,119 @@
           @button-click="onKeyClick"
         ></BetlistStakeKeyboard>
       </div>
+
+      <div class="sporty-insure-container">
+        <div class="alternative-bet-type-option alternative-bet-type-option">
+          <div class="sporty-insure-logo">
+            <div class="desc">
+              <span>Insure</span>
+              <svg
+                viewBox="0 0 14 15"
+                xmlns="http://www.w3.org/2000/svg"
+                height="14px"
+                width="14px"
+                class="info-icon svg-icon-base"
+              >
+                <path
+                  d="M6.991.5a6.991 6.991 0 100 13.983A6.991 6.991 0 006.991.5zm0 2.533a.902.902 0 110 1.804.902.902 0 010-1.804zm.923 8.064a.925.925 0 01-.923.923.925.925 0 01-.922-.923v-4.13c0-.507.415-.922.922-.922.508 0 .923.415.923.922v4.13z"
+                  fill="currentColor"
+                  fill-rule="evenodd"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div class="check-group-container">
+            <div id="sporty-insure-panel-checkbox-group" class="checkbox-group">
+              <div
+                :aria-checked="upMode === '1up' ? 'true' : 'false'"
+                role="checkbox"
+                :tabindex="hasDerivedMarkets ? 0 : -1"
+                :class="['multiple-selections-two-up-checkbox two-up-checkbox af-checkbox', { 'two-up-loading': !hasDerivedMarkets || isLoadingUpMode }]"
+                @click="hasDerivedMarkets && setUpMode('1up')"
+              >
+                <label
+                  ><input type="checkbox" name="" :checked="upMode === '1up'" :disabled="!hasDerivedMarkets || isLoadingUpMode" />
+                  <span
+                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '1up', disabled: !hasDerivedMarkets || isLoadingUpMode }]"
+                    style="width: 16px; height: 16px"
+                    ><svg viewBox="-1.5 -1.5 15 14">
+                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                    </svg>
+                  </span>
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="20px"
+                    width="20px"
+                    :class="['one-up-icon icon svg-icon-base', { disabled: !hasDerivedMarkets || isLoadingUpMode }]"
+                  >
+                    <path
+                      d="M3.088 17.409l11.921.091L18 2.512 3 2.5l.088 14.909z"
+                      fill="currentColor"
+                    ></path>
+                    <path
+                      d="M7.68 8.872H4.779a.373.373 0 01-.355-.237.38.38 0 01.097-.418l5.15-4.714a.365.365 0 01.508 0l5.097 4.716a.38.38 0 01.096.417.374.374 0 01-.353.238h-2.374a.374.374 0 00-.374.376v1.917c0 2.761-1.784 5.695-5.349 6.21-.156.023-.324.058-.444-.057a.379.379 0 01-.071-.445c1.012-2.252 1.452-3.234 1.281-5.7V8.873H7.68z"
+                      fill="#fff"
+                    ></path>
+                  </svg>
+                  <span
+                    :class="['label span-no-warp', { 'txt-disabled': !hasDerivedMarkets || isLoadingUpMode }]"
+                    >1UP</span
+                  >
+                </label>
+              </div>
+              <div
+                :aria-checked="upMode === '2up' ? 'true' : 'false'"
+                role="checkbox"
+                :tabindex="hasDerivedMarkets ? 0 : -1"
+                :class="['multiple-selections-two-up-checkbox two-up-checkbox af-checkbox', { 'two-up-loading': !hasDerivedMarkets || isLoadingUpMode }]"
+                @click="hasDerivedMarkets && setUpMode('2up')"
+              >
+                <label
+                  ><input type="checkbox" name="" :checked="upMode === '2up'" :disabled="!hasDerivedMarkets || isLoadingUpMode" />
+                  <span
+                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '2up', disabled: !hasDerivedMarkets || isLoadingUpMode }]"
+                    style="width: 16px; height: 16px"
+                    ><svg viewBox="-1.5 -1.5 15 14">
+                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                    </svg>
+                  </span>
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="20px"
+                    width="20px"
+                    :class="['one-up-icon icon svg-icon-base', { disabled: !hasDerivedMarkets || isLoadingUpMode }]"
+                  >
+                    <path
+                      d="M3.088 17.409l11.921.091L18 2.512 3 2.5l.088 14.909z"
+                      fill="currentColor"
+                    ></path>
+                    <path
+                      d="M7.68 8.872H4.779a.373.373 0 01-.355-.237.38.38 0 01.097-.418l5.15-4.714a.365.365 0 01.508 0l5.097 4.716a.38.38 0 01.096.417.374.374 0 01-.353.238h-2.374a.374.374 0 00-.374.376v1.917c0 2.761-1.784 5.695-5.349 6.21-.156.023-.324.058-.444-.057a.379.379 0 01-.071-.445c1.012-2.252 1.452-3.234 1.281-5.7V8.873H7.68z"
+                      fill="#fff"
+                    ></path>
+                  </svg>
+                  <span :class="['label span-no-warp', { 'txt-disabled': !hasDerivedMarkets || isLoadingUpMode }]">2UP</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      Away_Goal_H1.gif 
+      Away_Goal_H2.gif 
+      Away_NoGoal_H1.gif 
+      Away_NoGoal_H2.gif 
+      football_field.jpg 
+      Home_Goal_H1.gif 
+      Home_Goal_H2.gif 
+      Home_NoGoal_H1.gif 
+      Home_NoGoal_H2.gif 
+      SIM_START.gif
 
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
@@ -102,7 +215,12 @@
       </div>
 
       <div
-        v-if="userStore.currentUser && userStore.currentUser.sportBonusBalance < 1 && userStore.activeCashback && !couponStore.betslipMode"
+        v-if="
+          userStore.currentUser &&
+          userStore.currentUser.sportBonusBalance < 1 &&
+          userStore.activeCashback &&
+          !couponStore.betslipMode
+        "
         class="bonus mg-b-10"
       >
         <span>Use Cashback</span>
@@ -116,37 +234,6 @@
         </div>
       </div>
 
-      <!-- 1UP/2UP selection controls (UI only for now; mutually exclusive). -->
-      <div v-if="showUpToggle" class="bonus mg-b-10 up-toggle-row">
-        <span class="up-toggle-label">2UP</span>
-        <button
-          class="up-toggle-trigger"
-          type="button"
-          :aria-expanded="upPanelOpen ? 'true' : 'false'"
-          @click="toggleUpPanel"
-        >
-          <span class="up-toggle-current">{{ upToggleLabel }}</span>
-          <span class="up-toggle-caret" :class="{ open: upPanelOpen }"></span>
-        </button>
-      </div>
-      <div v-if="showUpToggle && upPanelOpen" class="up-toggle-panel">
-        <button
-          type="button"
-          class="up-toggle-option"
-          :class="{ active: upMode === '1up' }"
-          @click="setUpMode('1up')"
-        >
-          1UP
-        </button>
-        <button
-          type="button"
-          class="up-toggle-option"
-          :class="{ active: upMode === '2up' }"
-          @click="setUpMode('2up')"
-        >
-          2UP
-        </button>
-      </div>
 
       <div class="potential-win bold real-theme">
         <span data-cms-key="potential_win" data-cms-page="component_betslip">Potential Win</span>
@@ -196,7 +283,7 @@ import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 import { useBetslipCalculations } from '@/composables/useBetslipCalculations'
 import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, onMounted, ref, toRefs } from 'vue'
+import { computed, onMounted, toRefs, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -230,32 +317,7 @@ const {
 } = useBetslipCalculations({ betSlipType, betType })
 const keyboardKey = 'betlist:total'
 const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
-const upPanelOpen = ref(false)
-// UI-only exclusive mode selector for 1UP/2UP.
-const upMode = ref('none')
-
-const upToggleLabel = computed(() => {
-  if (upMode.value === '1up') return '1UP'
-  if (upMode.value === '2up') return '2UP'
-  return 'Select'
-})
-
-const showUpToggle = computed(() => {
-  const selections = couponStore.coupon.selections || []
-  if (!selections.length) return false
-  const hasFootball = selections.some(
-    (selection) => String(selection.sportId || selection.fixture?.sportID || '') === '1'
-  )
-  if (!hasFootball) return false
-  return selections.some((selection) => {
-    const derived =
-      selection.derivedMarketIds ||
-      selection.derived_market_id ||
-      selection.fixture?.derived_market_id ||
-      selection.fixture?.derived_market_ids
-    return Array.isArray(derived) && derived.length > 0
-  })
-})
+const { upMode, isLoadingUpMode, hasDerivedMarkets, setUpMode } = inject('betslipUpMode')
 
 const goToDeposit = () => {
   emit('toggle-betslip')
@@ -295,15 +357,6 @@ const toggleKeyboard = () => {
 const betslipMode = computed(() => {
   return couponStore.betslipMode
 })
-
-const toggleUpPanel = () => {
-  upPanelOpen.value = !upPanelOpen.value
-}
-
-const setUpMode = (mode) => {
-  // Exclusive selection: clicking the same mode clears it.
-  upMode.value = upMode.value === mode ? 'none' : mode
-}
 
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
@@ -601,10 +654,6 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-type-option {
-  margin-left: -1.33333333rem;
-}
-
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake > .confirm-wrap {
   padding: 0;
 }
@@ -612,8 +661,7 @@ onMounted(() => {
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-stake,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .bonus,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win,
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-odds,
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .still-win {
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-odds {
   height: 2.25rem;
   line-height: 2.25rem;
 }
@@ -712,23 +760,6 @@ onMounted(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .message-tip svg {
   color: #ffffff;
-}
-
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-type-option {
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  font-size: 1.066rem;
-  -webkit-box-pack: justify;
-  -webkit-justify-content: space-between;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
-  margin-left: -1.33333333rem;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-input {
@@ -1312,5 +1343,182 @@ onMounted(() => {
   -ms-flex-pack: distribute;
   justify-content: space-around;
   margin-top: 0.66666667rem;
+}
+
+.alternative-bet-type-option {
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  font-size: 1rem;
+  padding-bottom: 1rem;
+  position: relative;
+  row-gap: 16px;
+}
+
+.alternative-bet-type-option .sporty-insure-logo {
+  margin-left: -1.33333333rem;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+.alternative-bet-type-option .desc {
+  background-color: #0d9737;
+  color: #ffffff;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  line-height: 1.91666667rem;
+  margin-right: 1.33333333rem;
+  padding-left: 1.33333333rem;
+  position: relative;
+}
+.alternative-bet-type-option .desc:before {
+  border-color: #0d9737 transparent transparent #0d9737;
+  border-style: solid;
+  border-width: 1.91666667rem 1.25rem 0 0;
+  border-left-width: 1px;
+  content: '';
+  position: absolute;
+  right: -1.25rem;
+  top: 0px;
+  border-top-color: #0d9737;
+  border-left-color: #0d9737;
+}
+.alternative-bet-type-option .desc svg {
+  margin-left: 4px;
+}
+.alternative-bet-type-option .check-group-container {
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 0.66666667rem;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: justify;
+  justify-content: flex-end;
+  width: 100%;
+}
+.alternative-bet-type-option .check-group-container .checkbox-group {
+  -webkit-column-gap: 0.5rem;
+  -moz-column-gap: 0.5rem;
+  column-gap: 0.5rem;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+.alternative-bet-type-option .check-group-container .checkbox-group.ml-pt-sw {
+  margin-left: 16px;
+}
+.alternative-bet-type-option .check-group-container .checkbox-group .span-no-warp {
+  white-space: pre;
+}
+.alternative-bet-type-option .check-group-container .checkbox-group .txt-disabled {
+  color: #dcdee5;
+}
+.alternative-bet-type-option
+  .check-group-container
+  .checkbox-group
+  .af-checkbox
+  .check-stroke-wrapper {
+  background-color: #fafafa;
+  margin-right: 3px !important;
+  border-color: #32ce62;
+}
+.alternative-bet-type-option
+  .check-group-container
+  .checkbox-group
+  .af-checkbox
+  .check-stroke-wrapper.disabled {
+  border-color: #dcdee5;
+}
+.alternative-bet-type-option
+  .check-group-container
+  .checkbox-group
+  .af-checkbox
+  input[type='checkbox']:checked
+  + .check-stroke-wrapper {
+  background-color: #32ce62;
+  margin-right: 3px !important;
+}
+.alternative-bet-type-option
+  .check-group-container
+  .checkbox-group
+  .af-checkbox.two-up-loading
+  .check-stroke-wrapper {
+  border-color: #dcdee5;
+}
+.alternative-bet-type-option
+  .check-group-container
+  .checkbox-group
+  .af-checkbox.two-up-loading
+  input[type='checkbox']:checked
+  + .check-stroke-wrapper {
+  background: #9ca0ab;
+  border-color: #9ca0ab;
+}
+
+.alternative-bet-type-option .check-group-container .checkbox-group.need-wrap {
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+.alternative-bet-type-option .check-group-container .more-options-wrapper {
+  max-width: 4.66666667rem;
+  white-space: nowrap;
+}
+.alternative-bet-type-option .check-group-container .more-options-wrapper span {
+  font-size: 1.16666667rem;
+  font-weight: 500;
+  line-height: 1.66666667rem;
+  margin-right: 0.16666667rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alternative-bet-type-option .label {
+  font-size: 1.16666667rem;
+}
+.alternative-bet-type-option .icon {
+  margin-right: 2px !important;
+}
+.alternative-bet-type-option .any-win-icon {
+  color: #32ce62;
+  line-height: 16px;
+}
+.alternative-bet-type-option .any-win-icon.disabled {
+  color: #dcdee5;
+}
+.alternative-bet-type-option .any-win-icon.disabled path:first-child {
+  fill: #fafafa;
+}
+@media screen and (min-width: 320px) and (max-width: 360px) {
+  .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .alternative-bet-type-option {
+    font-size: 0.91666667rem;
+  }
 }
 </style>
