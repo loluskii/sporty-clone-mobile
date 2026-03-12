@@ -13,7 +13,7 @@ export const SIM_ALLOWED_MARKETS = [
 ];
 export const SIM_ENABLED = false;
 export const DEPOSIT_ALLOWED = true
-export const FEED_TOGGLE = false
+export const FEED_TOGGLE = true
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage
