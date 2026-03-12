@@ -30,7 +30,7 @@
     </div>
 
     <template v-if="!isLoading">
-      <!-- <div class="m-top-menu">
+      <div class="m-top-menu">
         <a
           href="#"
           @click.prevent="navigateTo('fixtures-by-sports', { period: 'today' })"
