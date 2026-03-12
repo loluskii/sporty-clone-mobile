@@ -93,15 +93,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             selection.displayName ?? selection.outcomeName
                           }}</em>
-                          <em :class="{ 'm-icon-lock': selection.odds <= 1 }">{{
-                            selection.odds > 1 ? selection.odds.toFixed(2) : ''
+                          <em :class="{ 'm-icon-lock': !selection.odds || selection.odds <= 1 }">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -166,8 +166,8 @@
                                 'm-outcome--disabled': outcome.odds <= 1
                               }"
                             >
-                              <em :class="{ 'm-icon-lock': outcome.odds <= 1 }">{{
-                                outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
+                              <em :class="{ 'm-icon-lock': !outcome.odds || outcome.odds <= 1 }">{{
+                                outcome.odds && outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
                               }}</em>
                             </div>
                           </template>
@@ -194,15 +194,15 @@
                             ),
                             'm-outcome-two': market.length === 2,
                             'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': selection.odds <= 1
+                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
                           }"
                           @click="addToBetslip(marketGroup, selection)"
                         >
                           <em style="text-transform: capitalize">{{
                             getMarketCode(selection.outcomeName)
                           }}</em>
-                          <em :class="selection.odds <= 1 ? 'm-icon-lock' : ''">{{
-                            selection.odds <= 1 ? '' : selection.odds.toFixed(2)
+                          <em :class="!selection.odds || selection.odds <= 1 ? 'm-icon-lock' : ''">{{
+                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
                           }}</em>
                         </div>
                       </template>
@@ -237,7 +237,7 @@
 import HeaderOther from '@/components/HeaderOther.vue'
 import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFixtureMarkets, chunks, createID, isSelected } from '@/helpers'
+import { getFeedsGameDetail, chunks, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useCouponStore } from '@/stores'
@@ -278,17 +278,142 @@ const noMarkets = computed(() => {
   return eventMarkets.value?.length === 0
 })
 
-// Time handling functions
-const parseTimeToSeconds = (timeStr) => {
-  if (timeStr === '--:--') return null
-  const [minutes, seconds] = timeStr.split(':').map(Number)
-  return minutes * 60 + seconds
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = (sportId) => {
+  return TIMED_SPORTS.includes(sportId)
 }
 
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+// Time handling functions
+const parseTime = (timeString) => {
+  if (!timeString || timeString === '--:--') return null
+  const parts = timeString.split(':')
+  if (parts.length >= 2) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: parseInt(parts[1], 10)
+    }
+  } else if (parts.length === 1) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: 0
+    }
+  }
+  return null
+}
+
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+// Helper to format event time (append + for 45+ or 90+ minutes in soccer)
+const formatEventTime = (time, sportId) => {
+  if (!time || time === '--:--') return time
+  const minutes = parseInt(time.split(':')[0])
+  // For soccer (sportId 1), append + for 45+ or 90+
+  if (sportId === 1 && (minutes >= 45 || minutes >= 90)) {
+    return time.replace(/^(\d+)/, '$1+')
+  }
+  return time
+}
+
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 2
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr, sportId, matchStatus) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport(sportId)) return timeStr
+
+  const parsed = parseTime(timeStr)
+  if (!parsed) return timeStr
+
+  let { minutes, seconds } = parsed
+
+  // Add latency compensation
+  seconds += MQTT_LATENCY_COMPENSATION
+
+  // Handle overflow
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60)
+    seconds = seconds % 60
+  }
+
+  // Cap at halftime/fulltime boundaries
+  const status = (matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (minutes >= 90) {
+      minutes = 90
+      seconds = 0
+    }
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (minutes >= 45) {
+      minutes = 45
+      seconds = 0
+    }
+  }
+
+  return formatTime(minutes, seconds)
+}
+
+// Calculate elapsed match time from kick-off (only for timed sports)
+const calculateElapsedTime = (kickOffDateStr, sportId, matchStatus) => {
+  if (!kickOffDateStr) return null
+
+  // Only calculate for timed sports like Soccer
+  if (!isTimedSport(sportId)) return null
+
+  const kickOffTime = new Date(kickOffDateStr).getTime()
+  const now = Date.now()
+  const elapsedMs = now - kickOffTime
+
+  // If kick-off hasn't started yet or invalid date
+  if (elapsedMs < 0) return null
+
+  const elapsedMinutes = Math.floor(elapsedMs / 60000)
+  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
+
+  // Handle halftime: if elapsed > 45 mins but match status is still 1st half or halftime
+  const status = matchStatus?.toLowerCase() || ''
+
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    const adjustedMinutes = Math.min(elapsedMinutes, 90)
+    return { minutes: adjustedMinutes, seconds: elapsedSeconds }
+  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
+    // Halftime: cap at 45:00
+    return { minutes: 45, seconds: 0 }
+  } else {
+    // First half or unknown: cap at 45 mins
+    const cappedMinutes = Math.min(elapsedMinutes, 45)
+    return { minutes: cappedMinutes, seconds: elapsedSeconds }
+  }
+}
+
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
+const getDisplayTime = (gameData) => {
+  // Temporarily disabled: time calculation from kick-off
+  // const sportId = gameData?.sportID
+  // if (isTimedSport(sportId)) {
+  //   const kickOffDate = gameData?.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate, sportId, gameData?.matchStatus)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
+
+  // Use eventTime directly from API response
+  return gameData?.eventTime || '--:--'
 }
 
 const stopTimer = () => {
@@ -301,23 +426,32 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialTime = parseTimeToSeconds(eventTime.value)
-  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
+  const sportId = eventDetail.value?.sportID
+  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
+  if (!isTimedSport(sportId)) return
 
-  let currentSeconds = initialTime
-  eventTime.value = formatSecondsToTime(currentSeconds)
+  const initialTime = parseTime(eventTime.value)
+  if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
+
+  let currentMinutes = initialTime.minutes
+  let currentSeconds = initialTime.seconds
 
   timer.value = setInterval(() => {
     currentSeconds++
 
-    // Stop at key match times (45:00 and 90:00)
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+    if (currentSeconds >= 60) {
+      currentSeconds = 0
+      currentMinutes++
+    }
+
+    // Stop at key match times (halftime and fulltime)
+    if (currentMinutes === 45 || currentMinutes === 90) {
       stopTimer()
       return
     }
 
-    eventTime.value = formatSecondsToTime(currentSeconds)
-  }, 1000)
+    eventTime.value = formatTime(currentMinutes, currentSeconds)
+  }, 1000) // Increment every second
 }
 
 // MQTT handlers
@@ -327,7 +461,6 @@ function handleFixtureStatus(data) {
     stopTimer()
     // Clean up intervals
     if (refetchInterval.value) {
-      // console.log(`🧹 Component: Cleaning up periodic refetch interval`);
       clearInterval(refetchInterval.value)
       refetchInterval.value = null
     }
@@ -346,11 +479,17 @@ function handleFixtureStatus(data) {
     scores.homeScore = data.home_score
     scores.awayScore = data.away_score
 
-    // Update event time and status
-    eventTime.value = data.event_time
+    // Update event time and status (with latency compensation)
+    const sportId = eventDetail.value?.sportID || 1
+    const matchStatus = eventDetail.value?.matchStatus || data.match_status
+    const adjustedTime = adjustTimeForLatency(data.event_time, sportId, matchStatus)
+    eventTime.value = formatEventTime(adjustedTime, sportId)
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
+
+    // Restart timer with synced time
+    startTimer()
   })
 }
 
@@ -359,11 +498,8 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
     return
   }
-
-  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`);
 
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
@@ -376,10 +512,6 @@ function handleBetStop(data) {
     }))
 
     groupedMarkets.value = groupByMarketID(eventMarkets.value)
-  }
-
-  if (eventDetail.value?.statusCode === 3) {
-    // console.log("Match has ended, showing unavailable message");
   }
 }
 
@@ -459,14 +591,10 @@ function handleOddsChange(data) {
 
 // MQTT setup
 function setupMqttSubscriptions(matchId) {
-  // console.log(`🔄 Setting up MQTT subscriptions for match ID ${matchId}`);
-
-  const componentId = `live-fixture-detail-${matchId}-${Date.now()}`
-
   const topics = {
-    oddsChange: `feeds/live/odds_change/${matchId}`,
-    betStop: `feeds/live/bet_stop/${matchId}`,
-    fixtureStatus: `feeds/live/fixture_status/${matchId}`
+    oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+    betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+    fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
   }
 
   const handlers = {
@@ -476,15 +604,12 @@ function setupMqttSubscriptions(matchId) {
   }
 
   const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-    // console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
     return subscribe(topic, (data) => {
-      // console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
       handlers[key](data)
     })
   })
 
   unsubscribeFunctions.value = unsubscribers
-  // console.log(`✅ MQTT subscriptions setup complete for match ID ${matchId}`);
 }
 
 // Periodic refetch setup
@@ -495,31 +620,34 @@ function setupPeriodicRefetch(matchId) {
 
   refetchInterval.value = setInterval(async () => {
     if (!matchHasEnded.value) {
-      console.log(`🔄 Periodic refetch for match ID: ${matchId}`)
       try {
-        const res = await getFixtureMarkets(matchId)
-        if (Object.keys(res).length && res.markets) {
-          // Filter out suspended markets
-          eventMarkets.value =
-            res.statusCode === 3
-              ? []
-              : res.markets.filter((market) => market.statusName !== 'Suspended')
-          groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-          scores.homeScore = res.homeScore
-          scores.awayScore = res.awayScore
-          eventTime.value = res.eventTime
-          // console.log(`✅ Successfully refetched markets for match ID: ${matchId}`);
+        const {data} = await getFeedsGameDetail(matchId)
+        if (data && Object.keys(data).length && data.market) {
+          const isActive = data.status === 0
+          // Filter out suspended and deactivated markets
+          eventMarkets.value = !isActive
+            ? []
+            : data.market.filter(
+                (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+              )
+          groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
+          // Get scores from eventInfo.scores if available, fallback to top-level
+          // if (data.eventInfo?.scores) {
+          //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+          //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+          // } else {
+            scores.homeScore = data.homeScore ?? 0
+            scores.awayScore = data.awayScore ?? 0
+          // }
+          eventTime.value = data.eventTime
         }
       } catch (error) {
-        // console.error(`❌ Error during periodic refetch:`, error);
+        // Silent fail for periodic refetch
       }
     } else {
-      // console.log(`⏹️ Match has ended, stopping periodic refetch for match ID: ${matchId}`);
       clearInterval(refetchInterval.value)
     }
   }, REFETCH_INTERVAL_MS)
-
-  // console.log(`⏱️ Set up periodic refetch every ${REFETCH_INTERVAL_MS / 1000} seconds for match ID: ${matchId}`);
 }
 
 // Lifecycle hooks
@@ -534,14 +662,12 @@ onMounted(() => {
 onUnmounted(() => {
   // Clean up MQTT subscriptions
   if (unsubscribeFunctions.value.length > 0) {
-    // console.log(`🧹 Component: Cleaning up MQTT subscriptions`);
     unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
     unsubscribeFunctions.value = []
   }
 
   // Clean up intervals
   if (refetchInterval.value) {
-    // console.log(`🧹 Component: Cleaning up periodic refetch interval`);
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
   }
@@ -588,43 +714,60 @@ const getMarketCode = (name) => {
 async function getEventDetail(id) {
   isLoading.value = true
   try {
-    // console.log(`🔍 Fetching event details for ID: ${id}`);
-    const res = await getFixtureMarkets(id)
+    const res = await getFeedsGameDetail(id)
     isLoading.value = false
-    if (Object.keys(res).length && res.markets && res.statusCode === 1) {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value =
-        res.statusCode === 3
-          ? []
-          : res.markets.filter((market) => market.statusName !== 'Suspended')
-      groupedMarkets.value = res.statusCode === 3 ? [] : groupByMarketID(eventMarkets.value)
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = res.eventTime
 
-      if (res.matchID) {
-        // console.log(`📡 Event details received, setting up MQTT for match ID: ${res.matchID}`);
-        setupMqttSubscriptions(res.matchID)
-        setupPeriodicRefetch(res.matchID)
-      } else {
-        // console.warn(`⚠️ No matchID found in event details response`);
+    if (res && Object.keys(res).length) {
+      const data = res.data;
+      // Map new response structure to expected format
+      const mappedData = {
+        ...data,
+        competitor1: data.homeTeam,
+        competitor2: data.awayTeam,
+        categoryName: data.country,
+        statusCode: data.producerStatus === 1 ? 1 : 3 // 1 = active/live, 3 = ended
       }
-    } else {
-      eventDetail.value = res
-      // Filter out suspended markets
-      eventMarkets.value = []
-      groupedMarkets.value = []
-      homeTeam.value = res.competitor1
-      awayTeam.value = res.competitor2
-      scores.homeScore = res.homeScore
-      scores.awayScore = res.awayScore
-      eventTime.value = res.eventTime
+
+      const isLive = mappedData.producerID !== 3 // Not Prematch
+
+      if (isLive && mappedData.market?.length > 0) {
+        eventDetail.value = mappedData
+        // Filter out suspended markets
+        eventMarkets.value = mappedData.market.filter(
+          (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
+        )
+        groupedMarkets.value = groupByMarketID(eventMarkets.value)
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        // Get scores from eventInfo.scores if available, fallback to top-level
+        // if (data.eventInfo?.scores) {
+        //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
+        //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
+        // } else {
+          scores.homeScore = data.homeScore ?? 0
+          scores.awayScore = data.awayScore ?? 0
+        // }
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
+
+        if (data.matchID) {
+          setupMqttSubscriptions(data.matchID)
+          setupPeriodicRefetch(data.matchID)
+        }
+      } else {
+        eventDetail.value = mappedData
+        eventMarkets.value = []
+        groupedMarkets.value = []
+        homeTeam.value = mappedData.competitor1
+        awayTeam.value = mappedData.competitor2
+        scores.homeScore = data.homeScore
+        scores.awayScore = data.awayScore
+        // Calculate time from kick-off for more accuracy
+        eventTime.value = getDisplayTime(data)
+      }
     }
   } catch (error) {
-    // console.error(`❌ Error fetching event details:`, error);
+    console.error(`❌ Error fetching event details:`, error)
     eventDetail.value = null
     isLoading.value = false
   }
@@ -783,7 +926,7 @@ defineComponent({
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .m-event-detail-wrap .m-match-tracker-icons-above-wrapper {
   overflow: auto;
@@ -968,7 +1111,6 @@ defineComponent({
 .m-event-detail-wrap .event-detail .m-sport-market .m-market .m-market-title {
   border-top: 1px solid #353a45;
   color: #ffffff;
-  color: var(--text-type2-primary);
 }
 .m-event-detail-wrap
   .event-detail
@@ -1184,8 +1326,8 @@ defineComponent({
   font-size: 1rem;
 }
 .event-detail .m-group .m-sport-group-item.active {
-  border-bottom: 4px solid #0d9737;
-  border-color: #0d9737;
+  border-bottom: 4px solid var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 .event-detail .m-sport-market-no-data {

@@ -52,7 +52,7 @@
               <div class="balance-section balance-section--bank-transfer">
                 <span class="balance-text balance-text--bank-transfer"
                   ><span data-cms-key="balance">Balance</span> ({{
-                    utilsStore.SportsbookGlobalVariable.CurrencyCode
+                    utilsStore.SportsbookGlobalVariable.Currency
                   }}) {{ usersStore.balance }}
                 </span>
               </div>
@@ -64,7 +64,7 @@
                 <div class="m-input-wap-prepend m-input-wap-prepend--default">
                   <span class="amount-prepend"
                     ><span data-cms-key="amount">Amount</span> ({{
-                      utilsStore.SportsbookGlobalVariable.CurrencyCode
+                      utilsStore.SportsbookGlobalVariable.Currency
                     }})
                   </span>
                 </div>
@@ -107,15 +107,15 @@
               <ul class="m-payment-tips f-count">
                 <li class="l-item">
                   1. Minimum deposit amount is
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }}
                   {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} - you can deposit at least
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }}
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }}
                   {{ utilsStore.SportsbookGlobalVariable.MinDeposit }} in one transaction.
                 </li>
                 <li class="l-item">
                   2. Maximum per transaction is
-                  {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }} 9,999,999.00 - you can
-                  deposit up to {{ utilsStore.SportsbookGlobalVariable.CurrencyCode }} 9,999,999.00
+                  {{ utilsStore.SportsbookGlobalVariable.Currency }} 9,999,999.00 - you can
+                  deposit up to {{ utilsStore.SportsbookGlobalVariable.Currency }} 9,999,999.00
                   in one transaction.
                 </li>
                 <li class="l-item">3. If you have any issues, please contact customer service.</li>
@@ -139,7 +139,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import emitter from '@/plugins/emitter'
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from '@/helpers'
 
-const activeTab = ref('')
+const activeTab = ref('opay')
 const depositMethods = ref([])
 const usersStore = useUsersStore()
 const utilsStore = useUtilsStore()
@@ -161,8 +161,12 @@ function setActiveTab(method) {
 async function getPayments() {
   isLoading.value = true
   const res = await getPaymentMethods()
-  depositMethods.value = res.data
-  activeTab.value = res.data[0].provider
+  // Sort payment methods to put Opay first
+  depositMethods.value = res.data.sort((a, b) => {
+    if (a.provider === 'opay') return -1
+    if (b.provider === 'opay') return 1
+    return 0
+  })
   isLoading.value = false
 }
 
@@ -202,38 +206,7 @@ async function beginDeposit() {
 
     const res = await getDepositURL(payload)
     if (res.success) {
-      if (activeTab.value === 'fidelity') {
-        try {
-          const payazaConfig = JSON.parse(Object.values(res.data)[0])
-          const payazaCheckout = PayazaCheckout.setup({
-            ...payazaConfig,
-            merchant_key: import.meta.env.VITE_PAYAZA_MERCHANT_KEY,
-            // onClose: function () {
-            //   emitter.emit('showErrorMessage', 'Payment cancelled!');
-            //   isDepositing.value = false;
-            // },
-            callback: function (response) {
-              console.log('Payment response:', response)
-              if (response.type === 'success') {
-                // emitter.emit('showSuccessMessage', 'Payment successful!');
-                window.location.href = `${window.location.origin}/payment-verification/fidelity?txnRef=${res.data.transactionRef}`
-              } else {
-                emitter.emit(
-                  'showErrorMessage',
-                  response.message || 'Payment failed. Please try again.'
-                )
-              }
-              isLoading.value = false
-            }
-          })
-
-          payazaCheckout.showPopup()
-        } catch (error) {
-          console.error('Error parsing Payaza config:', error)
-          emitter.emit('showErrorMessage', 'Failed to initialize payment. Please try again.')
-          isLoading.value = false
-        }
-      } else if (activeTab.value === 'sbengine') {
+      if (activeTab.value === 'sbengine') {
         isDepositing.value = false
         emitter.emit('showDepositWithdrawalModal', {
           type: 'Deposit',

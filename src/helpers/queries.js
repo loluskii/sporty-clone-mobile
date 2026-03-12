@@ -1,5 +1,5 @@
 import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API } from './constants'
+import { BASE_API, CLIENT_ID, NEW_BASE_API, FEEDS_API, FEEDS_API_BASE } from './constants'
 import moment from 'moment'
 
 function today() {
@@ -71,7 +71,7 @@ export const getGameLobbyUrl = async (payload) => {
 };
 
 export const login = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login/`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BASE_API}/auth/login?source=mobile`, payload))
 }
 
 export const register = async (payload) => {
@@ -168,30 +168,6 @@ export const getFixturesByCategories = async (categoryId, sid) => {
       `${NEW_BASE_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`
     )
   )
-}
-
-export const getFixturesBySport = async () => {
-  return parseData(
-    fetchWrapper.get(
-      `${BASE_API}/api/sports/group-fixtures-by-sport?date=${today()}&end_date=${end()}&timeoffset=${sign}${offsetHours}`
-    )
-  )
-}
-
-export const getToday = async (sid, market, no_games_today) => {
-  if (no_games_today) {
-    return parseData(
-      fetchWrapper.get(
-        `${BASE_API}/api/sports/get-fixtures-by-date?date=${tomorrow()}&sid=${sid}&market=${market}&channel=mobile&limit=50&page=1`
-      )
-    )
-  } else {
-    return parseData(
-      fetchWrapper.get(
-        `${BASE_API}/api/sports/get-fixtures-by-date?date=${today()}&sid=${sid}&market=${market}&channel=mobile&limit=50&page=1`
-      )
-    )
-  }
 }
 
 export const getToday2 = async (sid, page) => {
@@ -310,14 +286,6 @@ export const updatePassword = async (payload) => {
   return parseData(fetchWrapper.put(`${NEW_BASE_API}/auth/update/password/`, payload))
 }
 
-export const getCouponById = async (id) => {
-  return parseData(fetchWrapper.get(`${BASE_API}/api/sports/find-coupon/${id}`))
-}
-
-export const placeBet = async (payload) => {
-  return parseData(fetchWrapper.post(`${BASE_API}/api/sports/place-bet?channel=mobile`, payload))
-}
-
 export const placeBet2 = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/place-bet/${CLIENT_ID}`, payload))
 }
@@ -328,10 +296,6 @@ export const validateBetslipSelections = async (payload) => {
 
 export const performCashout = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/cashout/`, payload))
-}
-
-export const bookBet = async (payload) => {
-  return parseData(fetchWrapper.post(`${BASE_API}/api/sports/book-bet?channel=mobile`, payload))
 }
 
 export const bookBet2 = async (payload) => {
@@ -497,5 +461,37 @@ export const getCMS = async (page) => {
     fetchWrapper.get(
       `${NEW_BASE_API}/content-management/page?clientId=${import.meta.env.VITE_CLIENT_ID}&slug=${page}`
     )
+  )
+}
+
+// ============================================
+// NEW FEEDS API ENDPOINTS
+// ============================================
+
+/**
+ * Get live fixtures from new feeds API
+ * @param {number} sportId - Sport ID (0 for all sports, 1 for Soccer, etc.)
+ * @param {number} tournamentId - Tournament ID filter (0 for all)
+ * @param {number} categoryId - Category ID filter (0 for all)
+ * @param {string} orderType - Order type ('priority' or 'time')
+ * @returns {Promise} Live fixtures data
+ */
+export const getFeedsLiveFixtures = async (sportId = 0, tournamentId = 0, categoryId = 0, orderType = 'priority') => {
+  return parseData(
+    fetchWrapper.get(
+      `${FEEDS_API}/fixtures/live/${sportId}?tournament_id=${tournamentId}&category_id=${categoryId}&order_type=${orderType}`
+    )
+  )
+}
+
+/**
+ * Get single game details with all markets from new feeds API
+ * @param {number} gameId - Game/Match ID
+ * @param {number} groupId - Market group ID (0 for all)
+ * @returns {Promise} Game details with markets and outcomes
+ */
+export const getFeedsGameDetail = async (gameId, groupId = 0) => {
+  return parseData(
+    fetchWrapper.get(`${FEEDS_API_BASE}/game/${gameId}?group_id=${groupId}`)
   )
 }

@@ -62,7 +62,7 @@
             
           </div>
         </div>
-        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch bg-white">
+        <div v-show="activeFeaturedTab == 'featuredMatches'" class="featuredMatch">
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
@@ -174,7 +174,7 @@ function getImageURL(name) {
   } else if (name == 'Bundesliga') {
     return new URL('../../assets/images/Bundesliga.png', import.meta.url)
   } else {
-    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${name}.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'`
+    return `https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TOP%20LEAGUES%2F${encodeURIComponent(name)}.png?alt=media&token=07d0069e-25b0-463b-8433-e95a62e84098`
   }
 }
 
@@ -261,13 +261,13 @@ function setupMqttSubscriptions(matchIds) {
   // Create subscriptions for each match ID
   const subscriptions = matchIds.map((matchId) => {
     // Subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+    const oddsChangeTopic = `sbe/feeds/prematch/odds_change/${matchId}`
     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
       utilsStore.handleOddsChange(data)
     })
 
     // Subscribe to bet stop
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+    const betStopTopic = `sbe/feeds/prematch/bet_stop/${matchId}`
     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
       utilsStore.handleBetStop(data)
     })
@@ -470,7 +470,7 @@ onDeactivated(() => {
   background: #e41827;
 }
 .home .m-popular .m-popular-item .m-color-bar--green {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
 }
 .home .m-popular .m-popular-item a img {
   width: 100%;
@@ -513,7 +513,7 @@ onDeactivated(() => {
   flex-direction: column;
   font-family: 'roboto', sans-serif;
   background-color: #ffffff;
-  background-color: var(--c-featured-match-bg);
+  background-color: var(--background-type1-secondary);
 }
 .featured-widget.with-nav {
   height: 18.91666667rem;
@@ -616,7 +616,7 @@ onDeactivated(() => {
   color: var(--c-prematch-sport-item-text);
 }
 .featured-nav-item .feature-nav-span.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-weight: bold;
 }
 .featured-active {
@@ -641,7 +641,7 @@ onDeactivated(() => {
   display: flex;
 }
 .feature-list.active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   font-weight: bold;
 }

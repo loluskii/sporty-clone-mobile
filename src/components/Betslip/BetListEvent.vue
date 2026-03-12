@@ -9,12 +9,6 @@
           <div class="m-team-cell">
             <div class="m-outcome-desc-wrapper">
               <div class="m-outcome-desc" style="text-transform: capitalize">
-                <img
-                  :src="getImageSrc(selection.sportId)"
-                  style="height: 18px; margin-right: 0.2rem"
-                  alt=""
-                  srcset=""
-                />
                 {{ selection.outcomeName }}
               </div>
               <div
@@ -294,16 +288,15 @@ function goToGame() {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   position: relative;
-  background-color: #ffffff;
+  background-color: #fff;
   /* margin: 8px; */
-  border-bottom: 1px solid #eaecef;
+  border-bottom: .5px solid #eaecef
   /* border-radius: 9px; */
 }
 .m-bet-container.m-change-item,
 .m-bet-container.m-item-error,
 .m-bet-container.m-sim-invalid {
   background-color: #ffe3e5;
-  background-color: var(--c-betslip-item-warning-bg);
 }
 .m-bet-container .m-outcomes-color {
   height: 100%;
@@ -507,7 +500,7 @@ function goToGame() {
   .m-team-cell
   .m-outcome-desc-wrapper
   .m-outcome-odds.m-outcome-up:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   display: inline-block;
   padding-right: 0.83333333rem;

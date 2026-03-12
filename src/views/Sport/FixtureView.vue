@@ -150,7 +150,7 @@ watch(
         // Handle other routes or provide a default behavior
         break
     }
-    console.log(container.value.clientHeight)
+    // console.log(container.value.clientHeight)
   },
   { immediate: true } // Trigger the watch callback immediately on component mount
 )
@@ -316,21 +316,21 @@ const handleScroll = async () => {
 }
 
 const observeElement = (element) => {
-  console.log('Initializing observer...')
+  // console.log('Initializing observer...')
   if (observer.value) {
-    console.log('Disconnecting existing observer...')
+    // console.log('Disconnecting existing observer...')
     observer.value.disconnect()
   }
   observer.value = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !isLastPage.value) {
-      console.log('Sentinel element is intersecting. Fetching more data...')
+      // console.log('Sentinel element is intersecting. Fetching more data...')
       fetchMoreData()
     }
   })
   if (element) {
     observer.value.observe(element)
   } else {
-    console.log('Element not found:', element)
+    // console.log('Element not found:', element)
   }
 }
 
@@ -338,7 +338,7 @@ const fetchMoreData = async () => {
   if (fetchingMore.value || !isPaginated.value) return
   fetchingMore.value = true
   page.value++
-  console.log(`Fetching data for page ${page.value}...`)
+  // console.log(`Fetching data for page ${page.value}...`)
   try {
     const { sportID } = getSportbyName(route.params.sport)
     const { period } = route.query
@@ -623,6 +623,7 @@ defineComponent({
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
+  background-color: var(--background-type1-primary);
 }
 .m-event-list .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
@@ -631,7 +632,7 @@ defineComponent({
   /* border-radius: 30px; */
 }
 .m-event-list .m-sport-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--c-prematch-tab-name-active);
+  border-bottom: 3px solid var(--brand-primary);
 }
 .m-event-list .m-sport-type .m-sport-type-item:first-child {
   margin-left: 0.83333333rem;
@@ -649,7 +650,6 @@ defineComponent({
   -webkit-transition: top 0.3s;
   transition: top 0.3s;
   z-index: 100;
-  padding: 10px 0;
   border-bottom: 1px solid #eaecef;
 }
 /* .m-event-list .m-sport-type.m-sport-type-fixed.has-live {
@@ -698,7 +698,7 @@ defineComponent({
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
 }
 .af-select-item.hover {

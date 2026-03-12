@@ -128,24 +128,11 @@ defineComponent({
   border-bottom: 1px solid #f2f3f5;
 }
 
-.m-sports .m-countries-panel .m-countries-block .m-country-list .m-league .m-league-title {
-  background-color: #ffffff;
-  border-top: 1px solid #f2f3f5;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #1b1e25;
-  font-size: 1.066rem;
-  height: 3.66666667rem;
-  line-height: 3.66666667rem;
-  padding: 0 3.33333333rem 0 0.83333333rem;
-}
-
 .m-countries-block .m-country-list .m-league .m-league-title {
   background-color: #353a45;
   background-color: var(--background-type2-secondary);
   border: 0;
-  color: #ffffff;
-  color: var(--text-type2-primary);
+  color: #fafafa;
   height: 2.66666667rem;
   line-height: 2.66666667rem;
 }
@@ -202,7 +189,7 @@ defineComponent({
   margin-top: 1.66666667rem;
 }
 .m-countries-block-title {
-  color: #353a45;
+  color: #fafafa;
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 0.75rem;

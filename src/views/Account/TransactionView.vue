@@ -413,8 +413,7 @@ onMounted(async () => {
   z-index: 20;
 }
 #transaction-list-container .list-bg {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: #fff;
 }
 #transaction-list-container .trans-select {
   position: absolute;
@@ -510,7 +509,7 @@ onMounted(async () => {
   border-right-color: var(--background-type1-tertiary);
 }
 #transaction-list-container .m-custom-selection-wrapper .m-custom-type.m-custom-type-active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #transaction-list-container .m-custom-selection-wrapper .m-calendar {
@@ -529,11 +528,11 @@ onMounted(async () => {
   justify-content: space-around;
 }
 #transaction-list-container .m-custom-selection-wrapper .m-calendar.m-custom-date-active {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-family: 'iconfont';
   width: auto;
@@ -546,7 +545,7 @@ onMounted(async () => {
   font-size: 0.83333333rem;
 }
 #transaction-list-container .m-custom-selection-wrapper .arrow-icon.open:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
@@ -566,8 +565,7 @@ onMounted(async () => {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #e41827;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -607,7 +605,7 @@ onMounted(async () => {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #ffffff;
+  color: var(--text-type2-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -644,7 +642,7 @@ onMounted(async () => {
 .m-nav-secondary a :active,
 .m-nav-secondary a :link,
 .m-nav-secondary a :hover {
-  color: #ffffff;
+  color: #1c2485;
   color: var(--text-type2-primary);
   text-decoration: none;
 }

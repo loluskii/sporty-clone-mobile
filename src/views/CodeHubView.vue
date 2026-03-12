@@ -365,7 +365,7 @@ watch(searchTerm, async () => {
 .code-hub-root .nav-tab-item.active {
   border-bottom-width: 4px;
   border-bottom-style: solid;
-  border-bottom-color: #0d9737;
+  border-bottom-color: var(--brand-highlight-text);
   border-bottom-color: var(--brand-secondary);
   font-weight: bold;
 }
@@ -396,7 +396,7 @@ watch(searchTerm, async () => {
 .code-hub-root .tab-item.router-link-active {
   border-bottom-width: 4px;
   border-bottom-style: solid;
-  border-bottom-color: #0d9737;
+  border-bottom-color: var(--brand-highlight-text);
   border-bottom-color: var(--brand-secondary);
   font-weight: bold;
 }

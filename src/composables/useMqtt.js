@@ -15,17 +15,18 @@ export function useMqttService() {
     if (mqttClient) return mqttClient
 
     const clientId = `${import.meta.env.VITE_MQTT_CLIENTID}-${Math.random().toString(36).substr(2, 9)}`
+    const mqttUrl = import.meta.env.VITE_MQTT_URI
 
-    mqttClient = mqtt.connect(import.meta.env.VITE_MQTT_URI, {
+    mqttClient = mqtt.connect(mqttUrl, {
       clientId,
       username: import.meta.env.VITE_MQTT_USERNAME,
       password: import.meta.env.VITE_MQTT_PASSWORD,
       clean: true,
-      reconnectPeriod: 1000
+      reconnectPeriod: 1000,
+      connectTimeout: 30000
     })
 
     mqttClient.on('connect', () => {
-      console.log('🔵 MQTT Connected')
       isConnected.value = true
 
       // Resubscribe to existing topics
@@ -49,16 +50,15 @@ export function useMqttService() {
         }
         messageQueue.get(topic).push(data)
       } catch (error) {
-        console.error(`Error processing message for ${topic}:`, error)
+        // Silent fail for message parsing errors
       }
     })
 
-    mqttClient.on('error', (error) => {
-      console.error('🔴 MQTT Error:', error)
+    mqttClient.on('error', () => {
+      // Silent fail for MQTT errors
     })
 
     mqttClient.on('close', () => {
-      console.log('🟡 MQTT Disconnected')
       isConnected.value = false
       if (processingInterval) {
         clearInterval(processingInterval)
@@ -84,7 +84,7 @@ export function useMqttService() {
         try {
           callback(latestMessage)
         } catch (error) {
-          console.error(`Error in callback for ${topic}:`, error)
+          // Silent fail for callback errors
         }
       })
 

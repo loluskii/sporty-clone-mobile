@@ -127,13 +127,13 @@
                   <div class="balance-container">
                     <p class="balance-text">
                       <span data-cms-key="balance">Balance</span>
-                      <span data-op="balance">(NGN) {{ userStore.balance }}</span>
+                      <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                     </p>
                     <div class="withdrawable-text-wrapper">
                       <i class="m-icon-help"></i>
                       <p>
                         <span>Withdrawable Balance </span>
-                        <span>NGN {{ userStore.balance }}</span>
+                        <span>NGN {{ usersStore.balance }}</span>
                       </p>
                     </div>
                   </div>
@@ -143,7 +143,7 @@
                   >
                     <div class="m-input-wap-prepend m-input-wap-prepend--default">
                       <span class="amount-prepend"
-                        ><span>Amount</span> ({{ SportsbookGlobalVariable.CurrencyCode }})
+                        ><span>Amount</span> ({{ SportsbookGlobalVariable.Currency }})
                       </span>
                     </div>
                     <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
@@ -281,13 +281,13 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
-                      <span>SSP {{ userStore.balance }}</span>
+                      <span>NGN {{ usersStore.balance }}</span>
                     </p>
                   </div>
                 </div>
@@ -310,7 +310,7 @@
                   <div class="m-input-wap-prepend m-input-wap-prepend--default">
                     <span class="amount-prepend"
                       ><span>Amount</span>
-                      (SSP)
+                      (NGN)
                     </span>
                   </div>
                   <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
@@ -352,14 +352,14 @@
                 <div class="balance-container mb-3">
                   <p class="balance-text">
                     <span data-cms-key="balance">Balance</span>
-                    <span data-op="balance">(SSP) {{ userStore.balance }}</span>
+                    <span data-op="balance">(NGN) {{ usersStore.balance }}</span>
                   </p>
                   <div class="withdrawable-text-wrapper">
                     <i class="m-icon-help"></i>
                     <p>
                       <span>Withdrawable Balance </span>
                       <span
-                        >{{ SportsbookGlobalVariable.CurrencyCode }} {{ userStore.balance }}</span
+                        >{{ SportsbookGlobalVariable.Currency }} {{ usersStore.balance }}</span
                       >
                     </p>
                   </div>
@@ -371,7 +371,7 @@
                   <div class="m-input-wap-prepend m-input-wap-prepend--default">
                     <span class="amount-prepend"
                       ><span>Amount</span>
-                      (SSP)
+                      (NGN)
                     </span>
                   </div>
                   <i class="m-input-wap-icon m-input-wap-icon--clickable m-icon-delete"></i>
@@ -437,13 +437,12 @@ import { useUsersStore, useUtilsStore } from '@/stores'
 import { CLIENT_ID } from '@/helpers'
 const showBanks = ref(false)
 const showBanksAssets = ref(false)
-const userStore = useUsersStore()
+const usersStore = useUsersStore()
 const { SportsbookGlobalVariable, banksList } = useUtilsStore()
 const router = useRouter()
 const withdrawalMethods = [
   { name: 'Bank Transfer', key: 'bank' },
-  { name: 'Shop', key: 'shop' },
-  { name: 'SmileandPay Cash', key: 'smileandpay' }
+  { name: 'Shop', key: 'shop' }
 ]
 const activeMethod = ref('bank')
 const bankAssets = ref([])
@@ -479,7 +478,7 @@ const amountErrorMessage = ref('')
 const searchQuery = ref('')
 
 const balance = computed(() => {
-  return userStore.balance
+  return usersStore.balance
 })
 
 function toggleShowBanks() {
@@ -500,9 +499,9 @@ const isFormComplete = computed(() => {
 })
 
 const checkWithdrawableAmount = () => {
-  if (withdrawalAmount.value > userStore.balance) {
+  if (withdrawalAmount.value > usersStore.balance) {
     amountError.value = true
-    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${userStore.balance}`
+    amountErrorMessage.value = `Amount exceeds your Withdrawable Balance ${usersStore.balance}`
   } else {
     amountError.value = false
     amountErrorMessage.value = ''
@@ -537,7 +536,7 @@ async function submit() {
       bank_name: selectedBank.value.name,
       account_number: accountNumber.value,
       amount: withdrawalAmount.value,
-      remaining_balance: parseFloat(balance.value) - parseFloat(withdrawalAmount.value)
+      remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
     }
     emitter.emit('showDialogueMessage', data)
   } else {
@@ -549,7 +548,7 @@ async function submit() {
         bank_name: selectedBank.value.name,
         account_number: accountNumber.value,
         amount: withdrawalAmount.value,
-        remaining_balance: parseFloat(balance.value) - parseFloat(withdrawalAmount.value)
+        remaining_balance: parseFloat(usersStore.balance) - parseFloat(withdrawalAmount.value)
       }
       emitter.emit('showDialogueMessage', data)
     } else {
@@ -735,7 +734,7 @@ onMounted(async () => {
   border-bottom-color: var(--brand-border-type1);
 }
 #withdraw .m-tabs-nav .m-tabs-ink-bar {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   background-color: var(--brand-secondary);
   bottom: 0;
   height: 0.33333333rem;
@@ -931,7 +930,7 @@ onMounted(async () => {
   margin-top: 0.75rem;
 }
 #withdraw .withdraw-bank .switch-container .switch-bank {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
@@ -1001,7 +1000,7 @@ onMounted(async () => {
 }
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:active,
 #withdraw .withdraw-footer .balance-container .withdrawable-text-wrapper .m-icon-help:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #withdraw .withdraw-footer .withdraw-amount {
@@ -1043,15 +1042,15 @@ onMounted(async () => {
 #withdraw .select-prepend .new-pay {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   font-size: 14px;
   font-weight: bold;
   line-height: 3.5rem;
   text-align: center;
   width: 100%;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 #withdraw .p-x-16 {
@@ -1111,7 +1110,7 @@ body {
   overflow-y: auto;
 }
 #popup-select .select-container .m-head .action {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 16px;
   height: 19px;
@@ -1159,7 +1158,7 @@ body {
   font-style: normal;
 }
 #popup-select .select-container .m-body .select-list .select-item .item-left.selected::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1.5rem;
   line-height: 1;
