@@ -254,7 +254,8 @@ export const useUtilsStore = defineStore({
       // 'featuredTournamentGames',
       'featuredLastFetchTime',
       'popupDialogShown',
-      'bonusModalShown'
+      'bonusModalShown',
+      'banners'
     ]
   }
 })

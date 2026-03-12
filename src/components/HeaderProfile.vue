@@ -30,11 +30,10 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #e41827;
-  background-color: var(--brand-primary);
+  background-color: rgb(222, 226 ,230);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #ffffff;
+  color: #1c2485;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -71,7 +70,7 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #ffffff;
+  color: var(--text-type2-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -108,7 +107,7 @@ defineProps({
 .m-nav-secondary a :active,
 .m-nav-secondary a :link,
 .m-nav-secondary a :hover {
-  color: #ffffff;
+  color: #1c2485;
   color: var(--text-type2-primary);
   text-decoration: none;
 }

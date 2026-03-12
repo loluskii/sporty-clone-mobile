@@ -87,7 +87,7 @@
             </button>
           </form>
           <div class="action-wrap">
-            <div @click="showForgotPassword">
+            <div @click="showForgotPassword" style="color: #9b9a9a;">
               <span>Forgot Password</span>
               ?
             </div>
@@ -178,11 +178,12 @@ onMounted(() => {
   font-style: normal;
 }
 #loginStep .change-region-wrap .m-icon-right::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 #loginStep .change-region-wrap .close {
   float: right;
+
 }
 #loginStep .change-region-wrap .close::before {
   content: '\e69a';

@@ -15,7 +15,7 @@
             <div class="sprot-icon">
               <img
                 :src="getImageSrc(sport.sportID)"
-                style="height: 20px; margin-right: 0.4rem"
+                style="height: 20px; margin-right: 0.4rem; filter: invert(1);"
                 alt=""
               />
             </div>
@@ -30,7 +30,7 @@
     </div>
 
     <template v-if="!isLoading">
-      <div class="m-top-menu">
+      <!-- <div class="m-top-menu">
         <a
           href="#"
           @click.prevent="navigateTo('fixtures-by-sports', { period: 'today' })"
@@ -39,10 +39,10 @@
           Today Games
         </a>
         <a href="#" class="m-menu-item"> All {{ activeSport.sportName }} </a>
-      </div>
+      </div> -->
 
-      <div class="m-countries-panel m-sports-countries" style="position: relative">
-        <div class="m-countries-block">
+      <div class="m-countries-panel m-sports-countries" style="position: relative; background-color: var(#000825);">
+        <div class="m-countries-block" style="background-color: #000825;">
           <div class="m-countries-block-title" data-cms-key="a_z">A-Z</div>
           <div class="m-country-list">
             <template v-if="countriesData.length > 0">
@@ -205,9 +205,9 @@ onMounted(getSportCategories)
   height: 100%;
 }
 .m-sports-menu .m-sports-choose {
-  border-bottom: 1px solid #eaecef;
-  border-bottom-color: #eaecef;
-  border-bottom-color: var(--brand-border-type1);
+  /* border-bottom: 1px solid #eaecef;
+  border-bottom-color: #eaecef; */
+  /* border-bottom-color: var(--brand-border-type1); */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
@@ -231,9 +231,9 @@ onMounted(getSportCategories)
   margin-right: 0.83333333rem;
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item.active {
-  border-bottom: 0.25rem solid #0d9737;
-  border-bottom-color: #0d9737;
-  border-bottom-color: var(--c-sport-menu-tab-active);
+  border-bottom: 0.25rem solid var(--brand-highlight-text);
+  border-bottom-color: var(--brand-highlight-text);
+  border-bottom-color: var(--brand-highlight-text);
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item .sport-text {
   color: #000000;
@@ -315,8 +315,7 @@ onMounted(getSportCategories)
 .m-menu-item {
   font-size: 1.066rem;
   font-weight: 500;
-  color: #096b27;
-  color: var(--c-sport-menu-item-text);
+  color: var(--brand-highlight-text);
   display: block;
   float: left;
   width: calc(50% - 0.5rem);
@@ -324,7 +323,7 @@ onMounted(getSportCategories)
   line-height: 3.16666667rem;
   text-align: left;
   border-radius: 2px;
-  background-color: #ffffff;
+  /* background-color: #ffffff; */
   margin-bottom: 0.33333333rem;
   padding: 0 1.08333333rem;
   box-sizing: border-box;
