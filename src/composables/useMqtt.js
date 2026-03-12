@@ -80,16 +80,15 @@ export function useMqttService() {
           }
         })
       } catch (error) {
-        console.error(`❌ MQTT: Error parsing message for ${topic}:`, error)
+        // Silent fail for message parsing errors
       }
     })
 
-    mqttClient.on('error', (error) => {
-      console.error('🔴 MQTT Error:', error)
+    mqttClient.on('error', () => {
+      // Silent fail for MQTT errors
     })
 
     mqttClient.on('close', () => {
-      console.log('🟡 MQTT Disconnected')
       isConnected.value = false
     })
 

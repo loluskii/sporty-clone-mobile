@@ -1,12 +1,5 @@
 <template>
   <div class="m-default">
-    <div class="featured-code-container" v-if="codes.length">
-      <div class="recommended-code" data-cms-key="recommended_code" data-cms-page="cashout">
-        Recommended Code
-      </div>
-      <Codes :codes="codes" v-if="!codeHubLoading" />
-      <LoadingSpinner v-else />
-    </div>
     <p class="m-default-info">
       <span data-cms-key="please_insert_booking_code" data-cms-page="component_betslip"
         >Enter a booking code</span
@@ -51,7 +44,6 @@ import { loadBetslipByCode, getNext7Days, getCodeHubItems } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import { useRouter } from 'vue-router'
-import Codes from '@/components/Home/Codes.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
 const isInvalidCode = ref()
@@ -61,7 +53,6 @@ const codeHubLoading = ref(true)
 const couponStore = useCouponStore()
 const router = useRouter()
 const errorMesssage = ref('')
-const codes = ref([])
 
 async function loadBet() {
   isLoading.value = true
@@ -98,22 +89,6 @@ async function loadBet() {
     errorMesssage.value = error?.message || String(error)
   }
 }
-
-async function getCodes() {
-  // codeHubLoading.value = true
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0
-  }
-  const res = await getCodeHubItems(payload)
-  codeHubLoading.value = false
-  codes.value = res.data.data
-}
-
-onMounted(async () => {
-  await getCodes()
-})
 </script>
 
 <style scoped>
@@ -126,6 +101,7 @@ onMounted(async () => {
 .m-default {
   overflow-y: auto;
   padding: 1.66666667rem 0;
+  background-color: #fff;
 }
 .m-default .m-default-info {
   color: #353a45;
@@ -181,7 +157,6 @@ onMounted(async () => {
   flex-grow: 1;
   height: 3.16666667rem;
   border-color: #dcdee5;
-  border-color: var(--c-booking-code-input-border);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper .m-input-wap {
   height: 100%;
@@ -190,7 +165,7 @@ onMounted(async () => {
   background-color: var(--background-general-primary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--active {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-text-secondary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--error {
@@ -251,16 +226,15 @@ onMounted(async () => {
   width: 25%;
 }
 .share-code-btn {
-  background: #0d9737;
-  background: var(--brand-text-secondary);
-  border-radius: 2px;
+  background: var(--brand-primary);
+  border-radius: 5px;
   display: block;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
   font-size: 1.066rem;
-  height: 4rem;
+  height: 3.7rem;
   line-height: 4rem;
   margin: 0 1.66666667rem;
   text-align: center;
@@ -272,16 +246,14 @@ onMounted(async () => {
 }
 .share-code-btn--disabled {
   background: #dcdee5;
-  background: var(--disable-brand-secondary);
   color: #9ca0ab;
-  color: var(--text-disable-type1-primary);
 }
 .share-code-btn--disabled:active {
   background: #dcdee5;
   background: var(--disable-brand-secondary);
 }
 .share-code-btn--loading {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);

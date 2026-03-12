@@ -1,13 +1,5 @@
 .page-content {
-  height: 100%;
-}
-
-.m-sportBets {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  min-height: calc(100% - 3.66666667rem);
-  padding-bottom: 5.66666667rem;
-  position: relative;
+  height: 100vh;
 }
 
 .m-sportBets .m-list-nav-type {
@@ -232,7 +224,7 @@
 }
 
 .m-sportBets .top-bar {
-  background: #ffffff;
+  /* background: #ffffff; */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   display: -webkit-box;
@@ -259,7 +251,7 @@
 }
 
 .m-sportBets .top-bar .card-format-btn:before {
-  background: #ffffff;
+  /* background: #ffffff; */
   content: '';
   height: 100%;
   left: 50%;
@@ -300,7 +292,7 @@
 }
 
 .m-sportBets .top-bar .m-open-bet-filter .m-nav-item {
-  background: #eaecef;
+  /* background: #eaecef; */
   border-radius: 0.16666667rem;
   color: #1b1e25;
   display: inline-block;
@@ -359,7 +351,7 @@
 }
 
 .m-sportBets .m-bethistory .tabs-wrapper {
-  background: #ffffff;
+  /* background: #ffffff; */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 0.83333333rem 0.83333333rem 1rem;
@@ -452,7 +444,7 @@
 
 .m-order .m-scroll .only-win .outter,
 .m-order .m-scroll .only-win .inner {
-  border: 0.08333333rem solid #0d9737;
+  border: 0.08333333rem solid var(--brand-highlight-text);
   display: inline-block;
 }
 
@@ -692,7 +684,7 @@
 }
 
 .m-order .m-scroll .view-more .view-more-btn {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
   padding-bottom: 1.25rem;
 }
@@ -1060,7 +1052,7 @@
 }
 
 .m-cashout-pop .m-btn-wrapper .af-button--primary {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   color: #ffffff !important;
 }
 
@@ -1084,12 +1076,12 @@
 }
 
 .m-cashout-pop .m-btn-wrapper .m-btn-item {
-  border: 0.08333333rem solid #0d9737;
-  border-color: #0d9737;
+  border: 0.08333333rem solid var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   display: inline-block;
   height: 4rem;
@@ -1178,7 +1170,7 @@
 }
 
 .m-cashout-pop .m-slider-bar .m-slider-process {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   background-color: var(--brand-secondary);
 }
 
@@ -1213,7 +1205,7 @@
 }
 
 .m-cashout-pop .m-cashout-tips {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   margin-top: 1.066rem;
 }
@@ -1317,13 +1309,13 @@
 }
 
 .m-cashout-nav .m-cashout-nav-item.active {
-  border-bottom: 4px solid #0d9737;
-  border-bottom-color: #0d9737;
+  border-bottom: 4px solid var(--brand-highlight-text);
+  border-bottom-color: var(--brand-highlight-text);
   border-bottom-color: var(--brand-secondary);
 }
 
 .m-cashout-nav .m-cashout-nav-item.highlight {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 
@@ -1363,10 +1355,10 @@
 }
 
 .instant-dialog.es-dialog .es-dialog-footer .es-dialog-btn {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   background-color: var(--brand-secondary);
-  border: 1px solid #0d9737;
-  border-color: #0d9737;
+  border: 1px solid var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
   border-radius: 2px;
   color: #ffffff;
@@ -1380,7 +1372,7 @@
 .instant-dialog.es-dialog .es-dialog-footer .es-dialog-btn:first-of-type {
   background-color: #ffffff;
   background-color: var(--background-type1-quaternary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   margin: 0;
 }

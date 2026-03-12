@@ -1,56 +1,48 @@
 <template>
-  <footer class="x-footer x-footer--ng">
-    <div class="copyright-wrap">
-      <div class="icons">
-        <img
-          src="//s.sporty.net/global/main/brand/sportybet/mobile/images/license.89d68648de.svg"
-        /><img
-          src="//s.sporty.net/global/main/brand/sportybet/mobile/images/icon18.996cdffd94.svg"
-        />
-      </div>
-      <div class="copyright" style="color: var(--brand-primary)">
-        &copy; {{ new Date().getFullYear() }} {{ utilsStore.brandName }}. All rights reserved.
-      </div>
+  <div class="copyright-wrap">
+    <div class="icons">
+      <img
+        src="//s.sporty.net/global/main/brand/sportybet/mobile/images/license.89d68648de.svg"
+      /><img
+        src="//s.sporty.net/global/main/brand/sportybet/mobile/images/icon18.996cdffd94.svg"
+      />
     </div>
+    <div class="copyright" style="color: var(--brand-primary)">
+      &copy; {{ new Date().getFullYear() }} {{ utilsStore.brandName }}. All rights reserved.
+    </div>
+  </div>
+  <footer class="x-footer x-footer--ng">
     <div class="partnership-wrap text-center">
-      <img src="/default.png" />
+      <img src="/logo.png" />
     </div>
     <div></div>
     <div class="payment-methods">
-      <h5>Payment methods</h5>
-      <div class="slider-wrap">
-        <div class="slider-window">
-          <div class="sliders" style="transform: translateX(0%)">
-            <div class="row">
-              <img src="/logo_visa.fd08bf37cf.png" />
-              <img src="/logo_mc.51fc36230c.png" />
-              <img src="/paystack-logo.png" style="height: 3rem" />
-              <img src="/monnify.png" style="height: 3.5rem" />
-            </div>
+      <p>
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
+        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
+        licensed by the National Lottery Regulatory Commission.
+      </p>
+    </div>
+    
+    <div class="slider-wrap">
+      <div class="slider-window">
+        <div class="sliders" style="transform: translateX(0%)">
+          <div class="row">
+            <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
+              <img src="@/assets/images/facebook.png" style="height: 2rem" />
+            </a>
+            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank" style="margin: 0 12px;">
+              <img src="@/assets/images/instagram.png" style="height: 2rem" />
+            </a>
+            <a href="https://x.com/bet24_ng" target="_blank">
+              <img src="@/assets/images/twitter.png" style="height: 2rem" />
+            </a>
           </div>
         </div>
       </div>
-      <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is
-        licensed by the Oyo State Gaming Board, according to the License No: OYSGB/SPB/232975 issued
-        by the Oyo State Gaming Board.
-      </p>
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">
-      <h5
-        class="underline"
-        @click="
-          $router.push({
-            name: 'cms-page',
-            params: { page: 'terms_and_conditions' }
-          })
-        "
-      >
-        Terms &amp; Conditions
-      </h5>
-      <h5 class="divider">|</h5>
       <h5
         class="underline"
         @click="$router.push({ name: 'cms-page', params: { page: 'about_us' } })"
@@ -63,11 +55,51 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'responsible_gaming' }
+            params: { page: 'terms_and_conditions' }
           })
         "
       >
-        Responsible Gaming
+        Terms and Conditions
+      </h5>
+      
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'responsible_gambling' }
+          })
+        "
+      >
+        Responsible Gambling
+      </h5>
+    </div>
+    <div class="t_c-about_us">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'privacy_policy' }
+          })
+        "
+      >
+        Privacy Policy
+      </h5>
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'refund_policy' } })"
+      >
+        Refund Policy
+      </h5>
+			<h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'contact_us' } })"
+      >
+        Contact Us
       </h5>
     </div>
     <div class="btn" @click="handleClick">
@@ -107,19 +139,18 @@ defineComponent({
 </script>
 <style>
 footer {
-  background-color: #1b1e25;
-  background-color: var(--c-footer-bg);
+  background-color: #0d0d0d;
   color: #9ca0ab;
   color: var(--text-type2-tertiary);
   padding-bottom: 1rem;
 }
-footer .copyright-wrap {
+.copyright-wrap {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
   background-color: #eaecef;
-  background-color: var(--background-type1-tertiary);
+  background-color: var(--brand-background-secondary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -130,7 +161,7 @@ footer .copyright-wrap {
   justify-content: space-between;
   padding: 1.66666667rem 1.066rem;
 }
-footer .copyright-wrap .icons {
+.copyright-wrap .icons {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -144,7 +175,7 @@ footer .copyright-wrap .icons {
   -ms-flex-pack: justify;
   justify-content: space-between;
 }
-footer .copyright-wrap .icons .iframe-img {
+.copyright-wrap .icons .iframe-img {
   height: 45px;
   margin: -0.83333333rem 0;
   -webkit-transform: scale(0.8);
@@ -155,13 +186,13 @@ footer .copyright-wrap .icons .iframe-img {
   transform-origin: 0 50%;
   width: 100px;
 }
-footer .copyright-wrap .icons img {
+.copyright-wrap .icons img {
   height: 1.66666667rem;
 }
-footer .copyright-wrap .icons img:not(:first-child) {
+.copyright-wrap .icons img:not(:first-child) {
   margin-left: 1rem;
 }
-footer .copyright-wrap .copyright {
+.copyright-wrap .copyright {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -177,7 +208,7 @@ footer .copyright-wrap .copyright {
   text-align: right;
 }
 @media only screen and (max-width: 320px) {
-  footer .copyright-wrap .icons .iframe-img {
+  .copyright-wrap .icons .iframe-img {
     margin-right: -1.66666667rem;
     -webkit-transform: scale(0.7);
     -ms-transform: scale(0.7);
@@ -279,7 +310,6 @@ footer .btn button {
   background-color: var(--c-footer-btn-bg);
   border: 0;
   color: #ffffff;
-  color: var(--text-type2-primary);
   padding: 1.066rem 0;
   width: 100%;
 }

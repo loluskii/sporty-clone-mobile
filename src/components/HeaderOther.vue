@@ -29,8 +29,7 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #e41827;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -49,6 +48,7 @@ defineProps({
   justify-content: space-between;
   padding: 0 1.33333333rem 0 1.66666667rem;
   width: 100%;
+  z-index: 9999;
 }
 .m-nav-secondary .m-nav-left {
   -webkit-box-align: end;
@@ -70,7 +70,6 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -107,7 +106,7 @@ defineProps({
 .m-nav-secondary a :active,
 .m-nav-secondary a :link,
 .m-nav-secondary a :hover {
-  color: #ffffff;
+  color: #1c2485;
   color: var(--text-type2-primary);
   text-decoration: none;
 }

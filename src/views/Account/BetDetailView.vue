@@ -484,7 +484,7 @@ defineComponent({
   margin-left: 1rem;
 }
 .m-ticket-detail .rebet-wrapper span:first-child .copy {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   display: inline-block;
   padding-left: 1.066rem;
@@ -508,7 +508,7 @@ defineComponent({
   margin-right: 1rem;
 }
 .m-ticket-detail .rebet-wrapper .rebet-btn-wrapper .rebet-btn {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-secondary);
   border-radius: 2px;
   -webkit-box-sizing: border-box;
@@ -545,7 +545,7 @@ defineComponent({
   font-style: normal;
 }
 .m-ticket-detail .bets-info .arrow::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 0.83333333rem;
   left: 0.66666667rem;

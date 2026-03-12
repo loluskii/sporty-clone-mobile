@@ -41,6 +41,11 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-button-primary',
+      config.colors.primaryButtonBackgroundColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-active-tab-bg',
       config.colors.activeTabColor
     )
@@ -54,8 +59,9 @@ export const applyBranding = async () => {
       '--brand-text-primary',
       config.colors.primaryTextColor
     )
+
     document.documentElement.style.setProperty(
-      '--brand-secondary',
+      '--brand-text-secondary',
       config.colors.secondaryTextColor
     )
 
@@ -298,6 +304,7 @@ export const createID = (matchID, marketID, outcomeID, specifier = '', marketNam
 
   return `${matchID}_${marketID}_${outcomeID}${cleanSpecifier ? '_' + cleanSpecifier : ''}${cleanMarketName ? '_' + cleanMarketName : ''}${cleanOutcomeName ? '_' + cleanOutcomeName : ''}`
 }
+
 
 export const multibetCombination = (item) => {
   if (item.length === 1) {

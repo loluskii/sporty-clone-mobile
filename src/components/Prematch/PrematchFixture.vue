@@ -58,6 +58,7 @@
                         activeMarket.marketName,
                         odd.outcomeName
                       ),
+                      
                       couponStore.coupon
                     )
                       ? 'm-outcome--checked'
@@ -202,9 +203,7 @@ defineComponent({
 
 <style scoped>
 .m-event-sport {
-  border-top: 1px solid #eaecef;
-  border-color: #eaecef;
-  border-color: var(--brand-border-type1);
+  border-bottom: .5px solid #dedede;
   display: block;
   padding: 0.66666667rem 0;
 }
@@ -257,13 +256,12 @@ defineComponent({
 }
 
 .m-event-sport .m-event-meta .m-time {
-  color: #353a45;
-  color: var(--c-event-sport-time-text);
   -webkit-box-flex: 0;
   -webkit-flex: 0;
   -ms-flex: 0;
   flex: 0;
   white-space: nowrap;
+
 }
 
 .m-event-sport .m-event-meta .m-game-id {
@@ -309,7 +307,7 @@ defineComponent({
 }
 
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }
 
@@ -339,7 +337,6 @@ defineComponent({
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
-  color: var(--c-event-sport-team-text);
   padding-right: 0.83333333rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -460,7 +457,7 @@ defineComponent({
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
 }
 

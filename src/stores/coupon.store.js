@@ -352,13 +352,13 @@ export const useCouponStore = defineStore({
                   updatedAnySelection = true
                 }
 
-                // Update odds if they've changed
-                if (outcome.odds !== selection.odds) {
-                  // console.log(`📊 Betslip: Updating odds from ${selection.odds} to ${outcome.odds} for match ID ${matchId}`);
-                  selection.odds = outcome.odds
+                // Update odds if they've changed (compare as numbers to avoid type issues)
+                const newOdds = parseFloat(outcome.odds)
+                const currentOdds = parseFloat(selection.odds)
+                if (newOdds !== currentOdds && !isNaN(newOdds)) {
+                  selection.odds = newOdds
                   selection.changed = true
-                  // Flip acceptChanges only on odds/availability updates.
-                  this.coupon.acceptChanges = false
+                  this.coupon.acceptChanges = false // Require user to accept changes
                   updatedAnySelection = true
 
                   // Reset the changed flag after 5 seconds
@@ -405,8 +405,6 @@ export const useCouponStore = defineStore({
       )
 
       if (matchSelections.length > 0) {
-        // console.log(`⚠️ BET STOP: Suspending ${matchSelections.length} selections in betslip for match ID ${matchId}`);
-
         matchSelections.forEach((selection) => {
           selection.suspended = true
           selection.unavailable = true
@@ -414,6 +412,8 @@ export const useCouponStore = defineStore({
         })
         // Bet stop is a data change; force acceptChanges.
         this.coupon.acceptChanges = false
+
+        this.coupon.acceptChanges = false // Require user to accept changes
 
         // Force a reactivity update
         this.updateWinnings({

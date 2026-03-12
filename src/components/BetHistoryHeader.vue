@@ -4,7 +4,7 @@
       <div class="m-openbet-header">
         <div v-if="authStore.isAuthenticated" class="is-login">
           <span class="balance"
-            ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span>
+            ><span>{{ SportsbookGlobalVariable.Currency }} </span>
             <span>{{ usersStore.balance }}</span></span
           >
         </div>

@@ -101,7 +101,7 @@ function copyToClipboard() {
 }
 
 function redirectToPlatform(platform) {
-  let message = `Hey I just placed on Cubetbet! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
+  let message = `Hey I just placed on Bet24! ${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
   switch (platform) {
     case 'whatsapp':
       return window.open('https://wa.me/?text=' + encodeURIComponent(message))
@@ -148,7 +148,7 @@ function redirectToPlatform(platform) {
   font-style: normal;
 }
 .booking-code .m-holding-icon:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-text-secondary);
   font-size: 30px;
   line-height: 1;
@@ -313,7 +313,7 @@ function redirectToPlatform(platform) {
   .desc-content
   .content-share-code
   #content-copy {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   height: 100%;
   left: 100%;
   margin-left: 4px;

@@ -50,7 +50,7 @@
                     <span data-cms-key="withdrawal_amount" data-cms-page="page_withdraw"
                       >Withdrawal Amount</span
                     >
-                    ({{ SportsbookGlobalVariable.CurrencyCode }})
+                    ({{ SportsbookGlobalVariable.Currency }})
                   </div>
                   <div data-op="partner-withdraw-confirm-amount" class="t-b item-content">
                     {{ formatNumber(userData.amount) }}
@@ -207,7 +207,7 @@ function confirmWithdrawal() {
 }
 .es-dialog.m-wd-pop-cfm .payment-wrapper .item-wrapper .m-icon-help:active,
 .es-dialog.m-wd-pop-cfm .payment-wrapper .item-wrapper .m-icon-help:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 .es-dialog.m-wd-pop-cfm .payment-container {

@@ -25,9 +25,9 @@
       <div class="homeIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
@@ -42,9 +42,9 @@
       <div class="awayIcon">
         <img
           :src="
-            'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
@@ -184,7 +184,6 @@ function addToBetslip(event, odd) {
 <style scoped>
 .featuredMatchCard {
   background-color: #ffffff;
-  background-color: var(--c-featured-match-card-bg);
   -webkit-box-shadow:
     0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
@@ -207,6 +206,7 @@ function addToBetslip(event, odd) {
   -ms-user-select: none;
   user-select: none;
   width: 88%;
+  border-radius: 8px;
 }
 .featuredMatchCard .top {
   -webkit-box-align: center;
@@ -233,8 +233,7 @@ function addToBetslip(event, odd) {
   width: 18px;
 }
 .featuredMatchCard .top .tournamentLink {
-  color: #0d9737;
-  color: var(--brand-highlight-text);
+  color: #000;
   font-size: 0.83333333rem;
   margin-left: 0.5rem;
   overflow: hidden;
@@ -492,7 +491,7 @@ function addToBetslip(event, odd) {
   line-height: 1;
 }
 .outcomes .m-outcome--checked {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }

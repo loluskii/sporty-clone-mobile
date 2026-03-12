@@ -17,6 +17,8 @@
       <keep-alive>
         <LiveContainer></LiveContainer>
       </keep-alive>
+      <!-- Trending Bets -->
+      <TrendingBets></TrendingBets>
       <!-- Highlights -->
       <Highlights></Highlights>
       <!-- Highlights -->
@@ -29,6 +31,7 @@ import Carousel from '@/components/Home/Carousel.vue'
 import SportsListCarousel from '@/components/Home/SportsListCarousel.vue'
 import LiveContainer from '@/components/Home/LiveContainer.vue'
 import PopularSports from '@/components/Home/PopularSports.vue'
+import TrendingBets from '@/components/Home/TrendingBets.vue'
 import Highlights from '@/components/Home/HighlightsContainer.vue'
 import emitter from '@/plugins/emitter'
 import { useUsersStore, useUtilsStore } from '../stores'
@@ -41,7 +44,8 @@ onMounted(async () => {})
 </script>
 
 <style>
-.m-sports {
+
+.m-sports, .home {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
@@ -51,8 +55,6 @@ onMounted(async () => {})
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  /* background-color: #fafafa; */
-  /* background-color: var(--background-type1-secondary); */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
@@ -92,7 +94,6 @@ onMounted(async () => {})
 
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item {
   color: #353a45;
-  color: var(--c-prematch-sport-item-text);
   font-size: 1.066rem;
   font-weight: normal;
   display: inline-flex;
@@ -100,11 +101,11 @@ onMounted(async () => {})
 }
 
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
-  color: #0d9737;
-  color: var(--brand-quaternary);
-  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 25px;
+  background-color: white;
+  color: var(--brand-text-secondary)
 }
-
 .m-sports .m-sports-title .filter-control {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -242,12 +243,6 @@ onMounted(async () => {})
   z-index: 221;
 }
 
-.m-sports .view-all {
-  border-top: 1px solid #f2f3f5;
-  border-color: #f2f3f5;
-  border-color: var(--brand-border-type1);
-}
-
 .m-sports .view-all a,
 .m-sports .view-all a:hover,
 .m-sports .view-all a:visited,
@@ -269,23 +264,16 @@ onMounted(async () => {})
 .m-sports .m-pre-opts.m-tabs {
   position: relative;
   width: 100%;
-  background-color: #fafafa;
-  background-color: var(--background-type1-secondary);
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-nav {
   border-bottom: 1px solid #f2f3f5;
   border-color: #f2f3f5;
-  border-color: var(--c-prematch-tab-border);
   margin: 0 auto;
-
-  background-color: #fafafa;
-  background-color: var(--background-type1-secondary);
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab {
-  color: #353a45;
-  color: var(--c-prematch-tab-name-text);
+  color: #808080;
   -webkit-box-flex: initial;
   -webkit-flex: initial;
   -ms-flex: initial;
@@ -298,8 +286,8 @@ onMounted(async () => {})
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab.m-tabs-tab-active {
   color: #1b1e25;
-  color: var(--c-prematch-tab-name-active);
-  border-bottom: 0.23333333rem solid #001041;
+  color: var(--brand-highlight-text);
+  border-bottom: 0.23333333rem solid var(--brand-active-tab-bg);
   font-weight: bold;
 }
 
@@ -353,7 +341,7 @@ onMounted(async () => {})
 
 .m-sports-table .m-date-row {
   background-color: #f2f3f5;
-  background-color: var(--background-type1-primary);
+  background-color: var(--brand-background-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   height: 2rem;
@@ -402,5 +390,17 @@ onMounted(async () => {})
 .m-sports-table .m-inner-ads img {
   display: block;
   width: 100%;
+}
+
+.home .m-sports .m-today-tab .m-tabs-tab {
+  color: #808080;
+  -webkit-box-flex: initial;
+  -webkit-flex: initial;
+  -ms-flex: initial;
+  flex: initial;
+  font-size: 1.066rem;
+  margin: 0;
+  padding: 0.33333333rem 0.91666667rem;
+  /* width: calc(100); */
 }
 </style>

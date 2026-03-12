@@ -327,7 +327,7 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .btn-box .btn-ok {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   border: none;
   border-radius: 0;
   -webkit-box-flex: 1;

@@ -9,9 +9,6 @@
       <div class="sport-menu" style="position: relative">
         <div class="tab-wrap">
           <div class="az-tabs m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
-            <div class="m-tabs-nav" style="width: 100%">
-              <div class="m-tabs-tab" style="font-weight: bold">Sports</div>
-            </div>
             <div class="m-tabs-content" style="transform: translateX(0%) translateZ(0px)">
               <div class="m-tabs-tabpane">
                 <div class="tab-pane-content">
@@ -132,7 +129,7 @@ onMounted(async () => {
   background: #ffffff;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #353a45;
+  color: #eaecef;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -168,7 +165,6 @@ onMounted(async () => {
 }
 .m-azmenu .tab-pane-left {
   border-right: solid 1px #eaecef;
-  color: #353a45;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -178,13 +174,12 @@ onMounted(async () => {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  font-size: 1.33333333rem;
+  font-size: 1.13333333rem;
   height: 91%;
   overflow-y: auto;
   width: 40%;
 }
 .m-azmenu .tab-pane-right {
-  color: #353a45;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -198,6 +193,7 @@ onMounted(async () => {
   height: 100%;
   overflow-y: auto;
   width: 60%;
+  font-size: 1.13333333rem;
 }
 .m-azmenu .tab-pane-right .no-odds {
   -webkit-box-align: center;
@@ -314,7 +310,7 @@ onMounted(async () => {
   font-size: 2.5rem;
 }
 .m-azmenu .top {
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   border-top: 1px solid transparent;
   padding: 0;
 }
@@ -444,7 +440,7 @@ onMounted(async () => {
 .m-azmenu .tab-wrap .az-tabs.m-tabs .m-tabs-nav .m-tabs-tab {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #353a45;
+  color: #eaecef;
   font-size: 1.066rem;
   font-weight: 500;
   line-height: 3.66666667rem;

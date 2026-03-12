@@ -376,7 +376,7 @@ onUnmounted(() => {})
 }
 .m-choose-bar {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
   border-bottom: 0.08333333rem solid #eaecef;
   border-color: #eaecef;
   border-color: var(--brand-border-type1);
@@ -407,6 +407,7 @@ onUnmounted(() => {})
 }
 .m-event-list .choose-bar-pad {
   height: 3.66666667rem;
+  background-color: rgb(6, 0, 25);
 }
 .m-event-list .choose-bar-pad.fixed {
   position: relative;
@@ -424,8 +425,8 @@ onUnmounted(() => {})
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  /* background-color: #fafafa;
+  background-color: var(--background-general-primary); */
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -439,7 +440,7 @@ onUnmounted(() => {})
 .m-choose-odds .m-title,
 .m-choose-time .m-title {
   background-color: #fafafa;
-  background-color: var(--background-general-primary);
+  background-color: var(--background-type1-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #1b1e25;
@@ -490,7 +491,7 @@ onUnmounted(() => {})
 .m-choose-league .m-title.active::before,
 .m-choose-odds .m-title.active::before,
 .m-choose-time .m-title.active::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 0.83333333rem;
 }
@@ -498,11 +499,12 @@ onUnmounted(() => {})
 .m-choose-league .m-title.used,
 .m-choose-odds .m-title.used,
 .m-choose-time .m-title.used {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 .m-list {
-  background-color: #fafafa;
+  background-color: var(--background-type1-secondary);
+  color: #fafafa;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   left: 0px;
@@ -524,11 +526,11 @@ onUnmounted(() => {})
   background-color: #f2f3f5;
 }
 .m-list li.checked {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 .m-list li:not(.tournament).checked::before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   position: absolute;
   right: 1.33333333rem;
@@ -544,7 +546,7 @@ onUnmounted(() => {})
 .m-choose-time,
 .m-choose-odds,
 .m-choose-league {
-  border-right: 1px solid #eaecef;
+  border-right: .5px solid #eaecef;
   border-color: #eaecef;
 }
 .m-choose-bar.fixed .m-choose-time .m-list,
@@ -564,7 +566,7 @@ onUnmounted(() => {})
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #fafafa;
+  /* background-color: #fafafa; */
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -573,46 +575,7 @@ onUnmounted(() => {})
   outline: none;
   padding: 0.91666667rem 0.5rem 0.91666667rem 0;
 }
-.m-choose-sort .m-title,
-.m-choose-league .m-title,
-.m-choose-odds .m-title,
-.m-choose-time .m-title {
-  background-color: #fafafa;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #1b1e25;
-  color: var(--text-type1-tertiary);
-  font-size: 1.066rem;
-  font-weight: 700;
-  height: 1.66666667rem;
-  line-height: 1.66666667rem;
-  overflow: hidden;
-  padding: 0 1.66666667rem 0 0.66666667rem;
-  position: relative;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.m-choose-sort .m-title::before,
-.m-choose-league .m-title::before,
-.m-choose-odds .m-title::before,
-.m-choose-time .m-title::before {
-  content: '\e6a3';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.m-choose-sort .m-title::before,
-.m-choose-league .m-title::before,
-.m-choose-odds .m-title::before,
-.m-choose-time .m-title::before {
-  color: #9ca0ab;
-  color: var(--text-type1-secondary);
-  font-size: 0.83333333rem;
-  position: absolute;
-  right: 0.5rem;
-}
+
 .m-choose-sort .m-title.active::before,
 .m-choose-league .m-title.active::before,
 .m-choose-odds .m-title.active::before,
@@ -761,7 +724,7 @@ onUnmounted(() => {})
   .m-category
   li.tournament.active
   .category-name {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 .m-choose-league
@@ -851,7 +814,7 @@ onUnmounted(() => {})
   border-color: #eaecef;
 }
 .m-choose-league .m-list .m-regions-opt > span {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   border-radius: 0.25rem;
   display: block;
   -webkit-box-flex: 1;
@@ -861,9 +824,9 @@ onUnmounted(() => {})
   height: 3rem;
   line-height: 3rem;
   text-align: center;
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-reset {
@@ -872,7 +835,7 @@ onUnmounted(() => {})
   margin-right: 0.83333333rem;
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-apply {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-secondary);
   color: #ffffff;
 }

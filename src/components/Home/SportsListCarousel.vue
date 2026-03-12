@@ -12,13 +12,13 @@
       <li class="m-sports-choose-item m-snap-nav-item">
         <a @click.prevent="$router.push({ name: 'live' })">
           <div class="sport-icon">
-            <img src="@/assets/images/live.png" loading="eager" width="20" height="20" />
+            <img src="@/assets/images/icons8-live.svg" loading="eager" width="20" height="20" />
           </div>
           <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Live </span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a @click.prevent="$router.push({ name: 'casino-games' })"
+        <a @click.prevent="$router.push({ name: 'casino' })"
           ><div class="sport-icon">
             <img src="@/assets/images/games.png" loading="eager" width="20" height="20" />
           </div>
@@ -34,6 +34,14 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
+        <a href="#" @click.prevent="playAviator"
+          ><div class="sport-icon">
+            <img src="@/assets/images/aviator.png" loading="eager" width="24" height="24" />
+          </div>
+          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
+        </a>
+      </li>
+      <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
             <img
@@ -154,7 +162,7 @@ function openVirtual() {
 async function playAviator() {
   return router.push({
     name: 'game-play',
-    params: { game_name: slugify('Aviator'), game_id: 1583 }
+    params: { game_name: slugify('Aviator'), game_id: 1838 }
   })
 }
 
@@ -203,7 +211,7 @@ onMounted(() => {
 .home .m-sports-choose-item a:visited,
 .home .m-popular-item a:visited {
   color: #353a45;
-  color: var(--c-sports-banner-text);
+  /* color: var(--c-sports-banner-text); */
   display: block;
   outline: none;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -211,13 +219,13 @@ onMounted(() => {
 }
 .home .m-sports-choose {
   min-height: 5rem;
-  background-color: #ffffff;
+  background-color: var(--background-type1-primary);
 }
 .home .m-sports-choose .m-sports-choose-item {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
-  color: var(--c-sports-banner-text);
+  /* color: var(--c-sports-banner-text); */
   display: block;
   -webkit-box-flex: 0 !important;
   -webkit-flex: 0 0 auto !important;
@@ -256,6 +264,7 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon img {
   vertical-align: top;
+  /* filter: invert(1) */
 }
 .home .m-sports-choose .m-sports-choose-item .sport-icon:before {
   color: #353a45;
@@ -313,93 +322,6 @@ onMounted(() => {
   font-weight: bold;
   line-height: 1.75rem;
   margin: 0 0.83333333rem;
-}
-.home .m-sports .m-today-tab {
-  border-bottom: 1px solid #f2f3f5;
-  border-color: #f2f3f5;
-  border-color: var(--c-prematch-tab-border);
-}
-.home .m-sports .m-today-tab .m-tabs-nav {
-  border-bottom: none;
-  min-width: 100%;
-}
-.home .m-sports .m-today-tab .m-tabs-tab {
-  color: #353a45;
-  color: var(--c-sports-prematch-market-title-text);
-  -webkit-box-flex: initial;
-  -webkit-flex: initial;
-  -ms-flex: initial;
-  flex: initial;
-  font-size: 1.066rem;
-  margin: 0;
-  padding: 0.33333333rem 0.91666667rem;
-  width: auto;
-}
-.home .m-sports .m-today-tab .m-tabs-ink-bar {
-  height: 3px;
-}
-.home .m-sports .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: relative;
-}
-.home .m-sports .nav-fixed .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: fixed;
-  top: 7.75rem;
-  -webkit-transition: top 0.3s ease !important;
-  transition: top 0.3s ease !important;
-  width: 100%;
-  z-index: 100;
-}
-.home .m-sports .nav-fixed .market-wrapper:after {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  content: '';
-  height: 4rem;
-  left: 0;
-  position: absolute;
-  top: -4rem;
-  width: 100%;
-}
-.home .m-sports .nav-fixed.nav-up .market-wrapper {
-  top: 11.41666667rem;
-}
-.home .m-sports .nav-up .market-wrapper {
-  background-color: #fafafa;
-  background-color: var(--background-general-primary);
-  position: fixed;
-  top: 11.41666667rem;
-  z-index: 200;
-}
-.home .m-sport-bet-error {
-  padding: 0.83333333rem;
-}
-.home .view-all {
-  margin: 0 2rem 0 0.83333333rem;
-  padding: 1.41666667rem 0;
-  text-align: right;
-}
-.home .view-all a {
-  font-size: 1rem;
-  line-height: 1.066rem;
-  position: relative;
-}
-.home .view-all a::before {
-  content: '\e608';
-  font-family: 'iconfont' !important;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-style: normal;
-}
-.home .view-all a::before {
-  display: inline-block;
-  font-size: 1rem;
-  position: absolute;
-  right: -1.33333333rem;
-  top: 0;
 }
 .home .featured-match-placeholder {
   min-height: 14.58333333rem;

@@ -1,126 +1,75 @@
 <template>
-
-  <div class="m-ac-form-wrap" v-if="isAccountVerification">
-    <HeaderProfile :header-title="'Account Verification'" @back-to-profile="handleBackToProfile"></HeaderProfile>
-    <form>
-      <p style="font-size: 17px">Verify your account today and enjoy faster withdrawals and higher limits</p>
-      <br />
-      <VueSelect
-        v-model="documentType"
-        :options="[
-          { label: 'International Passport', value: 'international_passport' },
-          { label: 'Drivers License', value: 'drivers_license' },
-          { label: 'Phone Number', value: 'phone_number' },
-          { label: 'Voters Card', value: 'voters_card' },
-          { label: 'National Identification Number', value: 'nin' },
-          { label: 'Bank Account', value: 'bank_account' },
-        ]"
-        placeholder="Select an valid ID"
-      />
-      <template v-if="documentType === 'bank_account'">
-        <div style="margin-top: 10px;"></div>
-        <VueSelect
-          v-model="bankCode"
-          :options="banksList"
-          :get-option-label="option => option.name"
-          :get-option-value="option => option.bank_id"
-          placeholder="Select Bank"
-        />
-      </template>
-      <!-- <br /> -->
-      <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend" v-if="['international_passport','drivers_license','phone_number','voters_card','nin','bank_account'].includes(documentType)">
-        <input type="text" placeholder="ID Number" maxlength="10" class="x-input-wap fs-exclude"
-          v-model="documentNumber" style="padding: 10px 15px;" />
-      </div>
-
-      <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend" v-if="['international_passport'].includes(documentType)">
-        <input type="text" placeholder="Last Name" maxlength="10" class="x-input-wap fs-exclude"
-          v-model="lastName" style="padding: 10px 15px;" />
-      </div>
-      <!---->
-      <div class="m-btn-wrapper">
-        <button class="af-button af-button--success" :disabled="isLoading"  :class="{'is-disabled': isLoading}" @click.prevent="submitKycRequest">
-          <span> Verify </span>
-        </button>
-      </div>
-    </form>
+  <div v-if="!showInputFieldView" class="m-uc-wrapper myAccount">
+    <HeaderOther :header-title="'Profile'"></HeaderOther>
+    <div class="m-ac-info-wrap">
+      <ul style="position: relative">
+        <li class="lock">
+          <em>Username</em><span>{{ currentUser.username }}</span>
+        </li>
+        <li class="lock" :class="details?.firstName ? '' : 'with-arrow'"
+          @click="showInput('First Name', 'text', details?.firstName, false)">
+          <em>First Name</em><span>{{
+            details?.firstName ? details?.firstName : "Not Set"
+          }}</span>
+        </li>
+        <li class="lock" :class="details?.lastName ? '' : 'with-arrow'"
+          @click="showInput('Last Name', 'text', details?.lastName, false)">
+          <em>Last Name</em><span>{{ details?.lastName ? details?.lastName : "Not Set" }}</span>
+        </li>
+        <li :class="currentUser.email ? '' : 'with-arrow'"
+          @click="showInput('Email', 'email', currentUser.email, false)">
+          <em>Email</em><span>{{ currentUser.email ? currentUser.email : "Not Set" }}</span>
+        </li>
+        <li class="lock">
+          <em>Phone Number</em><span>+234 {{ details?.username }}</span>
+        </li>
+        <li class="lock" :class="details?.address ? '' : 'with-arrow'"
+          @click="showInput('Address', 'text', details?.address, false)">
+          <em>Address</em><span><span>{{
+            details?.address ? details?.address : "Not Set"
+          }}</span></span>
+        </li>
+        <li class="lock" :class="details?.city ? '' : 'with-arrow'"
+          @click="showInput('City', 'text', details?.city, false)">
+          <em>City</em><span><span>{{ details?.city ? details?.city : "Not Set" }}</span></span>
+        </li>
+        <li class="with-arrow" @click="
+          showInput('Update Password', 'password', null, null, 'password')
+          ">
+          <em data-cms-key="birthday">Change your password</em><span></span>
+        </li>
+      </ul>
+    </div>
   </div>
-  <template v-else>
-    <div v-if="!showInputFieldView" class="m-uc-wrapper myAccount">
-      <HeaderOther :header-title="'Profile'"></HeaderOther>
-      <div class="m-ac-info-wrap">
-        <ul style="position: relative">
-          <li class="lock">
-            <em>Username</em><span>{{ currentUser.username }}</span>
-          </li>
-          <li class="lock" :class="details?.firstName ? '' : 'with-arrow'"
-            @click="showInput('First Name', 'text', details?.firstName, false)">
-            <em>First Name</em><span>{{
-              details?.firstName ? details?.firstName : "Not Set"
-            }}</span>
-          </li>
-          <li class="lock" :class="details?.lastName ? '' : 'with-arrow'"
-            @click="showInput('Last Name', 'text', details?.lastName, false)">
-            <em>Last Name</em><span>{{ details?.lastName ? details?.lastName : "Not Set" }}</span>
-          </li>
-          <li :class="currentUser.email ? '' : 'with-arrow'"
-            @click="showInput('Email', 'email', currentUser.email, false)">
-            <em>Email</em><span>{{ currentUser.email ? currentUser.email : "Not Set" }}</span>
-          </li>
-          <li class="lock">
-            <em>Phone Number</em><span>+234 {{ details?.username }}</span>
-          </li>
-          <li class="lock" :class="details?.address ? '' : 'with-arrow'"
-            @click="showInput('Address', 'text', details?.address, false)">
-            <em>Address</em><span><span>{{
-              details?.address ? details?.address : "Not Set"
-            }}</span></span>
-          </li>
-          <li class="lock" :class="details?.city ? '' : 'with-arrow'"
-            @click="showInput('City', 'text', details?.city, false)">
-            <em>City</em><span><span>{{ details?.city ? details?.city : "Not Set" }}</span></span>
-          </li>
-          <li class="with-arrow" @click="
-            showInput('Update Password', 'password', null, null, 'password')
-            ">
-            <em data-cms-key="birthday">Change your password</em><span></span>
-          </li>
-          <li class="with-arrow" @click="isAccountVerification = true">
-            <em>Account Verification</em><span></span>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div v-else class="m-uc-wrapper myAccount">
-      <div class="m-ac-form-wrap">
-        <HeaderProfile :header-title="inputTitle" @back-to-profile="handleBackToProfile"></HeaderProfile>
-        <form>
-          <div tabindex="6" class="m-input-wrapper">
-            <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend"  v-if="!isPasswordUpdate" >
-              <input :type="textType" :placeholder="inputTitle" class="x-input-wap fs-exclude"
-                style="padding: 10px 15px;" v-model="inputValue"/>
+  <div v-else class="m-uc-wrapper myAccount">
+    <div class="m-ac-form-wrap">
+      <HeaderProfile :header-title="inputTitle" @back-to-profile="handleBackToProfile"></HeaderProfile>
+      <form>
+        <div tabindex="6" class="m-input-wrapper">
+          <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend"  v-if="!isPasswordUpdate" >
+            <input :type="textType" :placeholder="inputTitle" class="x-input-wap fs-exclude"
+              style="padding: 10px 15px;" v-model="inputValue"/>
+          </div>
+          <template v-else>
+            <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
+              <input type="password" placeholder="Old Password" class="x-input-wap fs-exclude"
+                style="padding: 10px 15px;" v-model="oldPassword"/>
             </div>
-            <template v-else>
-              <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
-                <input type="password" placeholder="Old Password" class="x-input-wap fs-exclude"
-                  style="padding: 10px 15px;" v-model="oldPassword"/>
-              </div>
-              <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
-                <input type="password" placeholder="New Password" class="x-input-wap fs-exclude"
-                  style="padding: 10px 15px;" v-model="newPassword"/>
-              </div>
-            </template>
-          </div>
-          <!---->
-          <div class="m-btn-wrapper">
-            <button class="af-button af-button--success" @click.prevent="saveUpdate">
-              <span> {{ buttonText }} </span>
-            </button>
-          </div>
-        </form>
-      </div>
+            <div class="x-input-wap-wrapper x-input-wap-group x-input-wap-group--prepend">
+              <input type="password" placeholder="New Password" class="x-input-wap fs-exclude"
+                style="padding: 10px 15px;" v-model="newPassword"/>
+            </div>
+          </template>
+        </div>
+        <!---->
+        <div class="m-btn-wrapper">
+          <button class="af-button af-button--success" @click.prevent="saveUpdate">
+            <span> {{ buttonText }} </span>
+          </button>
+        </div>
+      </form>
     </div>
-  </template>
+  </div>
 </template>
 
 <script setup>
@@ -131,8 +80,6 @@ import HeaderProfile from "../../components/HeaderProfile.vue";
 import { updateProfile, CLIENT_ID, updatePassword, processAccountVerification } from "@/helpers";
 import emitter from "../../plugins/emitter";
 import { useUtilsStore } from "../../stores";
-import VueSelect from "vue3-select-component";
-import { last } from "lodash";
 
 
 const usersStore = useUsersStore();
@@ -274,7 +221,7 @@ async function submitKycRequest(){
     if(documentType.value === 'bank_account'){
       payload.bankCode = bankCode.value
     }
-    if(documentType.value === 'international_passport'){
+    if(documentType.value === 'international_paNGNort'){
       payload.lastName = lastName.value
     }
 
@@ -314,9 +261,6 @@ async function submitKycRequest(){
   height: 38px !important;
   border-radius: 3px !important;
 }
-.m-uc-wrapper {
-  background-color: #fff;
-}
 
 .m-uc-wrapper .mg-b-40 {
   margin-bottom: 3.33333333rem;
@@ -332,9 +276,9 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-ac-info-wrap .verify-btn {
-  border: 1px solid #0d9737;
+  border: 1px solid var(--brand-highlight-text);
   border-radius: 4px;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-size: 1.066rem;
   font-weight: 500;
   margin-left: 10px;
@@ -426,7 +370,7 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-ac-info-wrap li>span.unverified {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
   color: #ffffff !important;
   font-size: 0.66666667rem;
   height: 1.33333333rem;
@@ -504,12 +448,12 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-wrapper .m-input-icon.m-input-icon--clickable:hover+.m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
@@ -542,22 +486,22 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-wrapper.m-input-wrapper--active .m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-wrapper:nth-of-type(2).m-input-wrapper--active .m-input {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 
 .m-uc-wrapper .m-input-group--prepend {
-  border: 1px solid #0d9737 !important;
+  border: 1px solid var(--brand-highlight-text) !important;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 0.33333333rem 0.5rem;
-  border-color: #0d9737 !important;
+  border-color: var(--brand-highlight-text) !important;
   border-color: var(--brand-secondary) !important;
 }
 
@@ -572,8 +516,8 @@ async function submitKycRequest(){
 }
 
 .m-uc-wrapper .m-input-group--prepend.m-input-wrapper--active {
-  border: 1px solid #0d9737 !important;
-  border-color: #0d9737 !important;
+  border: 1px solid var(--brand-highlight-text) !important;
+  border-color: var(--brand-highlight-text) !important;
   border-color: var(--brand-secondary) !important;
 }
 
@@ -632,7 +576,7 @@ async function submitKycRequest(){
 }
 
 .selected {
-  color: #0d9737 !important;
+  color: var(--brand-highlight-text) !important;
 }
 
 .edit {
@@ -644,7 +588,7 @@ async function submitKycRequest(){
 }
 
 .m-ac-form-wrap {
-  background-color: #fff;
+  /* background-color: #fff; */
   height: 100%;
   left: 0;
   overflow: auto;
@@ -681,7 +625,7 @@ async function submitKycRequest(){
 }
 
 .m-ac-form-wrap form.m-psw-wrap .m-link-awrap a {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   font-size: 1.33333333rem;
 }
 

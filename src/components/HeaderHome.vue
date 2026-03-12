@@ -10,7 +10,7 @@
       <header class="mobile-navbar">
         <div class="navbar-wraper">
           <a href="/" class="mobile-navbar-logo">
-            <img src="/default.png" alt="" />
+            <img src="/logo.png" alt="" />
           </a>
           <div class="mobile-navbar-right">
             <span class="x-icon-search" @click="$router.push({ name: 'search' })"></span>
@@ -20,7 +20,7 @@
                   >Deposit</span
                 >
                 <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
-                  <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
+                  <span class="currency">{{ SportsbookGlobalVariable.Currency }}</span>
                   <span> {{ usersStore.balance }}</span>
                 </div>
               </span>

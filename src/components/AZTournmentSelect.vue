@@ -110,7 +110,7 @@ defineComponent({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -236,10 +236,11 @@ defineComponent({
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   height: 4rem;
-  width: 100%;
+  margin: 20px;
+  border-radius: 8px;
 }
 .m-azmenu .tournament-pop--footer__display-btn {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   color: #ffffff;
   font-size: 1.33333333rem;
   line-height: 4rem;

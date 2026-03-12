@@ -8,7 +8,7 @@
         <span class="text-right" v-if="combo">{{ combo.Combinations }}x</span>
         
         <span class="currency"><em>{{
-          SportsbookGlobalVariable.CurrencyCode
+          SportsbookGlobalVariable.Currency
             }}</em></span>
         <span 
           :tabindex="tabindex"
@@ -23,7 +23,7 @@
       </div>
       <div v-if="balanceLowerThanStake" class="m-error-info">
         <p>You need a balance of {{
-          SportsbookGlobalVariable.CurrencyCode
+          SportsbookGlobalVariable.Currency
         }} {{ betlistStake }} to place this bet. Please deposit an additional
           {{ amountNeededToStake }}</p>
         <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
@@ -86,7 +86,7 @@ const balanceLowerThanStake = computed(() => {
 
 const amountNeededToStake = computed(() => {
   let bal = betlistStake.value - userStore.currentUser?.availableBalance
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(bal)}`;
+  return `${SportsbookGlobalVariable.Currency} ${formatNumber(bal)}`;
 })
 
 const minStake = computed(() => {
