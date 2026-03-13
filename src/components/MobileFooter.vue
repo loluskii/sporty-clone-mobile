@@ -315,12 +315,12 @@ a {
 }
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon {
-  fill: var(--brand-primary);
+  fill: var(--brand-active-tab-bg);
 }
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.providers,
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.category {
-  stroke: var(--brand-primary);
+  stroke: var(--brand-active-tab-bg);
   fill: none;
 }
 
