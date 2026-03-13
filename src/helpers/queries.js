@@ -1,5 +1,5 @@
 import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API } from './constants'
+import { BASE_API, CLIENT_ID, NEW_BASE_API, FEEDS_API, FEEDS_API_BASE } from './constants'
 import moment from 'moment'
 
 function today() {
@@ -461,5 +461,37 @@ export const getCMS = async (page) => {
     fetchWrapper.get(
       `${NEW_BASE_API}/content-management/page?clientId=${import.meta.env.VITE_CLIENT_ID}&slug=${page}`
     )
+  )
+}
+
+// ============================================
+// NEW FEEDS API ENDPOINTS
+// ============================================
+
+/**
+ * Get live fixtures from new feeds API
+ * @param {number} sportId - Sport ID (0 for all sports, 1 for Soccer, etc.)
+ * @param {number} tournamentId - Tournament ID filter (0 for all)
+ * @param {number} categoryId - Category ID filter (0 for all)
+ * @param {string} orderType - Order type ('priority' or 'time')
+ * @returns {Promise} Live fixtures data
+ */
+export const getFeedsLiveFixtures = async (sportId = 0, tournamentId = 0, categoryId = 0, orderType = 'priority') => {
+  return parseData(
+    fetchWrapper.get(
+      `${FEEDS_API}/fixtures/live/${sportId}?tournament_id=${tournamentId}&category_id=${categoryId}&order_type=${orderType}`
+    )
+  )
+}
+
+/**
+ * Get single game details with all markets from new feeds API
+ * @param {number} gameId - Game/Match ID
+ * @param {number} groupId - Market group ID (0 for all)
+ * @returns {Promise} Game details with markets and outcomes
+ */
+export const getFeedsGameDetail = async (gameId, groupId = 0) => {
+  return parseData(
+    fetchWrapper.get(`${FEEDS_API_BASE}/game/${gameId}?group_id=${groupId}`)
   )
 }

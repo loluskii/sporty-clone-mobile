@@ -3,11 +3,11 @@
     <div class="m-event-meta">
       <span class="m-event-time">{{ displayTime }}</span>
       <span class="match-status">{{
-        gameData.matchStatus == '1st half'
+        matchStatus == '1st half'
           ? 'H1'
-          : gameData.matchStatus == '2nd half'
+          : matchStatus == '2nd half'
             ? 'H2'
-            : gameData.matchStatus
+            : matchStatus
       }}</span>
       <!-- <span class="m-league-name">{{ gameData.categoryName }} - {{ gameData.tournament }}</span> -->
       <div class="live-marker" data-cms-key="live">Live</div>
@@ -118,13 +118,26 @@ const props = defineProps({
   activeMarket: Object
 })
 
-const scores = ref({
-  homeScore: props.gameData?.homeScore || 0,
-  awayScore: props.gameData?.awayScore || 0
-})
+// Get scores from eventInfo.scores if available
+const getInitialScores = () => {
+  const eventInfo = props.gameData?.eventInfo
+  if (eventInfo?.scores) {
+    return {
+      homeScore: eventInfo.scores.home ?? 0,
+      awayScore: eventInfo.scores.away ?? 0
+    }
+  }
+  // Fallback to top-level homeScore/awayScore if they exist
+  return {
+    homeScore: props.gameData?.homeScore ?? 0,
+    awayScore: props.gameData?.awayScore ?? 0
+  }
+}
+
+const scores = ref(getInitialScores())
 const outcomes = ref([])
 const timer = ref(null)
-const displayTime = ref(props.gameData.eventTime || '00:00')
+const matchStatus = ref(props.gameData.matchStatus || '')
 
 // Keep track of updated outcomes
 const updatedOutcomes = ref({})
@@ -134,18 +147,134 @@ const specifierOpen = ref(false)
 
 const updatePending = ref(false)
 
-// Time handling functions
-const parseTimeToSeconds = (timeStr) => {
-  if (timeStr === '--:--') return null
-  const [minutes, seconds] = timeStr.split(':').map(Number)
-  return minutes * 60 + seconds
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = () => {
+  const sportId = props.gameData.sportID
+  return TIMED_SPORTS.includes(sportId)
 }
 
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+// Time handling functions
+const parseTime = (timeString) => {
+  if (!timeString || timeString === '--:--') return null
+  const parts = timeString.split(':')
+  if (parts.length >= 2) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: parseInt(parts[1], 10)
+    }
+  } else if (parts.length === 1) {
+    return {
+      minutes: parseInt(parts[0], 10),
+      seconds: 0
+    }
+  }
+  return null
 }
+
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 2
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport()) return timeStr
+
+  const parsed = parseTime(timeStr)
+  if (!parsed) return timeStr
+
+  let { minutes, seconds } = parsed
+
+  // Add latency compensation
+  seconds += MQTT_LATENCY_COMPENSATION
+
+  // Handle overflow
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60)
+    seconds = seconds % 60
+  }
+
+  // Cap at halftime/fulltime boundaries
+  const status = (props.gameData.matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (minutes >= 90) {
+      minutes = 90
+      seconds = 0
+    }
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (minutes >= 45) {
+      minutes = 45
+      seconds = 0
+    }
+  }
+
+  return formatTime(minutes, seconds)
+}
+
+// Calculate elapsed match time from kick-off (only for timed sports)
+const calculateElapsedTime = (kickOffDateStr) => {
+  if (!kickOffDateStr) return null
+
+  // Only calculate for timed sports like Soccer
+  if (!isTimedSport()) return null
+
+  const kickOffTime = new Date(kickOffDateStr).getTime()
+  const now = Date.now()
+  const elapsedMs = now - kickOffTime
+
+  // If kick-off hasn't started yet or invalid date
+  if (elapsedMs < 0) return null
+
+  const elapsedMinutes = Math.floor(elapsedMs / 60000)
+  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
+
+  // Handle halftime: if elapsed > 45 mins but match status is still 1st half or halftime
+  const status = props.gameData.matchStatus?.toLowerCase() || ''
+
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    const adjustedMinutes = Math.min(elapsedMinutes, 90)
+    return { minutes: adjustedMinutes, seconds: elapsedSeconds }
+  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
+    // Halftime: cap at 45:00
+    return { minutes: 45, seconds: 0 }
+  } else {
+    // First half or unknown: cap at 45 mins
+    const cappedMinutes = Math.min(elapsedMinutes, 45)
+    return { minutes: cappedMinutes, seconds: elapsedSeconds }
+  }
+}
+
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
+const getInitialDisplayTime = () => {
+  // Temporarily disabled: time calculation from kick-off
+  // if (isTimedSport()) {
+  //   const kickOffDate = props.gameData.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
+
+  // Use eventTime directly from API response
+  return props.gameData.eventTime || '--:--'
+}
+
+const displayTime = ref(getInitialDisplayTime())
 
 const stopTimer = () => {
   if (timer.value) {
@@ -157,23 +286,31 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const initialTime = parseTimeToSeconds(displayTime.value)
-  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
+  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
+  if (!isTimedSport()) return
 
-  let currentSeconds = initialTime
-  displayTime.value = formatSecondsToTime(currentSeconds)
+  const initialTime = parseTime(displayTime.value)
+  if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
+
+  let currentMinutes = initialTime.minutes
+  let currentSeconds = initialTime.seconds
 
   timer.value = setInterval(() => {
     currentSeconds++
 
-    // Stop at key match times
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+    if (currentSeconds >= 60) {
+      currentSeconds = 0
+      currentMinutes++
+    }
+
+    // Stop at key match times (halftime and fulltime)
+    if (currentMinutes === 45 || currentMinutes === 90) {
       stopTimer()
       return
     }
 
-    displayTime.value = formatSecondsToTime(currentSeconds)
-  }, 1000)
+    displayTime.value = formatTime(currentMinutes, currentSeconds)
+  }, 1000) // Increment every second
 }
 
 // Watch for gameData changes to start timer
@@ -376,22 +513,26 @@ function handleFixtureStatus(data) {
     scores.value.homeScore = data.home_score
     scores.value.awayScore = data.away_score
 
-    // Update time and status
-    displayTime.value = data.event_time
-    props.gameData.matchStatus = data.match_status
+    // Update time and status (with latency compensation)
+    displayTime.value = adjustTimeForLatency(data.event_time)
+    matchStatus.value = data.match_status
 
     // Restart timer with new time
     startTimer()
   })
 }
 
+// Function to handle match ended - remove fixture from list
+function handleMatchEnded(data) {
+  stopTimer()
+  emitter.emit('match-ended', props.gameData.matchID)
+}
+
 onMounted(() => {
   // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
-  scores.value = {
-    homeScore: props.gameData.homeScore,
-    awayScore: props.gameData.awayScore
-  }
+  // Initialize scores from eventInfo.scores or top-level
+  scores.value = getInitialScores()
 
   outcomes.value = props.gameData.outcomes || []
   getOdds()
@@ -402,15 +543,17 @@ onMounted(() => {
     const componentId = `live-fixture-${matchId}-${Date.now()}`
 
     const topics = {
-      oddsChange: `feeds/live/odds_change/${matchId}`,
-      betStop: `feeds/live/bet_stop/${matchId}`,
-      fixtureStatus: `feeds/live/fixture_status/${matchId}`
+      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`,
+      matchEnded: `sbe/feeds/live/match_ended/${matchId}`
     }
 
     const handlers = {
       oddsChange: handleOddsChange,
       betStop: handleBetStop,
-      fixtureStatus: handleFixtureStatus
+      fixtureStatus: handleFixtureStatus,
+      matchEnded: handleMatchEnded
     }
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {

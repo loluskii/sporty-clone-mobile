@@ -44,7 +44,8 @@ onMounted(async () => {})
 </script>
 
 <style>
-.m-sports {
+
+.m-sports, .home {
   background-color: #fafafa;
   background-color: var(--background-type1-secondary);
 }
@@ -240,12 +241,6 @@ onMounted(async () => {})
   position: fixed;
   top: 7.58333333rem;
   z-index: 221;
-}
-
-.m-sports .view-all {
-  border-top: 1px solid #f2f3f5;
-  border-color: #f2f3f5;
-  border-color: var(--brand-border-type1);
 }
 
 .m-sports .view-all a,

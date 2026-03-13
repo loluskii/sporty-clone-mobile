@@ -20,7 +20,7 @@
                   >Deposit</span
                 >
                 <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
-                  <span class="currency">{{ SportsbookGlobalVariable.CurrencyCode }}</span>
+                  <span class="currency">{{ SportsbookGlobalVariable.Currency }}</span>
                   <span> {{ usersStore.balance }}</span>
                 </div>
               </span>

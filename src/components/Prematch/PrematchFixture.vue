@@ -284,32 +284,31 @@ onMounted(() => {
   outcomes.value = props.eventData.outcomes || []
   getOdds()
 
-  // Subscribe to prematch odds changes for this specific match
+  // Subscribe to prematch MQTT topics for this specific match
   const matchId = props.eventData.matchID
 
   if (matchId) {
-    // Create a unique component ID to help with debugging
-    const componentId = `prematch-fixture-${matchId}-${Date.now()}`
+    const topics = {
+      oddsChange: `sbe/feeds/prematch/odds_change/${matchId}`,
+      betStop: `sbe/feeds/prematch/bet_stop/${matchId}`,
+      fixtureStatus: `sbe/feeds/prematch/fixture_status/${matchId}`
+    }
 
-    // Subscribe to bet stop first (higher priority)
-    const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
-      handleBetStop(data)
-    })
+    const handlers = {
+      oddsChange: handleOddsChange,
+      betStop: handleBetStop,
+      fixtureStatus: handleFixtureStatus
+    }
 
-    // Then subscribe to odds changes
-    const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
-      handleOddsChange(data)
+    const unsubscribers = Object.entries(topics).map(([key, topic]) => {
+      return subscribe(topic, (data) => {
+        handlers[key](data)
+      })
     })
 
     // Store unsubscribe functions for cleanup
     onBeforeUnmount(() => {
-      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`)
-      unsubscribeBetStop()
-      unsubscribeOddsChange()
+      unsubscribers.forEach((unsubscribe) => unsubscribe())
     })
   }
 })
@@ -394,11 +393,8 @@ function handleBetStop(data) {
   const dataMatchId = data.event_id || data.match_id
 
   if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`)
     return
   }
-
-  // console.log(`⚠️ BET STOP: Processing bet stop for match ID ${matchId}`)
 
   outcomes.value = outcomes.value.map((outcome) => ({
     ...outcome,
@@ -419,7 +415,21 @@ function handleBetStop(data) {
   const currentTime = new Date()
 
   if (matchTime < currentTime) {
-    // console.log('Match time has passed, removing fixture:', props.eventData.matchID)
+    emitter.emit('remove-fixture', props.eventData.matchID)
+  }
+}
+
+// Function to handle fixture status updates
+function handleFixtureStatus(data) {
+  const matchId = props.eventData.matchID
+  const dataMatchId = data.match_id
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return
+  }
+
+  // If match has started (status changes), it should move to live
+  if (data.status === 1 || data.status_code === 1) {
     emitter.emit('remove-fixture', props.eventData.matchID)
   }
 }
@@ -551,7 +561,7 @@ defineComponent({
   color: var(--brand-prematch-odds-text);
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--checked {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }
 .m-event-sport .m-market-cell .m-market .m-outcome--checked:before {
@@ -672,7 +682,7 @@ defineComponent({
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
 }
 .af-select-item.hover {

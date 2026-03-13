@@ -162,7 +162,7 @@
                     <span>Confirm to Pay</span><span>&nbsp;</span>
                     <div>
                       <div class="stake-num">
-                        {{ SportsbookGlobalVariable.CurrencyCode }}
+                        {{ SportsbookGlobalVariable.Currency }}
                         {{ totalStake }}
                       </div>
                     </div>
@@ -915,7 +915,7 @@ onMounted(() => {})
 }
 
 .submit.real-theme {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);
@@ -1091,9 +1091,7 @@ onMounted(() => {})
 }
 
 .m-flexibet-confirm {
-  background-color: #ffffff;
   bottom: 0;
-  padding-top: 2.16666667rem;
   position: relative;
   width: 100%;
 }

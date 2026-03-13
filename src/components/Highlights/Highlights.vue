@@ -143,6 +143,6 @@ onMounted(() => {
   margin-right: 0px !important;
 }
 .m-tab-active {
-  border-bottom: 3px solid var(--c-prematch-tab-name-active);
+  border-bottom: 3px solid var(--brand-primary);
 }
 </style>
