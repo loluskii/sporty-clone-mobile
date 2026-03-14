@@ -11,7 +11,6 @@
           <ul class="m-snap-nav flex">
             <li
               v-for="(sport, s) in sportsListData"
-							v-if="sport.sportName.toLowerCase() !== 'basketball'"
               :class="{ active: sport.sportID == activeSportID }"
               :key="s"
               class="m-sport-type-item m-snap-nav-item"
