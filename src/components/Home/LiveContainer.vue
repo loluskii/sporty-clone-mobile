@@ -14,6 +14,7 @@
           >
             <li
               v-for="(sport, index) in sportsListData"
+							v-if="sport.sportName !== 'basketball'"
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
               :key="index"
