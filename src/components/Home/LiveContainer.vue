@@ -12,8 +12,9 @@
               transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
             "
           >
+          <template v-for="(sport, index) in sportsListData">
             <li
-              v-for="(sport, index) in sportsListData"
+              v-if="sport.sportName !== 'Basketball'"
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
               :key="index"
@@ -23,6 +24,7 @@
             >
               {{ sport.sportName }}
             </li>
+          </template>
           </ul>
           <i class="controls left-controls"></i>
           <i class="controls right-controls"></i>
