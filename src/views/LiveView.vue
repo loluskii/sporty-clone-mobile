@@ -9,25 +9,28 @@
       <div class="nav-container" style="position: sticky; top: 0; z-index: 200">
         <div class="m-snap-nav-wrap m-sport-type" style="overflow: auto">
           <ul class="m-snap-nav flex">
-            <li
-              v-for="(sport, s) in sportsListData"
-              :class="{ active: sport.sportID == activeSportID }"
-              :key="s"
-              class="m-sport-type-item m-snap-nav-item"
-              @click="setActiveSport(sport.sportID)"
-              :id="'live_' + sport.sportID"
-            >
-              <span class="m-event-size">{{ sport.count }}</span>
-              <img
-                :src="getImageSrc(sport.sportID)"
-                loading="lazy"
-                width="22"
-                height="22"
-              />
-              <div class="m-sport-text">
-                {{ sport.sportName }}
-              </div>
-            </li>
+            <template v-if="(sport, index) in sportsListData">
+              <li
+                v-for="(sport, s) in sportsListData"
+                :class="{ active: sport.sportID == activeSportID }"
+                v-if="sport.sportName !== 'Basketball'"
+                :key="s"
+                class="m-sport-type-item m-snap-nav-item"
+                @click="setActiveSport(sport.sportID)"
+                :id="'live_' + sport.sportID"
+              >
+                <span class="m-event-size">{{ sport.count }}</span>
+                <img
+                  :src="getImageSrc(sport.sportID)"
+                  loading="lazy"
+                  width="22"
+                  height="22"
+                />
+                <div class="m-sport-text">
+                  {{ sport.sportName }}
+                </div>
+              </li>
+            </template>
           </ul>
         </div>
       </div>
