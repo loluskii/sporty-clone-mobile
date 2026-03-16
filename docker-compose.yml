@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: west-zaza-mobile
     ports:
-      - "3010:3010"
+      - "3011:3010"
     networks:
       - sbenet
     restart: unless-stopped
