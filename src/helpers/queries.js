@@ -122,7 +122,43 @@ export const getTopBets = async () => {
 }
 
 export const getCodeHubItems = async (data) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/${CLIENT_ID}/codehub/tickets`, data))
+  const {
+    page = 1,
+    perPage,
+    limit,
+    sort = 'total_odd|asc',
+    start,
+    end,
+    from,
+    to,
+    minOdd,
+    maxOdd,
+    minFold,
+    maxFold,
+    betType,
+    search
+  } = data || {}
+
+  const params = new URLSearchParams()
+  params.set('page', page)
+  params.set('perPage', perPage || limit || 10)
+  params.set('sort', sort)
+
+  const resolvedStart = start || from
+  const resolvedEnd = end || to
+
+  // if (resolvedStart) params.set('start', resolvedStart)
+  // if (resolvedEnd) params.set('end', resolvedEnd)
+  if (minOdd !== undefined && minOdd !== null && minOdd !== '') params.set('minOdd', minOdd)
+  if (maxOdd !== undefined && maxOdd !== null && maxOdd !== '') params.set('maxOdd', maxOdd)
+  if (minFold !== undefined && minFold !== null && minFold !== '') params.set('minFold', minFold)
+  if (maxFold !== undefined && maxFold !== null && maxFold !== '') params.set('maxFold', maxFold)
+
+  // Preserve legacy filters until all callers are migrated.
+  if (betType !== undefined && betType !== null && betType !== '') params.set('betType', betType)
+  if (search) params.set('search', search)
+
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub?${params.toString()}`))
 }
 
 export const getSportsMenu = async () => {
