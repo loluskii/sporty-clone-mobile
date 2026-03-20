@@ -61,6 +61,7 @@
               :marketsGroup="marketsGroup"
               :activeMarket="activeMarket"
               :effectiveMarket="effectiveMarket"
+              :isLoading="isLoading"
               :upMode="upMode"
               :isModeLoading="isModeLoading"
               :showUpToggle="showUpToggle"
@@ -68,10 +69,10 @@
               :baseLabel="baseLabel"
               @select-market="getFixturesByMarkets"
               @set-up-mode="handleUpModeChange"
-              v-if="!loadingError"
+              v-if="!loadingError && !isLoading"
             ></Highlights>
 
-            <LoadingSpinner v-show="isLoading"></LoadingSpinner>
+            <LoadingSpinner v-show="isLoading" ></LoadingSpinner>
             <LoadingError v-show="loadingError"></LoadingError>
           </div>
         </div>
@@ -220,10 +221,13 @@ async function setActiveSport(sid) {
   // set the active sport id
   prevSportID.value = activeSportID.value
   activeSportID.value = sid
+  // Clear the active market immediately so football-only derived controls disappear.
+  activeMarket.value = {}
   resetUpMode()
   // Clear cached market selection when sport changes to avoid mismatches.
   activeMarketByTab.value = { highlights: null, today: null }
   highlightsData.value = []
+  marketsGroup.value = {}
   todayData.value = []
   derivedHighlightsData.value = []
   derivedTodayData.value = []

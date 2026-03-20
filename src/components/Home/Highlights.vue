@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="fixtures-content">
-        <div v-if="isModeLoading" class="up-mode-loading-mask">
+        <div v-if="showLoadingMask" class="up-mode-loading-mask">
           <LoadingSpinner></LoadingSpinner>
         </div>
         <template v-if="Object.keys(fixtures).length">
@@ -79,7 +79,7 @@
             ></PrematchFixture>
           </div>
         </template>
-        <div v-else class="no-data">
+        <div v-else-if="!isLoading" class="no-data">
           <div style="white-space: pre-line">
             Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
             you.!
@@ -109,6 +109,10 @@ const props = defineProps({
   marketsGroup: Object,
   activeMarket: Object,
   effectiveMarket: Object,
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
   upMode: {
     type: String,
     default: 'none'
@@ -138,6 +142,7 @@ const emits = defineEmits(['select-market', 'set-up-mode'])
 const router = useRouter()
 const utilsStore = useUtilsStore()
 const fixtures = ref(props.highlightsData || {})
+const isLoading = computed(() => props.isLoading)
 const upMode = computed(() => props.upMode || 'none')
 const modeOptions = computed(() => props.modeOptions || [])
 const baseLabel = computed(() => props.baseLabel || 'Base')
@@ -148,6 +153,7 @@ const getSportbyId = computed(() => {
 
 const showUpToggle = computed(() => props.showUpToggle)
 const isModeLoading = computed(() => props.isModeLoading)
+const showLoadingMask = computed(() => props.isModeLoading)
 
 const displayMarket = computed(() => {
   return props.effectiveMarket || props.activeMarket || {}
