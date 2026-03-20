@@ -141,17 +141,6 @@
         </div>
       </div>
 
-      Away_Goal_H1.gif 
-      Away_Goal_H2.gif 
-      Away_NoGoal_H1.gif 
-      Away_NoGoal_H2.gif 
-      football_field.jpg 
-      Home_Goal_H1.gif 
-      Home_Goal_H2.gif 
-      Home_NoGoal_H1.gif 
-      Home_NoGoal_H2.gif 
-      SIM_START.gif
-
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-10">
           <span>Stake After Tax</span>
@@ -331,6 +320,9 @@ const {
 const keyboardKey = 'betlist:total'
 const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
 const { upMode, isLoadingUpMode, hasDerivedMarkets, setUpMode } = inject('betslipUpMode')
+const isSubmitting = computed(() => {
+  return couponStore.isBetslipLoading || couponStore.isBetslipBooking
+})
 
 const goToDeposit = () => {
   emit('toggle-betslip')

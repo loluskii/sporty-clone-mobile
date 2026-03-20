@@ -339,7 +339,7 @@ onMounted(async () => {
     utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
 
     utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.sports : []
+      results[2].status === "fulfilled" ? results[2].value.data : []
 
     utilsStore.banksList =
       results[4].status === "fulfilled" ? results[4].value.data : []
@@ -390,7 +390,9 @@ defineComponent({
       <div class="x-main x-layout-main">
         <div class="x-main-mid x-has-bottom-nav">
           <RouterView />
-          <AppFooter v-show="utilsStore.showFooter"></AppFooter>
+          <div v-show="utilsStore.showFooter">
+            <AppFooter></AppFooter>
+          </div>
           <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
           <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
             :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
