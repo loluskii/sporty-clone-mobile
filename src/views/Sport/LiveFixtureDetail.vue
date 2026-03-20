@@ -62,17 +62,17 @@
             >
               <li
                 class="m-sport-group-item m-snap-nav-item"
-                :class="{ active: selectedGroupId === null }"
-                @click="selectedGroupId = null"
+                :class="{ active: sharedSelectedGroupId === null }"
+                @click="sharedSelectedGroupId = null"
               >
                 <span>All</span>
               </li>
               <li
-                v-for="group in sortedMarketGroups"
+                v-for="group in sharedSortedMarketGroups"
                 :key="group.id"
                 class="m-sport-group-item m-snap-nav-item"
-                :class="{ active: selectedGroupId === group.id }"
-                @click="selectedGroupId = group.id"
+                :class="{ active: sharedSelectedGroupId === group.id }"
+                @click="sharedSelectedGroupId = group.id"
               >
                 <span>{{ group.name }}</span>
               </li>
@@ -80,19 +80,19 @@
             <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <div v-if="!matchHasEnded && !isLoading" class="m-sport-market">
-            <div v-if="hasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
+            <div v-if="sharedHasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
               </div>
             </div>
-            <div v-else-if="displayGroupedMarkets.length === 0" class="m-sport-market-no-data">
+            <div v-else-if="sharedDisplayGroupedMarkets.length === 0" class="m-sport-market-no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
               </div>
             </div>
             <div v-else class="m-sport-market">
               <div
-                v-for="(marketGroup, index) in displayGroupedMarkets"
+                v-for="(marketGroup, index) in sharedDisplayGroupedMarkets"
                 :key="index"
                 :data-key="'market-' + marketGroup.marketID"
               >
@@ -100,20 +100,20 @@
                   <div class="m-market-title">
                     <span class="dis-icon"></span>
                     <span class="text" style="text-transform: capitalize"
-                      >{{ cleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
+                      >{{ sharedCleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
                     </span>
                   </div>
                   <div class="m-table market-content">
                     <div
                       class="m-table-row"
-                      v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
+                      v-for="(market, m) in sharedGetChunks(marketGroup.markets[0].outcomes)"
                       :key="m"
                     >
                       <template
                         v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
                       >
                         <template
-                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
+                          v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')"
                           :key="odd"
                         >
                           <div
@@ -153,21 +153,21 @@
                         </template>
                       </template>
                       <template v-else>
-                        <div class="m-table" v-if="getMarketColumns(marketGroup)">
+                        <div class="m-table" v-if="sharedGetMarketColumns(marketGroup)">
                           <!-- TITLE-DRIVEN LAYOUT -->
                           <div class="m-table-row">
                             <!-- blank label cell — only when there is a specifier label -->
                             <div
-                              v-if="getMarketColumns(marketGroup).specifierLabel !== null"
+                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
-                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
                             ></div>
                             <!-- column headers from title -->
                             <div
-                              v-for="col in getMarketColumns(marketGroup).columns"
+                              v-for="col in sharedGetMarketColumns(marketGroup).columns"
                               :key="col"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
-                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
                             >
                               {{ col }}
                             </div>
@@ -180,69 +180,69 @@
                           >
                             <!-- row label — only when there is a specifier label -->
                             <div
-                              v-if="getMarketColumns(marketGroup).specifierLabel !== null"
+                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
-                              :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
                             >
                               <em>{{
-                                getRowLabel(mg, getMarketColumns(marketGroup).specifierLabel)
+                                sharedGetRowLabel(mg, sharedGetMarketColumns(marketGroup).specifierLabel)
                               }}</em>
                             </div>
                             <template
-                              v-for="col in getMarketColumns(marketGroup).columns"
+                              v-for="col in sharedGetMarketColumns(marketGroup).columns"
                               :key="col"
                             >
                               <div
-                                v-if="findOutcomeForColumn(mg.outcomes, col)"
+                                v-if="sharedFindOutcomeForColumn(mg.outcomes, col)"
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
                                 :class="[
-                                  colClass(getMarketColumns(marketGroup).totalCols),
+                                  sharedColClass(sharedGetMarketColumns(marketGroup).totalCols),
                                   {
                                     'm-outcome--checked': isSelected(
                                       createID(
                                         eventDetail.matchID,
-                                        findOutcomeForColumn(mg.outcomes, col).marketID,
-                                        findOutcomeForColumn(mg.outcomes, col).outcomeID,
-                                        findOutcomeForColumn(mg.outcomes, col).specifier,
+                                        sharedFindOutcomeForColumn(mg.outcomes, col).marketID,
+                                        sharedFindOutcomeForColumn(mg.outcomes, col).outcomeID,
+                                        sharedFindOutcomeForColumn(mg.outcomes, col).specifier,
                                         mg.marketName,
-                                        findOutcomeForColumn(mg.outcomes, col).outcomeName
+                                        sharedFindOutcomeForColumn(mg.outcomes, col).outcomeName
                                       ),
                                       couponStore.coupon
                                     ),
                                     'm-outcome--disabled':
-                                      findOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                      findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                      !findOutcomeForColumn(mg.outcomes, col).odds
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                      !sharedFindOutcomeForColumn(mg.outcomes, col).odds
                                   }
                                 ]"
-                                @click="addToBetslip(mg, findOutcomeForColumn(mg.outcomes, col))"
+                                @click="addToBetslip(mg, sharedFindOutcomeForColumn(mg.outcomes, col))"
                               >
                                 <em
                                   :class="{
                                     'm-icon-lock':
-                                      findOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                      findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                      !findOutcomeForColumn(mg.outcomes, col).odds
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                      !sharedFindOutcomeForColumn(mg.outcomes, col).odds
                                   }"
                                   >{{
-                                    findOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                    findOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                    !findOutcomeForColumn(mg.outcomes, col).odds
+                                     sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                     sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                     !sharedFindOutcomeForColumn(mg.outcomes, col).odds
                                       ? ''
-                                      : findOutcomeForColumn(mg.outcomes, col).odds.toFixed(2)
+                                       : sharedFindOutcomeForColumn(mg.outcomes, col).odds.toFixed(2)
                                   }}</em
                                 >
                               </div>
                               <div
                                 v-else
                                 class="m-table-cell m-outcome-only-odds"
-                                :class="colClass(getMarketColumns(marketGroup).totalCols)"
+                                :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
                               ></div>
                             </template>
                           </div>
                         </div>
                         <template
-                          v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
+                          v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')"
                           :key="odd"
                           v-else
                         >
@@ -305,13 +305,14 @@
 import HeaderOther from '@/components/HeaderOther.vue'
 import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFixtureMarkets, getMarketsGrouping, chunks, createID, isSelected } from '@/helpers'
+import { getFixtureMarkets, getMarketsGrouping, createID, isSelected } from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useCouponStore, useUtilsStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
+import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
 
 const { sportsMenu } = useUtilsStore()
 const eventMarkets = ref()
@@ -333,87 +334,22 @@ const { subscribe } = useMqttService()
 const unsubscribeFunctions = ref([])
 const isClockStopped = ref(false)
 const marketGroups = ref()
-const selectedGroupId = ref(null) // null means "All"
 // Tracks bet_stop so API refresh doesn't re-activate markets.
 const betStopped = ref(false)
 
-// Market grouping computed properties
-const groupedMarketsByTab = computed(() => {
-  if (!eventMarkets.value || !marketGroups.value) {
-    return {}
-  }
-
-  const grouped = {}
-
-  // Initialize groups
-  marketGroups.value.forEach((group) => {
-    grouped[group.id] = {
-      ...group,
-      markets: []
-    }
-  })
-
-  // Group markets
-  eventMarkets.value.forEach((market) => {
-    marketGroups.value.forEach((group) => {
-      if (group.marketIDs.includes(market.marketID)) {
-        if (!grouped[group.id]) {
-          grouped[group.id] = {
-            ...group,
-            markets: []
-          }
-        }
-        grouped[group.id].markets.push(market)
-      }
-    })
-  })
-
-  return grouped
-})
-
-// Get markets for the selected tab
-const filteredMarkets = computed(() => {
-  if (!eventMarkets.value) {
-    return []
-  }
-
-  // If "All" is selected (selectedGroupId is null), return all markets
-  if (selectedGroupId.value === null) {
-    return eventMarkets.value
-  }
-
-  // Otherwise, return markets for the selected group
-  const group = groupedMarketsByTab.value[selectedGroupId.value]
-  return group ? group.markets : []
-})
-
-// Group filtered markets by marketID for display
-const displayGroupedMarkets = computed(() => {
-  return groupByMarketID(filteredMarkets.value)
-})
-
-// Get sorted market groups for display (sorted by priority)
-const sortedMarketGroups = computed(() => {
-  if (!marketGroups.value) {
-    return []
-  }
-  return [...marketGroups.value].sort((a, b) => b.priority - a.priority)
-})
-
-// Check if the selected group has no markets (only [0] in marketIDs)
-const hasNoMarketsInSelectedGroup = computed(() => {
-  if (selectedGroupId.value === null) {
-    return false // "All" tab always shows markets if they exist
-  }
-
-  const group = marketGroups.value.find((g) => g.id === selectedGroupId.value)
-  if (!group) {
-    return false
-  }
-
-  // Check if marketIDs only contains [0] or is empty
-  return group.marketIDs.length === 0 || (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
-})
+const {
+  selectedGroupId: sharedSelectedGroupId,
+  displayGroupedMarkets: sharedDisplayGroupedMarkets,
+  sortedMarketGroups: sharedSortedMarketGroups,
+  hasNoMarketsInSelectedGroup: sharedHasNoMarketsInSelectedGroup,
+  sortByKey: sharedSortByKey,
+  getChunks: sharedGetChunks,
+  getMarketColumns: sharedGetMarketColumns,
+  findOutcomeForColumn: sharedFindOutcomeForColumn,
+  getRowLabel: sharedGetRowLabel,
+  colClass: sharedColClass,
+  cleanMarketName: sharedCleanMarketName
+} = useFixtureDetailMarkets(eventMarkets, marketGroups, eventDetail)
 
 // Other computed properties
 const matchHasEnded = computed(() => {
@@ -575,8 +511,16 @@ function handleOddsChange(data, match_id) {
   })
 }
 
+function resetMqttSubscriptions() {
+  if (unsubscribeFunctions.value.length > 0) {
+    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
+    unsubscribeFunctions.value = []
+  }
+}
+
 // MQTT setup
 function setupMqttSubscriptions(matchId, sport_id) {
+  resetMqttSubscriptions()
   const baseTopic = `sports/${sport_id}/match/${matchId}`
   const topics = {
     markets: `${baseTopic}/markets`,
@@ -620,10 +564,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // Clean up MQTT subscriptions
-  if (unsubscribeFunctions.value.length > 0) {
-    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
-    unsubscribeFunctions.value = []
-  }
+  resetMqttSubscriptions()
 
   if (timer.value) {
     clearInterval(timer.value)
@@ -730,6 +671,7 @@ function getSpecifierDisplayValue(specifier) {
 
 async function getEventDetail(id) {
   isLoading.value = true
+  resetMqttSubscriptions()
   const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
   try {
     const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])

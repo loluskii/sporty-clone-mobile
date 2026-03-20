@@ -80,41 +80,41 @@
           <div class="m-snap-nav-wrap m-group" style="overflow: hidden;">
             <ul class="m-snap-nav flex"
               style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); width: 645.388px;">
-              <li class="m-sport-group-item m-snap-nav-item" :class="{ active: selectedGroupId === null }"
-                @click="selectedGroupId = null">
+              <li class="m-sport-group-item m-snap-nav-item" :class="{ active: sharedSelectedGroupId === null }"
+                @click="sharedSelectedGroupId = null">
                 <span>All</span>
               </li>
-              <li v-for="group in sortedMarketGroups" :key="group.id" class="m-sport-group-item m-snap-nav-item"
-                :class="{ active: selectedGroupId === group.id }" @click="selectedGroupId = group.id">
+              <li v-for="group in sharedSortedMarketGroups" :key="group.id" class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: sharedSelectedGroupId === group.id }" @click="sharedSelectedGroupId = group.id">
                 <span>{{ group.name }}</span>
               </li>
             </ul> <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <div v-if="eventDetail.status === 0" class="m-market-group pre-match event-detail">
-            <div v-if="hasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
+            <div v-if="sharedHasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
               </div>
             </div>
-            <div v-else-if="displayGroupedMarkets.length === 0" class="m-sport-market-no-data">
+            <div v-else-if="sharedDisplayGroupedMarkets.length === 0" class="m-sport-market-no-data">
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
               </div>
             </div>
             <div v-else class="m-sport-market">
-              <div v-for="(marketGroup, index) in displayGroupedMarkets" :key="index"
+              <div v-for="(marketGroup, index) in sharedDisplayGroupedMarkets" :key="index"
                 :data-key="'market-' + marketGroup.marketID">
                 <div class="m-market m-detail-market-default">
                   <div class="m-market-title" style="flex-basis: 100%">
                     <span class="dis-icon"></span>
-                    <span class="text" style="text-transform: capitalize">{{ marketGroup.marketName }}
+                    <span class="text" style="text-transform: capitalize">{{ sharedCleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
                     </span>
                     <span class="m-icon-tips"></span>
                   </div>
                   <div class="m-table market-content">
-                    <div class="m-table-row" v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)" :key="m">
+                    <div class="m-table-row" v-for="(market, m) in sharedGetChunks(marketGroup.markets[0].outcomes)" :key="m">
                       <template v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''">
-                        <template v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd">
+                        <template v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')" :key="odd">
                           <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
                             'm-outcome--checked': isSelected(
                               createID(
@@ -140,43 +140,72 @@
                         </template>
                       </template>
                       <template v-else>
-                        <div v-if="isTotalOrHandicap(marketGroup)" class="m-table">
-
+                        <div v-if="sharedGetMarketColumns(marketGroup)" class="m-table">
+                          <!-- Shared title-driven matrix layout used by both prematch and live detail. -->
+                          <div class="m-table-row">
+                            <div
+                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                            ></div>
+                            <div
+                              v-for="col in sharedGetMarketColumns(marketGroup).columns"
+                              :key="col"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                            >
+                              {{ col }}
+                            </div>
+                          </div>
                           <div v-for="(mg, idx) in marketGroup.markets" class="m-table-row" :key="idx">
                             <div
-                              class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
-                              :class="{
-                                'm-outcome-three': mg?.outcomes?.length + 1 === 3,
-                                'm-outcome-four': mg?.outcomes?.length + 1 === 4
-                              }">
-                              <em>{{ getSpecifierValue(mg.specifier) }}</em>
+                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)">
+                              <em>{{ sharedGetRowLabel(mg, sharedGetMarketColumns(marketGroup).specifierLabel) }}</em>
                             </div>
-                            <template v-for="(outcome, o) in mg.outcomes" :key="o">
+                            <template v-for="col in sharedGetMarketColumns(marketGroup).columns" :key="col">
                               <div
+                                v-if="sharedFindOutcomeForColumn(mg.outcomes, col)"
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
-                                @click="addToBetslip(mg, outcome)" :class="{
+                                @click="addToBetslip(mg, sharedFindOutcomeForColumn(mg.outcomes, col))" :class="[
+                                  sharedColClass(sharedGetMarketColumns(marketGroup).totalCols),
+                                  {
                                   'm-outcome--checked': isSelected(
                                     createID(
                                       eventDetail.matchID,
-                                      outcome.marketID,
-                                      outcome.outcomeID,
-                                      outcome.specifier,
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).marketID,
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).outcomeID,
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).specifier,
                                       mg.marketName,
-                                      outcome.outcomeName
+                                      sharedFindOutcomeForColumn(mg.outcomes, col).outcomeName
                                     ),
                                     couponStore.coupon
                                   ),
-                                  'm-outcome-three': mg?.outcomes?.length + 1 === 3,
-                                  'm-outcome-four': mg?.outcomes?.length + 1 === 4,
-                                  'm-outcome--disabled': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds
-                                }">
-                                <em :class="{ 'm-icon-lock': outcome.active === 0 || outcome.odds <= 1 || !outcome.odds }">{{
-                                  outcome.active === 0 || outcome.odds <= 1 || !outcome.odds ? '' : outcome?.odds?.toFixed(2) }}</em>
+                                  'm-outcome--disabled':
+                                    sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                    sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                    !sharedFindOutcomeForColumn(mg.outcomes, col).odds
+                                }
+                                ]">
+                                <em :class="{ 'm-icon-lock':
+                                  sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                  sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                  !sharedFindOutcomeForColumn(mg.outcomes, col).odds
+                                }">{{
+                                  sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
+                                  sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
+                                  !sharedFindOutcomeForColumn(mg.outcomes, col).odds ? '' : sharedFindOutcomeForColumn(mg.outcomes, col)?.odds?.toFixed(2) }}</em>
                               </div>
+                              <div
+                                v-else
+                                class="m-table-cell m-outcome-only-odds"
+                                :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                              ></div>
                             </template>
                           </div>
                         </div>
-                        <template v-else v-for="(selection, odd) in sortByKey(market, 'outcomeID')" :key="odd">
+                        <template v-else v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')" :key="odd">
                           <div class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des" :class="{
                             'm-outcome--checked': isSelected(
                               createID(
@@ -229,9 +258,9 @@
 <script setup>
 import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { defineComponent, watch, ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRoute,useRouter } from 'vue-router'
-import { getFixtureMarkets, getMarketsGrouping, chunks, formatDate, createID, isSelected } from '@/helpers'
+import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { getFixtureMarkets, getMarketsGrouping, formatDate, createID, isSelected } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
@@ -239,106 +268,34 @@ import emitter from '@/plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 import { useUtilsStore } from '../../stores'
+import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
 
 const { subscribe } = useMqttService()
 const { sportsMenu } = useUtilsStore()
 
 const eventMarkets = ref()
 const eventDetail = ref(null)
-const marketGroups = ref([]);
-const groupedMarkets = ref([])
+const marketGroups = ref([])
 const isLoading = ref(false)
 const route = useRoute()
 const router = useRouter()
 const errorMessage = ref()
 const couponStore = useCouponStore()
-const homeTeam = ref()
-const awayTeam = ref()
 const isH2HShowing = ref(false)
-const updatedOutcomes = ref({})
 const unsubscribeFunctions = ref([])
-const refetchInterval = ref(null)
-const REFETCH_INTERVAL_MS = 60000 // 60 seconds
-const selectedGroupId = ref(null) // null means "All"
-
-// Group markets by their group IDs
-const groupedMarketsByTab = computed(() => {
-  if (!eventMarkets.value || !marketGroups.value) {
-    return {}
-  }
-
-  const grouped = {}
-
-  // Initialize groups
-  marketGroups.value.forEach(group => {
-    grouped[group.id] = {
-      ...group,
-      markets: []
-    }
-  })
-
-  // Group markets
-  eventMarkets.value.forEach(market => {
-    marketGroups.value.forEach(group => {
-      if (group.marketIDs.includes(market.marketID)) {
-        if (!grouped[group.id]) {
-          grouped[group.id] = {
-            ...group,
-            markets: []
-          }
-        }
-        grouped[group.id].markets.push(market)
-      }
-    })
-  })
-
-  return grouped
-})
-
-// Get markets for the selected tab
-const filteredMarkets = computed(() => {
-  if (!eventMarkets.value) {
-    return []
-  }
-
-  // If "All" is selected (selectedGroupId is null), return all markets
-  if (selectedGroupId.value === null) {
-    return eventMarkets.value
-  }
-
-  // Otherwise, return markets for the selected group
-  const group = groupedMarketsByTab.value[selectedGroupId.value]
-  return group ? group.markets : []
-})
-
-// Group filtered markets by marketID for display
-const displayGroupedMarkets = computed(() => {
-  return groupByMarketID(filteredMarkets.value)
-})
-
-// Get sorted market groups for display (sorted by priority)
-const sortedMarketGroups = computed(() => {
-  if (!marketGroups.value) {
-    return []
-  }
-  return [...marketGroups.value].sort((a, b) => b.priority - a.priority)
-})
-
-// Check if the selected group has no markets (only [0] in marketIDs)
-const hasNoMarketsInSelectedGroup = computed(() => {
-  if (selectedGroupId.value === null) {
-    return false // "All" tab always shows markets if they exist
-  }
-
-  const group = marketGroups.value.find(g => g.id === selectedGroupId.value)
-  if (!group) {
-    return false
-  }
-
-  // Check if marketIDs only contains [0] or is empty
-  return group.marketIDs.length === 0 ||
-    (group.marketIDs.length === 1 && group.marketIDs[0] === 0)
-})
+const {
+  selectedGroupId: sharedSelectedGroupId,
+  displayGroupedMarkets: sharedDisplayGroupedMarkets,
+  sortedMarketGroups: sharedSortedMarketGroups,
+  hasNoMarketsInSelectedGroup: sharedHasNoMarketsInSelectedGroup,
+  sortByKey: sharedSortByKey,
+  getChunks: sharedGetChunks,
+  getMarketColumns: sharedGetMarketColumns,
+  findOutcomeForColumn: sharedFindOutcomeForColumn,
+  getRowLabel: sharedGetRowLabel,
+  colClass: sharedColClass,
+  cleanMarketName: sharedCleanMarketName
+} = useFixtureDetailMarkets(eventMarkets, marketGroups, eventDetail)
 
 watch(
   () => [route.params.event_id, route.name],
@@ -352,6 +309,7 @@ watch(
 
 // MQTT setup
 function setupMqttSubscriptions(matchId, sport_id) {
+  resetMqttSubscriptions()
   const baseTopic = `sports/${sport_id}/match/${matchId}`
   const topics = {
     markets: `${baseTopic}/markets`,
@@ -378,8 +336,16 @@ function setupMqttSubscriptions(matchId, sport_id) {
   unsubscribeFunctions.value = unsubscribers
 }
 
+function resetMqttSubscriptions() {
+  if (unsubscribeFunctions.value.length > 0) {
+    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
+    unsubscribeFunctions.value = []
+  }
+}
+
 function setupPeriodicRefetch(matchId) {
-  // Clear any existing interval
+  // Prematch detail now relies on MQTT only; keep the hook inert while cleanup lands.
+  return
   if (refetchInterval.value) {
     clearInterval(refetchInterval.value)
   }
@@ -405,15 +371,7 @@ function setupPeriodicRefetch(matchId) {
 }
 
 onBeforeUnmount(() => {
-  if (unsubscribeFunctions.value.length > 0) {
-    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
-    unsubscribeFunctions.value = []
-  }
-
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value)
-    refetchInterval.value = null
-  }
+  resetMqttSubscriptions()
 })
 
 async function getEventDetail(id) {
@@ -421,7 +379,6 @@ async function getEventDetail(id) {
   const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
   try {
     const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
-    console.log(res)
     if (res[0].data && res[0].data.market) {
       if (res[0].data.matchStatus.toLowerCase() !== 'not started') {
         router.push({
@@ -437,10 +394,7 @@ async function getEventDetail(id) {
       eventDetail.value = res[0].data
       eventMarkets.value = res[0].data?.market.filter((market) => market.statusName !== 'Suspended')
       marketGroups.value = res[1].data
-      homeTeam.value = res[0].homeTeam
-      awayTeam.value = res[0].awayTeam
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
-      setupPeriodicRefetch(res[0].data.matchID)
     }
   } catch (error) {
     console.log(error)
@@ -692,7 +646,6 @@ function handleBetStop(data) {
   if (matchTime <= currentTime) {
     // Remove all outcomes - match has started
     eventMarkets.value = []
-    groupedMarkets.value = []
     eventDetail.value.statusCode = 1
 
     emitter.emit('showErrorMessage', {
