@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, computed, nextTick } from 'vue'
+import { defineComponent, onMounted, ref, watch, computed } from 'vue'
 import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
@@ -28,10 +28,7 @@ import { useAuthStore, useUsersStore } from './stores'
 import { checkVersion } from '@/utils/version'
 import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 import Cookies from 'js-cookie'
-import HandleCache from '@/components/HandleCache.vue'
 import ImageDialog from './components/ImageDialog.vue'
-import { result } from 'lodash'
-const cacheBuster = ref()
 
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
@@ -331,6 +328,25 @@ onMounted(async () => {
     isLoading.value = false
   }
 
+  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()]).then((results) => {
+    couponStore.sportsbookBonusList =
+      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
+
+    couponStore.SportsbookGlobalVariable =
+      results[1].status === "fulfilled" ? results[1].value.data.data : null
+
+    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
+    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+
+    utilsStore.sportsMenu =
+      results[2].status === "fulfilled" ? results[2].value.sports : []
+
+    utilsStore.banksList =
+      results[4].status === "fulfilled" ? results[4].value.data : []
+
+    isLoading.value = false
+  })
+
 
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
@@ -353,91 +369,78 @@ defineComponent({
 </script>
 
 <template>
-  <HandleCache ref="cacheBuster">
-    <template v-slot="{ isLoading, isLatestVersionAvailable }">
-      <template v-if="isLoading">
-        <transition name="move">
-          <div class="loading-overlay">
-            <div class="loading-spinner">
-              <img
-                src="/logo.png"
-                class="scaling-image"
-                style="height: 60px; margin-bottom: 20px"
-                alt="logo"
-              />
-              <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
-            </div>
-          </div>
-        </transition>
-      </template>
-      <template v-else-if="isLatestVersionAvailable">
-        <div class="page-content page-content--ng">
-          <!-- Main content -->
-          <div class="x-main x-layout-main">
-            <div class="x-main-mid x-has-bottom-nav">
-              <RouterView />
-              <AppFooter v-show="utilsStore.showFooter"></AppFooter>
-              <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
-              <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
-                :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
-                <CasinoDialog v-if="
-                  utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
-                " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
-                <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
-                  :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
-                <WinModal
-                  v-if="winModalShown"
-                  :amount="winModalAmount"
-                  :currency="winModalCurrency"
-                  @close="hideWinModal"
-                />
-              </div>
-            <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
-          </div>
-
-          <!-- <transition name="move">
-            <div class="loading-overlay" v-if="isLoading">
-              <div class="loading-spinner">
-                <img
-                  src="/logo.png"
-                  class="scaling-image"
-                  style="height: 60px; margin-bottom: 20px"
-                  alt="logo"
-                />
-                <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
-              </div>
-            </div>
-          </transition> -->
-          <CalendarBox
-            v-if="customDatePickerShown"
-            @hide="toggleDatePicker"
-            @set-date="handleCustomDatePicker"
-          />
-          <template v-if="route.name === 'account-deposit' || route.name === 'account-withdraw'">
-            <DepositWithdrawalCode
-              v-if="depositWithdrawalShown"
-              :data="depositWithdrawalData"
-              @hide-modal="hideModal"
+  <div>
+    <div v-if="isLoading">
+      <transition name="move">
+        <div class="loading-overlay">
+          <div class="loading-spinner">
+            <img
+              src="/logo.png"
+              class="scaling-image"
+              style="height: 60px; margin-bottom: 20px"
+              alt="logo"
             />
-          </template>
-          <div
-            class="dialog-mask"
-            v-if="bookBetModalShown"
-            style="background-color: rgba(0, 0, 0, 0); z-index: 1000"
-          >
-            <div class="dialog-wrapper" style="align-items: center; inset: auto; overflow: auto">
-              <div class="dialog-container" style="overflow: auto">
-                <BookBetModal @hide-modal="bookBetModalShown = false" :betDetails="bookBetResponse"></BookBetModal>
-              </div>
-            </div>
+            <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
           </div>
         </div>
+      </transition>
+    </div>
+    <div v-else class="page-content page-content--ng">
+      <!-- Main content -->
+      <div class="x-main x-layout-main">
+        <div class="x-main-mid x-has-bottom-nav">
+          <RouterView />
+          <AppFooter v-show="utilsStore.showFooter"></AppFooter>
+          <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
+          <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
+            :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
+          <CasinoDialog v-if="
+            utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
+          " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
+          <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
+            :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
+        </div>
+        <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
+      </div>
+  
+      <!-- <transition name="move">
+        <div class="loading-overlay" v-if="isLoading">
+          <div class="loading-spinner">
+            <img
+              src="/logo.png"
+              class="scaling-image"
+              style="height: 60px; margin-bottom: 20px"
+              alt="logo"
+            />
+            <div><img src="/loader.gif" alt="" srcset="" style="height: 3.5rem" /></div>
+          </div>
+        </div>
+      </transition> -->
+      <CalendarBox
+        v-if="customDatePickerShown"
+        @hide="toggleDatePicker"
+        @set-date="handleCustomDatePicker"
+      />
+      <template v-if="route.name === 'account-deposit' || route.name === 'account-withdraw'">
+        <DepositWithdrawalCode
+          v-if="depositWithdrawalShown"
+          :data="depositWithdrawalData"
+          @hide-modal="hideModal"
+        />
       </template>
-      <template v-else>
-        {{ cacheBuster.clearCacheAndReload() }}
-      </template>
-    </template>
-  </HandleCache>
+      <div
+        class="dialog-mask"
+        v-if="bookBetModalShown"
+        style="background-color: rgba(0, 0, 0, 0); z-index: 1000"
+      >
+        <div class="dialog-wrapper" style="align-items: center; inset: auto; overflow: auto">
+          <div class="dialog-container" style="overflow: auto">
+            <BookBetModal @hide-modal="bookBetModalShown = false" :betDetails="bookBetResponse"></BookBetModal>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <style>
 @import url('./assets/css/loading.css');
