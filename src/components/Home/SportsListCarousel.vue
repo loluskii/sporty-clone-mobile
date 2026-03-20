@@ -6,7 +6,7 @@
           <div class="sport-icon">
             <img src="@/assets/images/sports/1.png" loading="eager" width="20" height="20" />
           </div>
-          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">All Sports </span>
+          <span class="sport-text" data-cms-key="sports" data-cms-page="wap_home">Sports </span>
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">

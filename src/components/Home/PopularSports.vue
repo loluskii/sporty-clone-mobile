@@ -890,7 +890,6 @@ onDeactivated(() => {
 }
 
 .topTournamentCard {
-  background-color: rgb(60,71,113);
   padding: 5px;
   border-top: 3px solid orangered;
   display: flex;
@@ -899,7 +898,6 @@ onDeactivated(() => {
   -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   margin-right: 15px;
-  color: #eaecef;
 }
 
 .topTournamentCard:last-of-type {
