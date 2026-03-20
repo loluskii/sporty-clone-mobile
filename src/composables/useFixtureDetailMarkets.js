@@ -251,6 +251,68 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
       .trim()
   }
 
+  function getSpecifierType(specifier) {
+    return String(specifier || '').split('|')[0].split('=')[0].trim().toLowerCase()
+  }
+
+  function shouldAppendSpecifierToColumn(specifier) {
+    return ['total', 'hcp'].includes(getSpecifierType(specifier))
+  }
+
+  function stripSpecifierValue(value, market) {
+    const specifierValue = getSpecifierDisplayValue(market?.specifier)
+    if (!specifierValue) return String(value || '').trim()
+
+    return String(value || '')
+      .replace(new RegExp(`\\b${escapeRegExp(specifierValue)}\\b`, 'gi'), '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  function normalizeAxisValue(value, market) {
+    return stripConnectorArtifacts(stripSpecifierValue(value, market)).toLowerCase()
+  }
+
+  function splitCompoundOutcome(outcome) {
+    const displayName = String(outcome.displayName || outcome.outcomeName || '').trim()
+    if (!displayName || !/\sand\s/i.test(displayName)) return null
+
+    const parts = displayName.split(/\sand\s/i).map((part) => stripConnectorArtifacts(part))
+    if (parts.length !== 2 || parts.some((part) => !part)) return null
+
+    return {
+      left: normalizeRowLabel(parts[0]),
+      right: normalizeRowLabel(parts[1])
+    }
+  }
+
+  function getOrderedUnique(values = []) {
+    return values.filter((value, index) => values.indexOf(value) === index)
+  }
+
+  function getTitleTokens(titleInfo, market) {
+    if (!titleInfo) return []
+    return [titleInfo.specifierLabel, ...titleInfo.columns]
+      .map((token) => normalizeAxisValue(token, market))
+      .filter((token) => token && !['goals', 'goal'].includes(token))
+  }
+
+  function scoreAxisAgainstTitle(axisLabels, titleTokens, market) {
+    return axisLabels.reduce((score, label) => {
+      const normalizedLabel = normalizeAxisValue(label, market)
+      return score + (titleTokens.includes(normalizedLabel) ? 1 : 0)
+    }, 0)
+  }
+
+  function getDisplayColumns(columns, market) {
+    if (!shouldAppendSpecifierToColumn(market?.specifier)) {
+      return columns
+    }
+
+    const specifierValue = getSpecifierDisplayValue(market.specifier)
+    return columns.map((column) => `${column} ${specifierValue}`.trim())
+  }
+
   function getColumnPatterns(column, market) {
     const specifierValue = getSpecifierDisplayValue(market.specifier)
     const normalizedColumn = String(column || '').trim()
@@ -296,28 +358,46 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
 
   function buildCompoundMatrixLayout(marketGroup) {
     const titleInfo = getTitleInfo(marketGroup.markets[0]?.title)
-    if (!titleInfo?.columns?.length) return null
-
-    const columns = titleInfo.columns
     const sections = marketGroup.markets.map((market) => {
-      const cells = market.outcomes.map((outcome) => ({
+      const parsedOutcomes = market.outcomes.map((outcome) => ({
         market,
         outcome,
-        extracted: extractCompoundCell(outcome, columns, market)
+        extracted: splitCompoundOutcome(outcome)
       }))
 
-      if (!cells.length || cells.some((item) => !item.extracted)) {
+      const matrixCandidates = parsedOutcomes.filter((item) => item.extracted)
+      const leftovers = parsedOutcomes.filter((item) => !item.extracted).map((item) => item.outcome)
+
+      if (matrixCandidates.length < 4) {
         return null
       }
 
-      const rowLabels = []
-      cells.forEach((item) => {
-        if (!rowLabels.includes(item.extracted.rowLabel)) {
-          rowLabels.push(item.extracted.rowLabel)
-        }
-      })
+      const leftLabels = getOrderedUnique(matrixCandidates.map((item) => item.extracted.left))
+      const rightLabels = getOrderedUnique(matrixCandidates.map((item) => item.extracted.right))
 
-      if (rowLabels.length <= 1) {
+      if (leftLabels.length < 2 || rightLabels.length < 2) {
+        return null
+      }
+
+      const titleTokens = getTitleTokens(titleInfo, market)
+      const leftScore = scoreAxisAgainstTitle(leftLabels, titleTokens, market)
+      const rightScore = scoreAxisAgainstTitle(rightLabels, titleTokens, market)
+
+      let rowLabels = leftLabels
+      let columns = rightLabels
+
+      if (leftScore > rightScore) {
+        rowLabels = rightLabels
+        columns = leftLabels
+      } else if (leftScore === rightScore) {
+        if (leftLabels.length < rightLabels.length) {
+          rowLabels = rightLabels
+          columns = leftLabels
+        }
+      }
+
+      const totalSlots = rowLabels.length * columns.length
+      if (totalSlots < 4 || matrixCandidates.length / totalSlots < 0.5) {
         return null
       }
 
@@ -325,19 +405,21 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
         key: market.specifier || `${market.marketID}`,
         label: getSpecifierDisplayValue(market.specifier),
         columns,
-        displayColumns: columns.map((column) => `${column} ${getSpecifierDisplayValue(market.specifier)}`.trim()),
+        displayColumns: getDisplayColumns(columns, market),
         totalCols: columns.length + 1,
         rows: rowLabels.map((rowLabel) => ({
           key: `${market.marketID}|${market.specifier || ''}|${rowLabel}`,
           label: rowLabel,
           cells: columns.map((column) => {
-            const match = cells.find(
+            const match = matrixCandidates.find(
               (item) =>
-                item.extracted.rowLabel === rowLabel && item.extracted.column === column
+                ((item.extracted.left === rowLabel && item.extracted.right === column) ||
+                  (item.extracted.right === rowLabel && item.extracted.left === column))
             )
             return match ? createCell(market, match.outcome) : null
           })
-        }))
+        })),
+        leftoverRows: leftovers.length ? buildFlatRows(leftovers, market) : []
       }
     })
 
@@ -352,6 +434,8 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   }
 
   function buildTitleMatrixLayout(marketGroup) {
+    if (marketGroup.markets.length < 2) return null
+
     const title = marketGroup.markets[0]?.title
     const titleInfo = getTitleInfo(title)
     if (!titleInfo || titleInfo.columns.length === 0) return null
@@ -366,7 +450,7 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     }
 
     const columns = candidateCols.filter((col) => findOutcomeForColumn(sampleOutcomes, col) !== null)
-    if (!columns.length) return null
+    if (columns.length < 2) return null
 
     return {
       type: 'matrix',

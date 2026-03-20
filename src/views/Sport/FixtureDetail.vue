@@ -133,7 +133,12 @@
                       v-for="section in [sharedGetActiveSection(marketGroup)].filter(Boolean)"
                       :key="section.key"
                     >
-                      <div v-if="section.label" class="m-market-section-label">{{ section.label }}</div>
+                      <!-- <div
+                        v-if="section.label && !sharedHasSectionTabs(marketGroup)"
+                        class="m-market-section-label"
+                      >
+                        {{ section.label }}
+                      </div> -->
                       <template v-if="marketGroup.layout.type === 'matrix'">
                         <div class="m-table">
                           <div class="m-table-row">
@@ -206,6 +211,55 @@
                                 :class="sharedColClass(section.totalCols)"
                               ></div>
                             </template>
+                          </div>
+                        </div>
+                        <div
+                          v-for="leftoverRow in section.leftoverRows || []"
+                          :key="leftoverRow.key"
+                          class="m-table-row"
+                        >
+                          <div
+                            v-for="cell in leftoverRow.cells"
+                            :key="cell.key"
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
+                            :class="{
+                              'm-outcome--checked': isSelected(
+                                createID(
+                                  eventDetail.matchID,
+                                  cell.outcome.marketID,
+                                  cell.outcome.outcomeID,
+                                  cell.outcome.specifier,
+                                  cell.market.marketName,
+                                  cell.outcome.outcomeName
+                                ),
+                                couponStore.coupon
+                              ),
+                              'm-outcome-two': leftoverRow.cells.length === 2,
+                              'm-outcome-three': leftoverRow.cells.length === 3,
+                              'm-outcome--disabled':
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                            }"
+                            @click="addToBetslip(cell.market, cell.outcome)"
+                          >
+                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em
+                              :class="{
+                                'm-icon-lock':
+                                  cell.outcome.active === 0 ||
+                                  cell.outcome.odds <= 1 ||
+                                  !cell.outcome.odds
+                              }"
+                            >
+                              {{
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                                  ? ''
+                                  : cell.outcome.odds.toFixed(2)
+                              }}
+                            </em>
                           </div>
                         </div>
                       </template>
@@ -286,7 +340,7 @@ import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getFixtureMarkets, getMarketsGrouping, formatDate, createID, isSelected } from '@/helpers'
+import { getFixtureMarkets, getMarketsGrouping, formatDate, createID, isSelected, unslugify } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
@@ -400,7 +454,8 @@ onBeforeUnmount(() => {
 
 async function getEventDetail(id) {
   isLoading.value = true
-  const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
+  console.log(unslugify(route.params.sport))
+  const { sport_id } = sportsMenu.find((x) => x.sport_name == unslugify(route.params.sport))
   try {
     const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
     if (res[0].data && res[0].data.market) {
@@ -1322,21 +1377,23 @@ onMounted(() => {
 }
 
 .m-market-section-tab {
-  border: 1px solid var(--border-type2-primary);
+  border: 1px solid color-mix(in srgb, var(--brand-secondary) 28%, #c8cdd8);
   border-radius: 999px;
-  background: var(--background-general-primary);
-  color: var(--text-type2-tertiary);
+  background: color-mix(in srgb, var(--brand-secondary) 5%, #f4f6fa);
+  color: var(--text-type1-primary);
   font-size: 0.91666667rem;
   font-weight: 700;
   line-height: 1;
   padding: 0.5rem 0.85rem;
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
 }
 
 .m-market-section-tab.active {
   border-color: var(--brand-secondary);
-  background: color-mix(in srgb, var(--brand-secondary) 12%, white);
+  background: color-mix(in srgb, var(--brand-secondary) 14%, white);
   color: var(--brand-secondary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-secondary) 15%, transparent);
 }
 
 .m-market-section-label {

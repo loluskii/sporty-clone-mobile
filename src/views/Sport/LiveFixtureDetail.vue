@@ -125,7 +125,12 @@
                       v-for="section in [sharedGetActiveSection(marketGroup)].filter(Boolean)"
                       :key="section.key"
                     >
-                      <div v-if="section.label" class="m-market-section-label">{{ section.label }}</div>
+                      <!-- <div
+                        v-if="section.label && !sharedHasSectionTabs(marketGroup)"
+                        class="m-market-section-label"
+                      >
+                        {{ section.label }}
+                      </div> -->
                       <template v-if="marketGroup.layout.type === 'matrix'">
                         <div class="m-table">
                           <!-- TITLE-DRIVEN LAYOUT -->
@@ -209,6 +214,54 @@
                                 :class="sharedColClass(section.totalCols)"
                               ></div>
                             </template>
+                          </div>
+                        </div>
+                        <div
+                          v-for="leftoverRow in section.leftoverRows || []"
+                          :key="leftoverRow.key"
+                          class="m-table-row"
+                        >
+                          <div
+                            v-for="cell in leftoverRow.cells"
+                            :key="cell.key"
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
+                            :class="{
+                              'm-outcome--checked': isSelected(
+                                createID(
+                                  eventDetail.matchID,
+                                  cell.outcome.marketID,
+                                  cell.outcome.outcomeID,
+                                  cell.outcome.specifier,
+                                  cell.market.marketName,
+                                  cell.outcome.outcomeName
+                                ),
+                                couponStore.coupon
+                              ),
+                              'm-outcome-two': leftoverRow.cells.length === 2,
+                              'm-outcome-three': leftoverRow.cells.length === 3,
+                              'm-outcome--disabled':
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                            }"
+                            @click="addToBetslip(cell.market, cell.outcome)"
+                          >
+                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em
+                              :class="{
+                                'm-icon-lock':
+                                  cell.outcome.active === 0 ||
+                                  cell.outcome.odds <= 1 ||
+                                  !cell.outcome.odds
+                              }"
+                              >{{
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                                  ? ''
+                                  : cell.outcome.odds.toFixed(2)
+                              }}</em
+                            >
                           </div>
                         </div>
                       </template>
