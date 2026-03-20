@@ -219,7 +219,7 @@ export const slugify = (str) => {
 }
 
 export const unslugify = (str) => {
-  return str.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+  return str.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 export const chunks = (arr) => {

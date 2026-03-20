@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getFixturesByTournamentId,FEED_TOGGLE } from '@/helpers'
+import { getTopBets, getFixturesByTournamentId, FEED_TOGGLE } from '@/helpers'
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -14,7 +14,35 @@ export const useUtilsStore = defineStore({
     activeLiveMarkets: [],
     homeCarousel: [],
     SportsbookBonusList: [],
-    SportsbookGlobalVariable: {},
+    SportsbookGlobalVariable: {
+      "AllowRegistration": "Yes",
+      "EnableSplitBet": "0",
+      "EnableSystemBet": "1",
+      "comboMaxStake": "1000000",
+      "MinBetStake": "100",
+      "comboMinStake": "100",
+      "MaxCombinationOddLength": "10000000",
+      "CurrencyCode": "NGN",
+      "Currency": "₦",
+      "DialCode": "+234",
+      "EnableBankAcct": "1",
+      "enableCashout": "1",
+      "taxEnabled": "",
+      "LiabilityThreshold": "0",
+      "LiveTicketMax": "40",
+      "Logo": "",
+      "MaxPayout": "10000000",
+      "MinBonusOdd": "1.18",
+      "MinDeposit": "100",
+      "MinWithdrawal": "1000",
+      "PaymentDay": "tuesday",
+      "PowerBonusStartDate": "2024-11-01",
+      "singleMaxStake": "1000000",
+      "SingleMaxWinning": "3000000",
+      "singleMinStake": "100",
+      "SingleTicketLenght": "1000000",
+      "MaxNoOfSelection": "50"
+    },
     showBetslipCount: true,
     showFooter: true,
     showMobileNavigation: true,

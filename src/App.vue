@@ -281,8 +281,8 @@ onMounted(async () => {
     couponStore.sportsbookBonusList =
       results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
 
-    couponStore.SportsbookGlobalVariable =
-      results[1].status === "fulfilled" ? results[1].value.data.data : null
+    // couponStore.SportsbookGlobalVariable =
+    //   results[1].status === "fulfilled" ? results[1].value.data.data : null
 
     utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
     utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
