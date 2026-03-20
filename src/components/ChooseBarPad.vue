@@ -407,7 +407,6 @@ onUnmounted(() => {})
 }
 .m-event-list .choose-bar-pad {
   height: 3.66666667rem;
-  background-color: rgb(6, 0, 25);
 }
 .m-event-list .choose-bar-pad.fixed {
   position: relative;
@@ -504,7 +503,7 @@ onUnmounted(() => {})
 }
 .m-list {
   background-color: var(--background-type1-secondary);
-  color: #fafafa;
+  /* color: #fafafa; */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   left: 0px;
