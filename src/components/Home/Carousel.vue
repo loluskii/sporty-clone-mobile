@@ -1,10 +1,10 @@
 <template lang="">
   <!-- Home Carousel -->
-  <div id="carousel" data-html2canvas-ignore="" class="main-banner" v-if="banners.length">
+  <div id="carousel" data-html2canvas-ignore="" class="main-banner">
     <div data-ride="carousel" class="carousel slide">
       <div role="listbox" class="carousel-inner">
         <div
-          v-for="(image, index) in banners"
+          v-for="(image, index) in displayBanners"
           :key="index"
           class="item"
           :class="currentIndex === index ? 'active' : ''"
@@ -20,6 +20,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useUtilsStore } from '../../stores'
+import placeholderBanner from '@/assets/images/banner.png'
 
 const props = defineProps(['type'])
 const utilsStore = useUtilsStore()
@@ -28,13 +29,26 @@ const banners = computed(() => {
   return utilsStore.banners.filter((b) => b.position === 'slider')
 })
 
+const displayBanners = computed(() => {
+  if (banners.value.length) {
+    return banners.value
+  }
+
+  return [
+    {
+      image: placeholderBanner,
+      link: ''
+    }
+  ]
+})
+
 const currentIndex = ref(0)
 const intervalId = ref(null)
 const autoScrollDelay = ref(3000)
 
 function startAutoSlider() {
   stopAutoSlider()
-  if (banners.value.length <= 1) return
+  if (displayBanners.value.length <= 1) return
   intervalId.value = setInterval(() => {
     nextSlide()
   }, autoScrollDelay.value)
@@ -46,7 +60,7 @@ function stopAutoSlider() {
   }
 }
 function nextSlide() {
-  if (currentIndex.value < banners.value.length - 1) {
+  if (currentIndex.value < displayBanners.value.length - 1) {
     currentIndex.value++
   } else {
     currentIndex.value = 0
@@ -60,13 +74,8 @@ function goToSlide(image) {
 }
 
 watch(
-  banners,
+  displayBanners,
   (nextBanners) => {
-    if (!nextBanners.length) {
-      currentIndex.value = 0
-      stopAutoSlider()
-      return
-    }
     if (currentIndex.value > nextBanners.length - 1) {
       currentIndex.value = 0
     }
