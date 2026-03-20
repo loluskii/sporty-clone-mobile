@@ -105,185 +105,160 @@
                   </div>
                   <div class="m-table market-content">
                     <div
-                      class="m-table-row"
-                      v-for="(market, m) in sharedGetChunks(marketGroup.markets[0].outcomes)"
-                      :key="m"
+                      v-if="sharedHasSectionTabs(marketGroup)"
+                      class="m-market-section-tabs"
                     >
-                      <template
-                        v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
+                      <button
+                        v-for="option in marketGroup.layout.sections"
+                        :key="option.key"
+                        type="button"
+                        class="m-market-section-tab"
+                        :class="{
+                          active: sharedGetActiveSection(marketGroup)?.key === option.key
+                        }"
+                        @click="sharedSetActiveSection(marketGroup, option.key)"
                       >
-                        <template
-                          v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')"
-                          :key="odd"
-                        >
-                          <div
-                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
-                            :class="{
-                              'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.matchID,
-                                  selection.marketID,
-                                  selection.outcomeID,
-                                  selection.specifier,
-                                  marketGroup.marketName,
-                                  selection.outcomeName
-                                ),
-                                couponStore.coupon
-                              ),
-                              'm-outcome-two': market.length === 2,
-                              'm-outcome-three': market.length === 3,
-                              'm-outcome--disabled':
-                                selection.active === 0 || selection.odds <= 1 || !selection.odds
-                            }"
-                            @click="addToBetslip(marketGroup, selection)"
-                          >
-                            <em style="text-transform: capitalize">{{ selection.displayName }}</em>
-                            <em
-                              :class="{
-                                'm-icon-lock':
-                                  selection.active === 0 || selection.odds <= 1 || !selection.odds
-                              }"
-                              >{{
-                                selection.active === 0 || selection.odds <= 1 || !selection.odds
-                                  ? ''
-                                  : selection.odds.toFixed(2)
-                              }}</em
-                            >
-                          </div>
-                        </template>
-                      </template>
-                      <template v-else>
-                        <div class="m-table" v-if="sharedGetMarketColumns(marketGroup)">
+                        {{ option.label }}
+                      </button>
+                    </div>
+                    <template
+                      v-for="section in [sharedGetActiveSection(marketGroup)].filter(Boolean)"
+                      :key="section.key"
+                    >
+                      <div v-if="section.label" class="m-market-section-label">{{ section.label }}</div>
+                      <template v-if="marketGroup.layout.type === 'matrix'">
+                        <div class="m-table">
                           <!-- TITLE-DRIVEN LAYOUT -->
                           <div class="m-table-row">
                             <!-- blank label cell — only when there is a specifier label -->
                             <div
-                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
-                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(section.totalCols)"
                             ></div>
                             <!-- column headers from title -->
                             <div
-                              v-for="col in sharedGetMarketColumns(marketGroup).columns"
-                              :key="col"
+                              v-for="column in section.displayColumns || section.columns"
+                              :key="column"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
-                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(section.totalCols)"
                             >
-                              {{ col }}
+                              {{ column }}
                             </div>
                           </div>
                           <!-- one row per specifier variant -->
                           <div
-                            v-for="(mg, idx) in marketGroup.markets"
+                            v-for="row in section.rows"
                             class="m-table-row"
-                            :key="idx"
+                            :key="row.key"
                           >
                             <!-- row label — only when there is a specifier label -->
                             <div
-                              v-if="sharedGetMarketColumns(marketGroup).specifierLabel !== null"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
-                              :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                              :class="sharedColClass(section.totalCols)"
                             >
-                              <em>{{
-                                sharedGetRowLabel(mg, sharedGetMarketColumns(marketGroup).specifierLabel)
-                              }}</em>
+                              <em>{{ row.label }}</em>
                             </div>
                             <template
-                              v-for="col in sharedGetMarketColumns(marketGroup).columns"
-                              :key="col"
+                              v-for="cell in row.cells"
+                              :key="cell?.key || `${row.key}-empty`"
                             >
                               <div
-                                v-if="sharedFindOutcomeForColumn(mg.outcomes, col)"
+                                v-if="cell"
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
                                 :class="[
-                                  sharedColClass(sharedGetMarketColumns(marketGroup).totalCols),
+                                  sharedColClass(section.totalCols),
                                   {
                                     'm-outcome--checked': isSelected(
                                       createID(
                                         eventDetail.matchID,
-                                        sharedFindOutcomeForColumn(mg.outcomes, col).marketID,
-                                        sharedFindOutcomeForColumn(mg.outcomes, col).outcomeID,
-                                        sharedFindOutcomeForColumn(mg.outcomes, col).specifier,
-                                        mg.marketName,
-                                        sharedFindOutcomeForColumn(mg.outcomes, col).outcomeName
+                                        cell.outcome.marketID,
+                                        cell.outcome.outcomeID,
+                                        cell.outcome.specifier,
+                                        cell.market.marketName,
+                                        cell.outcome.outcomeName
                                       ),
                                       couponStore.coupon
                                     ),
                                     'm-outcome--disabled':
-                                      sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                      sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                      !sharedFindOutcomeForColumn(mg.outcomes, col).odds
+                                      cell.outcome.active === 0 ||
+                                      cell.outcome.odds <= 1 ||
+                                      !cell.outcome.odds
                                   }
                                 ]"
-                                @click="addToBetslip(mg, sharedFindOutcomeForColumn(mg.outcomes, col))"
+                                @click="addToBetslip(cell.market, cell.outcome)"
                               >
                                 <em
                                   :class="{
                                     'm-icon-lock':
-                                      sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                      sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                      !sharedFindOutcomeForColumn(mg.outcomes, col).odds
+                                      cell.outcome.active === 0 ||
+                                      cell.outcome.odds <= 1 ||
+                                      !cell.outcome.odds
                                   }"
                                   >{{
-                                     sharedFindOutcomeForColumn(mg.outcomes, col).active === 0 ||
-                                     sharedFindOutcomeForColumn(mg.outcomes, col).odds <= 1 ||
-                                     !sharedFindOutcomeForColumn(mg.outcomes, col).odds
+                                     cell.outcome.active === 0 ||
+                                     cell.outcome.odds <= 1 ||
+                                     !cell.outcome.odds
                                       ? ''
-                                       : sharedFindOutcomeForColumn(mg.outcomes, col).odds.toFixed(2)
+                                       : cell.outcome.odds.toFixed(2)
                                   }}</em
                                 >
                               </div>
                               <div
                                 v-else
                                 class="m-table-cell m-outcome-only-odds"
-                                :class="sharedColClass(sharedGetMarketColumns(marketGroup).totalCols)"
+                                :class="sharedColClass(section.totalCols)"
                               ></div>
                             </template>
                           </div>
                         </div>
-                        <template
-                          v-for="(selection, odd) in sharedSortByKey(market, 'outcomeID')"
-                          :key="odd"
-                          v-else
-                        >
+                      </template>
+                      <template v-else>
+                        <div v-for="row in section.rows" :key="row.key" class="m-table-row">
                           <div
+                            v-for="cell in row.cells"
+                            :key="cell.key"
                             class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
                               'm-outcome--checked': isSelected(
                                 createID(
                                   eventDetail.matchID,
-                                  selection.marketID,
-                                  selection.outcomeID,
-                                  selection.specifier,
-                                  marketGroup.marketName,
-                                  selection.outcomeName
+                                  cell.outcome.marketID,
+                                  cell.outcome.outcomeID,
+                                  cell.outcome.specifier,
+                                  cell.market.marketName,
+                                  cell.outcome.outcomeName
                                 ),
                                 couponStore.coupon
                               ),
-                              'm-outcome-two': market.length === 2,
-                              'm-outcome-three': market.length === 3,
+                              'm-outcome-two': row.cells.length === 2,
+                              'm-outcome-three': row.cells.length === 3,
                               'm-outcome--disabled':
-                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
                             }"
-                            @click="addToBetslip(marketGroup, selection)"
+                            @click="addToBetslip(cell.market, cell.outcome)"
                           >
-                            <em style="text-transform: capitalize">{{ selection.displayName }}</em>
+                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
                             <em
-                              :class="
-                                selection.active === 0 || selection.odds <= 1 || !selection.odds
-                                  ? 'm-icon-lock'
-                                  : ''
-                              "
+                              :class="{
+                                'm-icon-lock':
+                                  cell.outcome.active === 0 ||
+                                  cell.outcome.odds <= 1 ||
+                                  !cell.outcome.odds
+                              }"
                               >{{
-                                selection.active === 0 || selection.odds <= 1 || !selection.odds
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
                                   ? ''
-                                  : selection.odds.toFixed(2)
+                                  : cell.outcome.odds.toFixed(2)
                               }}</em
                             >
                           </div>
-                        </template>
+                        </div>
                       </template>
-                    </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -342,13 +317,11 @@ const {
   displayGroupedMarkets: sharedDisplayGroupedMarkets,
   sortedMarketGroups: sharedSortedMarketGroups,
   hasNoMarketsInSelectedGroup: sharedHasNoMarketsInSelectedGroup,
-  sortByKey: sharedSortByKey,
-  getChunks: sharedGetChunks,
-  getMarketColumns: sharedGetMarketColumns,
-  findOutcomeForColumn: sharedFindOutcomeForColumn,
-  getRowLabel: sharedGetRowLabel,
   colClass: sharedColClass,
-  cleanMarketName: sharedCleanMarketName
+  cleanMarketName: sharedCleanMarketName,
+  getActiveSection: sharedGetActiveSection,
+  setActiveSection: sharedSetActiveSection,
+  hasSectionTabs: sharedHasSectionTabs
 } = useFixtureDetailMarkets(eventMarkets, marketGroups, eventDetail)
 
 // Other computed properties
@@ -1394,5 +1367,42 @@ defineComponent({
 .event-detail .m-sport-market {
   position: relative;
   z-index: 10;
+}
+
+.m-market-section-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.m-market-section-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.m-market-section-tab {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.91666667rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.5rem 0.85rem;
+  white-space: nowrap;
+}
+
+.m-market-section-tab.active {
+  border-color: var(--brand-secondary);
+  background: color-mix(in srgb, var(--brand-secondary) 18%, rgba(255, 255, 255, 0.06));
+  color: #ffffff;
+}
+
+.m-market-section-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.91666667rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 </style>

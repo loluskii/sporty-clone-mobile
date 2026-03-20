@@ -3,9 +3,19 @@ import { chunks } from '@/helpers'
 
 const DEFAULT_DERIVED_MARKET_IDS = [60100, 60200]
 
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const normalizeRowLabel = (value) => {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  if (/^[0-9x]+$/i.test(text)) return text.toUpperCase()
+  return text.replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetail = null) {
   // Shared active market-group tab state for both prematch and live detail pages.
   const selectedGroupId = ref(null)
+  const activeSectionByGroup = ref({})
 
   const derivedMarketIds = computed(() => {
     const derived = fixtureDetail?.value?.derived_market_ids || fixtureDetail?.value?.derived_market_id
@@ -101,51 +111,34 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     return outcomes ? chunks(outcomes) : []
   }
 
+  function getNumericSortValue(value) {
+    const match = String(value || '').match(/-?\d+(\.\d+)?/)
+    return match ? Number(match[0]) : Number.NaN
+  }
+
   function getTitleInfo(title) {
     if (!title) return null
-    const parts = title.split(',')
+    const parts = title.split(',').map((part) => part.trim()).filter(Boolean)
     if (parts.length < 2) return null
     return { specifierLabel: parts[0], columns: parts.slice(1) }
   }
 
   function findOutcomeForColumn(outcomes, col) {
-    const colLower = col.toLowerCase().trim()
+    const colLower = String(col || '').toLowerCase().trim()
     return (
       outcomes.find((outcome) => {
-        const dn = outcome.displayName?.toLowerCase() ?? ''
-        if (colLower === 'home') return /^1[\s(]|^1$/.test(outcome.displayName)
-        if (colLower === 'away') return /^2[\s(]|^2$/.test(outcome.displayName)
-        if (colLower === 'draw') return /^x[\s(]|^x$/i.test(outcome.displayName)
+        const displayName = String(outcome.displayName || '').trim()
+        const dn = displayName.toLowerCase()
+        if (colLower === 'home') return /^1[\s(]|^1$/.test(displayName)
+        if (colLower === 'away') return /^2[\s(]|^2$/.test(displayName)
+        if (colLower === 'draw') return /^x[\s(]|^x$/i.test(displayName)
         return dn.startsWith(colLower)
       }) ?? null
     )
   }
 
-  function getMarketColumns(marketGroup) {
-    const title = marketGroup.markets[0]?.title
-    const titleInfo = getTitleInfo(title)
-    if (!titleInfo || titleInfo.columns.length === 0) return null
-
-    const sampleOutcomes = marketGroup.markets[0].outcomes
-    let specifierLabel = titleInfo.specifierLabel
-    let candidateCols = titleInfo.columns
-
-    if (findOutcomeForColumn(sampleOutcomes, specifierLabel) !== null) {
-      specifierLabel = null
-      candidateCols = [titleInfo.specifierLabel, ...titleInfo.columns]
-    }
-
-    const availableCols = candidateCols.filter(
-      (col) => findOutcomeForColumn(sampleOutcomes, col) !== null
-    )
-    if (availableCols.length === 0) return null
-
-    const totalCols = availableCols.length + (specifierLabel !== null ? 1 : 0)
-    return { specifierLabel, columns: availableCols, totalCols }
-  }
-
   function getHcpFromDisplayName(displayName) {
-    const match = displayName.match(/\(([^)]+)\)/)
+    const match = String(displayName || '').match(/\(([^)]+)\)/)
     return match ? match[1] : displayName
   }
 
@@ -212,6 +205,211 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     return cleaned || name
   }
 
+  function createCell(market, outcome) {
+    return {
+      key: `${market.marketID}|${market.specifier || ''}|${outcome.outcomeID}`,
+      market,
+      outcome
+    }
+  }
+
+  function buildFlatRows(outcomes, market) {
+    return getChunks(outcomes).map((chunk, index) => ({
+      key: `${market.marketID}|${market.specifier || ''}|row-${index}`,
+      cells: sortByKey(chunk, 'outcomeID').map((outcome) => createCell(market, outcome))
+    }))
+  }
+
+  function buildFlatLayout(marketGroup) {
+    const sections =
+      marketGroup.markets.length > 1 && marketGroup.specifier !== ''
+        ? marketGroup.markets.map((market) => ({
+            key: market.specifier || `${market.marketID}`,
+            label: getSpecifierDisplayValue(market.specifier),
+            rows: buildFlatRows(market.outcomes, market)
+          }))
+        : [
+            {
+              key: `${marketGroup.marketID}|flat`,
+              label: null,
+              rows: buildFlatRows(marketGroup.markets[0].outcomes, marketGroup.markets[0])
+            }
+          ]
+
+    return {
+      type: 'flat',
+      sections: sortSections(sections)
+    }
+  }
+
+  function stripConnectorArtifacts(value) {
+    return String(value || '')
+      .replace(/\s+/g, ' ')
+      .replace(/^\s*(and|or|\/|,|-)\s*/i, '')
+      .replace(/\s*(and|or|\/|,|-)\s*$/i, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+  }
+
+  function getColumnPatterns(column, market) {
+    const specifierValue = getSpecifierDisplayValue(market.specifier)
+    const normalizedColumn = String(column || '').trim()
+    const patterns = []
+
+    if (specifierValue) {
+      patterns.push(`${normalizedColumn} ${specifierValue}`)
+      patterns.push(`${normalizedColumn.toLowerCase()} ${specifierValue}`)
+    }
+
+    patterns.push(normalizedColumn)
+    return [...new Set(patterns.filter(Boolean))]
+  }
+
+  function extractCompoundCell(outcome, columns, market) {
+    const displayName = String(outcome.displayName || outcome.outcomeName || '').trim()
+    if (!displayName || !/\sand\s/i.test(displayName)) return null
+
+    const matches = []
+    columns.forEach((column) => {
+      getColumnPatterns(column, market).forEach((pattern) => {
+        const regex = new RegExp(`(^|\\s|\\()${escapeRegExp(pattern)}(?=\\s|\\)|$)`, 'i')
+        if (regex.test(displayName)) {
+          matches.push({ column, pattern, regex })
+        }
+      })
+    })
+
+    if (!matches.length) return null
+
+    const chosenMatch = matches.sort((left, right) => right.pattern.length - left.pattern.length)[0]
+    const rowLabel = normalizeRowLabel(
+      stripConnectorArtifacts(displayName.replace(chosenMatch.regex, ' '))
+    )
+
+    if (!rowLabel) return null
+
+    return {
+      column: chosenMatch.column,
+      rowLabel
+    }
+  }
+
+  function buildCompoundMatrixLayout(marketGroup) {
+    const titleInfo = getTitleInfo(marketGroup.markets[0]?.title)
+    if (!titleInfo?.columns?.length) return null
+
+    const columns = titleInfo.columns
+    const sections = marketGroup.markets.map((market) => {
+      const cells = market.outcomes.map((outcome) => ({
+        market,
+        outcome,
+        extracted: extractCompoundCell(outcome, columns, market)
+      }))
+
+      if (!cells.length || cells.some((item) => !item.extracted)) {
+        return null
+      }
+
+      const rowLabels = []
+      cells.forEach((item) => {
+        if (!rowLabels.includes(item.extracted.rowLabel)) {
+          rowLabels.push(item.extracted.rowLabel)
+        }
+      })
+
+      if (rowLabels.length <= 1) {
+        return null
+      }
+
+      return {
+        key: market.specifier || `${market.marketID}`,
+        label: getSpecifierDisplayValue(market.specifier),
+        columns,
+        displayColumns: columns.map((column) => `${column} ${getSpecifierDisplayValue(market.specifier)}`.trim()),
+        totalCols: columns.length + 1,
+        rows: rowLabels.map((rowLabel) => ({
+          key: `${market.marketID}|${market.specifier || ''}|${rowLabel}`,
+          label: rowLabel,
+          cells: columns.map((column) => {
+            const match = cells.find(
+              (item) =>
+                item.extracted.rowLabel === rowLabel && item.extracted.column === column
+            )
+            return match ? createCell(market, match.outcome) : null
+          })
+        }))
+      }
+    })
+
+    if (sections.some((section) => !section)) {
+      return null
+    }
+
+    return {
+      type: 'matrix',
+      sections: sortSections(sections)
+    }
+  }
+
+  function buildTitleMatrixLayout(marketGroup) {
+    const title = marketGroup.markets[0]?.title
+    const titleInfo = getTitleInfo(title)
+    if (!titleInfo || titleInfo.columns.length === 0) return null
+
+    const sampleOutcomes = marketGroup.markets[0].outcomes
+    let specifierLabel = titleInfo.specifierLabel
+    let candidateCols = titleInfo.columns
+
+    if (findOutcomeForColumn(sampleOutcomes, specifierLabel) !== null) {
+      specifierLabel = null
+      candidateCols = [titleInfo.specifierLabel, ...titleInfo.columns]
+    }
+
+    const columns = candidateCols.filter((col) => findOutcomeForColumn(sampleOutcomes, col) !== null)
+    if (!columns.length) return null
+
+    return {
+      type: 'matrix',
+      sections: [
+        {
+          key: `${marketGroup.marketID}|matrix`,
+          label: null,
+          columns,
+          totalCols: columns.length + (specifierLabel !== null ? 1 : 0),
+          rows: marketGroup.markets.map((market) => ({
+            key: `${market.marketID}|${market.specifier || ''}`,
+            label: specifierLabel !== null ? getRowLabel(market, specifierLabel) : null,
+            cells: columns.map((column) => {
+              const outcome = findOutcomeForColumn(market.outcomes, column)
+              return outcome ? createCell(market, outcome) : null
+            })
+          }))
+        }
+      ]
+    }
+  }
+
+  function buildMarketLayout(marketGroup) {
+    if (!marketGroup.markets?.length) {
+      return {
+        type: 'flat',
+        sections: []
+      }
+    }
+
+    const compoundLayout = buildCompoundMatrixLayout(marketGroup)
+    if (compoundLayout) {
+      return compoundLayout
+    }
+
+    const titleMatrixLayout = buildTitleMatrixLayout(marketGroup)
+    if (titleMatrixLayout) {
+      return titleMatrixLayout
+    }
+
+    return buildFlatLayout(marketGroup)
+  }
+
   function groupByMarketID(data) {
     const groupedMarkets = {}
     data.forEach((marketGroup) => {
@@ -230,7 +428,26 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
         groupedMarkets[key].markets.push(marketGroup)
       }
     })
-    return Object.values(groupedMarkets)
+
+    return Object.values(groupedMarkets).map((group) => ({
+      ...group,
+      layout: buildMarketLayout(group)
+    }))
+  }
+
+  function sortSections(sections = []) {
+    return [...sections].sort((left, right) => {
+      const leftValue = getNumericSortValue(left.label)
+      const rightValue = getNumericSortValue(right.label)
+
+      if (Number.isFinite(leftValue) && Number.isFinite(rightValue)) {
+        return leftValue - rightValue
+      }
+
+      if (left.label == null && right.label != null) return -1
+      if (left.label != null && right.label == null) return 1
+      return String(left.label || '').localeCompare(String(right.label || ''))
+    })
   }
 
   function prioritizeDerivedMarkets(groups, ids = []) {
@@ -263,8 +480,38 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     () => fixtureDetail?.value?.matchID,
     () => {
       selectedGroupId.value = null
+      activeSectionByGroup.value = {}
     }
   )
+
+  function getGroupKey(marketGroup) {
+    return `${marketGroup.marketID}|${cleanMarketName(marketGroup.marketName, marketGroup.specifier)}`
+  }
+
+  function getSectionOptions(marketGroup) {
+    return marketGroup?.layout?.sections || []
+  }
+
+  function getActiveSection(marketGroup) {
+    const options = getSectionOptions(marketGroup)
+    if (!options.length) return null
+
+    const groupKey = getGroupKey(marketGroup)
+    const selectedKey = activeSectionByGroup.value[groupKey]
+    return options.find((section) => section.key === selectedKey) || options[0]
+  }
+
+  function setActiveSection(marketGroup, sectionKey) {
+    const groupKey = getGroupKey(marketGroup)
+    activeSectionByGroup.value = {
+      ...activeSectionByGroup.value,
+      [groupKey]: sectionKey
+    }
+  }
+
+  function hasSectionTabs(marketGroup) {
+    return getSectionOptions(marketGroup).length > 1
+  }
 
   return {
     selectedGroupId,
@@ -275,10 +522,14 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     hasNoMarketsInSelectedGroup,
     sortByKey,
     getChunks,
-    getMarketColumns,
+    getMarketColumns: buildTitleMatrixLayout,
     findOutcomeForColumn,
     getRowLabel,
     colClass,
-    cleanMarketName
+    cleanMarketName,
+    getSpecifierDisplayValue,
+    getActiveSection,
+    setActiveSection,
+    hasSectionTabs
   }
 }
