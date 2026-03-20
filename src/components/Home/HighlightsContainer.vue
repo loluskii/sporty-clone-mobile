@@ -62,12 +62,13 @@
               :activeMarket="activeMarket"
               :effectiveMarket="effectiveMarket"
               :upMode="upMode"
+              :isModeLoading="isModeLoading"
               :showUpToggle="showUpToggle"
               :modeOptions="modeOptions"
               :baseLabel="baseLabel"
               @select-market="getFixturesByMarkets"
-              @set-up-mode="setUpMode"
-              v-if="!isLoading && !loadingError"
+              @set-up-mode="handleUpModeChange"
+              v-if="!loadingError"
             ></Highlights>
 
             <LoadingSpinner v-show="isLoading"></LoadingSpinner>
@@ -102,6 +103,8 @@ const utilsStore = useUtilsStore()
 
 const highlightsData = ref([])
 const todayData = ref([]);
+const derivedHighlightsData = ref([])
+const derivedTodayData = ref([])
 const fixturesList = ref([])
 const countriesData = ref([])
 // Track last selected market per tab for consistent UX.
@@ -119,8 +122,63 @@ const activeSportID = ref(1)
 const marketsGroup = ref({})
 const activeMarket = ref({})
 
+const isCollectionEmpty = (value) => {
+  if (!value) return true
+  if (Array.isArray(value)) return value.length === 0
+  return Object.keys(value).length === 0
+}
+
+const mergeGroupedFixtures = (baseGroups = {}, derivedGroups = {}) => {
+  const merged = {}
+  const allKeys = new Set([
+    ...Object.keys(baseGroups || {}),
+    ...Object.keys(derivedGroups || {})
+  ])
+
+  allKeys.forEach((key) => {
+    const baseList = Array.isArray(baseGroups?.[key]) ? baseGroups[key] : []
+    const derivedList = Array.isArray(derivedGroups?.[key]) ? derivedGroups[key] : []
+    const seenMatchIds = new Set()
+    const nextList = []
+
+    ;[...baseList, ...derivedList].forEach((fixture) => {
+      const matchId = String(
+        fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
+      )
+      const dedupeKey = matchId || JSON.stringify(fixture)
+      if (seenMatchIds.has(dedupeKey)) return
+      seenMatchIds.add(dedupeKey)
+      nextList.push(fixture)
+    })
+
+    if (nextList.length) {
+      merged[key] = nextList
+    }
+  })
+
+  return merged
+}
+
+const getTabDatasets = (tab) => {
+  if (tab === 'today') {
+    return {
+      base: todayData,
+      derived: derivedTodayData
+    }
+  }
+
+  return {
+    base: highlightsData,
+    derived: derivedHighlightsData
+  }
+}
+
 const baseTabFixtures = computed(() => {
-  return tabView.value === 'today' ? todayData.value : highlightsData.value
+  const { base, derived } = getTabDatasets(tabView.value)
+  if (upMode.value === 'none') {
+    return mergeGroupedFixtures(base.value, derived.value)
+  }
+  return derived.value
 })
 
 const {
@@ -137,10 +195,13 @@ const {
   fixtures: baseTabFixtures,
   activeMarket,
   marketsGroup,
-  enabledSportId: 1
+  enabledSportId: 1,
+  requireDerivedFixturesForToggle: false,
+  filterFixturesByDerived: false
 })
 
 const isLoading = ref(false)
+const isModeLoading = ref(false)
 const loadingError = ref(false)
 
 function setActiveTab(tab) {
@@ -162,6 +223,10 @@ async function setActiveSport(sid) {
   resetUpMode()
   // Clear cached market selection when sport changes to avoid mismatches.
   activeMarketByTab.value = { highlights: null, today: null }
+  highlightsData.value = []
+  todayData.value = []
+  derivedHighlightsData.value = []
+  derivedTodayData.value = []
   await getHomeData()
   document.getElementById('highlights_' + sid).scrollIntoView({
     behavior: 'smooth',
@@ -170,61 +235,72 @@ async function setActiveSport(sid) {
   })
 }
 
-async function getHighlightGames() {
+const getDerivedOnlyParam = () => {
+  return upMode.value === 'none' ? '' : 1
+}
+
+async function getHighlightGames({ force = false, preserveContent = false } = {}) {
   if(!FEED_TOGGLE) return;
-  // Check if current tab already has data cached
-  const currentTabHasData = tabView.value === 'today' ? Object.keys(todayData.value).length : Object.keys(highlightsData.value).length
+  const { base, derived } = getTabDatasets(tabView.value)
+  const isDerivedRequest = upMode.value !== 'none'
+  const targetDataset = isDerivedRequest ? derived : base
+  const currentTabHasData = !isCollectionEmpty(targetDataset.value)
   const currentTabHasMarkets = Array.isArray(marketsGroup.value) && marketsGroup.value.length
   const isNewActiveSport = activeSportID.value !== prevSportID.value
-  if(!currentTabHasData || !currentTabHasMarkets || isNewActiveSport) {
-    // Fetch data only if current tab doesn't have it
-    isLoading.value = true
-    const response = await getSportHighlights({
-      sid: activeSportID.value, 
-      today: tabView.value === 'today' ? 1 : 0,
-      order_type: 'priority|desc'
-    })
-    if (response.data.fixtures && response.data.markets) {
-      fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
-      // Cache data in the appropriate variable
-      if(tabView.value === 'today') {
-        todayData.value = fixturesList.value
+  try {
+    if(force || !currentTabHasData || !currentTabHasMarkets || isNewActiveSport) {
+      // Keep the existing highlights visible while derived mode is loading.
+      if (preserveContent) {
+        isModeLoading.value = true
       } else {
-        highlightsData.value = fixturesList.value
+        isLoading.value = true
       }
-      
-      // Hard reset the active market to avoid stale specifier state when swapping tabs.
+      const response = await getSportHighlights({
+        sid: activeSportID.value, 
+        today: tabView.value === 'today' ? 1 : 0,
+        order_type: 'priority|desc',
+        per_page: 30,
+        derived_only: getDerivedOnlyParam()
+      })
+      if (response.data.fixtures && response.data.markets) {
+        fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
+        targetDataset.value = fixturesList.value
+        
+        // Hard reset the active market to avoid stale specifier state when swapping tabs.
+        activeMarket.value = {}
+        const filteredMarkets = sanitizeMarkets(response.data.markets || [])
+        marketsGroup.value = filteredMarkets.length ? filteredMarkets : []
+        const cachedMarketId = activeMarketByTab.value[tabView.value]
+        const nextMarket =
+          marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
+          marketsGroup.value[0] ||
+          {}
+        activeMarket.value = nextMarket
+      } else {
+        targetDataset.value = []
+        marketsGroup.value = []
+      }
+    } else {
+      fixturesList.value = baseTabFixtures.value
+      // Hard reset the active market to avoid stale specifier state when reusing cached markets.
       activeMarket.value = {}
-      const filteredMarkets = sanitizeMarkets(response.data.markets || [])
-      marketsGroup.value = filteredMarkets.length ? filteredMarkets : []
+      marketsGroup.value = marketsGroup.value || []
       const cachedMarketId = activeMarketByTab.value[tabView.value]
       const nextMarket =
         marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
         marketsGroup.value[0] ||
         {}
       activeMarket.value = nextMarket
-    } else {
-      if(tabView.value === 'today') {
-        todayData.value = []
-      } else {
-        highlightsData.value = []
-      }
-      marketsGroup.value = []
     }
-  } else {
-    // Use cached data
-    fixturesList.value = tabView.value === 'today' ? todayData.value : highlightsData.value
-    // Hard reset the active market to avoid stale specifier state when reusing cached markets.
-    activeMarket.value = {}
-    marketsGroup.value = marketsGroup.value || []
-    const cachedMarketId = activeMarketByTab.value[tabView.value]
-    const nextMarket =
-      marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
-      marketsGroup.value[0] ||
-      {}
-    activeMarket.value = nextMarket
+  } finally {
+    isLoading.value = false
+    isModeLoading.value = false
   }
-  isLoading.value = false
+}
+
+async function handleUpModeChange(mode) {
+  setUpMode(mode)
+  await getHighlightGames({ preserveContent: true })
 }
 
 async function getCountriesList() {

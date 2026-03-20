@@ -1,7 +1,7 @@
 <template>
   <div style="position: relative">
     <div class="m-bet-content">
-      <div v-if="Object.keys(fixtures).length" class="market-wrapper">
+      <div class="market-wrapper">
         <div class="market-header">
           <div class="m-today-tab m-tabs m-tabs-mini m-tabs-no-animation" style="overflow: hidden">
             <div class="m-tabs-nav" style="width:">
@@ -39,46 +39,51 @@
           </button>
         </div>
       </div>
-      <template v-if="Object.keys(fixtures).length">
-        <div
-          v-for="(group, index) in fixtures"
-          :key="index"
-          class="x-table m-sports-table football"
-        >
-          <div class="x-table-row m-date-row">
-            <div class="x-table-cell m-date">
-              {{ formatDate(index, 'DD/MM dddd') }}
-            </div>
-            <div class="x-table-cell market-title">
-              <div
-                v-if="displayMarket.specifier !== ''"
-                style="text-transform: capitalize"
-                class="each-module is-multiline"
-              >
-                {{ displayMarket.specifier }}
-              </div>
-              <template
-                v-for="(market, m) in _.sortBy(displayMarket.outcomes, 'outcomeID')"
-                :key="m"
-              >
-                <div>
-                  <span>{{ market.outcomeName }}</span>
-                </div>
-              </template>
-            </div>
-          </div>
-          <PrematchFixture
-            v-for="(event, index) in group"
-            :key="index"
-            :eventData="event"
-            :activeMarket="displayMarket"
-          ></PrematchFixture>
+      <div class="fixtures-content">
+        <div v-if="isModeLoading" class="up-mode-loading-mask">
+          <LoadingSpinner></LoadingSpinner>
         </div>
-      </template>
-      <div v-else class="no-data">
-        <div style="white-space: pre-line">
-          Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
-          you.
+        <template v-if="Object.keys(fixtures).length">
+          <div
+            v-for="(group, index) in fixtures"
+            :key="index"
+            class="x-table m-sports-table football"
+          >
+            <div class="x-table-row m-date-row">
+              <div class="x-table-cell m-date">
+                {{ formatDate(index, 'DD/MM dddd') }}
+              </div>
+              <div class="x-table-cell market-title">
+                <div
+                  v-if="displayMarket.specifier !== ''"
+                  style="text-transform: capitalize"
+                  class="each-module is-multiline"
+                >
+                  {{ displayMarket.specifier }}
+                </div>
+                <template
+                  v-for="(market, m) in _.sortBy(displayMarket.outcomes, 'outcomeID')"
+                  :key="m"
+                >
+                  <div>
+                    <span>{{ market.outcomeName }}</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <PrematchFixture
+              v-for="(event, index) in group"
+              :key="index"
+              :eventData="event"
+              :activeMarket="displayMarket"
+            ></PrematchFixture>
+          </div>
+        </template>
+        <div v-else class="no-data">
+          <div style="white-space: pre-line">
+            Sorry, there are no games currently<br />available in this category. Please try later.<br />Thank
+            you.!
+          </div>
         </div>
       </div>
       <div class="view-all">
@@ -92,6 +97,7 @@
 import { defineComponent, computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { formatDate } from '@/helpers'
 import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
+import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useRouter } from 'vue-router'
 import { useUtilsStore } from '@/stores'
@@ -106,6 +112,10 @@ const props = defineProps({
   upMode: {
     type: String,
     default: 'none'
+  },
+  isModeLoading: {
+    type: Boolean,
+    default: false
   },
   showUpToggle: {
     type: Boolean,
@@ -137,6 +147,7 @@ const getSportbyId = computed(() => {
 })
 
 const showUpToggle = computed(() => props.showUpToggle)
+const isModeLoading = computed(() => props.isModeLoading)
 
 const displayMarket = computed(() => {
   return props.effectiveMarket || props.activeMarket || {}
@@ -291,6 +302,20 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
+.fixtures-content {
+  position: relative;
+}
+
+.up-mode-loading-mask {
+  align-items: center;
+  background: rgba(250, 250, 250, 0.85);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 3;
+}
+
 .up-mode-bar {
   display: flex;
   justify-content: center;
@@ -338,10 +363,8 @@ onBeforeUnmount(() => {
 }
 
 .m-tabs-tab {
-  /* border: 1px solid var(--c-sports-prematch-market-title-text); */
   line-height: 2rem !important;
   margin-right: 10px !important;
-  /* border-radius: 30px; */
 }
 
 .m-tabs-tab:last-child {

@@ -29,7 +29,9 @@ export const useUpMode = ({
   activeMarket,
   marketsGroup,
   enabledSportId = 1,
-  derivedMarketConfig = DEFAULT_DERIVED_MARKET_CONFIG
+  derivedMarketConfig = DEFAULT_DERIVED_MARKET_CONFIG,
+  requireDerivedFixturesForToggle = true,
+  filterFixturesByDerived = true
 }) => {
   const upMode = ref('none')
 
@@ -75,7 +77,10 @@ export const useUpMode = ({
   })
 
   const showUpToggle = computed(() => {
-    return isEligibleMarket.value && hasDerivedMarkets.value
+    return (
+      isEligibleMarket.value &&
+      (!requireDerivedFixturesForToggle || hasDerivedMarkets.value)
+    )
   })
 
   const sanitizeMarkets = (list = []) => {
@@ -110,6 +115,10 @@ export const useUpMode = ({
   }
 
   const filteredFixtures = computed(() => {
+    // Some screens refetch from the API on mode change instead of filtering the current list.
+    if (!filterFixturesByDerived) {
+      return fixtures?.value
+    }
     return filterFixturesByUpMode(fixtures?.value, upMode.value)
   })
 

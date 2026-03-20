@@ -19,7 +19,7 @@
               class="up-mode-tab"
               type="button"
               :class="{ active: upMode === 'none' }"
-              @click="setUpMode('none')"
+              @click="handleUpModeChange('none')"
             >
               {{ baseLabel }}
             </button>
@@ -29,7 +29,7 @@
               class="up-mode-tab"
               type="button"
               :class="{ active: upMode === option.key }"
-              @click="setUpMode(option.key)"
+              @click="handleUpModeChange(option.key)"
             >
               {{ option.label }}
             </button>
@@ -80,6 +80,76 @@ import {
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
 
+const utilsStore = useUtilsStore()
+const route = useRoute()
+const baseFixturesList = ref(null)
+const derivedFixturesList = ref(null)
+
+const marketsGroup = ref({})
+const activeMarket = ref({})
+
+const isCollectionEmpty = (value) => {
+  if (value === null || value === undefined) return true
+  if (Array.isArray(value)) return value.length === 0
+  return typeof value === 'object' ? Object.keys(value).length === 0 : true
+}
+
+const mergeFixtureCollections = (baseList, derivedList) => {
+  if (Array.isArray(baseList) || Array.isArray(derivedList)) {
+    const merged = []
+    const seenMatchIds = new Set()
+    ;[...(Array.isArray(baseList) ? baseList : []), ...(Array.isArray(derivedList) ? derivedList : [])].forEach(
+      (fixture) => {
+        const matchId = String(
+          fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
+        )
+        const dedupeKey = matchId || JSON.stringify(fixture)
+        if (seenMatchIds.has(dedupeKey)) return
+        seenMatchIds.add(dedupeKey)
+        merged.push(fixture)
+      }
+    )
+    return merged
+  }
+
+  const merged = {}
+  const allKeys = new Set([
+    ...Object.keys(baseList || {}),
+    ...Object.keys(derivedList || {})
+  ])
+
+  allKeys.forEach((key) => {
+    const baseGroup = Array.isArray(baseList?.[key]) ? baseList[key] : []
+    const derivedGroup = Array.isArray(derivedList?.[key]) ? derivedList[key] : []
+    const seenMatchIds = new Set()
+    const nextList = []
+
+    ;[...baseGroup, ...derivedGroup].forEach((fixture) => {
+      const matchId = String(
+        fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
+      )
+      const dedupeKey = matchId || JSON.stringify(fixture)
+      if (seenMatchIds.has(dedupeKey)) return
+      seenMatchIds.add(dedupeKey)
+      nextList.push(fixture)
+    })
+
+    if (nextList.length) {
+      merged[key] = nextList
+    }
+  })
+
+  return merged
+}
+
+const fixturesList = computed(() => {
+  if (upMode.value === 'none') {
+    return mergeFixtureCollections(baseFixturesList.value, derivedFixturesList.value)
+  }
+  return derivedFixturesList.value
+})
+
+const isLoading = ref(false)
 const isEmptyResponse = computed(() => {
   const list = fixturesList.value
   return (
@@ -89,13 +159,6 @@ const isEmptyResponse = computed(() => {
       (typeof list === 'object' && Object.keys(list).length === 0))
   )
 })
-
-const utilsStore = useUtilsStore()
-const route = useRoute()
-const fixturesList = ref(null)
-
-const marketsGroup = ref({})
-const activeMarket = ref({})
 
 const {
   upMode,
@@ -111,17 +174,20 @@ const {
   fixtures: fixturesList,
   activeMarket,
   marketsGroup,
-  enabledSportId: 1
+  enabledSportId: 1,
+  requireDerivedFixturesForToggle: false,
+  filterFixturesByDerived: false
 })
 
 watch(
   () => [route.name, route.params.sport, route.query.period, route.query.startDate, route.query.endDate],
   () => {
     resetUpMode()
+    baseFixturesList.value = null
+    derivedFixturesList.value = null
   }
 )
 
-const isLoading = ref(false)
 const loadingError = ref(false)
 
 const page = ref(1)
@@ -146,6 +212,10 @@ const fixtureGroupingType = computed(() => {
     ? 'tournament'
     : 'default'
 })
+
+const getDerivedOnlyParam = () => {
+  return upMode.value === 'none' ? '' : 1
+}
 
 watch(
   () => [route.name, route.query.period, route.query.startDate, route.query.endDate],
@@ -180,12 +250,20 @@ watch(
 async function getTournamentFixtures(sid) {
   if (!FEED_TOGGLE) return;
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
+  const selectedMarketId = Number(activeMarket.value?.marketID || 0)
+  const isDerivedRequest = upMode.value !== 'none'
 
   try {
     isLoading.value = true
     const results = await Promise.allSettled(
       routeExtractedTIds.map((cat) =>
-        getSportHighlights({ page: page.value, sid: sid, per_page: 50, category_id: cat.tournament_id })
+        getSportHighlights({
+          page: page.value,
+          sid: sid,
+          per_page: 30,
+          category_id: cat.tournament_id,
+          derived_only: getDerivedOnlyParam()
+        })
       )
     )
     const fixtures = results.reduce((acc, res) => {
@@ -195,10 +273,16 @@ async function getTournamentFixtures(sid) {
       return acc
     }, {})
 
-    fixturesList.value = { ...fixtures }
+    if (isDerivedRequest) {
+      derivedFixturesList.value = { ...fixtures }
+    } else {
+      baseFixturesList.value = { ...fixtures }
+    }
     const filteredMarkets = sanitizeMarkets(results[0].value?.data.markets || [])
     marketsGroup.value = filteredMarkets
-    activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
+    activeMarket.value =
+      filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
+      (filteredMarkets.length ? filteredMarkets[0] : {})
     isLoading.value = false
   } catch (error) {
     console.error('Error fetching fixtures:', error)
@@ -208,17 +292,30 @@ async function getTournamentFixtures(sid) {
 
 async function getCategoryFixtures(sid, cid) {
   if (!FEED_TOGGLE) return;
+  const selectedMarketId = Number(activeMarket.value?.marketID || 0)
+  const isDerivedRequest = upMode.value !== 'none'
   try {
-    const res = await getSportHighlights({ sid: id, per_page: 50, category_id: cid })
+    const res = await getSportHighlights({
+      sid,
+      per_page: 30,
+      category_id: cid,
+      derived_only: getDerivedOnlyParam()
+    })
     const { fixtures, markets, per_page, page: currentPage, total } = res.data
     lastPage.value = Math.ceil(total / per_page)
     if (fixtures.length) {
       isPaginated.value = true
-      fixturesList.value = _.groupBy(fixtures, 'tournament')
+      if (isDerivedRequest) {
+        derivedFixturesList.value = _.groupBy(fixtures, 'tournament')
+      } else {
+        baseFixturesList.value = _.groupBy(fixtures, 'tournament')
+      }
       isLastPage.value = lastPage.value === page.value
       const filteredMarkets = sanitizeMarkets(markets || [])
       marketsGroup.value = filteredMarkets
-      activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
+      activeMarket.value =
+        filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
+        (filteredMarkets.length ? filteredMarkets[0] : {})
       isLoading.value = false
     } else {
       throw Error
@@ -232,11 +329,14 @@ async function getCategoryFixtures(sid, cid) {
 
 async function fetchFixturesByActiveSport(id, period = null) {
   if (!FEED_TOGGLE) return;
+  const selectedMarketId = Number(activeMarket.value?.marketID || 0)
+  const isDerivedRequest = upMode.value !== 'none'
   try {
     let payload = {
       sid: id,
       page: page.value,
-      per_page: 50
+      per_page: 30,
+      derived_only: getDerivedOnlyParam()
     }
     if (period) {
       if (period === 'tomorrow') {
@@ -258,13 +358,16 @@ async function fetchFixturesByActiveSport(id, period = null) {
     lastPage.value = Math.ceil(total / per_page)
     if (fixtures.length) {
       isPaginated.value = true
-      fixturesList.value = fixturesList.value && fixturesList.value.length
-        ? [...fixturesList.value, ...fixtures]
+      const targetFixtures = isDerivedRequest ? derivedFixturesList : baseFixturesList
+      targetFixtures.value = Array.isArray(targetFixtures.value) && targetFixtures.value.length
+        ? [...targetFixtures.value, ...fixtures]
         : [...fixtures]
       isLastPage.value = lastPage.value === page.value
       const filteredMarkets = sanitizeMarkets(markets || [])
       marketsGroup.value = filteredMarkets
-      activeMarket.value = filteredMarkets.length ? filteredMarkets[0] : {}
+      activeMarket.value =
+        filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
+        (filteredMarkets.length ? filteredMarkets[0] : {})
     } else {
       throw Error
     }
@@ -278,6 +381,56 @@ async function fetchFixturesByActiveSport(id, period = null) {
 
 async function selectMarket(market) {
   activeMarket.value = market
+}
+
+async function refreshFixturesForCurrentRoute() {
+  const sport = getSportbyName(route.params.sport)
+  if (!sport) return
+  const needsDerivedData = upMode.value !== 'none'
+  const hasRequiredData = needsDerivedData
+    ? !isCollectionEmpty(derivedFixturesList.value)
+    : !isCollectionEmpty(baseFixturesList.value)
+
+  if (hasRequiredData) {
+    return
+  }
+
+  page.value = 1
+  isLastPage.value = false
+  lastPage.value = null
+  isPaginated.value = false
+  if (needsDerivedData) {
+    derivedFixturesList.value =
+      route.name === 'fixtures-by-tournaments' || route.name === 'fixtures-by-category' ? {} : []
+  } else {
+    baseFixturesList.value =
+      route.name === 'fixtures-by-tournaments' || route.name === 'fixtures-by-category' ? {} : []
+  }
+  isLoading.value = true
+
+  switch (route.name) {
+    case 'fixtures-by-tournaments':
+      await getTournamentFixtures(sport.sport_id, route.params.tournament_id)
+      break
+
+    case 'fixtures-by-category':
+      await getCategoryFixtures(sport.sport_id, route.params.category_id)
+      break
+
+    case 'today-fixtures':
+    case 'fixtures-by-sports':
+      await fetchFixturesByActiveSport(sport.sport_id, route.query.period)
+      break
+
+    default:
+      isLoading.value = false
+      break
+  }
+}
+
+async function handleUpModeChange(mode) {
+  setUpMode(mode)
+  await refreshFixturesForCurrentRoute()
 }
 
 const isScrolled = ref(false)
@@ -349,25 +502,31 @@ const fetchMoreData = async () => {
 }
 
 const removeFixtureByMatchId = (matchID) => {
-  if (!fixturesList.value) return
-  if (Array.isArray(fixturesList.value)) {
-    fixturesList.value = fixturesList.value.filter(
-      (fixture) =>
-        String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
-        String(matchID)
-    )
-  } else {
-    Object.keys(fixturesList.value).forEach((tournament) => {
-      fixturesList.value[tournament] = fixturesList.value[tournament].filter(
+  const removeFromCollection = (collection) => {
+    if (!collection.value) return
+    if (Array.isArray(collection.value)) {
+      collection.value = collection.value.filter(
         (fixture) =>
           String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
           String(matchID)
       )
-      if (fixturesList.value[tournament].length === 0) {
-        delete fixturesList.value[tournament]
+      return
+    }
+
+    Object.keys(collection.value).forEach((tournament) => {
+      collection.value[tournament] = collection.value[tournament].filter(
+        (fixture) =>
+          String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+          String(matchID)
+      )
+      if (collection.value[tournament].length === 0) {
+        delete collection.value[tournament]
       }
     })
   }
+
+  removeFromCollection(baseFixturesList)
+  removeFromCollection(derivedFixturesList)
 }
 
 const applyValidatedSelections = (selections) => {
@@ -430,13 +589,18 @@ const applyValidatedSelections = (selections) => {
     return { ...fixture, outcomes: nextOutcomes }
   }
 
-  if (Array.isArray(fixturesList.value)) {
-    fixturesList.value = fixturesList.value.map(updateFixture)
-  } else if (fixturesList.value && typeof fixturesList.value === 'object') {
-    Object.keys(fixturesList.value).forEach((tournament) => {
-      fixturesList.value[tournament] = fixturesList.value[tournament].map(updateFixture)
-    })
+  const applyToCollection = (collection) => {
+    if (Array.isArray(collection.value)) {
+      collection.value = collection.value.map(updateFixture)
+    } else if (collection.value && typeof collection.value === 'object') {
+      Object.keys(collection.value).forEach((tournament) => {
+        collection.value[tournament] = collection.value[tournament].map(updateFixture)
+      })
+    }
   }
+
+  applyToCollection(baseFixturesList)
+  applyToCollection(derivedFixturesList)
 }
 
 onMounted(() => {
