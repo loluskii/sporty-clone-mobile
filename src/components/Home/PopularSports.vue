@@ -52,7 +52,7 @@
       </template>
     </div>
 
-    <!-- <div class="featured-match-placeholder">
+    <div class="featured-match-placeholder">
       <div class="featured-widget with-nav" style="">
         <div role="tablist" aria-label="featured widgets tabs" class="featured-nav-list">
           <div class="featured-header-left">
@@ -107,9 +107,8 @@
           </template>
           <LoadingSpinner v-else></LoadingSpinner>
         </div>
-        <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>
@@ -201,7 +200,7 @@ const setActiveCategory = async (category) => {
 }
 
 async function getCasinoGames() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const res = await getTopGameCategories()
   featuredCasino.value = res.data
   activeCasinoCategory.value = res.data[0].id
@@ -210,7 +209,7 @@ async function getCasinoGames() {
 }
 
 async function getCodes() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   let payload = {
     from: getNext7Days()[0],
     to: getNext7Days()[7],
@@ -362,7 +361,7 @@ watch(
 
 // Update the getFeaturedGames function
 async function getFeaturedGames() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   if (!topBetsData.value) return
 
   // Use Set for faster unique tournament filtering

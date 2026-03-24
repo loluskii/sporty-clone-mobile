@@ -33,8 +33,8 @@
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
       <div class="dateTime">
-        <div class="time">{{ matchDetails.eventTime }}</div>
-        <div class="date">{{ formatDate(matchDetails.date, 'ddd D') }}</div>
+        <div class="time">{{moment(matchDetails.date).format('hh:mma') }}</div>
+        <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
       </div>
       <div class="market">
         <span>{{ props.markets[0].marketName }}</span>
@@ -91,6 +91,7 @@ import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import emitter from '@/plugins/emitter'
+import moment from 'moment'
 
 const router = useRouter()
 const couponStore = useCouponStore()

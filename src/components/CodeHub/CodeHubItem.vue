@@ -448,7 +448,7 @@ onBeforeUnmount(() => {
 }
 
 .trending-drawer-add {
-  flex: 0 0 70%;
+  width: 100%;
   background: var(--brand-primary);
   color: #ffffff;
 }

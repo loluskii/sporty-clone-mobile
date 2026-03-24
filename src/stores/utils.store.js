@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getFixturesByTournamentId, FEED_TOGGLE } from '@/helpers'
+import { getTopBets, getSportHighlights, FEED_TOGGLE } from '@/helpers'
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -73,115 +73,183 @@ export const useUtilsStore = defineStore({
   },
 
   actions: {
-    // async fetchFeaturedGames() {
-    //   if(!FEED_TOGGLE) return;
-    //   // If we have fresh data, don't fetch again
-    //   if (this.hasFeaturedData && !this.isFeaturedStale) {
-    //     return
-    //   }
+    async fetchFeaturedGames() {
+      if (!FEED_TOGGLE) return;
+      // If we have fresh data, don't fetch again
+      if (this.hasFeaturedData && !this.isFeaturedStale) {
+        return
+      }
 
-    //   // Prevent concurrent fetches
-    //   if (this.featuredIsLoading || this.isFetchingTournamentGames) {
-    //     return
-    //   }
+      // Prevent concurrent fetches
+      if (this.featuredIsLoading || this.isFetchingTournamentGames) {
+        return
+      }
 
-    //   this.featuredIsLoading = true
-    //   this.featuredError = null
+      this.featuredIsLoading = true
+      this.featuredError = null
 
-    //   try {
-    //     const response = await getTopBets()
+      try {
+        const response = {
+          data: [
+            {
+              id: 935,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 1,
+              categoryName: 'England',
+              tournamentID: 18,
+              tournamentName: 'Championship'
+            },
+            {
+              id: 937,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 7,
+              categoryName: 'France',
+              tournamentID: 34,
+              tournamentName: 'Ligue 1'
+            },
+            {
+              id: 947,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 1,
+              categoryName: 'England',
+              tournamentID: 17,
+              tournamentName: 'Premier League'
+            },
+            {
+              id: 957,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 32,
+              categoryName: 'Spain',
+              tournamentID: 8,
+              tournamentName: 'LaLiga'
+            },
+            {
+              id: 958,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 31,
+              categoryName: 'Italy',
+              tournamentID: 23,
+              tournamentName: 'Serie A'
+            },
+            {
+              id: 959,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 35,
+              categoryName: 'Netherlands',
+              tournamentID: 37,
+              tournamentName: 'Eredivisie'
+            },
+            {
+              id: 960,
+              sportID: 1,
+              sportName: 'Soccer',
+              categoryID: 44,
+              categoryName: 'Portugal',
+              tournamentID: 238,
+              tournamentName: 'Liga Portugal'
+            }
+          ]
+        }
 
-    //     if (response?.data) {
-    //       // Process tournaments
-    //       const uniqueTournamentIds = new Set()
-    //       const uniqueTournaments = []
+        if (response?.data) {
+          // Process tournaments
+          const uniqueTournamentIds = new Set()
+          const uniqueTournaments = []
 
-    //       for (const tournament of response.data) {
-    //         if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-    //           uniqueTournamentIds.add(tournament.tournamentID)
-    //           uniqueTournaments.push(tournament)
-    //         }
-    //       }
+          for (const tournament of response.data) {
+            if (!uniqueTournamentIds.has(tournament.tournamentID)) {
+              uniqueTournamentIds.add(tournament.tournamentID)
+              uniqueTournaments.push(tournament)
+            }
+          }
 
-    //       this.featuredTournaments = uniqueTournaments.sort(
-    //         (a, b) => a.tournamentID - b.tournamentID
-    //       )
-    //       this.featuredLastFetchTime = Date.now()
+          this.featuredTournaments = uniqueTournaments.sort(
+            (a, b) => a.tournamentID - b.tournamentID
+          )
+          this.featuredLastFetchTime = Date.now()
 
-    //       // Set active tournament to the first one if not already set
-    //       if (!this.activeFeaturedTournament && this.featuredTournaments.length > 0) {
-    //         this.activeFeaturedTournament = this.featuredTournaments[0].tournamentID
-    //       }
+          // Set active tournament to the first one if not already set
+          if (!this.activeFeaturedTournament && this.featuredTournaments.length > 0) {
+            this.activeFeaturedTournament = this.featuredTournaments[0].tournamentID
+          }
 
-    //       // Fetch games for each tournament
-    //       await this.fetchTournamentGames()
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching featured games:', error)
-    //     this.featuredError = error.message
-    //   } finally {
-    //     this.featuredIsLoading = false
-    //   }
-    // },
+          // Fetch games for each tournament
+          await this.fetchTournamentGames()
+        }
+      } catch (error) {
+        console.error('Error fetching featured games:', error)
+        this.featuredError = error.message
+      } finally {
+        this.featuredIsLoading = false
+      }
+    },
 
-    // async fetchTournamentGames() {
-    //   // Prevent concurrent fetches
-    //   if (this.isFetchingTournamentGames) {
-    //     return
-    //   }
+    async fetchTournamentGames() {
+      // Prevent concurrent fetches
+      if (this.isFetchingTournamentGames) {
+        return
+      }
 
-    //   this.isFetchingTournamentGames = true
-    //   const CONCURRENCY_LIMIT = 3
-    //   const chunks = []
+      this.isFetchingTournamentGames = true
+      const CONCURRENCY_LIMIT = 3
+      const chunks = []
 
-    //   for (let i = 0; i < this.featuredTournaments.length; i += CONCURRENCY_LIMIT) {
-    //     chunks.push(this.featuredTournaments.slice(i, i + CONCURRENCY_LIMIT))
-    //   }
+      for (let i = 0; i < this.featuredTournaments.length; i += CONCURRENCY_LIMIT) {
+        chunks.push(this.featuredTournaments.slice(i, i + CONCURRENCY_LIMIT))
+      }
 
-    //   // Clear existing games before fetching new ones
-    //   this.featuredTournamentGames = []
+      // Clear existing games before fetching new ones
+      this.featuredTournamentGames = []
 
-    //   try {
-    //     for (const chunk of chunks) {
-    //       await Promise.all(
-    //         chunk.map(async (tournament) => {
-    //           try {
-    //             const games = await getFixturesByTournamentId(
-    //               tournament.tournamentID,
-    //               tournament.sportID
-    //             )
+      try {
+        for (const chunk of chunks) {
+          await Promise.all(
+            chunk.map(async (tournament) => {
+              try {
+                const games = await getSportHighlights({
+                  page: 1,
+                  sid: tournament.sportID,
+                  per_page: 5,
+                  tournament_id: tournament.tournamentID
+                })
 
-    //             if (!games?.fixtures?.length || !games?.markets?.length) {
-    //               // Early return if no valid data
-    //               const index = this.featuredTournaments.findIndex(
-    //                 (x) => x.tournamentID === tournament.tournamentID
-    //               )
-    //               if (index !== -1) {
-    //                 this.featuredTournaments.splice(index, 1)
-    //               }
-    //               return
-    //             }
+                if (!games?.data?.fixtures?.length || !games?.data?.markets?.length) {
+                  // Early return if no valid data
+                  const index = this.featuredTournaments.findIndex(
+                    (x) => x.tournamentID === tournament.tournamentID
+                  )
+                  if (index !== -1) {
+                    this.featuredTournaments.splice(index, 1)
+                  }
+                  return
+                }
 
-    //             if (games?.fixtures?.length && games?.markets?.length) {
-    //               // Take only first 5 fixtures
-    //               const tournamentGames = {
-    //                 tournamentID: tournament.tournamentID,
-    //                 fixtures: games.fixtures.slice(0, 5),
-    //                 markets: games.markets
-    //               }
+                if (games?.data?.fixtures?.length && games?.data?.markets?.length) {
+                  // Take only first 5 fixtures
+                  const tournamentGames = {
+                    tournamentID: tournament.tournamentID,
+                    fixtures: games.data.fixtures,
+                    markets: games.data.markets
+                  }
 
-    //               this.featuredTournamentGames.push(tournamentGames)
-    //             }
-    //           } catch (error) {
-    //             console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
-    //           }
-    //         })
-    //       )
-    //     }
-    //   } finally {
-    //     this.isFetchingTournamentGames = false
-    //   }
-    // },
+                  this.featuredTournamentGames.push(tournamentGames)
+                }
+              } catch (error) {
+                console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
+              }
+            })
+          )
+        }
+      } finally {
+        this.isFetchingTournamentGames = false
+      }
+    },
 
     setActiveFeaturedTournament(tournamentId) {
       this.activeFeaturedTournament = tournamentId

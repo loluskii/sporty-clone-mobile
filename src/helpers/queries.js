@@ -147,8 +147,8 @@ export const getCodeHubItems = async (data) => {
   const resolvedStart = start || from
   const resolvedEnd = end || to
 
-  // if (resolvedStart) params.set('start', resolvedStart)
-  // if (resolvedEnd) params.set('end', resolvedEnd)
+  if (resolvedStart) params.set('start', resolvedStart)
+  if (resolvedEnd) params.set('end', resolvedEnd)
   if (minOdd !== undefined && minOdd !== null && minOdd !== '') params.set('minOdd', minOdd)
   if (maxOdd !== undefined && maxOdd !== null && maxOdd !== '') params.set('maxOdd', maxOdd)
   if (minFold !== undefined && minFold !== null && minFold !== '') params.set('minFold', minFold)
@@ -270,7 +270,7 @@ export const getHighlights2 = async (sid) => {
 export const getFixturesByTournamentId = async (id, sid, period = null) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${period ? period : 'all'
+      `${NEW_FIXTURES_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${period ? period : 'all'
       }&limit=50`
     )
   )
