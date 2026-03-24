@@ -310,7 +310,7 @@ onMounted(async () => {
   font-size: 2.5rem;
 }
 .m-azmenu .top {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   border-top: 1px solid transparent;
   padding: 0;
 }

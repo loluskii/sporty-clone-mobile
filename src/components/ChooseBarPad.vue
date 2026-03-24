@@ -243,7 +243,7 @@ function toggleFilter(name) {
         if (route.name === 'fixtures-by-tournaments') {
           const cids = extractIdsFromURL(route.params.categories, 'category')
           const tids = extractIdsFromURL(route.params.tournaments, 'tournament')
-          activeCategory.value = categoryList.value.find((x) => x.categoryID == cids[0].categoryID)
+          activeCategory.value = categoryList.value.find((x) => x.category_id == cids[0].category_id)
           if (!activeCategory.value) {
             activeCategory.value = categoryList.value[0]
           }
@@ -263,14 +263,14 @@ function selectTournament(tournament) {
   }
 
   const index = selectedTournaments.value.findIndex(
-    (x) => x.tournamentID === tournament.tournamentID
+    (x) => x.tournament_id === tournament.tournament_id
   )
   if (index !== -1) {
     selectedTournaments.value.splice(index, 1)
   } else {
     let t = {
       ...tournament,
-      categoryID: activeCategory.value.categoryID,
+      category_id: activeCategory.value.category_id,
       categoryName: activeCategory.value.categoryName
     }
     selectedTournaments.value.push(t)
@@ -278,11 +278,12 @@ function selectTournament(tournament) {
 }
 
 function getSelectedTournamentCountByCategory(category) {
-  return selectedTournaments.value.filter((x) => x.categoryID === category.categoryID).length
+  console.log(selectedTournaments.value)
+  return selectedTournaments.value.filter((x) => x.category_id === category.category_id).length
 }
 
 function tournamentIsSelected(tournament) {
-  return selectedTournaments.value.find((x) => x.tournamentID == tournament.tournamentID)
+  return selectedTournaments.value.find((x) => x.tournament_id == tournament.tournament_id)
 }
 
 const setActiveCategory = async (category) => {
@@ -302,12 +303,12 @@ function resetSelection() {
 
 function viewFixturesByTournaments() {
   toggleFilter('league')
-  let selected = selectedTournaments.value.filter((x) => x.categoryID !== undefined)
-  const categoryIDs = [...new Set(selected.map((item) => item.categoryID))]
-  const tournamentIDs = selected.map((item) => item.tournamentID)
+  let selected = selectedTournaments.value.filter((x) => x.category_id !== undefined)
+  const category_ids = [...new Set(selected.map((item) => item.category_id))]
+  const tournament_ids = selected.map((item) => item.tournament_id)
 
-  const categories = categoryIDs.map((id) => `sr:category:${id}`).join('_')
-  const tournaments = tournamentIDs.map((id) => `sr:tournament:${id}`).join('_')
+  const categories = category_ids.map((id) => `sr:category:${id}`).join('_')
+  const tournaments = tournament_ids.map((id) => `sr:tournament:${id}`).join('_')
 
   let periodValue = route.name === 'today-fixtures' ? 'today' : route.query.period
   if (periodValue) {

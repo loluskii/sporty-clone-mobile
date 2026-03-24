@@ -145,7 +145,8 @@ export const router = createRouter({
     {
       path: '/Sports',
       name: 'sports',
-      component: SportsView
+      component: SportsView,
+      meta: { showFooter: true, showBetslipCount: false }
     },
 
     // Bet History
