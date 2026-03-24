@@ -477,6 +477,7 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
+  background-color: #fff;
   /* z-index: 220; */
 }
 

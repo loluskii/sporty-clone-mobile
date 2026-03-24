@@ -361,7 +361,7 @@ onBeforeUnmount(() => {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   position: fixed;
-  top: 7.75rem;
+  top: 7.55rem;
   -webkit-transition: top 0.3s ease !important;
   transition: top 0.3s ease !important;
   width: 100%;

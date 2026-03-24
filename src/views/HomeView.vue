@@ -303,7 +303,7 @@ onMounted(async () => {})
 }
 
 .m-sports .m-pre-opts.nav-fixed > .m-tabs-nav {
-  background-color: #fafafa;
+  background-color: #fff;
   background-color: var(--background-type1-secondary);
   left: 0;
   margin: 0 auto;
