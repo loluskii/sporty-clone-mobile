@@ -38,12 +38,6 @@
             ></path>
           </svg>
         </span>
-        <span
-          class="betslip"
-          style="font-size: 1rem"
-          :style="betslipMode ? 'color: #000;' : 'color: #fff'"
-          >BETSLIP</span
-        >
       </div>
       <div v-if="betslipCount > 0" class="notification">{{ betslipCount }}</div>
     </div>
@@ -393,7 +387,7 @@ a {
   align-items: center;
   background-color: #e41827;
   background-color: var(--warning-primary);
-  border-radius: 5px;
+  border-radius: 999px;
   color: #ffffff;
   color: var(--brand-tertiary);
   display: -webkit-box;
@@ -401,14 +395,14 @@ a {
   display: -ms-flexbox;
   display: flex;
   font-weight: bold;
-  height: 45px;
+  height: 40px;
   -webkit-box-pack: center;
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
   flex-direction: column;
   /* margin-top: 0.33333333rem; */
-  width: 45px;
+  width: 40px;
   font-size: 1rem;
   z-index: 2;
 }
