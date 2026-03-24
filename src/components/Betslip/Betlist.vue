@@ -140,7 +140,7 @@
       >
       </BookBetModal>
       <!-- Book Bet Modal -->
-      <!-- <BetSettings @close="showBetSettings = false" v-if="showBetSettings" /> -->
+      <BetSettings @close="showBetSettings = false" v-if="showBetSettings" />
     </div>
   </div>
 </template>
@@ -161,6 +161,7 @@ import BetslipHeader from "./BetslipHeader.vue";
 import BetslipTabs from "./BetslipTabs.vue";
 import { useUtilsStore } from "@/stores";
 import SystemBet from "./SystemBet.vue";
+import BetSettings from "./BetSettings.vue";
 
 const emit = defineEmits(['toggle-betslip', 'update-betcount'])
 const couponStore = useCouponStore()
