@@ -1,10 +1,36 @@
 <template>
-  <div>
-    <div class="m-overview">
-      <HeaderOther :header-title="'Live'" />
-      <div class="m-live">
-        <div v-if="isLoading">
-          <LoadingSpinner />
+  <div class="m-event-list">
+    <HeaderOther :header-title="'Live'" />
+    <div v-if="isLoading">
+      <LoadingSpinner />
+    </div>
+    <template v-else>
+      <!-- Sports Navigation -->
+      <div class="nav-container" style="position: sticky; top: 0; z-index: 200">
+        <div class="m-snap-nav-wrap m-sport-type" style="overflow: auto">
+          <ul class="m-snap-nav flex">
+            <template v-for="(sport, s) in sportsListData">
+              <li
+                :class="{ active: sport.sportID == activeSportID }"
+                v-if="!['Basketball','Tennis'].includes(sport.sportName)"
+                :key="s"
+                class="m-sport-type-item m-snap-nav-item"
+                @click="setActiveSport(sport.sportID)"
+                :id="'live_' + sport.sportID"
+              >
+                <span class="m-event-size">{{ sport.count }}</span>
+                <img
+                  :src="getImageSrc(sport.sportID)"
+                  loading="lazy"
+                  width="22"
+                  height="22"
+                />
+                <div class="m-sport-text">
+                  {{ sport.sportName }}
+                </div>
+              </li>
+            </template>
+          </ul>
         </div>
         <template v-else>
           <div
