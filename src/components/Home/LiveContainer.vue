@@ -14,7 +14,7 @@
           >
           <template v-for="(sport, index) in sportsListData">
             <li
-              v-if="sport.sportName !== 'Basketball'"
+              v-if="!['Basketball','Tennis'].includes(sport.sportName) "
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
               :key="index"

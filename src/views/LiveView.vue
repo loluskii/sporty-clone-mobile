@@ -9,11 +9,10 @@
       <div class="nav-container" style="position: sticky; top: 0; z-index: 200">
         <div class="m-snap-nav-wrap m-sport-type" style="overflow: auto">
           <ul class="m-snap-nav flex">
-            <template v-if="(sport, index) in sportsListData">
+            <template v-for="(sport, s) in sportsListData">
               <li
-                v-for="(sport, s) in sportsListData"
                 :class="{ active: sport.sportID == activeSportID }"
-                v-if="sport.sportName !== 'Basketball'"
+                v-if="!['Basketball','Tennis'].includes(sport.sportName)"
                 :key="s"
                 class="m-sport-type-item m-snap-nav-item"
                 @click="setActiveSport(sport.sportID)"
