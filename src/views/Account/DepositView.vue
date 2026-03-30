@@ -139,7 +139,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import emitter from '@/plugins/emitter'
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from '@/helpers'
 
-const activeTab = ref('paystack')
+const activeTab = ref('payonus')
 const depositMethods = ref([])
 const usersStore = useUsersStore()
 const utilsStore = useUtilsStore()
