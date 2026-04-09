@@ -1,6 +1,6 @@
 <template>
   <div class="m-event-list" id="m-event-list" ref="container">
-    <div class="mt-lg-4 pt-lg-4" style="width: 100%; height: 48px"></div>
+    <div class="mt-lg-4 pt-lg-4" style="width: 100%; height: 3.6rem"></div>
     <HeaderGame :SportsName="getActiveSport"></HeaderGame>
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">

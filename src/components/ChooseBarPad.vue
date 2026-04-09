@@ -408,7 +408,6 @@ onUnmounted(() => {})
 }
 .m-event-list .choose-bar-pad {
   height: 3.66666667rem;
-  background-color: rgb(6, 0, 25);
 }
 .m-event-list .choose-bar-pad.fixed {
   position: relative;
