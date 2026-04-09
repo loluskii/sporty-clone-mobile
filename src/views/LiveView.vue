@@ -9,27 +9,25 @@
       <div class="nav-container" style="position: sticky; top: 0; z-index: 200">
         <div class="m-snap-nav-wrap m-sport-type" style="overflow: auto">
           <ul class="m-snap-nav flex">
-            <template v-for="(sport, s) in sportsListData">
-              <li
-                :class="{ active: sport.sportID == activeSportID }"
-                v-if="!['Basketball','Tennis'].includes(sport.sportName)"
-                :key="s"
-                class="m-sport-type-item m-snap-nav-item"
-                @click="setActiveSport(sport.sportID)"
-                :id="'live_' + sport.sportID"
-              >
-                <span class="m-event-size">{{ sport.count }}</span>
-                <img
-                  :src="getImageSrc(sport.sportID)"
-                  loading="lazy"
-                  width="22"
-                  height="22"
-                />
-                <div class="m-sport-text">
-                  {{ sport.sportName }}
-                </div>
-              </li>
-            </template>
+            <li
+              v-for="(sport, s) in sportsListData"
+              :key="s"
+              :class="{ active: sport.sportID == activeSportID }"
+              class="m-sport-type-item m-snap-nav-item"
+              @click="setActiveSport(sport.sportID)"
+              :id="'live_' + sport.sportID"
+            >
+              <span class="m-event-size">{{ sport.count }}</span>
+              <img
+                :src="getImageSrc(sport.sportID)"
+                loading="lazy"
+                width="22"
+                height="22"
+              />
+              <div class="m-sport-text">
+                {{ sport.sportName }}
+              </div>
+            </li>
           </ul>
         </div>
       </div>
@@ -110,7 +108,7 @@ import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
 import { getFeedsLiveFixtures } from '@/helpers'
-import { sportsList } from '@/helpers/constants'
+import { EXCLUDED_LIVE_SPORT_IDS, sportsList } from '@/helpers/constants'
 import { ref, computed, watch } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
@@ -118,6 +116,7 @@ import _ from 'lodash'
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 
 // Map outcome IDs to standard display names for common markets
 const outcomeNameMap = {
@@ -316,7 +315,11 @@ const {
       console.error('Error fetching live data:', err)
     },
     onSuccess: (response) => {
-      if (response?.data.fixtures && response.data.fixtures.length > 0) {
+      const allowedFixtures = (response?.data?.fixtures || []).filter((fixture) =>
+        isAllowedLiveSport(fixture.sportID)
+      )
+
+      if (allowedFixtures.length > 0) {
         isEmptyResponse.value = false
       } else {
         isEmptyResponse.value = true
@@ -325,14 +328,23 @@ const {
   }
 )
 
-// Derive sports list from response data with fixture counts per sport
-const sportsListData = computed(() => {
-  if (!completeLiveData.value?.data.fixtures) {
+const allowedLiveFixtures = computed(() => {
+  if (!completeLiveData.value?.data?.fixtures) {
     return []
   }
+
+  return completeLiveData.value.data.fixtures.filter((fixture) => isAllowedLiveSport(fixture.sportID))
+})
+
+// Derive sports list from response data with fixture counts per sport
+const sportsListData = computed(() => {
+  if (!allowedLiveFixtures.value.length) {
+    return []
+  }
+
   // Group fixtures by sport and count
   const sportCounts = new Map()
-  completeLiveData.value.data.fixtures.forEach(fixture => {
+  allowedLiveFixtures.value.forEach(fixture => {
     if (!sportCounts.has(fixture.sportID)) {
       sportCounts.set(fixture.sportID, {
         sportID: fixture.sportID,
@@ -346,12 +358,12 @@ const sportsListData = computed(() => {
 })
 
 const filteredLiveData = computed(() => {
-  if (!completeLiveData.value?.data.fixtures || isEmptyResponse.value) {
+  if (!allowedLiveFixtures.value.length || isEmptyResponse.value) {
     return {}
   }
 
   // Filter by selected sport, sort and group by category
-  const fixtures = completeLiveData.value.data.fixtures
+  const fixtures = allowedLiveFixtures.value
     .filter(fixture => fixture.sportID === activeSportID.value)
     .sort((a, b) => {
       // First sort by tournamentID
@@ -369,11 +381,17 @@ const marketsGroup = computed(() => {
   if (!completeLiveData.value?.data.markets || isEmptyResponse.value) {
     return []
   }
-  return completeLiveData.value.data.markets
+  return completeLiveData.value.data.markets.filter((market) => isAllowedLiveSport(market.sportID))
 })
 
 // Filter markets by active sport
 const activeSportMarkets = computed(() => {
+  const hasActiveSportFixtures = sportsListData.value.some((sport) => sport.sportID === activeSportID.value)
+
+  if (!hasActiveSportFixtures) {
+    return []
+  }
+
   const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
   if(markets.length){
     return _.sortBy(markets, 'marketID')

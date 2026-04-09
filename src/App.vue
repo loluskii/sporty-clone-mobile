@@ -246,11 +246,15 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  const res = await fetchBanners()
-  if (res.data && Object.keys(res.data).length > 0) {
-    utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile')
-  } else {
-    utilsStore.banners = []
+  try {
+    const res = await fetchBanners()
+    if (res.data && Object.keys(res.data).length > 0) {
+      utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile')
+    } else {
+      utilsStore.banners = []
+    }
+  } catch (error) {
+    console.log('failed to get banners')
   }
 
   if (isAuthenticated.value) {

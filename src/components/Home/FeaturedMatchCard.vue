@@ -159,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,'1X2',odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',
