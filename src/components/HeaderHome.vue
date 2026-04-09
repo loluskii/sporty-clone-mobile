@@ -52,7 +52,7 @@ const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const { SportsbookGlobalVariable } = useUtilsStore()
 const myHeader = ref()
-const headerHeight = ref('48px')
+const headerHeight = ref('3.66rem')
 // Create a ResizeObserver to dynamically track header height
 const resizeObserver = new ResizeObserver(() => {
   if (myHeader.value) {
