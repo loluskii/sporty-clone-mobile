@@ -40,11 +40,6 @@
           </div>
         </div>
       </div>
-      <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}.
-        Play Responsibly. Betting is addictive and can be psychologically
-        harmful. | {{ utilsStore.brandName }} is licensed by the Lagos State Lotteries and Gaming  Authority
-      </p>
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">
@@ -106,25 +101,6 @@
       >
         Contact Us
       </h5>
-    </div>
-        <div class="payment-methods">
-      <div class="slider-wrap">
-        <div class="slider-window">
-          <div class="sliders" style="transform: translateX(0%)">
-            <div class="row">
-              <a href="https://www.facebook.com/Streetbetng/" target="_blank">
-                <img src="@/assets/images/facebook.png" style="height: 2rem" />
-              </a>
-              <a href="https://www.instagram.com/streetbet.ng" target="_blank">
-                <img src="@/assets/images/instagram.png" style="height: 2rem" />
-              </a>
-              <a href="https://x.com/streetbet_ng" target="_blank">
-                <img src="@/assets/images/twitter.png" style="height: 2rem" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="btn" @click="handleClick">
       <button>

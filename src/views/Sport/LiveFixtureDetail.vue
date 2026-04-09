@@ -454,60 +454,6 @@ const startTimer = () => {
   }, 1000) // Increment every second
 }
 
-// Helper to format event time (append + for 90+ minutes in soccer)
-const formatEventTime = (time, sportId) => {
-  if (!time || time === '--:--') return time
-  const minutes = parseInt(time.split(':')[0])
-  // For soccer (sportId 1), append + for 45+ or 90+
-  if (sportId === 1 && (minutes >= 45 || minutes >= 90)) {
-    return time.replace(/^(\d+)/, '$1+')
-  }
-  return time
-}
-
-// Latency compensation for MQTT event_time (in seconds)
-const MQTT_LATENCY_COMPENSATION = 2
-
-// Adjust time received from MQTT to compensate for backend latency
-const adjustTimeForLatency = (timeStr, sportId, matchStatus) => {
-  if (!timeStr || timeStr === '--:--') return timeStr
-
-  // Only adjust for timed sports
-  if (!isTimedSport(sportId)) return timeStr
-
-  const parsed = parseTime(timeStr)
-  if (!parsed) return timeStr
-
-  let { minutes, seconds } = parsed
-
-  // Add latency compensation
-  seconds += MQTT_LATENCY_COMPENSATION
-
-  // Handle overflow
-  if (seconds >= 60) {
-    minutes += Math.floor(seconds / 60)
-    seconds = seconds % 60
-  }
-
-  // Cap at halftime/fulltime boundaries
-  const status = (matchStatus || '').toLowerCase()
-  if (status.includes('2nd') || status.includes('second')) {
-    // Second half: cap at 90 minutes
-    if (minutes >= 90) {
-      minutes = 90
-      seconds = 0
-    }
-  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
-    // First half: cap at 45 minutes
-    if (minutes >= 45) {
-      minutes = 45
-      seconds = 0
-    }
-  }
-
-  return formatTime(minutes, seconds)
-}
-
 // MQTT handlers - New topic: sports/{sport_id}/match/{match_id}/match_status
 function handleMatchStatus(data) {
   // Handle match end

@@ -151,16 +151,6 @@ const updatedOutcomes = ref({})
 // Keep track of the last update timestamp for each match
 const lastUpdateTimestamp = ref({})
 
-// Time handling functions
-// Sports that have a running clock (sportID)
-// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
-const TIMED_SPORTS = [1, 4, 29]
-
-// Check if sport has a running clock
-const isTimedSport = () => {
-  const sportId = props.gameData.sportID
-  return TIMED_SPORTS.includes(sportId)
-}
 
 const parseTimeToSeconds = (timeStr) => {
   if (timeStr === '--:--') return null

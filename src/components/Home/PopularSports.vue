@@ -911,7 +911,6 @@ onDeactivated(() => {
 
 .topTournamentCard .text {
   font-weight: bolder;
-  font-size: 14px;
   text-transform: uppercase;
   white-space: nowrap;
 }
