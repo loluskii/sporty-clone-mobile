@@ -14,9 +14,9 @@
           >
             <li
               v-for="(sport, index) in sportsListData"
+              :key="index"
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
-              :key="index"
               :id="'live_' + sport.sportID"
               class="m-sport-type-item m-snap-nav-item"
               data-op="home_live-tabFootball"
@@ -113,7 +113,7 @@ import {
 } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
-import { sportsList } from '@/helpers/constants'
+import { EXCLUDED_LIVE_SPORT_IDS, sportsList } from '@/helpers/constants'
 
 // Normalize fixture data from snake_case API response to camelCase expected by components
 const normalizeFixture = (fixture) => {
@@ -356,6 +356,7 @@ const loadingError = ref(false)
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 
 const {
   data: completeLiveData,
@@ -395,10 +396,15 @@ const {
 
       // Use setTimeout to break potential update cycles
       setTimeout(() => {
-        if (response?.data.fixtures && response.data.fixtures.length > 0) {
-          totalFixtures.value = response.data.fixtures.length
+        const allowedFixtures = (response?.data?.fixtures || []).filter((fixture) =>
+          isAllowedLiveSport(fixture.sportID)
+        )
+
+        if (allowedFixtures.length > 0) {
+          totalFixtures.value = allowedFixtures.length
           isEmptyResponse.value = false
         } else {
+          totalFixtures.value = 0
           isEmptyResponse.value = true
         }
       }, 0)
@@ -414,14 +420,23 @@ watch(
   { immediate: true } // Trigger the watch callback immediately on component mount
 )
 
-// Derive sports list from response data - group fixtures by sport
-const sportsListData = computed(() => {
+const allowedLiveFixtures = computed(() => {
   if (!completeLiveData.value?.data?.fixtures) {
     return []
   }
+
+  return completeLiveData.value.data.fixtures.filter((fixture) => isAllowedLiveSport(fixture.sportID))
+})
+
+// Derive sports list from response data - group fixtures by sport
+const sportsListData = computed(() => {
+  if (!allowedLiveFixtures.value.length) {
+    return []
+  }
+
   // Get unique sports from fixtures
   const sportsMap = new Map()
-  completeLiveData.value.data.fixtures.forEach((fixture) => {
+  allowedLiveFixtures.value.forEach(fixture => {
     if (!sportsMap.has(fixture.sportID)) {
       sportsMap.set(fixture.sportID, {
         sportID: fixture.sportID,
@@ -436,13 +451,13 @@ const sportsListData = computed(() => {
 })
 
 const filteredLiveData = computed(() => {
-  if (!completeLiveData.value?.data?.fixtures || isEmptyResponse.value) {
+  if (!allowedLiveFixtures.value.length || isEmptyResponse.value) {
     return []
   }
 
   // Filter fixtures by selected sport and sort
-  return completeLiveData.value.data.fixtures
-    .filter((fixture) => fixture.sportID === activeSportID.value)
+  return allowedLiveFixtures.value
+    .filter(fixture => fixture.sportID === activeSportID.value)
     .sort((a, b) => {
       // First sort by tournamentID
       if (a.tournamentID !== b.tournamentID) {
@@ -458,12 +473,18 @@ const marketsGroup = computed(() => {
   if (!completeLiveData.value?.data?.markets || isEmptyResponse.value) {
     return []
   }
-  return completeLiveData.value.data.markets
+  return completeLiveData.value.data.markets.filter((market) => isAllowedLiveSport(market.sportID))
 })
 
 // Filter markets by active sport
 const activeSportMarkets = computed(() => {
-  const markets = marketsGroup.value.filter((m) => m.sportID === activeSportID.value)
+  const hasActiveSportFixtures = sportsListData.value.some((sport) => sport.sportID === activeSportID.value)
+
+  if (!hasActiveSportFixtures) {
+    return []
+  }
+
+  const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
   if (markets.length) {
     return _.sortBy(markets, 'marketID')
   }

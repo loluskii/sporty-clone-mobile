@@ -41,8 +41,8 @@
         <a href="#" class="m-menu-item"> All {{ activeSport.sportName }} </a>
       </div> -->
 
-      <div class="m-countries-panel m-sports-countries" style="position: relative; background-color: var(#000825);">
-        <div class="m-countries-block" style="background-color: #000825;">
+      <div class="m-countries-panel m-sports-countries" style="position: relative;">
+        <div class="m-countries-block">
           <div class="m-countries-block-title" data-cms-key="a_z">A-Z</div>
           <div class="m-country-list">
             <template v-if="countriesData.length > 0">
@@ -202,7 +202,6 @@ onMounted(getSportCategories)
 <style>
 .m-sports-menu {
   position: relative;
-  height: 100%;
 }
 .m-sports-menu .m-sports-choose {
   /* border-bottom: 1px solid #eaecef;
