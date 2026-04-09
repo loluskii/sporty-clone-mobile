@@ -41,6 +41,11 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-button-primary',
+      config.colors.primaryButtonBackgroundColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-active-tab-bg',
       config.colors.activeTabColor
     )
@@ -53,10 +58,6 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty(
       '--brand-text-primary',
       config.colors.primaryTextColor
-    )
-    document.documentElement.style.setProperty(
-      '--brand-secondary',
-      config.colors.secondaryTextColor
     )
 
     document.documentElement.style.setProperty(
@@ -326,7 +327,6 @@ export const min = (list) => {
 
 export const isSelected = (ele_id, coupon) => {
   let isExist = false
-  console.log(ele_id)
 
   if (coupon.selections.length > 0) {
     let count = coupon.selections.find((selection) => selection.selectionId === ele_id)

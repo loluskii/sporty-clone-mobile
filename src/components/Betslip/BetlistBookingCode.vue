@@ -165,7 +165,7 @@ async function loadBet() {
   background-color: var(--background-general-primary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--active {
-  border-color: #0d9737;
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-text-secondary);
 }
 .m-default .m-code-wrapper .m-input-wap-wrapper--error {
@@ -253,7 +253,7 @@ async function loadBet() {
   background: var(--disable-brand-secondary);
 }
 .share-code-btn--loading {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-text-secondary);
   color: #ffffff;
   color: var(--brand-tertiary);

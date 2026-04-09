@@ -14,10 +14,10 @@
           >
           <template v-for="(sport, index) in sportsListData">
             <li
-              v-if="!['Basketball','Tennis'].includes(sport.sportName) "
+              v-for="(sport, index) in sportsListData"
+              :key="index"
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
-              :key="index"
               :id="'live_' + sport.sportID"
               class="m-sport-type-item m-snap-nav-item"
               data-op="home_live-tabFootball"
@@ -59,7 +59,13 @@
                       :key="m"
                     >
                       <div class="market-name">
-                        <span>{{ getOutcomeDisplayName(activeMarket.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
+                        <span>{{
+                          getOutcomeDisplayName(
+                            activeMarket.marketName,
+                            outcome.outcomeID,
+                            outcome.outcomeName
+                          )
+                        }}</span>
                       </div>
                     </template>
                   </div>
@@ -70,7 +76,8 @@
                 :gameData="fixture"
                 :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`"
                 :activeMarket="activeMarket"
-              ></LiveHighlightsFixture>
+              >
+              </LiveHighlightsFixture>
             </div>
             <div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">
               <a class=""> View All Live {{ totalFixtures }} </a>
@@ -108,8 +115,7 @@ import {
 } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
-import { sportsList } from '@/helpers/constants'
-
+import { EXCLUDED_LIVE_SPORT_IDS, sportsList } from '@/helpers/constants'
 // Normalize fixture data from snake_case API response to camelCase expected by components
 const normalizeFixture = (fixture) => {
   if (!fixture) return fixture
@@ -349,6 +355,7 @@ const loadingError = ref(false)
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 
 const {
   data: completeLiveData,
@@ -388,10 +395,15 @@ const {
 
       // Use setTimeout to break potential update cycles
       setTimeout(() => {
-        if (response?.data.fixtures && response.data.fixtures.length > 0) {
-          totalFixtures.value = response.data.fixtures.length
+        const allowedFixtures = (response?.data?.fixtures || []).filter((fixture) =>
+          isAllowedLiveSport(fixture.sportID)
+        )
+
+        if (allowedFixtures.length > 0) {
+          totalFixtures.value = allowedFixtures.length
           isEmptyResponse.value = false
         } else {
+          totalFixtures.value = 0
           isEmptyResponse.value = true
         }
       }, 0)
@@ -407,19 +419,30 @@ watch(
   { immediate: true } // Trigger the watch callback immediately on component mount
 )
 
+const allowedLiveFixtures = computed(() => {
+  if (!completeLiveData.value?.data?.fixtures) {
+    return []
+  }
+
+  return completeLiveData.value.data.fixtures.filter((fixture) => isAllowedLiveSport(fixture.sportID))
+})
 
 // Derive sports list from response data - group fixtures by sport
 const sportsListData = computed(() => {
-  if (!completeLiveData.value?.data.fixtures) {
+  if (!allowedLiveFixtures.value.length) {
     return []
   }
+
   // Get unique sports from fixtures
   const sportsMap = new Map()
-  completeLiveData.value.data.fixtures.forEach(fixture => {
+  allowedLiveFixtures.value.forEach(fixture => {
     if (!sportsMap.has(fixture.sportID)) {
       sportsMap.set(fixture.sportID, {
         sportID: fixture.sportID,
-        sportName: fixture.sportName || sportsList.find(s => s.sport_id === fixture.sportID)?.name || `Sport ${fixture.sportID}`
+        sportName:
+          fixture.sportName ||
+          sportsList.find((s) => s.sport_id === fixture.sportID)?.name ||
+          `Sport ${fixture.sportID}`
       })
     }
   })
@@ -427,12 +450,12 @@ const sportsListData = computed(() => {
 })
 
 const filteredLiveData = computed(() => {
-  if (!completeLiveData.value?.data.fixtures || isEmptyResponse.value) {
+  if (!allowedLiveFixtures.value.length || isEmptyResponse.value) {
     return []
   }
 
   // Filter fixtures by selected sport and sort
-  return completeLiveData.value.data.fixtures
+  return allowedLiveFixtures.value
     .filter(fixture => fixture.sportID === activeSportID.value)
     .sort((a, b) => {
       // First sort by tournamentID
@@ -446,20 +469,26 @@ const filteredLiveData = computed(() => {
 })
 
 const marketsGroup = computed(() => {
-  if (!completeLiveData.value?.data.markets || isEmptyResponse.value) {
+  if (!completeLiveData.value?.data?.markets || isEmptyResponse.value) {
     return []
   }
-  return completeLiveData.value.data.markets
+  return completeLiveData.value.data.markets.filter((market) => isAllowedLiveSport(market.sportID))
 })
 
 // Filter markets by active sport
 const activeSportMarkets = computed(() => {
+  const hasActiveSportFixtures = sportsListData.value.some((sport) => sport.sportID === activeSportID.value)
+
+  if (!hasActiveSportFixtures) {
+    return []
+  }
+
   const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
   if (markets.length) {
     return _.sortBy(markets, 'marketID')
   }
 
-  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value);
+  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value)
 })
 
 const activeMarket = computed(() => {
@@ -476,14 +505,16 @@ watch(activeSportMarkets, (newValue) => {
 })
 
 // Auto-select first sport when data loads if current sport has no fixtures
-watch(sportsListData, (newValue) => {
-  if (newValue.length > 0) {
-    // Check if current activeSportID exists in the list
-    const currentSportExists = newValue.some(s => s.sportID === activeSportID.value)
-    if (!currentSportExists) {
-      activeSportID.value = newValue[0].sportID
+watch(
+  sportsListData,
+  (newValue) => {
+    if (newValue.length > 0) {
+      // Check if current activeSportID exists in the list
+      const currentSportExists = newValue.some((s) => s.sportID === activeSportID.value)
+      if (!currentSportExists) {
+        activeSportID.value = newValue[0].sportID
+      }
     }
-  }
 })
 
 // Update totalFixtures when sport changes (for "View All" link count)
@@ -538,7 +569,7 @@ defineComponent({
 onMounted(() => {
   // Listen for match-ended events
   emitter.on('match-ended', (matchId) => {
-    if (completeLiveData.value?.data.fixtures) {
+    if (completeLiveData.value?.data?.fixtures) {
       // Create a new array without the ended match
       const updatedFixtures = completeLiveData.value.data.fixtures.filter(
         (fixture) => String(fixture.matchID) !== String(matchId)
@@ -547,11 +578,8 @@ onMounted(() => {
       // // Update the data through Vue Query's refetch
       // refetchLiveData().then(() => {
       //   // After refetch, update the fixtures if needed
-      //   if (completeLiveData.value) {
-      //     completeLiveData.value = {
-      //       ...completeLiveData.value,
-      //       fixtures: updatedFixtures
-      //     }
+      //   if (completeLiveData.value?.data) {
+      //     completeLiveData.value.data.fixtures = updatedFixtures
       //   }
       // })
     }
@@ -569,8 +597,9 @@ onBeforeUnmount(() => {
   background-color: #000825;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
+
 .live-container .m-market-tab {
   background-color: #000825;
   background-color: var(--brand-background-live);
@@ -582,8 +611,9 @@ onBeforeUnmount(() => {
 }
 
 .live-container .m-market-tab .m-tabs-nav .m-tabs-ink-bar {
-  background-color: #0d9737;
+  background-color: var(--brand-highlight-text);
 }
+
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab {
   color: #ffffff;
   -webkit-box-flex: initial;
@@ -596,16 +626,19 @@ onBeforeUnmount(() => {
   padding: 1.33333333rem 0.83333333rem;
   text-transform: capitalize;
 }
+
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
-  color: #ffffff;
+  color: var(--brand-highlight-text);
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--brand-live-odds-text);
+  border-bottom: 0.23333333rem solid var(--brand-highlight-text);
 }
+
 .live-container .m-bet-tab {
   /* background-color: var(--brand-background-live); */
   background-color: var(--brand-background-live);
   padding-bottom: 10px;
 }
+
 .live-container .m-bet-tab .x-live-title {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -623,6 +656,7 @@ onBeforeUnmount(() => {
   z-index: 200;
   background: var(--brand-background-live);
 }
+
 .live-container .m-bet-tab .x-live-title > span {
   border-right: 1px solid;
   font-size: 1.5rem;
@@ -633,6 +667,7 @@ onBeforeUnmount(() => {
   border-right-color: #9ca0ab;
   border-right-color: var(--text-type2-tertiary);
 }
+
 .live-container .m-bet-tab .m-sport-type {
   /* background-color: #1b1e25; */
   /* background-color: var(--brand-background-live); */
@@ -641,23 +676,27 @@ onBeforeUnmount(() => {
   -ms-flex: 1;
   flex: 1;
 }
+
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item {
   font-size: 1.066rem;
   font-weight: normal;
   line-height: 1;
 }
+
 .live-container .m-bet-tab .m-sport-type .m-sport-type-item.active {
-  color: var(--brand-live-odds-text);
+  color: var(--brand-highlight-text);
   font-weight: bold;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell {
-  background-color: #3a3c42;
+  background-color: #000e21;
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   display: -webkit-box;
@@ -670,6 +709,7 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   padding: 0 0.83333333rem;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name {
   display: -webkit-box;
   display: -webkit-flex;
@@ -677,6 +717,7 @@ onBeforeUnmount(() => {
   display: flex;
   width: 55%;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name > div {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
@@ -686,12 +727,14 @@ onBeforeUnmount(() => {
   line-height: 2rem;
   text-align: center;
 }
+
 .live-container .m-bet-tab .m-bet-content .x-live-table.tennis .m-info-cell {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding-right: 0.83333333rem;
   width: 26%;
 }
+
 .live-container .m-bet-tab .m-bet-content .view-all a,
 .live-container .m-bet-tab .m-bet-content .view-all a:hover,
 .live-container .m-bet-tab .m-bet-content .view-all a:visited,
@@ -700,9 +743,11 @@ onBeforeUnmount(() => {
   /* color: var(--c-event-normal-text); */
   text-decoration: none;
 }
+
 .live-container .no-data:before {
   color: rgba(234, 236, 239, 0.15);
 }
+
 .live-container .m-loading.dark {
   /* background-color: #1b1e25; */
   background-color: var(--brand-background-live);

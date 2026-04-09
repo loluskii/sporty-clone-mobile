@@ -84,9 +84,8 @@ export const useCouponStore = defineStore({
 
         const sportId = selection.sportId || selection.fixture?.sportID || 1
 
-        // New topic format: sports/{sport_id}/match/{match_id}/{type}
-        const marketsTopic = `sports/${sportId}/match/${matchId}/markets`
-        const betStopTopic = `sports/${sportId}/match/${matchId}/bet_stop`
+        const oddsChangeTopic = `sbe/feeds/${type}/odds_change/${matchId}`
+        const betStopTopic = `sbe/feeds/${type}/bet_stop/${matchId}`
 
         if (isAdding) {
           if (!this.activeSubscriptions.some((sub) => String(sub.matchId) === matchId)) {
@@ -191,14 +190,14 @@ export const useCouponStore = defineStore({
               updatedAnySelection = true
             }
 
-            // Update odds if they've changed
-            const newOdds = parseFloat(outcome.odds)
-            const currentOdds = parseFloat(selection.odds)
-            if (newOdds !== currentOdds && !isNaN(newOdds)) {
-              selection.odds = newOdds
-              selection.changed = true
-              this.coupon.acceptChanges = false // Require user to accept changes
-              updatedAnySelection = true
+                // Update odds if they've changed (compare as numbers to avoid type issues)
+                const newOdds = parseFloat(outcome.odds)
+                const currentOdds = parseFloat(selection.odds)
+                if (newOdds !== currentOdds && !isNaN(newOdds)) {
+                  selection.odds = newOdds
+                  selection.changed = true
+                  this.coupon.acceptChanges = false // Require user to accept changes
+                  updatedAnySelection = true
 
               // Reset the changed flag after 5 seconds
               setTimeout(() => {

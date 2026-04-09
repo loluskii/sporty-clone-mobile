@@ -16,12 +16,12 @@
         <div style="padding-top: 10px; padding-bottom: 10px">
           <div className="bonus_text">
             Available Bonus Fund:
-            {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+            {{ couponStore.SportsbookGlobalVariable.Currency
             }}{{ formatNumber(userStore.sportBonusBalance) }}
           </div>
           <div className="bonus_text">
             Pending Bonus Fund:
-            {{ couponStore.SportsbookGlobalVariable.CurrencyCode
+            {{ couponStore.SportsbookGlobalVariable.Currency
             }}{{ formatNumber(pendingBalance) }}
           </div>
         </div>
@@ -38,10 +38,10 @@
             <tr v-for="(t, index) in activeBonus.transactions" :key="index">
               <td>{{ formatDate(t.createdAt, 'DD/MM/YYYY') }}</td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.amount) }}
+                {{ couponStore.SportsbookGlobalVariable.Currency }}{{ formatNumber(t.amount) }}
               </td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.balance) }}
+                {{ couponStore.SportsbookGlobalVariable.Currency }}{{ formatNumber(t.balance) }}
               </td>
             </tr>
           </tbody>
@@ -81,10 +81,10 @@
             <tr v-for="(t, index) in bonus.transactions" :key="index">
               <td>{{ formatDate(t.createdAt, 'DD/MM/YYYY') }}</td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.amount) }}
+                {{ couponStore.SportsbookGlobalVariable.Currency }}{{ formatNumber(t.amount) }}
               </td>
               <td>
-                {{ couponStore.SportsbookGlobalVariable.CurrencyCode }}{{ formatNumber(t.balance) }}
+                {{ couponStore.SportsbookGlobalVariable.Currency }}{{ formatNumber(t.balance) }}
               </td>
             </tr>
           </tbody>

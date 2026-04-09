@@ -22,12 +22,12 @@
             :id="'highlights_' + sport.sportID"
             class="m-sport-type-item m-snap-nav-item"
           >
-            <img
+            <!-- <img
               :src="getImageSrc(sport.sportID)"
               style="height: 20px; margin-right: 0.4rem"
               alt=""
               srcset=""
-            />
+            /> -->
             <Transition name="bounce">
               <span>{{ sport.sportName }}</span>
             </Transition>

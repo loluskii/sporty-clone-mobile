@@ -18,7 +18,7 @@
   <!-- Home Carousel -->
 </template>
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useUtilsStore } from '../../stores'
 
 const props = defineProps(['type'])
@@ -31,17 +31,22 @@ const banners = computed(() => {
 const currentIndex = ref(0)
 const intervalId = ref(null)
 const autoScrollDelay = ref(3000)
-const images = ref([])
+
 function startAutoSlider() {
+  stopAutoSlider()
+  if (banners.value.length <= 1) return
   intervalId.value = setInterval(() => {
     nextSlide()
   }, autoScrollDelay.value)
 }
 function stopAutoSlider() {
-  clearInterval(intervalId.value)
+  if (intervalId.value) {
+    clearInterval(intervalId.value)
+    intervalId.value = null
+  }
 }
 function nextSlide() {
-  if (currentIndex.value < images.value.length - 1) {
+  if (currentIndex.value < banners.value.length - 1) {
     currentIndex.value++
   } else {
     currentIndex.value = 0
@@ -54,14 +59,28 @@ function goToSlide(image) {
   }
 }
 
+watch(
+  banners,
+  (nextBanners) => {
+    if (!nextBanners.length) {
+      currentIndex.value = 0
+      stopAutoSlider()
+      return
+    }
+    if (currentIndex.value > nextBanners.length - 1) {
+      currentIndex.value = 0
+    }
+    startAutoSlider()
+  },
+  { immediate: true }
+)
+
 onMounted(async () => {
   startAutoSlider()
 })
 
 onBeforeUnmount(() => {
-  if (banners.value.length) {
-    stopAutoSlider()
-  }
+  stopAutoSlider()
 })
 </script>
 <style scoped>

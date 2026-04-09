@@ -678,7 +678,7 @@ defineComponent({
 .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-quaternary);
 }
 .af-select-item.hover {

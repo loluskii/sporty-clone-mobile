@@ -174,6 +174,16 @@ const formatSecondsToTime = (seconds) => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = () => {
+  const sportId = props.gameData.sportID
+  return TIMED_SPORTS.includes(sportId)
+}
+
 // Latency compensation for MQTT event_time (in seconds)
 const MQTT_LATENCY_COMPENSATION = 2
 
@@ -545,7 +555,7 @@ watch(
 onMounted(() => {
   // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
 
-  // Initialize scores from eventInfo.scores or fallback to top-level properties
+  // Initialize scores from eventInfo.scores or top-level
   scores.value = getInitialScores()
 
   outcomes.value = props.gameData.outcomes || []

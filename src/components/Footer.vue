@@ -17,16 +17,26 @@
     </div>
     <div></div>
     <div class="payment-methods">
-      <h5>Payment methods</h5>
-      <div class="slider-wrap">
-        <div class="slider-window">
-          <div class="sliders" style="transform: translateX(0%)">
-            <div class="row">
-              <img src="/logo_visa.fd08bf37cf.png" />
-              <img src="/logo_mc.51fc36230c.png" />
-              <img src="/paystack-logo.png" style="height: 3rem" />
-              <img src="/monnify.png" style="height: 3.5rem" />
-            </div>
+      <p>
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
+        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
+        licensed by the National Lottery Regulatory Commission.
+      </p>
+    </div>
+    
+    <div class="slider-wrap">
+      <div class="slider-window">
+        <div class="sliders" style="transform: translateX(0%)">
+          <div class="row">
+            <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
+              <img src="@/assets/images/facebook.png" style="height: 2rem" />
+            </a>
+            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank" style="margin: 0 12px;">
+              <img src="@/assets/images/instagram.png" style="height: 2rem" />
+            </a>
+            <a href="https://x.com/bet24_ng" target="_blank">
+              <img src="@/assets/images/twitter.png" style="height: 2rem" />
+            </a>
           </div>
         </div>
       </div>
@@ -40,18 +50,6 @@
     <div class="t_c-about_us">
       <h5
         class="underline"
-        @click="
-          $router.push({
-            name: 'cms-page',
-            params: { page: 'terms_and_conditions' }
-          })
-        "
-      >
-        Terms &amp; Conditions
-      </h5>
-      <h5 class="divider">|</h5>
-      <h5
-        class="underline"
         @click="$router.push({ name: 'cms-page', params: { page: 'about_us' } })"
       >
         About Us
@@ -62,11 +60,51 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'responsible_gaming' }
+            params: { page: 'terms_and_conditions' }
           })
         "
       >
-        Responsible Gaming
+        Terms and Conditions
+      </h5>
+      
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'responsible_gambling' }
+          })
+        "
+      >
+        Responsible Gambling
+      </h5>
+    </div>
+    <div class="t_c-about_us">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'privacy_policy' }
+          })
+        "
+      >
+        Privacy Policy
+      </h5>
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'refund_policy' } })"
+      >
+        Refund Policy
+      </h5>
+			<h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'contact_us' } })"
+      >
+        Contact Us
       </h5>
     </div>
         <div class="payment-methods">
@@ -296,7 +334,6 @@ footer .btn button {
   background-color: var(--c-footer-btn-bg);
   border: 0;
   color: #ffffff;
-  color: var(--text-type2-primary);
   padding: 1.066rem 0;
   width: 100%;
 }

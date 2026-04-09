@@ -4,7 +4,7 @@
       <div class="m-openbet-header">
         <div v-if="authStore.isAuthenticated" class="is-login">
           <span class="balance"
-            ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span>
+            ><span>{{ SportsbookGlobalVariable.Currency }} </span>
             <span>{{ usersStore.balance }}</span></span
           >
         </div>
@@ -75,7 +75,7 @@ defineProps({
 }
 .m-openbet-header .no-login {
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .m-openbet-header .no-login > span {
   padding: 0 0.66666667rem;

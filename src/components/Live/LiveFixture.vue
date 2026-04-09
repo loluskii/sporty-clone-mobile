@@ -147,6 +147,16 @@ const specifierOpen = ref(false)
 
 const updatePending = ref(false)
 
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = () => {
+  const sportId = props.gameData.sportID
+  return TIMED_SPORTS.includes(sportId)
+}
+
 // Time handling functions
 const parseTime = (timeString) => {
   if (!timeString || timeString === '--:--') return null
@@ -170,7 +180,7 @@ const formatTime = (minutes, seconds) => {
 }
 
 // Latency compensation for MQTT event_time (in seconds)
-const MQTT_LATENCY_COMPENSATION = 30
+const MQTT_LATENCY_COMPENSATION = 2
 
 // Adjust time received from MQTT to compensate for backend latency
 const adjustTimeForLatency = (timeStr) => {
@@ -194,29 +204,22 @@ const adjustTimeForLatency = (timeStr) => {
   }
 
   // Cap at halftime/fulltime boundaries
-  if (minutes >= 90) {
-    minutes = 90
-    seconds = 0
-  } else if (minutes >= 45 && minutes < 46) {
-    // Don't go past 45:00 in first half
-    const status = (props.gameData.matchStatus || '').toLowerCase()
-    if (!status.includes('2nd') && !status.includes('second')) {
+  const status = (props.gameData.matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (minutes >= 90) {
+      minutes = 90
+      seconds = 0
+    }
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (minutes >= 45) {
       minutes = 45
       seconds = 0
     }
   }
 
   return formatTime(minutes, seconds)
-}
-
-// Sports that have a running clock (sportID)
-// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
-const TIMED_SPORTS = [1, 4, 29]
-
-// Check if sport has a running clock
-const isTimedSport = () => {
-  const sportId = props.gameData.sportID
-  return TIMED_SPORTS.includes(sportId)
 }
 
 // Calculate elapsed match time from kick-off (only for timed sports)
@@ -253,9 +256,20 @@ const calculateElapsedTime = (kickOffDateStr) => {
   }
 }
 
-// Get initial display time - use eventTime directly from API response
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
 const getInitialDisplayTime = () => {
   // Temporarily disabled: time calculation from kick-off
+  // if (isTimedSport()) {
+  //   const kickOffDate = props.gameData.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
+
   // Use eventTime directly from API response
   return props.gameData.eventTime || '--:--'
 }
@@ -479,41 +493,28 @@ function handleMatchStatus(data) {
   }
 
   requestAnimationFrame(() => {
+    // Update scores
+    scores.value.homeScore = data.home_score
+    scores.value.awayScore = data.away_score
+
     // Update time and status (with latency compensation)
-    if (data.event_time) {
-      displayTime.value = adjustTimeForLatency(data.event_time)
-    }
-    if (data.match_status) {
-      matchStatus.value = data.match_status
-    }
+    displayTime.value = adjustTimeForLatency(data.event_time)
+    matchStatus.value = data.match_status
+
     // Restart timer with new time
     startTimer()
   })
 }
 
-// New topic: sports/{sport_id}/match/{match_id}/bet_stop
-function handleBetStop() {
-  // Lock all outcomes (set odds to 0 and inactive)
-  outcomes.value = outcomes.value.map((outcome) => ({
-    ...outcome,
-    odds: 0,
-    active: 0
-  }))
-
-  // Also update the tracked outcomes
-  const updatedOutcomesCopy = { ...updatedOutcomes.value }
-  outcomes.value.forEach((outcome) => {
-    const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
-    updatedOutcomesCopy[key] = {
-      odds: 0,
-      active: 0,
-      timestamp: Date.now()
-    }
-  })
-  updatedOutcomes.value = updatedOutcomesCopy
+// Function to handle match ended - remove fixture from list
+function handleMatchEnded(data) {
+  stopTimer()
+  emitter.emit('match-ended', props.gameData.matchID)
 }
 
 onMounted(() => {
+  // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
+
   // Initialize scores from eventInfo.scores or top-level
   scores.value = getInitialScores()
 
@@ -528,17 +529,17 @@ onMounted(() => {
     const topicBase = `sports/${sportId}/match/${matchId}`
 
     const topics = {
-      matchStatus: `${topicBase}/match_status`,
-      scores: `${topicBase}/scores`,
-      markets: `${topicBase}/markets`,
-      betStop: `${topicBase}/bet_stop`
+      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`,
+      matchEnded: `sbe/feeds/live/match_ended/${matchId}`
     }
 
     const handlers = {
-      matchStatus: handleMatchStatus,
-      scores: handleScores,
-      markets: handleMarkets,
-      betStop: handleBetStop
+      oddsChange: handleOddsChange,
+      betStop: handleBetStop,
+      fixtureStatus: handleFixtureStatus,
+      matchEnded: handleMatchEnded
     }
 
     const unsubscribers = Object.entries(topics).map(([key, topic]) => {

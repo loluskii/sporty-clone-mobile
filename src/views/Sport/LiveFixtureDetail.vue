@@ -278,13 +278,18 @@ const noMarkets = computed(() => {
   return eventMarkets.value?.length === 0
 })
 
-// Time handling functions
-const formatTime = (minutes, seconds) => {
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+// Sports that have a running clock (sportID)
+// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
+const TIMED_SPORTS = [1, 4, 29]
+
+// Check if sport has a running clock
+const isTimedSport = (sportId) => {
+  return TIMED_SPORTS.includes(sportId)
 }
 
+// Time handling functions
 const parseTime = (timeString) => {
-  if (!timeString) return null
+  if (!timeString || timeString === '--:--') return null
   const parts = timeString.split(':')
   if (parts.length >= 2) {
     return {
@@ -300,17 +305,66 @@ const parseTime = (timeString) => {
   return null
 }
 
-// Sports that have a running clock (sportID)
-// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
-const TIMED_SPORTS = [1, 4, 29]
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
 
-// Check if sport has a running clock
-const isTimedSport = (sportId) => {
-  return TIMED_SPORTS.includes(sportId)
+// Helper to format event time (append + for 45+ or 90+ minutes in soccer)
+const formatEventTime = (time, sportId) => {
+  if (!time || time === '--:--') return time
+  const minutes = parseInt(time.split(':')[0])
+  // For soccer (sportId 1), append + for 45+ or 90+
+  if (sportId === 1 && (minutes >= 45 || minutes >= 90)) {
+    return time.replace(/^(\d+)/, '$1+')
+  }
+  return time
+}
+
+// Latency compensation for MQTT event_time (in seconds)
+const MQTT_LATENCY_COMPENSATION = 2
+
+// Adjust time received from MQTT to compensate for backend latency
+const adjustTimeForLatency = (timeStr, sportId, matchStatus) => {
+  if (!timeStr || timeStr === '--:--') return timeStr
+
+  // Only adjust for timed sports
+  if (!isTimedSport(sportId)) return timeStr
+
+  const parsed = parseTime(timeStr)
+  if (!parsed) return timeStr
+
+  let { minutes, seconds } = parsed
+
+  // Add latency compensation
+  seconds += MQTT_LATENCY_COMPENSATION
+
+  // Handle overflow
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60)
+    seconds = seconds % 60
+  }
+
+  // Cap at halftime/fulltime boundaries
+  const status = (matchStatus || '').toLowerCase()
+  if (status.includes('2nd') || status.includes('second')) {
+    // Second half: cap at 90 minutes
+    if (minutes >= 90) {
+      minutes = 90
+      seconds = 0
+    }
+  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
+    // First half: cap at 45 minutes
+    if (minutes >= 45) {
+      minutes = 45
+      seconds = 0
+    }
+  }
+
+  return formatTime(minutes, seconds)
 }
 
 // Calculate elapsed match time from kick-off (only for timed sports)
-const calculateElapsedTime = (kickOffDateStr, matchStatus, sportId) => {
+const calculateElapsedTime = (kickOffDateStr, sportId, matchStatus) => {
   if (!kickOffDateStr) return null
 
   // Only calculate for timed sports like Soccer
@@ -325,27 +379,41 @@ const calculateElapsedTime = (kickOffDateStr, matchStatus, sportId) => {
 
   const elapsedMinutes = Math.floor(elapsedMs / 60000)
   const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
-  const status = (matchStatus || '').toLowerCase()
+
+  // Handle halftime: if elapsed > 45 mins but match status is still 1st half or halftime
+  const status = matchStatus?.toLowerCase() || ''
 
   if (status.includes('2nd') || status.includes('second')) {
     // Second half: cap at 90 minutes
-    const cappedMinutes = Math.min(elapsedMinutes, 90)
-    return formatTime(cappedMinutes, elapsedSeconds)
+    const adjustedMinutes = Math.min(elapsedMinutes, 90)
+    return { minutes: adjustedMinutes, seconds: elapsedSeconds }
   } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
-    // Halftime: show 45:00
-    return '45:00'
+    // Halftime: cap at 45:00
+    return { minutes: 45, seconds: 0 }
   } else {
     // First half or unknown: cap at 45 mins
     const cappedMinutes = Math.min(elapsedMinutes, 45)
-    return formatTime(cappedMinutes, elapsedSeconds)
+    return { minutes: cappedMinutes, seconds: elapsedSeconds }
   }
 }
 
-// Get display time - use eventTime directly from API response
-const getDisplayTime = (data) => {
+// Get initial display time - use eventTime from API response
+// TODO: Re-enable time calculation from kick-off when needed
+const getDisplayTime = (gameData) => {
   // Temporarily disabled: time calculation from kick-off
+  // const sportId = gameData?.sportID
+  // if (isTimedSport(sportId)) {
+  //   const kickOffDate = gameData?.date
+  //   if (kickOffDate) {
+  //     const calculated = calculateElapsedTime(kickOffDate, sportId, gameData?.matchStatus)
+  //     if (calculated) {
+  //       return formatTime(calculated.minutes, calculated.seconds)
+  //     }
+  //   }
+  // }
+
   // Use eventTime directly from API response
-  return data?.eventTime || '--:--'
+  return gameData?.eventTime || '--:--'
 }
 
 const stopTimer = () => {
@@ -358,8 +426,9 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
+  const sportId = eventDetail.value?.sportID
   // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
-  if (!isTimedSport(eventDetail.value?.sportID)) return
+  if (!isTimedSport(sportId)) return
 
   const initialTime = parseTime(eventTime.value)
   if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
@@ -472,29 +541,20 @@ function handleMatchStatus(data) {
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
+
+    // Restart timer with synced time
+    startTimer()
   })
 }
 
-// New topic: sports/{sport_id}/match/{match_id}/scores
-function handleScores(data) {
-  requestAnimationFrame(() => {
-    scores.homeScore = data.home_score
-    scores.awayScore = data.away_score
-    // Sync time from backend to correct any drift (with latency compensation)
-    if (data.event_time) {
-      const sportId = eventDetail.value?.sportID || 1
-      const matchStatus = eventDetail.value?.matchStatus || ''
-      const adjustedTime = adjustTimeForLatency(data.event_time, sportId, matchStatus)
-      eventTime.value = formatEventTime(adjustedTime, sportId)
-      // Restart timer with synced time
-      startTimer()
-    }
-  })
-}
+function handleBetStop(data) {
+  const matchId = eventDetail.value?.matchID
+  const dataMatchId = data.event_id || data.match_id
 
-/// New topic: sports/{sport_id}/match/{match_id}/bet_stop
-function handleBetStop() {
-  // Lock all markets (set odds to 0 and inactive)
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return
+  }
+
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
       ...market,
@@ -573,15 +633,12 @@ function handleMarkets(data) {
   }
 }
 
-// MQTT setup - New topic format: sports/{sport_id}/match/{match_id}/{type}
-function setupMqttSubscriptions(matchId, sportId) {
-  const topicBase = `sports/${sportId}/match/${matchId}`
-
+// MQTT setup
+function setupMqttSubscriptions(matchId) {
   const topics = {
-    matchStatus: `${topicBase}/match_status`,
-    scores: `${topicBase}/scores`,
-    markets: `${topicBase}/markets`,
-    betStop: `${topicBase}/bet_stop`
+    oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
+    betStop: `sbe/feeds/live/bet_stop/${matchId}`,
+    fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
   }
 
   const handlers = {
@@ -739,7 +796,7 @@ async function getEventDetail(id) {
         eventTime.value = getDisplayTime(data)
 
         if (data.matchID) {
-          setupMqttSubscriptions(data.matchID, data.sportID)
+          setupMqttSubscriptions(data.matchID)
           setupPeriodicRefetch(data.matchID)
         }
       } else {
@@ -914,7 +971,7 @@ defineComponent({
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  color: var(--text-type2-primary);
+  /* color: var(--text-type2-primary); */
 }
 .m-event-detail-wrap .m-match-tracker-icons-above-wrapper {
   overflow: auto;
@@ -1099,7 +1156,6 @@ defineComponent({
 .m-event-detail-wrap .event-detail .m-sport-market .m-market .m-market-title {
   border-top: 1px solid #353a45;
   color: #ffffff;
-  color: var(--text-type2-primary);
 }
 .m-event-detail-wrap
   .event-detail
@@ -1315,8 +1371,8 @@ defineComponent({
   font-size: 1rem;
 }
 .event-detail .m-group .m-sport-group-item.active {
-  border-bottom: 4px solid #0d9737;
-  border-color: #0d9737;
+  border-bottom: 4px solid var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
 }
 .event-detail .m-sport-market-no-data {
