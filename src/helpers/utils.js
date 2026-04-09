@@ -41,6 +41,11 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-button-primary',
+      config.colors.primaryButtonBackgroundColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-active-tab-bg',
       config.colors.activeTabColor
     )

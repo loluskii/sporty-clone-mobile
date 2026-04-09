@@ -189,7 +189,6 @@ defineComponent({
   margin-top: 1.66666667rem;
 }
 .m-countries-block-title {
-  color: #fafafa;
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 0.75rem;

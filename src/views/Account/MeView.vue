@@ -20,8 +20,8 @@
           <div class="balance-wrap">
             <div class="title">Total Balance</div>
             <div data-op="me_balance" class="value">
-              <span>{{ SportsbookGlobalVariable.Currency }} </span
-              ><span> {{ userStore.balance }}</span>
+                <span>{{ SportsbookGlobalVariable.Currency }} </span
+                ><span> {{ userStore.balance }}</span>
             </div>
           </div>
           <div class="w-d-wrap">

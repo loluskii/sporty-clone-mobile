@@ -14,10 +14,10 @@
           >
           <template v-for="(sport, index) in sportsListData">
             <li
-              v-if="!['Basketball','Tennis'].includes(sport.sportName) "
+              v-for="(sport, index) in sportsListData"
+              :key="index"
               :class="sport.sportID === activeSportID ? 'active' : ''"
               @click="setActiveSport(sport.sportID)"
-              :key="index"
               :id="'live_' + sport.sportID"
               class="m-sport-type-item m-snap-nav-item"
               data-op="home_live-tabFootball"
@@ -59,26 +59,40 @@
                       :key="m"
                     >
                       <div class="market-name">
-                        <span>{{ getOutcomeDisplayName(activeMarket.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
+                        <span>{{
+                          getOutcomeDisplayName(
+                            activeMarket.marketName,
+                            outcome.outcomeID,
+                            outcome.outcomeName
+                          )
+                        }}</span>
                       </div>
                     </template>
-</div>
-</div>
-</div>
-<LiveHighlightsFixture v-for="(fixture, index) in filteredLiveData" :gameData="fixture"
-  :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`" :activeMarket="activeMarket"></LiveHighlightsFixture>
-</div>
-<div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">
-  <a class=""> View All Live {{ totalFixtures }} </a>
-</div>
-</div>
-</div>
-</template>
-<div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
-  <div style="white-space: pre-line">
-    <p>Sorry, there are no games currently available</p>
-    <p>in this category. Please try later.</p>
-    <p>Thank you.</p>
+                  </div>
+                </div>
+              </div>
+              <LiveHighlightsFixture
+                v-for="(fixture, index) in filteredLiveData"
+                :gameData="fixture"
+                :key="`${fixture.matchID}-${fixture.updateTimestamp || index}`"
+                :activeMarket="activeMarket"
+              >
+              </LiveHighlightsFixture>
+            </div>
+            <div v-if="totalFixtures > 10" @click="$router.push('/Live')" class="view-all">
+              <a class=""> View All Live {{ totalFixtures }} </a>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div v-else-if="!isLoading || isEmptyResponse || !completeLiveData.fixtures" class="no-data">
+        <div style="white-space: pre-line">
+          <p>Sorry, there are no games currently available</p>
+          <p>in this category. Please try later.</p>
+          <p>Thank you.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
@@ -104,7 +118,7 @@ import {
 } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
-import { sportsList } from '@/helpers/constants'
+import { EXCLUDED_LIVE_SPORT_IDS, sportsList } from '@/helpers/constants'
 
 // Normalize fixture data from snake_case API response to camelCase expected by components
 const normalizeFixture = (fixture) => {
@@ -345,6 +359,7 @@ const loadingError = ref(false)
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
 const totalFixtures = ref(1)
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 
 const {
   data: completeLiveData,
@@ -384,10 +399,15 @@ const {
 
       // Use setTimeout to break potential update cycles
       setTimeout(() => {
-        if (response?.data.fixtures && response.data.fixtures.length > 0) {
-          totalFixtures.value = response.data.fixtures.length
+        const allowedFixtures = (response?.data?.fixtures || []).filter((fixture) =>
+          isAllowedLiveSport(fixture.sportID)
+        )
+
+        if (allowedFixtures.length > 0) {
+          totalFixtures.value = allowedFixtures.length
           isEmptyResponse.value = false
         } else {
+          totalFixtures.value = 0
           isEmptyResponse.value = true
         }
       }, 0)
@@ -403,19 +423,30 @@ watch(
   { immediate: true } // Trigger the watch callback immediately on component mount
 )
 
-
-// Derive sports list from response data - group fixtures by sport
-const sportsListData = computed(() => {
+const allowedLiveFixtures = computed(() => {
   if (!completeLiveData.value?.data?.fixtures) {
     return []
   }
+
+  return completeLiveData.value.data.fixtures.filter((fixture) => isAllowedLiveSport(fixture.sportID))
+})
+
+// Derive sports list from response data - group fixtures by sport
+const sportsListData = computed(() => {
+  if (!allowedLiveFixtures.value.length) {
+    return []
+  }
+
   // Get unique sports from fixtures
   const sportsMap = new Map()
-  completeLiveData.value.data.fixtures.forEach(fixture => {
+  allowedLiveFixtures.value.forEach(fixture => {
     if (!sportsMap.has(fixture.sportID)) {
       sportsMap.set(fixture.sportID, {
         sportID: fixture.sportID,
-        sportName: fixture.sportName || sportsList.find(s => s.sport_id === fixture.sportID)?.name || `Sport ${fixture.sportID}`
+        sportName:
+          fixture.sportName ||
+          sportsList.find((s) => s.sport_id === fixture.sportID)?.name ||
+          `Sport ${fixture.sportID}`
       })
     }
   })
@@ -423,12 +454,12 @@ const sportsListData = computed(() => {
 })
 
 const filteredLiveData = computed(() => {
-  if (!completeLiveData.value?.data?.fixtures || isEmptyResponse.value) {
+  if (!allowedLiveFixtures.value.length || isEmptyResponse.value) {
     return []
   }
 
   // Filter fixtures by selected sport and sort
-  return completeLiveData.value.data.fixtures
+  return allowedLiveFixtures.value
     .filter(fixture => fixture.sportID === activeSportID.value)
     .sort((a, b) => {
       // First sort by tournamentID
@@ -445,17 +476,23 @@ const marketsGroup = computed(() => {
   if (!completeLiveData.value?.data?.markets || isEmptyResponse.value) {
     return []
   }
-  return completeLiveData.value.data.markets
+  return completeLiveData.value.data.markets.filter((market) => isAllowedLiveSport(market.sportID))
 })
 
 // Filter markets by active sport
 const activeSportMarkets = computed(() => {
+  const hasActiveSportFixtures = sportsListData.value.some((sport) => sport.sportID === activeSportID.value)
+
+  if (!hasActiveSportFixtures) {
+    return []
+  }
+
   const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
   if (markets.length) {
     return _.sortBy(markets, 'marketID')
   }
 
-  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value);
+  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value)
 })
 
 const activeMarket = computed(() => {
@@ -472,15 +509,18 @@ watch(activeSportMarkets, (newValue) => {
 })
 
 // Auto-select first sport when data loads if current sport has no fixtures
-watch(sportsListData, (newValue) => {
-  if (newValue.length > 0) {
-    // Check if current activeSportID exists in the list
-    const currentSportExists = newValue.some(s => s.sportID === activeSportID.value)
-    if (!currentSportExists) {
-      activeSportID.value = newValue[0].sportID
+watch(
+  sportsListData,
+  (newValue) => {
+    if (newValue.length > 0) {
+      // Check if current activeSportID exists in the list
+      const currentSportExists = newValue.some((s) => s.sportID === activeSportID.value)
+      if (!currentSportExists) {
+        activeSportID.value = newValue[0].sportID
+      }
     }
   }
-}, { immediate: true })
+, { immediate: true })
 
 // Add onActivated to ensure activeSportID is set when component is reactivated
 onActivated(() => {
@@ -588,7 +628,7 @@ onBeforeUnmount(() => {
 .live-container .m-market-tab .m-tabs-nav .m-tabs-tab-active {
   color: var(--brand-highlight-text);
   font-weight: bold;
-  border-bottom: 0.23333333rem solid var(--brand-highlight-text)
+  border-bottom: 0.23333333rem solid var(--brand-highlight-text);
 }
 
 .live-container .m-bet-tab {
@@ -615,7 +655,7 @@ onBeforeUnmount(() => {
   background: var(--brand-background-live);
 }
 
-.live-container .m-bet-tab .x-live-title>span {
+.live-container .m-bet-tab .x-live-title > span {
   border-right: 1px solid;
   font-size: 1.5rem;
   font-weight: bold;
@@ -676,7 +716,7 @@ onBeforeUnmount(() => {
   width: 55%;
 }
 
-.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name>div {
+.live-container .m-bet-tab .m-bet-content .x-live-table .m-name-row .m-name-cell .m-name > div {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
