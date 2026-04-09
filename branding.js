@@ -11,11 +11,11 @@ export const brandDetails = {
     secondaryBackground: '#ECF2FE',
 
     primaryTextColor: '#353a45',
-    secondaryTextColor: '#0D9737',
+    secondaryTextColor: '#22ABE1',
 
     prematchOddBackgroundColor: '#ECF2FE',
     prematchOddTextColor: '#000',
-    activePrematchOddBackground: '#0D9737',
+    activePrematchOddBackground: '#22ABE1',
     activePrematchOddTextColor: '#fff',
 
     liveOddBackgroundColor: '#0D0D0D',
@@ -29,10 +29,10 @@ export const brandDetails = {
     highlightTextColor: '#22ABE1'
   },
   fonts: {
-    primaryFont: 'Avenir',
-    primaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
-    secondaryFont: 'Montserrat',
-    secondaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
+    primaryFont: "'Montserrat'",
+    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap',
+    secondaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
+    secondaryFont: 'Avenir'
   },
   images: {
     logo: '/assets/logos/default-logo.png'

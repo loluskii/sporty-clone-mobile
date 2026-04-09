@@ -2,7 +2,7 @@ import moment from 'moment'
 // import _ from 'lodash'
 import { getSplitPropsData } from '@/helpers'
 import { brandDetails } from '/branding'
-import { brandDetails as defBrandDetails } from '/branding-template'
+// import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
 
 export const applyBranding = async () => {
@@ -10,8 +10,8 @@ export const applyBranding = async () => {
     let defConfig
     if (brandDetails) {
       defConfig = brandDetails
-    } else {
-    defConfig = defBrandDetails
+    // } else {
+    // defConfig = defBrandDetails
     }
     const config = defConfig
     const utilsStore = useUtilsStore()
@@ -38,6 +38,15 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty(
       '--brand-background-secondary',
       config.colors.secondaryBackground
+    )
+
+    document.documentElement.style.setProperty(
+      '--brand-primary-font-family',
+      config.fonts.primaryFont
+    )
+    document.documentElement.style.setProperty(
+      '--brand-secondary-font-family',
+      config.fonts.secondaryFont
     )
 
     document.documentElement.style.setProperty(
@@ -108,15 +117,6 @@ export const applyBranding = async () => {
     document.documentElement.style.setProperty(
       '--brand-highlight-text',
       config.colors.highlightTextColor
-    )
-
-    document.documentElement.style.setProperty(
-      '--brand-primary-font-family',
-      config.fonts.primaryFont
-    )
-    document.documentElement.style.setProperty(
-      '--brand-secondary-font-family',
-      config.fonts.secondaryFont
     )
 
     const logoElement = document.getElementById('logo')
