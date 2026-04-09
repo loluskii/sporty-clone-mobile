@@ -197,8 +197,8 @@ const routeIsCasino = computed(() => {
 <style scoped>
 .bottomNav-icon,
 a {
-  fill: #9ca0ab;
-  /* color: #9ca0ab !important; */
+  /* fill: #9ca0ab; */
+  color: #9ca0ab !important;
 }
 
 .bottomNav-icon.active {
@@ -237,7 +237,7 @@ a {
 }
 
 .m-bottom-nav .m-bottom-fixed {
-  background-color: #313131;
+  background-color: #2a2a2a;
   padding-top: 10px;
   padding-bottom: 10px;
   bottom: 0;
@@ -315,12 +315,12 @@ a {
 }
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon {
-  fill: var(--brand-secondary);
+  fill: var(--brand-primary);
 }
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.providers,
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.category {
-  stroke: var(--brand-secondary);
+  stroke: var(--brand-primary);
   fill: none;
 }
 

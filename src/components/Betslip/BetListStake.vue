@@ -27,7 +27,7 @@
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
-            You need a balance of {{ SportsbookGlobalVariable.CurrencyCode }} {{ betlistStake }} to
+            You need a balance of {{ SportsbookGlobalVariable.Currency }} {{ betlistStake }} to
             place this bet. Please deposit an additional {{ amountNeededToStake }}
           </p>
           <p @click.prevent="goToDeposit" class="m-deposit-link-wrapper">
@@ -226,7 +226,7 @@ const balanceLowerThanStake = computed(() => {
 })
 
 const amountNeededToStake = computed(() => {
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
+  return `${SportsbookGlobalVariable.Currency} ${formatNumber(betlistStake.value - parseFloat(userStore.balance))}`
 })
 
 const acceptedChanges = computed(() => {
@@ -316,10 +316,7 @@ const totalStake = computed(() => {
 // Add this computed property to check for suspended selections
 const hasSuspendedSelections = computed(() => {
   return couponStore.coupon.selections.some(
-    (selection) =>
-      selection.suspended ||
-      selection.unavailable ||
-      (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
+    (selection) => selection.suspended || selection.unavailable
   )
 })
 
@@ -360,7 +357,7 @@ function placeBet() {
     emit('toggle-betslip')
     return router.push({ name: 'sign-in' })
   } else if (placeBetDisabled.value) {
-    return
+    // return
   } else if (hasSuspendedSelections.value) {
     emit('toggle-betslip')
     emitter.emit('showErrorMessage', 'Some selections are suspended')
@@ -429,20 +426,11 @@ function handleAcceptChange() {
     selection.changed = false
   })
 
-  // Remove any suspended selections that are unavailable
-  const updatedSelections = couponStore.coupon.selections.filter((selection) => {
-    const isExpired = (new Date() - new Date(selection.eventDate)) / (1000 * 60 * 60) >= 3
-    return !(selection.suspended && isExpired)
+  // Recalculate winnings after accepting changes
+  couponStore.updateWinnings({
+    stake: couponStore.coupon.totalStake,
+    id: 'all'
   })
-
-  if (updatedSelections.length !== couponStore.coupon.selections.length) {
-    couponStore.coupon.selections = updatedSelections
-    // Recalculate winnings after removing suspended selections
-    couponStore.updateWinnings({
-      stake: couponStore.coupon.totalStake,
-      id: 'all'
-    })
-  }
 }
 
 onMounted(() => {
@@ -577,10 +565,6 @@ onMounted(() => {
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .one-cut-text-gap {
   gap: 0.25rem;
-}
-
-.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win.real-theme {
-  background-color: #f2f2f2;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .total-stake,
@@ -753,7 +737,7 @@ onMounted(() => {
   .m-submit
   .m-share-btn
   .m-icon-share:before {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
   font-size: 1.33333333rem;
 }
@@ -784,7 +768,7 @@ onMounted(() => {
   -ms-flex-pack: center;
   justify-content: center;
   text-align: center;
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-secondary);
   color: #ffffff;
 }
@@ -803,7 +787,7 @@ onMounted(() => {
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.bet-submit {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background: var(--brand-quaternary);
   color: #ffffff;
   color: var(--brand-tertiary);
@@ -1041,7 +1025,7 @@ onMounted(() => {
   text-align: center;
   vertical-align: middle;
   width: 34px;
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--c-betslip-flexibet-action);
 }
 
@@ -1246,7 +1230,7 @@ onMounted(() => {
   padding-top: 3px;
   border-color: #eaecef;
   border-color: var(--background-type1-tertiary);
-  color: #0d9737;
+  color: var(--brand-highlight-text);
   color: var(--brand-secondary);
 }
 

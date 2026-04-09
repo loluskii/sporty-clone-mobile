@@ -179,7 +179,7 @@ export const router = createRouter({
       path: '/Account/Me/Profile',
       name: 'account-profile',
       component: ProfileView,
-      meta: { showFooter: true }
+      meta: { showFooter: false }
     },
     {
       path: '/Account/Transactions',
@@ -296,7 +296,8 @@ export const router = createRouter({
     {
       path: '/CMS/:page',
       name: 'cms-page',
-      component: CMSPage
+      component: CMSPage,
+      meta: { showFooter: true }
     },
 
     // Promotions

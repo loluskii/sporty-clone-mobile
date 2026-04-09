@@ -64,10 +64,7 @@
                       ><span class="m-i-live bg-green-200 m-t-b5">Live</span></span
                     >
                   </div>
-                  <div class="actions">
-                    <span class="divider"></span>
-                    <div style="color: #322c84" @click="shareTicket"></div>
-                  </div>
+
                 </div>
                 <div @click="showChild($event, bet.betslipId)">
                   <ul class="m-against" :id="bet.betslipId + '_bop'">
@@ -175,7 +172,7 @@
                           </span>
                           <span class="m-t-12"></span>
                         </div>
-                        <div v-else class="m-score" style="color: var(--brand-secondary)">
+                        <!--- <div v-else class="m-score" style="color: var(--brand-secondary)">
                           <span class="m-t-12 capitalize">
                             {{
                               !event.isLive ? 'FT' : `${event.eventTime} ${getMatchStatus(event)}`
@@ -184,7 +181,7 @@
                           <span class="m-t-12" style="font-weight: bold">
                             {{ ` | ${event.score}` }}
                           </span>
-                        </div>
+                        </div> -->
                       </div>
                     </li>
                   </ul>
@@ -217,7 +214,7 @@
                   >
                     <span v-if="!cashingOut">{{
                       bet.cashOutAmount && bet.cashOutAmount > 0 && !bet.isBonusBet
-                        ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.cashOutAmount.toFixed(2)}`
+                        ? `Cashout ${SportsbookGlobalVariable.Currency} ${bet.cashOutAmount.toFixed(2)}`
                         : 'Cashout Unavailable'
                     }}</span>
                     <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
@@ -265,7 +262,7 @@
                       <span v-if="!cashingOut"
                         ><span>Confirm</span>
                         <span class="money">
-                          {{ SportsbookGlobalVariable.CurrencyCode }}
+                          {{ SportsbookGlobalVariable.Currency }}
                           {{ cashoutData.cashOutAmount.toFixed(2) }}
                         </span>
                       </span>
@@ -457,7 +454,7 @@ defineComponent({
 <style scoped>
 @import url('@/assets/css/bet-history.css');
 .m-btn--text {
-  color: #0d9737;
+  color: var(--brand-highlight-text);
 }
 .m-btn--text + .m-btn {
   margin-top: 1.66666667rem;

@@ -1,6 +1,8 @@
 // let baseApi = import.meta.env.VITE_BASE_API;
 export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
+export const FEEDS_API = import.meta.env.VITE_FEEDS_API
+export const FEEDS_API_BASE = import.meta.env.VITE_FEEDS_API?.replace('/v1', '') || ''
 
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
@@ -12,6 +14,7 @@ export const SIM_ALLOWED_MARKETS = [
 export const SIM_ENABLED = false;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true
+export const EXCLUDED_LIVE_SPORT_IDS = [2, 5]
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage

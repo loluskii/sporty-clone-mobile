@@ -60,7 +60,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useUtilsStore } from '../stores/utils.store'
-import { getCategoriesBySport } from '../helpers'
+import { getCategoriesBySport, FEED_TOGGLE } from '../helpers'
 const { sportsMenu } = useUtilsStore()
 // import { useRouter } from 'vue-router'
 import AZTournmentSelect from '@/components/AZTournmentSelect.vue'
@@ -130,7 +130,7 @@ onMounted(async () => {
   background: #ffffff;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #353a45;
+  color: #eaecef;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -441,7 +441,7 @@ onMounted(async () => {
 .m-azmenu .tab-wrap .az-tabs.m-tabs .m-tabs-nav .m-tabs-tab {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #353a45;
+  color: #eaecef;
   font-size: 1.066rem;
   font-weight: 500;
   line-height: 3.66666667rem;

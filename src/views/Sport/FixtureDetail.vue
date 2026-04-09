@@ -248,24 +248,40 @@ watch(
 )
 
 function setupMqttSubscriptions(matchId) {
-  const componentId = `fixture-detail-${matchId}-${Date.now()}`
+  const topics = {
+    oddsChange: `sbe/feeds/prematch/odds_change/${matchId}`,
+    betStop: `sbe/feeds/prematch/bet_stop/${matchId}`,
+    matchStatus: `sbe/feeds/prematch/match_status/${matchId}`
+  }
 
-  // Subscribe to odds changes
-  const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
-  const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-    // console.log(`📊 MQTT: Received message on topic ${oddsChangeTopic} for component ${componentId}`)
-    handleOddsChange(data)
+  const handlers = {
+    oddsChange: handleOddsChange,
+    betStop: handleBetStop,
+    matchStatus: handleMatchStatus
+  }
+
+  const unsubscribers = Object.entries(topics).map(([key, topic]) => {
+    return subscribe(topic, (data) => {
+      handlers[key](data)
+    })
   })
 
-  // Subscribe to bet stop
-  const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
-  const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-    // console.log(`⚠️ BET STOP: Received message on topic ${betStopTopic} for component ${componentId}`)
-    handleBetStop(data)
-  })
+  unsubscribeFunctions.value = unsubscribers
+}
 
-  // Store unsubscribe functions in ref
-  unsubscribeFunctions.value = [unsubscribeOddsChange, unsubscribeBetStop]
+function handleMatchStatus(data) {
+  const matchId = eventDetail.value?.matchID
+  const dataMatchId = data.event_id || data.match_id
+
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
+    return
+  }
+
+  // Handle match going live (status 1) or other status changes
+  if (data.status === 1 || data.status_code === 1) {
+    // Match has started/gone live - show unavailable message for prematch
+    eventDetail.value.statusCode = 1
+  }
 }
 
 function setupPeriodicRefetch(matchId) {

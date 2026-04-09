@@ -38,18 +38,6 @@
     <div class="t_c-about_us">
       <h5
         class="underline"
-        @click="
-          $router.push({
-            name: 'cms-page',
-            params: { page: 'terms_and_conditions' }
-          })
-        "
-      >
-        Terms &amp; Conditions
-      </h5>
-      <h5 class="divider">|</h5>
-      <h5
-        class="underline"
         @click="$router.push({ name: 'cms-page', params: { page: 'about_us' } })"
       >
         About Us
@@ -60,11 +48,51 @@
         @click="
           $router.push({
             name: 'cms-page',
-            params: { page: 'responsible_gaming' }
+            params: { page: 'terms_and_conditions' }
           })
         "
       >
-        Responsible Gaming
+        Terms and Conditions
+      </h5>
+      
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'responsible_gambling' }
+          })
+        "
+      >
+        Responsible Gambling
+      </h5>
+    </div>
+    <div class="t_c-about_us">
+      <h5
+        class="underline"
+        @click="
+          $router.push({
+            name: 'cms-page',
+            params: { page: 'privacy_policy' }
+          })
+        "
+      >
+        Privacy Policy
+      </h5>
+      <h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'refund_policy' } })"
+      >
+        Refund Policy
+      </h5>
+			<h5 class="divider">|</h5>
+      <h5
+        class="underline"
+        @click="$router.push({ name: 'cms-page', params: { page: 'contact_us' } })"
+      >
+        Contact Us
       </h5>
     </div>
     <div class="btn" @click="handleClick">
@@ -275,7 +303,6 @@ footer .btn button {
   background-color: var(--c-footer-btn-bg);
   border: 0;
   color: #ffffff;
-  color: var(--text-type2-primary);
   padding: 1.066rem 0;
   width: 100%;
 }

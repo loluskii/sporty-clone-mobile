@@ -27,7 +27,7 @@
           :src="
             'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
@@ -44,7 +44,7 @@
           :src="
             'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
             getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media&token=0d206e2a-ee33-42eb-bc33-497f6223d3d9'
+            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
           "
         />
       </div>
@@ -159,7 +159,7 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,activeMarket.marketName,odd.outcomeName)
+  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,'1X2',odd.outcomeName)
   const data = {
     fixture: event,
     market_name: '1X2',
@@ -184,7 +184,6 @@ function addToBetslip(event, odd) {
 <style scoped>
 .featuredMatchCard {
   background-color: #ffffff;
-  background-color: var(--c-featured-match-card-bg);
   -webkit-box-shadow:
     0px 2px 4px 2px rgba(0, 0, 0, 0.1),
     2px 2px 4px 0px rgba(0, 0, 0, 0.1);
@@ -234,8 +233,7 @@ function addToBetslip(event, odd) {
   width: 18px;
 }
 .featuredMatchCard .top .tournamentLink {
-  color: #0d9737;
-  color: var(--brand-highlight-text);
+  color: #000;
   font-size: 0.83333333rem;
   margin-left: 0.5rem;
   overflow: hidden;
@@ -493,7 +491,7 @@ function addToBetslip(event, odd) {
   line-height: 1;
 }
 .outcomes .m-outcome--checked {
-  background: #0d9737;
+  background: var(--brand-highlight-text);
   background-color: var(--brand-active-prematch-odds-bg);
   color: #ffffff;
 }
