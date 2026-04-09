@@ -115,7 +115,7 @@ defineComponent({
   background: linear-gradient(
     188deg,
     var(--brand-primary) 0%,
-    var(--brand-background-secondary) 100%
+    #5571a7 100%
   );
 }
 
