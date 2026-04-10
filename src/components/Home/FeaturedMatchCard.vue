@@ -33,7 +33,7 @@
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
       <div class="dateTime">
-        <div class="time">{{moment(matchDetails.date).format('hh:mma') }}</div>
+        <div class="time">{{moment(matchDetails.date).format('ha') }}</div>
         <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
       </div>
       <div class="market">
@@ -235,7 +235,6 @@ function addToBetslip(event, odd) {
 }
 .featuredMatchCard .top .tournamentLink {
   color: #000;
-  font-size: 0.83333333rem;
   margin-left: 0.5rem;
   overflow: hidden;
   padding-right: 0.08333333rem;
@@ -333,7 +332,7 @@ function addToBetslip(event, odd) {
 .featuredMatchCard .mid .dateTime .date::before {
   color: #dfe0e6;
   content: '|';
-  /* margin: 0 0.5rem; */
+  margin: 0 0.3rem;
 }
 .featuredMatchCard .mid .market {
   color: var(--brand-highlight-text);

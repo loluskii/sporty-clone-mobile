@@ -284,7 +284,6 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-text {
   display: block;
-  font-size: 0.83333333rem;
   line-height: 1;
   margin: 0 auto;
   white-space: normal;
