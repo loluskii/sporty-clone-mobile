@@ -1,7 +1,7 @@
 // let baseApi = import.meta.env.VITE_BASE_API;
 export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
-export const FEEDS_API = 'https://odds-service-tdurqo2k.on-forge.com'
+export const FEEDS_API = 'https://odds-service-tdurqo2k.on-forge.com/v1'
 export const FEEDS_API_BASE = 'https://odds-service-tdurqo2k.on-forge.com/v1'
 
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
