@@ -18,7 +18,7 @@
           </div>
           <div
             class="category"
-            @click="openQtechLobby()"
+            @click="$router.push({ name: 'casino' })"
             id="qtech_games"
           >
             <img

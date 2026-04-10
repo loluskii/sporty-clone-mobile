@@ -79,26 +79,15 @@
 <script setup>
 import HeaderCasino from '@/components/HeaderCasino.vue'
 import Carousel from '@/components/Home/Carousel.vue'
-import { ref, onBeforeMount, watch, nextTick, computed } from 'vue'
-import { getTopGameCategories, gamesByTopCategory, getGamesBySearch, debounce } from '@/helpers'
+import { ref, computed } from 'vue'
+import { getGamesBySearch, debounce } from '@/helpers'
 import router from '@/router'
-import { useAuthStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { slugify } from '@/helpers'
-import emitter from '@/plugins/emitter'
-import $ from 'jquery'
 import GameCard from '@/components/Casino/GameCard.vue'
 
-const topGameCategories = ref([])
-const gamesList = ref([])
-const activeTopCategory = ref('all')
-const scrollComponent = ref(null)
-const authStore = useAuthStore()
-const isLoading = ref(true)
-const isSearchMode = ref(false)
 const isSearching = ref(false)
 const searchQuery = ref('')
-const myElement = ref(null)
 const searchResult = ref([])
 const displayLimit = ref(12)
 const isLoadingMore = ref(false)
@@ -109,24 +98,6 @@ const displayedGames = computed(() => {
 
 const hasMoreGames = computed(() => {
   return displayLimit.value < searchResult.value.length
-})
-
-async function getCategories() {
-  const response = await getTopGameCategories()
-  topGameCategories.value = response.data
-  await getGameByTopCategory(topGameCategories.value[0])
-}
-
-async function getGameByTopCategory(category) {
-  isLoading.value = true
-  activeTopCategory.value = category
-  const res = await gamesByTopCategory(category.id)
-  isLoading.value = false
-  gamesList.value = res.data ? res.data : []
-}
-
-const searchEmptyState = computed(() => {
-  return searchQuery.value === '' || searchQuery.value.length < 3
 })
 
 const searchEmtpyResult = computed(() => {
@@ -141,26 +112,20 @@ const searchEmtpyResult = computed(() => {
 const clearSearch = () => {
   searchQuery.value = ''
   searchResult.value = []
-}
-
-const updateCSSVar = () => {
-  if (myElement.value) {
-    const distanceFromTop = myElement.value.getBoundingClientRect().top + window.scrollY
-    // Assign the distance to a CSS variable
-    document.documentElement.style.setProperty('--distance-from-top', `${distanceFromTop}px`)
-  }
+  displayLimit.value = 12
 }
 
 const search = debounce(async (query) => {
   if (query.length < 3) {
     searchResult.value = []
+    displayLimit.value = 12
     return
   }
 
   isSearching.value = true
   try {
     const response = await getGamesBySearch(query)
-
+    displayLimit.value = 12
     searchResult.value = response.data || []
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -173,17 +138,6 @@ const search = debounce(async (query) => {
 const handleInput = () => {
   search(searchQuery.value)
 }
-
-onBeforeMount(async () => {
-  await getCategories()
-})
-
-watch(isSearchMode, async (newVal) => {
-  if (newVal) {
-    await nextTick() // Wait for the element to be in the DOM
-    updateCSSVar()
-  }
-})
 
 const getImagePath = (game) => {
   try {
