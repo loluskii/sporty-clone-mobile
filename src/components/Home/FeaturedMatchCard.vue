@@ -333,7 +333,7 @@ function addToBetslip(event, odd) {
 .featuredMatchCard .mid .dateTime .date::before {
   color: #dfe0e6;
   content: '|';
-  margin: 0 0.5rem;
+  /* margin: 0 0.5rem; */
 }
 .featuredMatchCard .mid .market {
   color: var(--brand-highlight-text);

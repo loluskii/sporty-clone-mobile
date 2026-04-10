@@ -26,6 +26,7 @@ const CMSPage = () => import('@/views/CMS.vue')
 // import SupportView from '@/views/Account/SupportView.vue'
 const SearchView = () => import('@/views/SearchView.vue')
 const GroupView = () => import('@/views/Games/GroupView.vue')
+const GamesView = () => import('@/views/Games/GamesView.vue')
 const Search = () => import('../views/Games/SearchView.vue')
 
 const CasinoView = () => import('@/views/CasinoView.vue')
@@ -220,6 +221,18 @@ export const router = createRouter({
       path: '/Casino',
       name: 'casino',
       component: CasinoView,
+      meta: { showMobileNavigation: true }
+    },
+    {
+      path: '/Games',
+      name: 'casino-games',
+      component: GamesView,
+      meta: { showMobileNavigation: true }
+    },
+    {
+      path: '/Games/Search',
+      name: 'casino-search',
+      component: Search,
       meta: { showMobileNavigation: true }
     },
     {

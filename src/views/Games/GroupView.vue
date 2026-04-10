@@ -191,7 +191,7 @@ async function handleGamesView(name, id, fetchFunction, type) {
   viewHeaderTitle.value = name.replace(/_/g, ' ')
   categoryName.value = name.replace(/_/g, ' ')
   const res = await fetchFunction(id)
-  gamesList.value = res.data.sort((a, b) => b.priority - a.priority) || []
+  gamesList.value = res.data || []
   viewType.value = type
   isLoading.value = false
 }
@@ -227,6 +227,10 @@ async function handleCasinoJackpots(gameIds) {
 
 const getImagePath = (game) => {
   try {
+    if (game?.image) {
+      return game.image
+    }
+
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
       game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
     )}.png?alt=media`

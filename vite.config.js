@@ -15,5 +15,14 @@ export default ({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    server: {
+      proxy: {
+        '/casino-client': {
+          target: 'https://clientapi.sportsbookengine.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/casino-client/, '/client')
+        }
+      }
+    }
   })
 }

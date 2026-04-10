@@ -3,6 +3,7 @@ import {
 } from './fetch-wrapper'
 import {
   BASE_API,
+  CASINO_CLIENT_API,
   CLIENT_ID,
   NEW_BASE_API,
   NEW_BET_API,
@@ -44,6 +45,107 @@ const offsetHours = Math.abs(offset / 60)
 
 const parseData = async (response) => {
   return response instanceof Promise ? (await response)?.data : response.data
+}
+
+let casinoCatalogPromise = null
+
+const formatCasinoCategoryName = (value = '') => {
+  return String(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+const normalizeCasinoProvider = (provider = {}) => {
+  const id = String(provider.provider_id ?? provider.id ?? '')
+
+  return {
+    ...provider,
+    id,
+    provider_id: id,
+    active: String(provider.active ?? '0') === '1',
+    name: provider.name ?? ''
+  }
+}
+
+const normalizeCasinoCategory = (category = {}, index = 0, total = 0) => {
+  const id = String(category.category_id ?? category.id ?? '')
+  const slug = category.category ?? category.slug ?? ''
+
+  return {
+    ...category,
+    id,
+    category_id: id,
+    slug,
+    name: formatCasinoCategoryName(slug),
+    priority: total - index
+  }
+}
+
+const normalizeCasinoGame = (game = {}, index = 0, total = 0, providerMap = new Map(), categoryMap = new Map()) => {
+  const id = String(game.id ?? game.gameId ?? '')
+  const providerId = String(game.provider_id ?? game.providerId ?? '')
+  const categoryId = String(game.category_id ?? game.categoryId ?? '')
+  const providerName = providerMap.get(providerId)?.name ?? 'Casino'
+  const categoryName = categoryMap.get(categoryId)?.name ?? ''
+
+  return {
+    ...game,
+    id,
+    gameId: id,
+    providerId,
+    categoryId,
+    provider_id: providerId,
+    category_id: categoryId,
+    title: game.game_name ?? game.title ?? '',
+    image: game.game_image ?? game.image ?? '',
+    game_name: game.game_name ?? game.title ?? '',
+    game_image: game.game_image ?? game.image ?? '',
+    gameCode: game.game_code ?? game.gameCode ?? '',
+    game_code: game.game_code ?? game.gameCode ?? '',
+    type: providerName,
+    providerName,
+    categoryName,
+    priority: total - index
+  }
+}
+
+const normalizeCasinoListResponse = (payload = {}) => {
+  const data = payload?.data ?? {}
+  const providers = (data.providers ?? []).map(normalizeCasinoProvider)
+  const categories = (data.categories ?? []).map((category, index, list) =>
+    normalizeCasinoCategory(category, index, list.length)
+  )
+  const providerMap = new Map(providers.map((provider) => [provider.id, provider]))
+  const categoryMap = new Map(categories.map((category) => [category.id, category]))
+  const games = (data.games ?? []).map((game, index, list) =>
+    normalizeCasinoGame(game, index, list.length, providerMap, categoryMap)
+  )
+
+  return {
+    status_code: payload?.status_code,
+    status_description: payload?.status_description,
+    data: {
+      providers,
+      categories,
+      games,
+      meta: data.meta ?? {}
+    }
+  }
+}
+
+const getCasinoCatalog = async (forceRefresh = false) => {
+  if (!casinoCatalogPromise || forceRefresh) {
+    casinoCatalogPromise = parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list`))
+  }
+
+  return normalizeCasinoListResponse(await casinoCatalogPromise)
+}
+
+const getCasinoListTab = async (tab, params = {}) => {
+  const query = new URLSearchParams({ tab, ...params })
+  return normalizeCasinoListResponse(
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list?${query.toString()}`))
+  )
 }
 
 export const fetchGlobalVars = async () => {
@@ -382,21 +484,29 @@ export const getCasinoBonusGames = async (userId) => {
 }
 
 export const getGamesBySearch = async (gameName) => {
-  return parseData(
-    fetchWrapper.get(
-      `${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/game-list?gameName=${gameName}`
-    )
-  )
+  const response = await getCasinoListTab('games', { search: gameName })
+  return {
+    ...response,
+    games: response.data.games
+  }
 }
 
 export const getGamesByProviders = async (providerId) => {
-  return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/games/${CLIENT_ID}/list?providerId=${providerId}`)
-  )
+  const response = await getCasinoCatalog()
+  const normalizedProviderId = String(providerId)
+
+  return {
+    ...response,
+    data: response.data.games.filter((game) => game.providerId === normalizedProviderId)
+  }
 }
 
 export const getProviders = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/provider`))
+  const response = await getCasinoListTab('providers')
+  return {
+    ...response,
+    data: response.data.providers
+  }
 }
 
 export const getCasinoStartUrl = async (payload) => {
@@ -408,15 +518,22 @@ export const getSmatVirtualStartUrl = async (payload) => {
 }
 
 export const getTopGameCategories = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/categories`))
+  const response = await getCasinoListTab('categories')
+  return {
+    ...response,
+    data: response.data.categories
+  }
 }
 
 export const gamesByTopCategory = async (id) => {
-  return parseData(
-    fetchWrapper.get(
-      `${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/list?categoryId=${id}`
-    )
-  )
+  const response = await getCasinoCatalog()
+
+  return {
+    ...response,
+    data: id
+      ? response.data.games.filter((game) => game.categoryId === String(id))
+      : response.data.games
+  }
 }
 
 export const getJackpots = async () => {
