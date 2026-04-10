@@ -236,12 +236,6 @@ export const router = createRouter({
       meta: { showMobileNavigation: true }
     },
     {
-      path: '/Games/Search',
-      name: 'casino-search',
-      component: Search,
-      meta: { showMobileNavigation: true }
-    },
-    {
       path: '/Games/Providers',
       name: 'casino-providers',
       component: GroupView,

@@ -487,18 +487,53 @@ export const getGamesBySearch = async (gameName) => {
   const response = await getCasinoListTab('games', { search: gameName })
   return {
     ...response,
-    games: response.data.games
+    games: response.data.games,
+    data: response.data.games
+  }
+}
+
+export const getCasinoListGames = async () => {
+  const response = await getCasinoListTab('games')
+  return {
+    ...response,
+    data: response.data.games
+  }
+}
+
+export const getCasinoGamesByProviderCategory = async (providerId, categoryId = '') => {
+  const params = new URLSearchParams()
+
+  if (providerId !== undefined && providerId !== null && providerId !== '') {
+    params.set('provider_id', String(providerId))
+  }
+
+  if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
+    params.set('category_id', String(categoryId))
+  }
+
+  const response = normalizeCasinoListResponse(
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_providers?${params.toString()}`))
+  )
+
+  const normalizedProviderId = providerId !== undefined && providerId !== null && providerId !== ''
+    ? String(providerId)
+    : ''
+  const normalizedCategoryId = categoryId !== undefined && categoryId !== null && categoryId !== ''
+    ? String(categoryId)
+    : ''
+
+  return {
+    ...response,
+    data: response.data.games.filter((game) => {
+      const matchesProvider = normalizedProviderId ? game.providerId === normalizedProviderId : true
+      const matchesCategory = normalizedCategoryId ? game.categoryId === normalizedCategoryId : true
+      return matchesProvider && matchesCategory
+    })
   }
 }
 
 export const getGamesByProviders = async (providerId) => {
-  const response = await getCasinoCatalog()
-  const normalizedProviderId = String(providerId)
-
-  return {
-    ...response,
-    data: response.data.games.filter((game) => game.providerId === normalizedProviderId)
-  }
+  return getCasinoGamesByProviderCategory(providerId)
 }
 
 export const getProviders = async () => {

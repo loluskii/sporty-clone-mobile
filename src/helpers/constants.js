@@ -3,11 +3,7 @@ export const BASE_API = 'https://www.frapapa.com'
 export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
 export const NEW_FIXTURES_API = 'https://fixture.sportsbookengine.com'
 export const NEW_BET_API = 'https://bet.staging.sportsbookengine.com/v1'
-export const CASINO_CLIENT_API =
-  import.meta.env.VITE_CASINO_CLIENT_API ||
-  (import.meta.env.DEV
-    ? '/casino-client'
-    : 'https://clientapi.sportsbookengine.com/client')
+export const CASINO_CLIENT_API = import.meta.env.VITE_CASINO_CLIENT_API || '/casino-client'
 export const CLIENT_ID = 4
 // export const FEEDS_API = import.meta.env.VITE_FEEDS_API
 // export const FEEDS_API_BASE = import.meta.env.VITE_FEEDS_API?.replace('/v1', '') || ''

@@ -73,6 +73,8 @@ import Carousel from '@/components/Home/Carousel.vue'
 import { ref, onBeforeMount, watch, computed, onMounted, provide } from 'vue'
 import Winners from '../../components/Casino/Winners.vue'
 import {
+  getCasinoGamesByProviderCategory,
+  getCasinoListGames,
   getGamesByProviders,
   gamesByTopCategory,
   getProviders,
@@ -197,7 +199,33 @@ async function handleGamesView(name, id, fetchFunction, type) {
 }
 
 async function handleGamesByCategoryView(name, id) {
-  await handleGamesView(name, id, gamesByTopCategory, 'category')
+  const providerId = route.query.providerId
+
+  if (providerId) {
+    await handleGamesView(name, { providerId, categoryId: id }, ({ providerId, categoryId }) => getCasinoGamesByProviderCategory(providerId, categoryId), 'category')
+    return
+  }
+
+  const allGames = await getCasinoListGames()
+  const categoryGames = (allGames.data || []).filter((game) => game.categoryId === String(id))
+  const derivedProviderId = categoryGames[0]?.providerId || ''
+
+  if (derivedProviderId) {
+    await handleGamesView(
+      name,
+      { providerId: derivedProviderId, categoryId: id },
+      ({ providerId, categoryId }) => getCasinoGamesByProviderCategory(providerId, categoryId),
+      'category'
+    )
+    return
+  }
+
+  gamesList.value = []
+  viewMode.value = 'games-list-view'
+  viewHeaderTitle.value = name.replace(/_/g, ' ')
+  categoryName.value = name.replace(/_/g, ' ')
+  viewType.value = 'category'
+  isLoading.value = false
 }
 
 async function handleGamesByProviderView(name, id) {
@@ -290,7 +318,6 @@ const loadMore = async () => {
 
 onMounted(() => {
   $('body').removeClass('no-scroll')
-  console.log('dfdf')
 })
 </script>
 
