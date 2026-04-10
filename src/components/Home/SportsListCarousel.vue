@@ -18,7 +18,7 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a @click.prevent="$router.push({ name: 'casino' })"
+        <a @click.prevent="$router.push({ name: 'casino-games' })"
           ><div class="sport-icon">
             <img src="@/assets/images/games.png" loading="eager" width="20" height="20" />
           </div>
