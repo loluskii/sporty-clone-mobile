@@ -3778,7 +3778,7 @@ ins {
 }
 
 .m-icon-football::before,
-.m-icon-Soccer::before {
+.m-icon-soccer::before {
   content: '\e67d';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -3983,7 +3983,8 @@ ins {
   font-style: normal;
 }
 
-.m-icon-eFootball::before {
+.m-icon-efootball::before,
+.m-icon-esoccer::before {
   content: '\e6cd';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -3992,7 +3993,7 @@ ins {
   font-style: normal;
 }
 
-.m-icon-eBasketball::before {
+.m-icon-ebasketball::before {
   content: '\e6cf';
   font-family: 'iconfont' !important;
   font-size: 16px;

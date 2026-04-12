@@ -222,6 +222,74 @@ export const unslugify = (str) => {
   return str.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
+const SPORT_ICON_CLASS_BY_NAME = {
+  football: 'm-icon-football',
+  soccer: 'm-icon-soccer',
+  basketball: 'm-icon--basketball',
+  tennis: 'm-icon--tennis',
+  rugby: 'm-icon--rugby',
+  cricket: 'm-icon--cricket',
+  volleyball: 'm-icon--volleyball',
+  'ice hockey': 'm-icon-iceHockey',
+  handball: 'm-icon-handball',
+  darts: 'm-icon-darts',
+  'beach volleyball': 'm-icon-beachVolley',
+  'beach volley': 'm-icon-beachVolley',
+  'table tennis': 'm-icon-tableTennis',
+  esports: 'm-icon-eSports',
+  'e sports': 'm-icon-eSports',
+  dota: 'm-icon-dota',
+  'cs go': 'm-icon-cs-go',
+  csgo: 'm-icon-cs-go',
+  lol: 'm-icon-lol',
+  'league of legends': 'm-icon-lol',
+  badminton: 'm-icon-badminton',
+  baseball: 'm-icon-baseball',
+  boxing: 'm-icon-boxing',
+  'american football': 'm-icon-americanFootball',
+  'aussie rules': 'm-icon--rugby',
+  snooker: 'm-icon-snooker',
+  'field hockey': 'm-icon-iceHockey',
+  fieldhockey: 'm-icon-iceHockey',
+  waterpolo: 'm-icon--volleyball',
+  'water polo': 'm-icon--volleyball',
+  futsal: 'm-icon-futsal',
+  squash: 'm-icon--tennis',
+  rally: 'm-icon-f1',
+  'esport counter strike': 'm-icon-cs-go',
+  'esports counter strike': 'm-icon-cs-go',
+  'counter strike': 'm-icon-cs-go',
+  'esport league of legends': 'm-icon-lol',
+  'esports league of legends': 'm-icon-lol',
+  'esport dota': 'm-icon-dota',
+  'esports dota': 'm-icon-dota',
+  mma: 'm-icon-mma',
+  speedway: 'm-icon-f1',
+  esoccer: 'm-icon-esoccer',
+  'e soccer': 'm-icon-esoccer',
+  ebasketball: 'm-icon-ebasketball',
+  'e basketball': 'm-icon-ebasketball',
+  'basketball 3x3': 'm-icon-basketball3x3',
+  basketball3x3: 'm-icon-basketball3x3'
+}
+
+export const normalizeSportIconName = (sportName = '') => {
+  return String(sportName)
+    .trim()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export const getSportIconClass = (sportName = '') => {
+  const normalizedName = normalizeSportIconName(sportName)
+
+  return SPORT_ICON_CLASS_BY_NAME[normalizedName] || `m-icon-${normalizedName.replace(/\s+/g, '')}`
+}
+
 export const chunks = (arr) => {
   if (arr % 2 == 0) {
     return arr.reduce((resultArray, item, index) => {

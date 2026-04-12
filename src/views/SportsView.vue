@@ -12,12 +12,8 @@
             :id="'sports_list_' + sport.sport_id"
             class="m-sports-choose-item m-snap-nav-item"
           >
-            <div class="sprot-icon">
-              <img
-                :src="getImageSrc(sport.sport_id)"
-                style="height: 20px; margin-right: 0.4rem"
-                alt=""
-              />
+            <div class="sprot-icon" :class="getSportIconClass(sport.sport_name)">
+              
             </div>
             <div class="sport-text">
               {{ sport.sport_name }}
@@ -108,7 +104,14 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUtilsStore } from '../stores'
-import { FEED_TOGGLE, getCategoriesBySport, getTournamentsByCategories, slugify, unslugify } from '../helpers'
+import {
+  FEED_TOGGLE,
+  getCategoriesBySport,
+  getSportIconClass,
+  getTournamentsByCategories,
+  slugify,
+  unslugify
+} from '../helpers'
 
 const utilsStore = useUtilsStore()
 const route = useRoute()

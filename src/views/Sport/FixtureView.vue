@@ -250,6 +250,7 @@ watch(
 async function getTournamentFixtures(sid) {
   if (!FEED_TOGGLE) return;
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
+  console.log(routeExtractedTIds)
   const selectedMarketId = Number(activeMarket.value?.marketID || 0)
   const isDerivedRequest = upMode.value !== 'none'
 
@@ -261,7 +262,7 @@ async function getTournamentFixtures(sid) {
           page: page.value,
           sid: sid,
           per_page: 30,
-          category_id: cat.tournament_id,
+          tournament_id: cat.tournamentID,
           derived_only: getDerivedOnlyParam()
         })
       )
