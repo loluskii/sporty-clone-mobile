@@ -79,7 +79,7 @@
         <div v-show="!isH2HShowing" class="m-sub-tab">
           <div class="m-snap-nav-wrap m-group" style="overflow: hidden;">
             <ul class="m-snap-nav flex"
-              style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); width: 645.388px;">
+              style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); width: auto;">
               <li class="m-sport-group-item m-snap-nav-item" :class="{ active: sharedSelectedGroupId === null }"
                 @click="sharedSelectedGroupId = null">
                 <span>All</span>

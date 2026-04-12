@@ -219,9 +219,8 @@ onMounted(getSportCategories)
   -ms-flex: none !important;
   flex: none !important;
   min-height: 5rem;
-  padding: 1.066rem 0.33333333rem 0.75rem;
+  padding: 1.066rem 0.53333333rem 0.75rem;
   position: relative;
-  width: 6.2rem;
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item:first-child {
   margin-left: 0.83333333rem;
