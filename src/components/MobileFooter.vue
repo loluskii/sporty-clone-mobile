@@ -97,8 +97,9 @@
             <span class="label" data-cms-key="games">Casino</span>
           </router-link>
         </div>
-        <div class="m-btn-button active">
-          <router-link :to="{ name: 'bets-view' }">
+        <div class="m-btn-button active" @click="goToOpenBets" >
+          <router-link>
+
             <span v-if="props.openBetCount > 0" class="open-bets">{{ props.openBetCount }}</span>
             <section>
               <svg
@@ -259,7 +260,7 @@
 import { useUtilsStore, useCouponStore } from '@/stores'
 import { computed } from 'vue'
 import { formatTotalOdds } from '@/helpers'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
   openBetCount: Number
@@ -268,6 +269,7 @@ const props = defineProps({
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
 const route = useRoute()
+const router = useRouter()
 
 const betslipCount = computed(() => {
   return couponStore.coupon.selections.length
@@ -288,6 +290,11 @@ const betType = computed(() => {
 
 function showBetslip() {
   return emit('show-betslip')
+}
+
+function goToOpenBets(){
+  utilsStore.activeBetView = 'open_bets'
+  return router.push({name: 'bets-view'})
 }
 
 const routeIsCasino = computed(() => {
