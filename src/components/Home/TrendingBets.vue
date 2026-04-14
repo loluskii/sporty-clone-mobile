@@ -26,9 +26,7 @@ const { data: codesData } = useQuery(
   'trending-codes',
   () => {
     const payload = {
-      from: getNext7Days()[0],
-      to: getNext7Days()[7],
-      betType: 0
+      from: getNext7Days()[0]
     }
     return getCodeHubItems(payload)
   },
@@ -40,7 +38,7 @@ const { data: codesData } = useQuery(
 
 const codes = computed(() => {
   // Use the same data source as CodeHub and limit to a small, scannable set.
-  return codesData.value?.data?.data?.slice(0, 6) || []
+  return codesData.value?.data?.data?.slice(0, 15) || []
 })
 </script>
 

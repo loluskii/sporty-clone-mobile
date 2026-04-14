@@ -114,22 +114,15 @@ function nextAction() {
   }
 }
 
-function replaceBetslip() {
+async function replaceBetslip() {
   try {
     emits('hide-dialogue')
-    couponStore.clearBetslip()
-    couponStore.coupon.selections = props.dialogueMessage.selections
-    couponStore.coupon.totalOdds = parseFloat(props.dialogueMessage.totalOdd)
-    couponStore.coupon.totalStake = parseFloat(props.dialogueMessage.stake)
-    couponStore.coupon.stake = parseFloat(props.dialogueMessage.stake)
-    couponStore.coupon.maxWin = parseFloat(props.dialogueMessage.possibleWin)
-    couponStore.coupon.source = props.dialogueMessage.source
-    if (props.dialogueMessage.selections.length === 1) {
-      couponStore.coupon.bet_type = 'Single'
-      couponStore.coupon.betslip_type = 'Single'
-    } else {
-      couponStore.coupon.bet_type = 'Multiple'
-      couponStore.coupon.betslip_type = 'Multiple'
+    const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(
+      props.dialogueMessage?.selections
+    )
+    if (!loadedSelections) {
+      emitter.emit('showDialogueToaster', 'All selections have expired')
+      return
     }
     emitter.emit('openBetslip')
   } catch (error) {}

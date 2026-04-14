@@ -115,9 +115,7 @@ async function getBetsData(status, options = {}) {
 
 async function getCodes() {
   let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0
+    from: getNext7Days()[0]
   }
   const res = await getCodeHubItems(payload)
   codes.value = res.data.data.slice(0, 10)

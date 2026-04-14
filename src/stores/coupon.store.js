@@ -17,7 +17,8 @@ import {
   bookBet2,
   CLIENT_ID,
   validateBetslipSelections,
-  formatNumber
+  formatNumber,
+  createID
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 
@@ -583,6 +584,86 @@ export const useCouponStore = defineStore({
 
       // After successfully adding selection, subscribe to its updates
       this.manageSubscription(selection, true)
+    },
+    buildCouponPayloadFromLoadedSelection(selection = {}) {
+      const matchId = selection.matchId || selection.match_id || selection.eventId || selection.event_id
+      const marketId = selection.marketId || selection.market_id
+      const outcomeId = selection.outcomeId || selection.outcome_id || selection.odd_id
+      const specifier = selection.specifier || ''
+      const eventName = selection.eventName || selection.event_name || ''
+      const [homeTeam = '', awayTeam = ''] = eventName.split(/\s+vs\.?\s+/i)
+      const marketName = selection.marketName || selection.market_name || ''
+      const outcomeName = selection.outcomeName || selection.outcome_name || ''
+      const startTime = selection.startTime || selection.eventDate || selection.event_date || selection.date
+      const sportId = selection.sportId || selection.sportID || selection.sport_id
+      const producerId = selection.producerId || selection.producerID || selection.producer_id
+
+      return {
+        fixture: {
+          matchID: matchId,
+          gameID: selection.eventId || selection.event_id || matchId,
+          name: eventName,
+          date: startTime,
+          tournament: selection.tournament || selection.tournamentName || '',
+          categoryName: selection.category || selection.categoryName || '',
+          sportName: selection.sport || selection.sportName || '',
+          sportID: sportId,
+          producerID: producerId,
+          homeTeam: selection.homeTeam || homeTeam.trim(),
+          awayTeam: selection.awayTeam || awayTeam.trim(),
+          combinability: selection.combinability || 0
+        },
+        market_name: marketName,
+        market_id: marketId,
+        ele_id: createID(matchId, marketId, outcomeId, specifier, marketName, outcomeName),
+        outcome: {
+          outcomeID: outcomeId,
+          outcomeName,
+          displayName: selection.displayName || outcomeName,
+          odds: selection.odds,
+          active: selection.active ?? 1,
+          producerID: producerId
+        },
+        odds: selection.odds,
+        odd_id: outcomeId,
+        odd_name: outcomeName,
+        type: selection.type || (selection.isLive ? 'live' : 'prematch'),
+        event_id: matchId,
+        specifier
+      }
+    },
+    async rebuildBetslipFromLoadedSelections(loadedData) {
+      console.log(loadedData)
+      const selections = Array.isArray(loadedData)
+        ? loadedData
+        : []
+
+      this.clearBetslip()
+
+      const activeSelections = selections.filter((selection) => {
+        const matchId = selection?.matchId || selection?.match_id || selection?.eventId || selection?.event_id
+        const marketId = selection?.marketId || selection?.market_id
+        const outcomeId = selection?.outcomeId || selection?.outcome_id || selection?.odd_id
+        const odds = Number(selection?.odds)
+        const active = selection?.active
+        const statusName = String(selection?.statusName || '').toLowerCase()
+        return (
+          matchId &&
+          marketId &&
+          outcomeId &&
+          Number.isFinite(odds) &&
+          odds > 1 
+        )
+      })
+
+      console.log(activeSelections)
+
+      for (const selection of activeSelections) {
+        await this.addToCoupon(this.buildCouponPayloadFromLoadedSelection(selection))
+      }
+
+      this.coupon.source = 'mobile'
+      return this.coupon.selections.length
     },
     async removeSelection(id) {
       const globalVars = this.SportsbookGlobalVariable

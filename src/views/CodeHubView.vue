@@ -247,11 +247,7 @@ async function fetchCodes({ page = 1, reset = false } = {}) {
   isLoadingMore.value = !reset
   const payload = {
     from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0,
-    page: page,
-    limit: 10,
-    search: searchTerm.value || ''
+    page: page
   }
   const res = await getCodeHubItems(payload)
   const liveCodes = res?.data?.data || []

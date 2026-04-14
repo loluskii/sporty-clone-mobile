@@ -3,17 +3,17 @@
     <div class="trending-card">
       <div class="trending-card-header">
         <div class="trending-code-wrap">
-          <button class="trending-code" type="button" @click="copyCode(code.betslipId)">
-            {{ code.betslipId }}
+          <button class="trending-code" type="button" @click="copyCode(code.code)">
+            {{ code.code }}
           </button>
           <!-- Use icon font classes to avoid encoding issues across builds. -->
-          <button class="trending-copy" type="button" @click="copyCode(code.betslipId)">
+          <button class="trending-copy" type="button" @click="copyCode(code.code)">
             <span class="iconfont icon-content_copy" aria-hidden="true"></span>
           </button>
         </div>
         <div class="trending-meta">
-          <span class="trending-folds">{{ code.totalSelections }} Fold</span>
-          <span class="trending-odds">{{ code.total_odd }}</span>
+          <span class="trending-folds">{{ code.totalGames }} Fold | </span>
+          <span class="trending-odds">{{ code.totalOdds }} odds</span>
         </div>
       </div>
 
@@ -29,7 +29,7 @@
               {{ selection.marketName }} &middot; {{ selection.eventName }}
             </div>
           </div>
-          <div class="trending-selection-odds">{{ selection.odds }}</div>
+          <div class="trending-selection-odds">{{ selection.odds.toFixed(2) }}</div>
         </div>
       </div>
 
@@ -46,11 +46,11 @@
               <button
                 class="trending-code"
                 type="button"
-                @click="copyCode(activeCode?.betslipId)"
+                @click="copyCode(getCodeValue(activeCode))"
               >
-                {{ activeCode?.betslipId }}
+                {{ getCodeValue(activeCode) }}
               </button>
-              <button class="trending-copy" type="button" @click="copyCode(activeCode?.betslipId)">
+              <button class="trending-copy" type="button" @click="copyCode(getCodeValue(activeCode))">
                 <span class="iconfont icon-content_copy" aria-hidden="true"></span>
               </button>
             </div>
@@ -114,6 +114,7 @@ const couponStore = useCouponStore()
 const copiedCode = ref('')
 const drawerOpen = ref(false)
 const activeCode = ref(null)
+const getCodeValue = (code) => code?.shareCode || code?.betslipId || ''
 // Expand selections for preview-only UI checks (e.g., 10 selections).
 const displaySelections = computed(() => {
   const selections = props.code?.selections || []
@@ -131,34 +132,23 @@ async function addToBetslip(code) {
     if (couponStore.coupon.selections.length) {
       emitter.emit('showBetslipConfirmation', code)
     } else {
-      const res = await loadBetslipByCode(code.betslipId)
-      addToBetslipLoading.value = false
-      if (res.success) {
-        if (res.data.selections.length) {
-          couponStore.coupon.selections = res.data.selections
-          couponStore.coupon.totalOdds = res.data.totalOdd
-          couponStore.coupon.totalStake = res.data.stake
-          couponStore.coupon.stake = res.data.stake
-          couponStore.coupon.maxWin = res.data.possibleWin
-          couponStore.coupon.source = 'mobile'
-          if (res.data.selections.length === 1) {
-            couponStore.coupon.bet_type = 'Single'
-            couponStore.coupon.betslip_type = 'Single'
-          } else {
-            couponStore.coupon.bet_type = 'Multiple'
-            couponStore.coupon.betslip_type = 'Multiple'
-          }
+      const res = await loadBetslipByCode(code.code)
+      if (res.status_code === 200 ) {
+        const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(res.data)
+        if (loadedSelections) {
+          emitter.emit('openBetslip')
         } else {
           emitter.emit('showDialogueToaster', 'All selections have expired')
         }
       } else {
         throw new Error(res.message)
       }
-      emitter.emit('openBetslip')
     }
   } catch (error) {
     console.log(error)
     emitter.emit('showDialogueToaster', error)
+  } finally {
+    addToBetslipLoading.value = false
   }
 }
 
@@ -320,7 +310,7 @@ onBeforeUnmount(() => {
 }
 
 .trending-cta {
-  background: var(--brand-primary);
+  background: var(--brand-primary-button);
   color: #ffffff;
   border: none;
   border-radius: 0.4rem;

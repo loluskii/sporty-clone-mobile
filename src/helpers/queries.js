@@ -228,7 +228,7 @@ export const getCodeHubItems = async (data) => {
     page = 1,
     perPage,
     limit,
-    sort = 'total_odd|asc',
+    sort = 'created|desc',
     start,
     end,
     from,
@@ -243,7 +243,7 @@ export const getCodeHubItems = async (data) => {
 
   const params = new URLSearchParams()
   params.set('page', page)
-  params.set('perPage', perPage || limit || 10)
+  params.set('perPage', perPage || limit || 20)
   params.set('sort', sort)
 
   const resolvedStart = start || from
@@ -460,12 +460,9 @@ export const bookBet2 = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/book-bet/${CLIENT_ID}`, payload))
 }
 
-export const loadBetslipByCode = async (betslipId) => {
+export const loadBetslipByCode = async (shareCode) => {
   return parseData(
-    fetchWrapper.post(`${NEW_BASE_API}/bets/find-bet`, {
-      betslipId: betslipId,
-      clientId: CLIENT_ID
-    })
+    fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub/${shareCode}`)
   )
 }
 

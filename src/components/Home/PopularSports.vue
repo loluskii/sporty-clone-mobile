@@ -121,7 +121,6 @@ import {
   slugify,
   getTopGameCategories,
   gamesByTopCategory,
-  getCodeHubItems,
   getNext7Days,
   FEED_TOGGLE
 } from '@/helpers'
@@ -206,17 +205,6 @@ async function getCasinoGames() {
   activeCasinoCategory.value = res.data[0].id
   const games = await gamesByTopCategory(activeCasinoCategory.value)
   featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
-}
-
-async function getCodes() {
-  if (!FEED_TOGGLE) return
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0
-  }
-  const res = await getCodeHubItems(payload)
-  codes.value = res.data.data
 }
 
 function assignTournaments(tournament, games, tournamentID) {
@@ -309,26 +297,6 @@ const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
   }
 )
 
-const { data: codesData, isLoading: isCodesLoading } = useQuery(
-  'codes',
-  () => {
-    const payload = {
-      from: getNext7Days()[0],
-      to: getNext7Days()[7],
-      betType: 0
-    }
-    return getCodeHubItems(payload)
-  },
-  {
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 60000,
-    cacheTime: 300000,
-    enabled: FEED_TOGGLE
-  }
-)
-
 // Update computed properties
 const casinoIsLoadingGames = computed(() => isCasinoLoading.value)
 
@@ -343,17 +311,6 @@ watch(
         activeCasinoCategory.value = firstCategory.id
         setActiveCategory(firstCategory)
       }
-    }
-  },
-  { immediate: true }
-)
-
-// Watch for codes data changes
-watch(
-  codesData,
-  (newData) => {
-    if (newData?.data?.data) {
-      codes.value = newData.data.data
     }
   },
   { immediate: true }
