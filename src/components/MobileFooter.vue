@@ -104,7 +104,6 @@
           </router-link>
         </div>
         <div class="m-btn-button active" @click="goToOpenBets" >
-          <router-link>
 
             <span v-if="props.openBetCount > 0" class="open-bets">{{ props.openBetCount }}</span>
             <section>
@@ -122,7 +121,6 @@
               </svg>
             </section>
             <span class="label">Open Bets</span>
-          </router-link>
         </div>
         <div class="m-btn-button">
           <router-link :to="{ name: 'account-me' }">
