@@ -103,7 +103,7 @@
             <span class="label" data-cms-key="games">Casino</span>
           </router-link>
         </div>
-        <div class="m-btn-button active" @click="goToOpenBets" >
+        <div class="m-btn-button" @click="goToOpenBets" >
           <a>
             <span v-if="props.openBetCount > 0" class="open-bets">{{ props.openBetCount }}</span>
             <section>
