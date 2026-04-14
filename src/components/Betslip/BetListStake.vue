@@ -39,7 +39,7 @@
         ></BetlistStakeKeyboard>
       </div>
 
-      <div class="sporty-insure-container">
+      <div v-if="!betslipMode" class="sporty-insure-container">
         <div class="alternative-bet-type-option alternative-bet-type-option">
           <div class="sporty-insure-logo">
             <div class="desc">
@@ -991,8 +991,13 @@ onMounted(() => {
 }
 
 .betslip-action-primary {
-  background: var(--brand-primary);
+  background: var(--brand-primary-button);
   color: #ffffff;
+}
+
+.sim-theme .betslip-action-primary {
+  background: var(--sim-primary);
+  color: #1b1e25;
 }
 
 .betslip-action-secondary {

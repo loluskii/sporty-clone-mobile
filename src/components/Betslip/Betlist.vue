@@ -450,7 +450,7 @@ onMounted(() => {})
 }
 
 .betslip-notification .sim-operate-sync-to-real-tip {
-  background-color: #fafd00;
+  background-color: var(--sim-primary);
   background-color: var(--sim-primary);
   color: #1b1e25;
   font-family: 'Roboto-Bold';
@@ -925,7 +925,7 @@ onMounted(() => {})
 }
 
 .submit.sim-theme {
-  background-color: #fafd00;
+  background-color: var(--sim-primary);
   background-color: var(--sim-primary);
   color: #1b1e25;
 }
@@ -1010,10 +1010,6 @@ onMounted(() => {})
   z-index: 49;
 }
 
-.confirm-wrap.sim-theme {
-  background: #1b1e25;
-}
-
 .button-wrap {
   display: flex;
   gap: 0.75rem;
@@ -1048,7 +1044,7 @@ onMounted(() => {})
 }
 
 .confirm-wrap.sim-theme .confirm-action-primary {
-  background: #fafd00;
+  background: var(--sim-primary);
   color: #1b1e25;
 }
 
@@ -1074,7 +1070,7 @@ onMounted(() => {})
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .place-bet.sim-theme {
-  background-color: #fafd00;
+  background-color: var(--sim-primary);
   background-color: var(--sim-primary);
   color: #000000;
 }
@@ -1085,7 +1081,7 @@ onMounted(() => {})
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .m-submit .sim-theme {
-  background-color: #fafd00;
+  background-color: var(--sim-primary);
   background-color: var(--sim-primary);
   color: #000000;
 }

@@ -401,6 +401,12 @@ defineComponent({
           " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
           <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
             :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
+            <WinModal
+              v-if="winModalShown"
+              :amount="winModalAmount"
+              :currency="winModalCurrency"
+              @close="hideWinModal"
+            />
         </div>
         <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
       </div>

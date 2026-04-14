@@ -111,6 +111,16 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-primary-button',
+      config.colors.primaryButtonColor
+    )
+
+    document.documentElement.style.setProperty(
+      '--brand-secondary-button',
+      config.colors.secondaryButtonColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-primary-font-family',
       config.fonts.primaryFont
     )

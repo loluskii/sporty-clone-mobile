@@ -13,6 +13,9 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#0D9737',
 
+    primaryButtonColor: '#0D9737',
+    secondaryButtonColor: '#e41827',
+
     primaryButtonBackgroundColor: '#0D9737',
     secondaryButtonBackgroundColor: '#0D9737',
 

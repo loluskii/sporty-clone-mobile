@@ -510,14 +510,14 @@ a {
   display: -ms-flexbox;
   display: flex;
   font-weight: bold;
-  height: 40px;
+  height: 50px;
   -webkit-box-pack: center;
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
   flex-direction: column;
   /* margin-top: 0.33333333rem; */
-  width: 40px;
+  width: 50px;
   font-size: 1rem;
   z-index: 2;
 }

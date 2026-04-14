@@ -391,7 +391,8 @@ function toggleBanker() {
   padding-right: 1rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper {
-  font-size: 1.33333333rem;
+  font-size: 1.166rem;
+  font-weight: bold;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-desc {
   -webkit-box-flex: 1;
