@@ -4,10 +4,16 @@
       <img src="/cog.gif" style="height: 30px" alt="" srcset="" />
     </div> -->
     <div
+      ref="betslipFloatRef"
       v-show="utilsStore.showBetslipCount"
-      @click="showBetslip"
+      @click="handleBetslipClick"
+      @pointerdown="startBetslipDrag"
       class="betslip-float-wrapper"
-      :class="betslipMode ? 'sim-theme' : 'real-theme'"
+      :class="[
+        betslipMode ? 'sim-theme' : 'real-theme',
+        { 'is-dragging': isDraggingBetslip, 'is-settling': isSettlingBetslip }
+      ]"
+      :style="betslipFloatStyle"
     >
       <!-- <div class="bg"></div> -->
       <div class="count-wrapper">
@@ -258,7 +264,7 @@
 </template>
 <script setup>
 import { useUtilsStore, useCouponStore } from '@/stores'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { formatTotalOdds } from '@/helpers'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -270,6 +276,16 @@ const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
 const route = useRoute()
 const router = useRouter()
+const betslipFloatRef = ref(null)
+const hasCustomBetslipPosition = ref(false)
+const betslipFloatPosition = ref({ left: 0, top: 0 })
+const suppressBetslipClick = ref(false)
+const dragState = ref(null)
+const isDraggingBetslip = ref(false)
+const isSettlingBetslip = ref(false)
+const settlingTimer = ref(null)
+const DRAG_THRESHOLD = 4
+const VIEWPORT_PADDING = 4
 
 const betslipCount = computed(() => {
   return couponStore.coupon.selections.length
@@ -288,8 +304,119 @@ const betType = computed(() => {
   return couponStore.coupon.bet_type
 })
 
-function showBetslip() {
+const betslipFloatStyle = computed(() => {
+  if (!hasCustomBetslipPosition.value) return {}
+  return {
+    bottom: 'auto',
+    left: `${betslipFloatPosition.value.left}px`,
+    right: 'auto',
+    top: `${betslipFloatPosition.value.top}px`
+  }
+})
+
+function handleBetslipClick(event) {
+  if (suppressBetslipClick.value) {
+    event.preventDefault()
+    event.stopPropagation()
+    suppressBetslipClick.value = false
+    return
+  }
   return emit('show-betslip')
+}
+
+function clampBetslipPosition(left, top, width, height) {
+  const maxLeft = Math.max(VIEWPORT_PADDING, window.innerWidth - width - VIEWPORT_PADDING)
+  const maxTop = Math.max(VIEWPORT_PADDING, window.innerHeight - height - VIEWPORT_PADDING)
+
+  return {
+    left: Math.min(maxLeft, Math.max(VIEWPORT_PADDING, left)),
+    top: Math.min(maxTop, Math.max(VIEWPORT_PADDING, top))
+  }
+}
+
+function startBetslipDrag(event) {
+  if (event.button !== undefined && event.button !== 0) return
+  const floatEl = betslipFloatRef.value
+  if (!floatEl) return
+
+  const rect = floatEl.getBoundingClientRect()
+  dragState.value = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startLeft: rect.left,
+    startTop: rect.top,
+    width: rect.width,
+    height: rect.height,
+    hasDragged: false
+  }
+
+  isDraggingBetslip.value = true
+  isSettlingBetslip.value = false
+  clearTimeout(settlingTimer.value)
+  floatEl.setPointerCapture?.(event.pointerId)
+  window.addEventListener('pointermove', moveBetslipDrag)
+  window.addEventListener('pointerup', stopBetslipDrag)
+  window.addEventListener('pointercancel', stopBetslipDrag)
+}
+
+function moveBetslipDrag(event) {
+  const state = dragState.value
+  if (!state || event.pointerId !== state.pointerId) return
+
+  const deltaX = event.clientX - state.startX
+  const deltaY = event.clientY - state.startY
+
+  if (!state.hasDragged && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return
+
+  event.preventDefault()
+  state.hasDragged = true
+  hasCustomBetslipPosition.value = true
+  betslipFloatPosition.value = clampBetslipPosition(
+    state.startLeft + deltaX,
+    state.startTop + deltaY,
+    state.width,
+    state.height
+  )
+}
+
+function stopBetslipDrag(event) {
+  const state = dragState.value
+  if (!state || event.pointerId !== state.pointerId) return
+
+  betslipFloatRef.value?.releasePointerCapture?.(event.pointerId)
+  window.removeEventListener('pointermove', moveBetslipDrag)
+  window.removeEventListener('pointerup', stopBetslipDrag)
+  window.removeEventListener('pointercancel', stopBetslipDrag)
+
+  if (state.hasDragged) {
+    suppressBetslipClick.value = true
+    isSettlingBetslip.value = true
+    clearTimeout(settlingTimer.value)
+    settlingTimer.value = setTimeout(() => {
+      isSettlingBetslip.value = false
+    }, 260)
+  }
+  isDraggingBetslip.value = false
+  dragState.value = null
+}
+
+function keepBetslipInViewport() {
+  if (!hasCustomBetslipPosition.value) return
+  const floatEl = betslipFloatRef.value
+  if (!floatEl) return
+  const rect = floatEl.getBoundingClientRect()
+  betslipFloatPosition.value = clampBetslipPosition(
+    betslipFloatPosition.value.left,
+    betslipFloatPosition.value.top,
+    rect.width,
+    rect.height
+  )
+  isSettlingBetslip.value = true
+  clearTimeout(settlingTimer.value)
+  settlingTimer.value = setTimeout(() => {
+    isSettlingBetslip.value = false
+  }, 260)
 }
 
 function goToOpenBets(){
@@ -308,6 +435,18 @@ const routeIsCasino = computed(() => {
     'casino-bonus'
   ]
   return route_names.includes(route.name)
+})
+
+onMounted(() => {
+  window.addEventListener('resize', keepBetslipInViewport)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', keepBetslipInViewport)
+  window.removeEventListener('pointermove', moveBetslipDrag)
+  window.removeEventListener('pointerup', stopBetslipDrag)
+  window.removeEventListener('pointercancel', stopBetslipDrag)
+  clearTimeout(settlingTimer.value)
 })
 </script>
 <style scoped>
@@ -430,7 +569,8 @@ a {
   /* color: #6c6c6c; */
 }
 
-.m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon {
+.m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon,
+.m-bottom-nav .m-bottom-fixed .m-btn-button.active svg.icon  {
   fill: var(--brand-active-tab-bg);
 }
 
@@ -450,7 +590,8 @@ a {
   transform: scale(0.75);
 }
 
-.m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active .label {
+.m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active .label,
+.m-bottom-nav .m-bottom-fixed .m-btn-button.active .label {
   color: #fff;
 }
 
@@ -478,8 +619,28 @@ a {
   position: relative;
   position: fixed;
   right: 4px;
+  touch-action: none;
+  user-select: none;
+  transition:
+    top 220ms cubic-bezier(0.2, 1.2, 0.35, 1),
+    left 220ms cubic-bezier(0.2, 1.2, 0.35, 1),
+    transform 180ms ease;
   width: 3.75rem;
   z-index: 219;
+}
+
+.m-bottom-nav .betslip-float-wrapper.is-dragging {
+  cursor: grabbing;
+  transform: scale(1.04);
+  transition: none;
+}
+
+.m-bottom-nav .betslip-float-wrapper.is-settling {
+  transform: scale(1);
+  transition:
+    top 260ms cubic-bezier(0.22, 1.45, 0.36, 1),
+    left 260ms cubic-bezier(0.22, 1.45, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1.45, 0.36, 1);
 }
 
 .m-bottom-nav .switch-theme {
@@ -517,14 +678,14 @@ a {
   display: -ms-flexbox;
   display: flex;
   font-weight: bold;
-  height: 50px;
+  height: 45px;
   -webkit-box-pack: center;
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
   flex-direction: column;
   /* margin-top: 0.33333333rem; */
-  width: 50px;
+  width: 45px;
   font-size: 1rem;
   z-index: 2;
 }
