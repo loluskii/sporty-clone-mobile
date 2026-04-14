@@ -80,12 +80,14 @@
                             ? formatNumber(bet.possibleWin)
                             : bet.status === 4 || bet.status === 5
                               ? formatNumber(bet.cashoutAmount)
-                              : '0.00'
+                              : bet.status === -1 ? '--':'0.00'
                         }}</span>
                       </div>
                       <hr />
                       <bet-history-match-list :matches="bet.selections"></bet-history-match-list>
-                      <div class="narrow"></div>
+                      <div class="narrow">
+                        <hr />
+                      </div>
                     </template>
                   </div>
                 </div>

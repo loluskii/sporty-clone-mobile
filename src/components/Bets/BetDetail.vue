@@ -211,17 +211,15 @@
               <span class="gray">{{ formatDate(selection.eventDate, 'DD/MM HH:mm') }}</span></span
             >
             <div class="ellips">{{ selection.eventName }}</div>
-            <span class="score-wrapper"
-              ><div class="not-seperate">
-                <span class="gray">FT Score: </span>
-                <p>
-                  <span>
-                    <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
-                  >
-                </p>
-              </div></span
-            >
             <div class="pick-info">
+              <p class="not-seperate">
+                  <span class="gray colon">FT Score</span>
+                  <p>
+                    <span>
+                      <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
+                    >
+                  </p>
+                </p>
               <p class="not-seperate">
                 <span class="gray colon">Pick</span>
                 <span>
@@ -268,9 +266,9 @@ async function rebet() {
   if (!props.bet) return
   isRebetLoading.value = true
   try {
-    const res = await loadBetslipByCode(props.bet.id)
+    const res = await loadBetslipByCode(props.bet.shareCode)
     isRebetLoading.value = false
-    if (res.success) {
+    if (res.status_code === 200) {
       if (res.data.selections.length) {
         couponStore.coupon.selections = res.data.selections
         couponStore.coupon.totalOdds = res.data.totalOdd

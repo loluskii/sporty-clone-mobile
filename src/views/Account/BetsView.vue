@@ -23,7 +23,7 @@
             :class="{ active: activeTab === 'open_bets' }"
             @click="setActiveTab('open_bets')"
           >
-            <span data-cms-key="open_bets">Open Bets</span>
+            <span data-cms-key="open_bets">Open Bets {{ betData.length > 0 && activeTab === 'open_bets'  ? '('+betData.length+')' :'' }}</span>
           </li>
           <li
             :class="{ active: activeTab === 'all_bets' }"
@@ -55,6 +55,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { getBets, getNext7Days, getCodeHubItems, performCashout } from '@/helpers'
 import { useAuthStore, useUtilsStore, useUsersStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
@@ -85,7 +86,8 @@ const betData = ref([])
 const isLoading = ref(true)
 const { isAuthenticated } = useAuthStore()
 const { SportsbookGlobalVariable } = utilsStore
-const {balance} = useUsersStore()
+const usersStore = useUsersStore()
+const { balance } = storeToRefs(usersStore)
 const showCashoutModal = ref(false)
 const cashoutData = ref({})
 const cashingOut = ref(false)

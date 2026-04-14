@@ -1054,6 +1054,7 @@
 .m-cashout-pop .m-btn-wrapper .af-button--primary {
   background-color: var(--brand-primary-button);
   color: #ffffff !important;
+  border-radius: .5rem;
 }
 
 .m-cashout-pop .m-btn-wrapper .m-create-btn {

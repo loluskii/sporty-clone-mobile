@@ -68,6 +68,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import $ from 'jquery'
 import { slugify, getNext7Days, getCodeHubItems } from '@/helpers'
+import { useUsersStore } from '@/stores'
 import CodeHubItem from '@/components/CodeHub/CodeHubItem.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import OpenBetItem from './OpenBetItem.vue'
@@ -90,6 +91,7 @@ const props = defineProps({
 const emit = defineEmits(['refresh-open-bets'])
 
 const router = useRouter()
+const usersStore = useUsersStore()
 const openBets = ref([])
 const hasOpenBets = computed(() => openBets.value.length > 0)
 const codes = ref([])
@@ -128,6 +130,9 @@ function handleCashoutSuccess(payload = {}) {
         hiddenCashoutBetIds.value = new Set([...hiddenCashoutBetIds.value, betId])
         openBets.value = openBets.value.filter((bet) => bet.id !== betId)
     }
+    usersStore.loadCurrentUser().catch((error) => {
+        console.warn('Failed to refresh user balance after cashout:', error)
+    })
     emit('refresh-open-bets', { silent: true })
 }
 
