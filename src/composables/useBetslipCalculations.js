@@ -8,13 +8,6 @@ export function useBetslipCalculations({ betSlipType, betType }) {
 
   const selectionsLength = computed(() => couponStore.coupon.selections.length)
 
-  const minStake = computed(() => {
-    const raw = betSlipType.value === 'Combo'
-      ? SportsbookGlobalVariable.comboMinStake
-      : SportsbookGlobalVariable.singleMinStake
-    return Number(raw || 0)
-  })
-
   const maxStake = computed(() => {
     const raw = betSlipType.value === 'Combo'
       ? SportsbookGlobalVariable.comboMaxStake
@@ -31,16 +24,12 @@ export function useBetslipCalculations({ betSlipType, betType }) {
         id: 'all'
       })
     }
-    // Only clamp when min/max stakes are configured (> 0); otherwise allow free input.
+    // Do not clamp to the minimum while typing; the submit disabled state handles min validation.
     const parsed = Number(stake)
     let normalized = Number.isFinite(parsed) ? parsed : 0
-    const minValue = Number(minStake.value || 0) > 0 ? Number(minStake.value) : null
     const maxValue = Number(maxStake.value || 0) > 0 ? Number(maxStake.value) : null
     if (!Number.isFinite(normalized)) {
-      normalized = minValue ?? 0
-    }
-    if (minValue !== null && normalized < minValue) {
-      normalized = minValue
+      normalized = 0
     }
     if (maxValue !== null && normalized > maxValue) {
       normalized = maxValue

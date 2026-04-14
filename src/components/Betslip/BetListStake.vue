@@ -417,7 +417,7 @@ function placeBet() {
 }
 
 function onKeyClick(type, value) {
-  let stake = stakeDisplay.value.toString()
+  let stake = Number(stakeDisplay.value) === 0 ? '' : stakeDisplay.value.toString()
   let finalStake
   switch (type) {
     case 'number':
