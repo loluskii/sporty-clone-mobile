@@ -24,13 +24,13 @@
         <div class="bar seperate">
           <span class="type"
             ><span data-cms-key="multiple" data-cms-page="bet_history">{{
-              bet.betType
+              bet.betType === 'multi' ? 'Multiple' : bet.betType === 'single' ? 'Single' :bet.betType
             }}</span>
           </span>
 
           <span
             class="status"
-            :style="`${bet.status === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+            :style="`${[1,4,5].includes(bet.status) ? 'color: #00c100; font-weight: bold' : ''}`"
             >{{ bet.statusDescription }}</span
           >
         </div>
@@ -40,8 +40,14 @@
             >Total Return</span
           >
           <span
-            :style="`${bet.status === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
-            >{{ bet.status === 1 ? formatNumber(bet.possibleWin) : '0.00' }}</span
+            :style="`${[1,4,5].includes(bet.status) ? 'color: #00c100; font-weight: bold' : ''}`"
+            >{{
+              bet.status === 1
+                ? formatNumber(bet.possibleWin)
+                : bet.status === 4 || bet.status === 5
+                  ? formatNumber(bet.cashoutAmount)
+                  : '0.00'
+            }}</span
           >
         </div>
 
@@ -59,11 +65,7 @@
             </div>
           </div>
         </div>
-        <div
-          v-if="bet.status === -1"
-          data-op="rebet-wrapper"
-          class="rebet-wrapper seperate"
-        >
+        <div v-if="bet.status === -1" data-op="rebet-wrapper" class="rebet-wrapper seperate">
           <div class="book-code-wrapper">
             <div>
               <span
@@ -112,16 +114,45 @@
       <div
         v-for="(selection, s) in props.bet.selections"
         :key="s"
-        
         class="ticket-selection-list ticket-detail-list"
       >
         <div class="seperate px-0">
           <span class="status">
             <span v-if="selection.statusDescription === 'Lost'">
-              <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="svg-icon-base"><circle cx="12" cy="12" r="7" fill="#fff"></circle><path d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="#E41827"></path></svg>
+              <svg
+                data-v-54f5b7e7=""
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                height="2rem"
+                width="2rem"
+                class="svg-icon-base"
+              >
+                <circle cx="12" cy="12" r="7" fill="#fff"></circle>
+                <path
+                  d="M8.76 16.5L12 13.26l3.24 3.24 1.26-1.26L13.26 12l3.24-3.24-1.26-1.26L12 10.74 8.76 7.5 7.5 8.76 10.74 12 7.5 15.24l1.26 1.26zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z"
+                  fill="#E41827"
+                ></path>
+              </svg>
             </span>
             <span v-if="selection.statusDescription === 'Won'">
-              <svg data-v-54f5b7e7="" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="won svg-icon-base"><circle cx="12" cy="12.5" r="9" fill="currentColor"></circle><path d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z" fill="#fff" stroke="#fff" stroke-width=".2"></path></svg>
+              <svg
+                data-v-54f5b7e7=""
+                viewBox="0 0 24 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                height="2rem"
+                width="2rem"
+                class="won svg-icon-base"
+              >
+                <circle cx="12" cy="12.5" r="9" fill="currentColor"></circle>
+                <path
+                  d="M17 9.825L10.761 16.5 7 12.476l1.239-1.325 2.522 2.698 5-5.349L17 9.825z"
+                  fill="#fff"
+                  stroke="#fff"
+                  stroke-width=".2"
+                ></path>
+              </svg>
             </span>
             <span v-if="selection.statusDescription === 'Pending'">
               <svg
@@ -137,8 +168,40 @@
                 />
               </svg>
             </span>
-            <span v-if="selection.statusDescription === 'Void' || selection.statusDescription === 'Cancelled'">
-              <svg data-v-54f5b7e7="" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" height="2rem" width="2rem" class="void svg-icon-base"><circle cx="12" cy="12" r="8" fill="#fff"></circle><mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" style="mask-type: alpha;"><path fill="#D9D9D9" d="M0 0h24v24H0z"></path></mask><g mask="url(#a)"><path d="M7.5 12.9h9v-1.8h-9v1.8zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z" fill="currentColor"></path></g></svg>
+            <span
+              v-if="
+                selection.statusDescription === 'Void' ||
+                selection.statusDescription === 'Cancelled'
+              "
+            >
+              <svg
+                data-v-54f5b7e7=""
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                height="2rem"
+                width="2rem"
+                class="void svg-icon-base"
+              >
+                <circle cx="12" cy="12" r="8" fill="#fff"></circle>
+                <mask
+                  id="a"
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="24"
+                  height="24"
+                  style="mask-type: alpha"
+                >
+                  <path fill="#D9D9D9" d="M0 0h24v24H0z"></path>
+                </mask>
+                <g mask="url(#a)">
+                  <path
+                    d="M7.5 12.9h9v-1.8h-9v1.8zM12 21a8.764 8.764 0 01-3.51-.709 9.089 9.089 0 01-2.858-1.924A9.089 9.089 0 013.71 15.51a8.764 8.764 0 01-.71-3.51c0-1.245.237-2.415.71-3.51a9.089 9.089 0 011.923-2.858A9.089 9.089 0 018.49 3.71a8.764 8.764 0 013.51-.71c1.245 0 2.415.237 3.51.71a9.089 9.089 0 012.857 1.923 9.089 9.089 0 011.924 2.858A8.764 8.764 0 0121 12a8.764 8.764 0 01-.709 3.51 9.089 9.089 0 01-1.924 2.857 9.089 9.089 0 01-2.857 1.924A8.764 8.764 0 0112 21z"
+                    fill="currentColor"
+                  ></path>
+                </g>
+              </svg>
             </span>
           </span>
           <div class="solo">
@@ -201,7 +264,6 @@ const router = useRouter()
 const couponStore = useCouponStore()
 const isRebetLoading = ref(false)
 
-
 async function rebet() {
   if (!props.bet) return
   isRebetLoading.value = true
@@ -254,7 +316,7 @@ function copyCode() {
 </script>
 
 <style>
-.px-0{
+.px-0 {
   padding: 0 !important;
 }
 .rebetting::before {
@@ -879,14 +941,14 @@ function copyCode() {
 }
 .won::before {
   content: '\e60b';
-  font-family: "iconfont" !important;
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
 .won::before {
-  color: #0D9737;
+  color: #0d9737;
   color: var(--brand-secondary);
   font-size: 1.66666667rem;
   font-weight: normal;
@@ -897,29 +959,28 @@ function copyCode() {
 }
 .not-start,
 .on-going {
-  color: #353A45;
+  color: #353a45;
 }
 .void,
 .refund-all {
-  color: #9CA0AB;
+  color: #9ca0ab;
 }
 .won,
 .flash-win,
 .flash-save,
 .early-payout,
 .early-goal {
-  color: #0D9737;
+  color: #0d9737;
 }
 .delayed {
   bottom: -0.25rem;
   position: absolute;
   right: -0.25rem;
 }
- svg.delayed circle {
-  fill: #353A45;
+svg.delayed circle {
+  fill: #353a45;
 }
- svg.delayed path {
-  fill: #FAFAFA;
+svg.delayed path {
+  fill: #fafafa;
 }
-
 </style>

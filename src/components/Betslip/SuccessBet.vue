@@ -91,7 +91,7 @@ const props = defineProps({
 const emit = defineEmits(['hide-success', 'rebet', 'activate-share'])
 function viewOpenBets() {
   emit('hide-success')
-  return router.push({ name: 'open-bets' })
+  return router.push({ name: 'bets-view' })
 }
 
 function activateShare() {

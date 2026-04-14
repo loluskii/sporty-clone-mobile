@@ -347,7 +347,7 @@ const balanceLowerThanStake = computed(() => {
 })
 
 const amountNeededToStake = computed(() => {
-  return `${SportsbookGlobalVariable.CurrencyCode} ${formatNumber(totalStakeAmount.value - parseFloat(userStore.balance))}`
+  return `${SportsbookGlobalVariable.Currency} ${formatNumber(totalStakeAmount.value - parseFloat(userStore.balance))}`
 })
 
 const acceptedChanges = computed(() => {

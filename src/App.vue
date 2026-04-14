@@ -162,7 +162,7 @@ async function loadBet(code) {
 async function getBetsData() {
   if(route.name === 'bets-view') return
   const res = await getBets({status: -1})
-  if (res.bets) {
+  if (res.data.data) {
     openBets.value = res?.data?.data.length
   }
 }
@@ -282,9 +282,8 @@ onMounted(async () => {
     //   results[1].status === "fulfilled" ? results[1].value.data.data : null
 
     utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+    // utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
 
-    console.log(results[2])
     utilsStore.sportsMenu =
       results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []
 
@@ -293,6 +292,8 @@ onMounted(async () => {
 
     isLoading.value = false
   })
+
+  
 
   const res = await fetchBanners()
   if (res.data && Object.keys(res.data).length > 0) {
@@ -327,26 +328,6 @@ onMounted(async () => {
     }
     isLoading.value = false
   }
-
-  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()]).then((results) => {
-    couponStore.sportsbookBonusList =
-      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
-
-    couponStore.SportsbookGlobalVariable =
-      results[1].status === "fulfilled" ? results[1].value.data.data : null
-
-    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
-
-    utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.data : []
-
-    utilsStore.banksList =
-      results[4].status === "fulfilled" ? results[4].value.data : []
-
-    isLoading.value = false
-  })
-
 
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)

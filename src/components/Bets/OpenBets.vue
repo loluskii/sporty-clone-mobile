@@ -43,7 +43,13 @@
         <div v-else class="m-openbet">
             <div class="m-sportsBet--bets cashout-loading">
                 <ul class="m-bet-list">
-                    <OpenBetItem v-for="(bet, index) in openBets" :key="index" :bet="bet" :index="index" @cashout="handleCashout" />
+                    <OpenBetItem
+                        v-for="(bet, index) in openBets"
+                        :key="bet.id || index"
+                        :bet="bet"
+                        :index="index"
+                        @cashout="handleCashout"
+                    />
                 </ul>
             </div>
         </div>
@@ -51,6 +57,8 @@
             v-if="showCashoutModal"
             :cashout-data="cashoutData"
             @close="handleCashoutClose"
+            @cashout-success="handleCashoutSuccess"
+            @refresh-open-bets="handleRefreshOpenBets"
         />
     </div>
 </template>
@@ -79,6 +87,7 @@ const props = defineProps({
         default: false
     }
 })
+const emit = defineEmits(['refresh-open-bets'])
 
 const router = useRouter()
 const openBets = ref([])
@@ -86,6 +95,7 @@ const hasOpenBets = computed(() => openBets.value.length > 0)
 const codes = ref([])
 const showCashoutModal = ref(false)
 const cashoutData = ref({})
+const hiddenCashoutBetIds = ref(new Set())
 const cashoutPollInterval = ref(null)
 const POLL_INTERVAL = 30000 // Poll every 30 seconds
 
@@ -110,6 +120,19 @@ onMounted(() => {
 
 function handleCashoutClose() {
     showCashoutModal.value = false
+}
+
+function handleCashoutSuccess(payload = {}) {
+    const betId = payload?.betId || cashoutData.value?.id
+    if (betId) {
+        hiddenCashoutBetIds.value = new Set([...hiddenCashoutBetIds.value, betId])
+        openBets.value = openBets.value.filter((bet) => bet.id !== betId)
+    }
+    emit('refresh-open-bets', { silent: true })
+}
+
+function handleRefreshOpenBets() {
+    emit('refresh-open-bets', { silent: true })
 }
 
 function goToEvent(event) {
@@ -150,7 +173,14 @@ function showChild(e, index) {
 watch(
     () => props.bets,
     (value) => {
-        openBets.value = Array.isArray(value) ? value : []
+        const bets = Array.isArray(value) ? value : []
+        openBets.value = bets.filter((bet) => !hiddenCashoutBetIds.value.has(bet.id))
+        if (showCashoutModal.value && cashoutData.value?.id) {
+            const updatedCashoutBet = openBets.value.find((bet) => bet.id === cashoutData.value.id)
+            if (updatedCashoutBet) {
+                cashoutData.value = updatedCashoutBet
+            }
+        }
         // if (props.isAuthenticated) {
         //     isLoading.value = false
         // }

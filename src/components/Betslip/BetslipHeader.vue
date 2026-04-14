@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="operate-button">
-          <span class="currency">{{ currencyCode }}</span>
+          <span class="currency">{{ Currency }}</span>
           <span> {{ balance }}</span>
         </div>
       </div>
@@ -69,7 +69,7 @@ defineProps({
   selectionsCount: Number,
   isSimulating: Boolean,
   balance: [String, Number],
-  currencyCode: String,
+  Currency: String,
   simEnabled: Boolean
 })
 

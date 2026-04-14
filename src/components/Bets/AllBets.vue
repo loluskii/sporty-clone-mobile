@@ -6,18 +6,30 @@
           <div id="order-new-tabs-wrapper" class="tabs-wrapper">
             <div class="m-l-left flex">
               <ul class="m-uc-nav m-order-select-nav">
-                <li v-for="status in betStatus" :key="status" class="m-nav-item" @click="setBetStatus(status.key)"
-                  :class="activeBetStatus === status.key ? 'm-nav-item--active' : ''">
+                <li
+                  v-for="status in betStatus"
+                  :key="status"
+                  class="m-nav-item"
+                  @click="setBetStatus(status.key)"
+                  :class="activeBetStatus === status.key ? 'm-nav-item--active' : ''"
+                >
                   <span>{{ status.name }}</span>
                 </li>
               </ul>
             </div>
             <div class="m-l-right all-dates" @click="showDateDrawer = true">
               <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                  class="bi bi-three-dots" viewBox="0 0 16 16">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-three-dots"
+                  viewBox="0 0 16 16"
+                >
                   <path
-                    d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+                    d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
+                  />
                 </svg>
               </span>
             </div>
@@ -35,24 +47,43 @@
                   <div class="place"></div>
                   <div class="list">
                     <template v-for="(bet, b) in group" :key="b">
-                      <div class="bar" @click="redirectToBet(bet)" :class="bet.status == 1 ? 'win' : bet.status == 0 ? 'lost' : 'pending'
-                        ">
-                        <span class="type"><span>{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}&nbsp;
-                            {{ bet.is_booked === 2 ? '(SIM)' : '' }}</span>
+                      <div
+                        class="bar"
+                        @click="redirectToBet(bet)"
+                        :class="
+                          bet.status == 1 || bet.status == 4 || bet.status == 5
+                            ? 'win'
+                            : bet.status == 0
+                              ? 'lost'
+                              : 'pending'
+                        "
+                      >
+                        <span class="type"
+                          ><span
+                            >{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}&nbsp;
+                            {{ bet.isBooked === 2 ? '(SIM)' : '' }}</span
+                          >
                         </span>
-                        <span class="status"><span>{{ bet.statusDescription }}</span> <i class="arrow"></i></span>
+                        <span class="status"
+                          ><span>{{ bet.statusDescription }}</span> <i class="arrow"></i
+                        ></span>
                       </div>
 
                       <div class="title">
-                        <span>Total Stake({{ SportsbookGlobalVariable.CurrencyCode }})</span>
-                          <span>Total Return</span>
+                        <span>Total Stake({{ SportsbookGlobalVariable.Currency }})</span>
+                        <span class="total_info" style="color: #9ca0ab;">{{ formatNumber(bet.stake) }}</span>
                       </div>
-                      <div class="total_info">
-                        <span data-op="history-stake-amount">{{ formatNumber(bet.stake) }}</span>
-                        <span data-op="history-return-amount" class="">{{
-                          bet.status === 1 ? formatNumber(bet.possibleWin) : '0.00'
+                      <div class="title">
+                        <span data-op="history-stake-amount">Total Return</span>
+                        <span data-op="history-return-amount" class="total_info" :style="[1,4,5].includes(bet.status) ? 'color: #0d9737;':'color: #9ca0ab;'" style="font-weight: bold; font-size: 20px;">{{
+                          bet.status === 1
+                            ? formatNumber(bet.possibleWin)
+                            : bet.status === 4 || bet.status === 5
+                              ? formatNumber(bet.cashoutAmount)
+                              : '0.00'
                         }}</span>
                       </div>
+                      <hr />
                       <bet-history-match-list :matches="bet.selections"></bet-history-match-list>
                       <div class="narrow"></div>
                     </template>
@@ -71,26 +102,45 @@
         </div>
         <div class="fullscreen-wrapper">
           <div class="drawer" v-show="showDateDrawer">
-            <div class="drawer__mask" @click="showDateDrawer = false" style="background-color: black"></div>
+            <div
+              class="drawer__mask"
+              @click="showDateDrawer = false"
+              style="background-color: black"
+            ></div>
             <div class="drawer__content bottom" style="transition-timing-function: ease">
               <div class="drawer-container">
                 <div class="option-wrapper">
                   <div class="icon">
                     <div class="icon-font-base" style="font-size: 1.33333rem">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                        class="bi bi-calendar" viewBox="0 0 16 16">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-calendar"
+                        viewBox="0 0 16 16"
+                      >
                         <path
-                          d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                          d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"
+                        />
                       </svg>
                     </div>
                   </div>
                   <div class="text">
-                    <span data-cms-key="filter_by_date" data-cms-page="bet_history">Filter by Date</span>
+                    <span data-cms-key="filter_by_date" data-cms-page="bet_history"
+                      >Filter by Date</span
+                    >
                   </div>
                 </div>
                 <div class="option-wrapper">
-                  <VueDatePicker v-model="range" range input-class-name="dp-custom-input" placeholder="Select Date"
-                    :enable-time-picker="false" @update:model-value="handleDate"></VueDatePicker>
+                  <VueDatePicker
+                    v-model="range"
+                    range
+                    input-class-name="dp-custom-input"
+                    placeholder="Select Date"
+                    :enable-time-picker="false"
+                    @update:model-value="handleDate"
+                  ></VueDatePicker>
                 </div>
               </div>
             </div>
@@ -100,8 +150,9 @@
     </template>
     <div v-else class="m-error-wrapper">
       <div>
-        <span class="m-error-msg" data-cms-key="please_log_in_to_see_your_bet_history">Please Log In to see your Bet
-          History</span>
+        <span class="m-error-msg" data-cms-key="please_log_in_to_see_your_bet_history"
+          >Please Log In to see your Bet History</span
+        >
         <div class="m-btn">Login</div>
       </div>
     </div>
@@ -183,9 +234,7 @@ const filteredBets = computed(() => {
   if (activeBetStatus.value === 'settled') {
     list = list.filter((bet) => bet.statusCode === 1 || bet.statusCode === 2)
   } else if (activeBetStatus.value === -1) {
-    list = list.filter(
-      (bet) => bet.statusCode === 0 || bet.statusDescription === 'Pending'
-    )
+    list = list.filter((bet) => bet.statusCode === 0 || bet.statusDescription === 'Pending')
   }
 
   if (Array.isArray(range.value) && range.value.length === 2) {
@@ -450,7 +499,6 @@ const settledBets = computed(() => {
   -ms-flex-pack: justify;
   justify-content: space-between;
   margin-top: 0.75rem;
-  padding: 0 0.75rem;
 }
 
 .m-order .m-scroll .ticket-list .list .total_info {
@@ -517,7 +565,6 @@ const settledBets = computed(() => {
   color: var(--text-type1-secondary);
   /* font-size: 1.066rem; */
   overflow: hidden;
-  padding: 0 0.75rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 18.75rem;

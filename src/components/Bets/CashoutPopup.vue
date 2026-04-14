@@ -23,10 +23,10 @@
                         <div class="m-t-center m-l-top">
                             <div class="m-t-20 m-t-default m-t-bold m-total">
                                 
-                                <span data-cms-key="partial_cashout" data-cms-page="cashout">Full Cashout
+                                <span data-cms-key="partial_cashout" data-cms-page="cashout">{{ cashoutTitle }}
                                 </span>
                                 <div class="number-grow-warp">
-                                    <span class="number-grow">{{ displayCashout }}</span>
+                                    <span class="number-grow"> {{ displayCashout }}</span>
                                 </div>
                             </div>
                             <div class="m-slider-bar">
@@ -78,10 +78,9 @@
                                     :class="{ 'is-disabled': !isCashoutAvailable || cashingOut }"
                                     :disabled="!isCashoutAvailable || cashingOut"
                                 >
-                                    <span v-if="!cashingOut"><span>Confirm</span>
+                                    <span v-if="!cashingOut"><span>Confirm </span>
                                         <span class="money">
-                                            {{ cashoutData.currency }}
-                                            {{ displayCashout }}
+                                            {{ SportsbookGlobalVariable.Currency }}{{ displayCashout }}
                                         </span>
                                     </span>
                                     <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
@@ -107,7 +106,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['close', 'cashout-success', 'cashout-failed'])
+const emit = defineEmits(['close', 'cashout-success', 'cashout-failed', 'refresh-open-bets'])
 
 const { SportsbookGlobalVariable } = useUtilsStore()
 const cashingOut = ref(false)
@@ -145,6 +144,9 @@ const cashoutAmount = computed(() => {
     return Math.min(maxCashout.value, Math.max(minCashout.value, sliderValue.value))
 })
 const displayCashout = computed(() => cashoutAmount.value.toFixed(2))
+const cashoutTitle = computed(() =>
+    cashoutAmount.value >= maxCashout.value ? 'Full Cashout ' : 'Partial Cashout '
+)
 const minLabel = computed(() => minCashout.value.toFixed(2))
 const maxLabel = computed(() => maxCashout.value.toFixed(2))
 
@@ -230,16 +232,23 @@ function onWindowPointerUp(event) {
 async function confirmCashout() {
     if (cashingOut.value) return
     cashingOut.value = true
+    let shouldClose = true
     try {
         const percent = maxCashout.value > 0 ? cashoutAmount.value / maxCashout.value : 0
         const res = await performCashout({
             betId: props.cashoutData.id,
-            percent: Math.min(1, Math.max(0.1, percent)),
+            percent: Math.min(1, Math.max(0, percent)),
             source: 'mobile'
         })
         if (res.status_code === 200) {
             emitter.emit('showDialogueToaster', res.status_description)
-            emit('cashout-success', res)
+            emit('cashout-success', {
+                response: res,
+                betId: props.cashoutData.id
+            })
+        } else if (res.status_code === 400 && isCashoutSuggestionChanged(res.status_description)) {
+            shouldClose = false
+            emit('refresh-open-bets')
         } else {
             emitter.emit('showDialogueToaster', res.status_description)
             emit('cashout-failed', res)
@@ -249,8 +258,14 @@ async function confirmCashout() {
         emit('cashout-failed', error)
     } finally {
         cashingOut.value = false
-        emit('close')
+        if (shouldClose) {
+            emit('close')
+        }
     }
+}
+
+function isCashoutSuggestionChanged(message = '') {
+    return String(message).toLowerCase().includes('cashout suggestions have change')
 }
 
 onBeforeUnmount(() => {
@@ -261,6 +276,13 @@ onBeforeUnmount(() => {
 
 </script>
 <style type="text/css">
+.m-cashout-pop .m-container {
+    border-radius: 0.5rem 0.5rem 0 0;
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+}
+
 .m-slider-wrapper {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;

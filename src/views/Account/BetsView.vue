@@ -1,12 +1,12 @@
 <template>
   <div class="m-sportBets" v-if="activeTab !=='bet_detail'">
-    <div style="width: 100%; height: 87px"></div>
+    <div style="width: 100%; min-height: 87px"></div>
     <div class="fixed-wrap" style="position: fixed; top: 0rem; z-index: 1000; width: 100%">
       <div>
         <div class="m-openbet-header">
           <div v-if="isAuthenticated" class="is-login">
             <span class="balance"
-              ><span>{{ SportsbookGlobalVariable.CurrencyCode }} </span>
+              ><span>{{ SportsbookGlobalVariable.Currency }} </span>
               <span>{{ balance }}</span></span
             >
           </div>
@@ -46,6 +46,7 @@
       :isLoading="isLoading"
       @view-detail="handleViewDetail"
       @fetch-bets="handleFetchBets"
+      @refresh-open-bets="handleRefreshOpenBets"
       @back="activeTab = 'all_bets'"
     />
   </div>
@@ -90,17 +91,23 @@ const cashoutData = ref({})
 const cashingOut = ref(false)
 const codes = ref([])
 
-async function getBetsData(status) {
-  isLoading.value = true
-  console.log(status)
+async function getBetsData(status, options = {}) {
+  const { silent = false } = options
+  if (!silent) {
+    isLoading.value = true
+  }
   try {
     const payload = status === '' ? {perPage: 20} : { status: -1 }
     const res = await getBets(payload)
     betData.value = res?.data?.data || []
   } catch (error) {
-    betData.value = []
+    if (!silent) {
+      betData.value = []
+    }
   } finally {
-    isLoading.value = false
+    if (!silent) {
+      isLoading.value = false
+    }
   }
 }
 
@@ -182,6 +189,11 @@ function handleFetchBets(statusKey) {
     return
   }
   getBetsData('')
+}
+
+function handleRefreshOpenBets(options = {}) {
+  if (activeTab.value !== 'open_bets' || !isAuthenticated) return
+  getBetsData(-1, { silent: options.silent === true })
 }
 
 onMounted(() => {

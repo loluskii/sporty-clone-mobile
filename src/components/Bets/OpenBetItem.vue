@@ -33,7 +33,7 @@
                             <div class="amount">
                                 <span v-if="!cashingOut">{{
                                     bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
-                                        ? `${SportsbookGlobalVariable.CurrencyCode}
+                                        ? `${SportsbookGlobalVariable.Currency}
                                     ${bet.estimatedCashout.toFixed(2)}`
                                         : 'Unavailable'
                                 }}</span>
@@ -119,7 +119,7 @@
                                         </span></div>
                                     <div class="m-score">
                                         <div class="m-score-info">
-                                            <span v-if="event.matchStatus && event.matchStatus.toLowerCase() !== ''">
+                                            <span v-if="shouldShowLiveEventStatus(event)">
                                                 <span
                                                     class="m-t-12 capitalize m-t-gray"
                                                     :class="event.matchStatus.toLowerCase() !== 'ended' ? 'm-t-green' : ''"
@@ -180,7 +180,7 @@
                             @click.prevent="handleCashout(bet)" type="button" class="m-btn--cashout">
                             <span v-if="!cashingOut">{{
                                 bet.estimatedCashout && bet.estimatedCashout > 0 && !bet.isBonusBet
-                                    ? `Cashout ${SportsbookGlobalVariable.CurrencyCode} ${bet.estimatedCashout.toFixed(2)}`
+                                    ? `Cashout ${SportsbookGlobalVariable.Currency} ${bet.estimatedCashout.toFixed(2)}`
                                     : 'Cashout Unavailable'
                             }}</span>
                             <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />
@@ -223,6 +223,15 @@ const isExpanded = ref(false)
 
 function handleCashout(bet) {
     emit('cashout', bet)
+}
+
+function shouldShowLiveEventStatus(event) {
+    const matchStatus = String(event.matchStatus || '').trim().toLowerCase()
+    if (!matchStatus || matchStatus === 'not started') {
+        return false
+    }
+
+    return true
 }
 
 function shareTicket() {
@@ -269,8 +278,8 @@ function showChild(e, index) {
 /* Bet Item Container */
 .m-bet-item {
     background: #ffffff;
-    border-radius: 0.16666667rem;
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
     margin-bottom: 0.83333333rem;
     width: 100%;
@@ -368,7 +377,7 @@ function showChild(e, index) {
 .m-btn-wrapper .m-btn--cashout {
     background: var(--brand-secondary);
     border: none;
-    border-radius: 2px;
+    border-radius: .5rem;
     color: #ffffff;
     font-size: 1rem;
     font-weight: bold;
@@ -648,7 +657,7 @@ function showChild(e, index) {
     align-items: center;
     background: #0D9737;
     border-color: #0D9737;
-    border-radius: 0.16666667rem;
+    border-radius: 0.5rem;
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;

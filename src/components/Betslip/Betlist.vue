@@ -12,7 +12,7 @@
           :selections-count="betslipSelections.length"
           :is-simulating="isSimulating"
           :balance="usersStore.balance"
-          :currency-code="SportsbookGlobalVariable.CurrencyCode"
+          :currency-code="SportsbookGlobalVariable.Currency"
           :sim-enabled="SIM_ENABLED"
           @clear="clearBetslip"
           @open-settings="showBetSettings = true"

@@ -269,6 +269,15 @@ del {
   text-decoration: line-through;
 }
 
+hr {
+    height: 1px;
+    color: #e6e6e6;
+    background: #e6e6e6;
+    font-size: 0;
+    border: 0;
+    margin: .5rem 0;
+}
+
 address,
 b,
 caption,

@@ -22,7 +22,6 @@ export const useUtilsStore = defineStore({
       "MinBetStake": "100",
       "comboMinStake": "100",
       "MaxCombinationOddLength": "10000000",
-      "CurrencyCode": "NGN",
       "Currency": "₦",
       "DialCode": "+234",
       "EnableBankAcct": "1",

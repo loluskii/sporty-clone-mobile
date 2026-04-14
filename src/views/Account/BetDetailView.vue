@@ -31,7 +31,7 @@
 
             <span
               class="status"
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+              :style="`${betDetail.status === 1 || betDetail.status === 5 ? 'color: #00c100; font-weight: bold' : ''}`"
               >{{ betDetail.statusDescription }}</span
             >
           </div>
@@ -41,7 +41,7 @@
               >Total Return</span
             >
             <span
-              :style="`${betDetail.statusCode === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
+              :style="`${betDetail.status === 1 ? 'color: #00c100; font-weight: bold' : ''}`"
               >{{ betDetail.winnings ? formatNumber(betDetail.winnings) : '0.00' }}</span
             >
           </div>
@@ -61,7 +61,7 @@
             </div>
           </div>
           <div
-            v-if="betDetail.statusCode !== 1"
+            v-if="betDetail.status !== 1"
             data-op="rebet-wrapper"
             class="rebet-wrapper seperate"
           >
@@ -106,7 +106,7 @@
               </div>
             </div>
           </div>
-          <div v-if="betDetail.statusCode == 1" class="m-share">
+          <div v-if="betDetail.status == 1" class="m-share">
             <img src="/winning.png" style="height: 100%; width: 100%" />
           </div>
         </div>

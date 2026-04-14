@@ -18,8 +18,8 @@
       <ul class="m-snap-nav flex" style="width: 100%">
         <li
           class="m-list-nav-type-item m-snap-nav-item"
-          :class="{ active: route.name === 'open-bets' }"
-          @click="$router.push({ name: 'open-bets' })"
+          :class="{ active: route.name === 'bets-view' }"
+          @click="$router.push({ name: 'bets-view' })"
         >
           <span data-cms-key="open_bets">Open Bets</span>
         </li>
