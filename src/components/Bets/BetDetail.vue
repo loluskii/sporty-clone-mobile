@@ -264,6 +264,18 @@ const isRebetLoading = ref(false)
 
 async function rebet() {
   if (!props.bet) return
+  if (couponStore.coupon.selections.length) {
+    emitter.emit('showBetslipConfirmation', {
+      shareCode: props.bet.shareCode,
+      title: 'Replace Betslip?',
+      message: 'You already have selections in your betslip. Do you want to replace them with this rebet?',
+      confirmText: 'Replace',
+      cancelText: 'Keep Current',
+      redirectToHome: true
+    })
+    return
+  }
+
   isRebetLoading.value = true
   try {
     const res = await loadBetslipByCode(props.bet.shareCode)

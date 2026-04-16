@@ -5,45 +5,47 @@
       @click="$emit('hide-dialogue')"
       style="z-index: 1000; position: fixed"
     ></div>
-    <div v-if="dialogIsError" class="es-dialog m-dialog">
+    <div v-if="dialogIsError" class="es-dialog m-dialog app-error-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto">
-          <div>{{ errorMessage }}</div>
+        <div class="es-dialog-main m-dialog-main app-error-main">
+          <h3>{{ errorDialogTitle }}</h3>
+          <p>{{ errorMessage }}</p>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer">
-        <a
-          href="javascript:void(0);"
+        <button
+          type="button"
           @click.prevent="nextAction"
-          class="es-dialog-btn es-dialog-focus-btn"
+          class="es-dialog-btn app-error-ok"
         >
-          <span>OK</span>
-        </a>
+          OK
+        </button>
       </div>
     </div>
-    <div v-if="dialogIsBetslip" class="es-dialog m-dialog">
+    <div v-if="dialogIsBetslip" class="es-dialog m-dialog betslip-replace-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto">
-          <div>
-            You have items in Betslip. Are you sure to replace Betslip with this new selections?
-          </div>
+        <div class="es-dialog-main m-dialog-main betslip-replace-main">
+          <h3>{{ betslipDialogTitle }}</h3>
+          <p>{{ betslipDialogMessage }}</p>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer">
-        <a
-          href="javascript:void(0);"
+        <button
+          type="button"
+          class="es-dialog-btn betslip-dialog-cancel"
+          :disabled="isReplacingBetslip"
           @click.prevent="$emit('hide-dialogue')"
-          class="es-dialog-btn es-dialog-focus-btn"
         >
-          <span>Cancel</span>
-        </a>
-        <a
-          href="javascript:void(0);"
+          {{ betslipCancelText }}
+        </button>
+        <button
+          type="button"
+          class="es-dialog-btn es-dialog-focus-btn betslip-dialog-confirm"
+          :disabled="isReplacingBetslip"
           @click.prevent="replaceBetslip"
-          class="es-dialog-btn es-dialog-focus-btn"
         >
-          <span>OK</span>
-        </a>
+          {{ isReplacingBetslip ? 'Replacing...' : betslipConfirmText }}
+        </button>
       </div>
     </div>
     <WithdrawalModal
@@ -66,16 +68,17 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, ref } from 'vue'
+import { computed, defineProps, onMounted, ref } from 'vue'
 import WithdrawalModal from '@/components/WithdrawalModal.vue'
 import { useRouter } from 'vue-router'
 import { useCouponStore } from '../stores'
+import { loadBetslipByCode } from '@/helpers'
 import emitter from '@/plugins/emitter'
 
 const emits = defineEmits(['hide-dialogue'])
 const props = defineProps({
   errorMessage: String,
-  dialogueMessage: Object,
+  dialogueMessage: [Object, String],
   dialogueType: String,
   nextRoute: String
 })
@@ -84,8 +87,25 @@ const dialogIsError = ref(false)
 const dialogIsWithdrawal = ref(false)
 const dialogIsToast = ref(false)
 const dialogIsBetslip = ref(false)
+const isReplacingBetslip = ref(false)
 const router = useRouter()
 const couponStore = useCouponStore()
+
+const dialogueData = computed(() => {
+  return typeof props.dialogueMessage === 'object' && props.dialogueMessage !== null
+    ? props.dialogueMessage
+    : {}
+})
+
+const betslipDialogTitle = computed(() => dialogueData.value.title || 'Replace Betslip?')
+const betslipDialogMessage = computed(
+  () =>
+    dialogueData.value.message ||
+    'You already have selections in your betslip. Replacing them will remove the current selections.'
+)
+const betslipCancelText = computed(() => dialogueData.value.cancelText || 'Keep Current')
+const betslipConfirmText = computed(() => dialogueData.value.confirmText || 'Replace')
+const errorDialogTitle = computed(() => dialogueData.value.title || 'Notice')
 
 const dialogueType = () => {
   switch (props.dialogueType) {
@@ -115,17 +135,45 @@ function nextAction() {
 }
 
 async function replaceBetslip() {
+  if (isReplacingBetslip.value) return
+  isReplacingBetslip.value = true
   try {
-    emits('hide-dialogue')
-    const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(
-      props.dialogueMessage?.selections
-    )
+    const loadedData = await getReplacementBetslipData()
+    const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(loadedData)
     if (!loadedSelections) {
       emitter.emit('showDialogueToaster', 'All selections have expired')
       return
     }
+    emits('hide-dialogue')
     emitter.emit('openBetslip')
-  } catch (error) {}
+    if (dialogueData.value.redirectToHome) {
+      router.push({ name: 'home' })
+    }
+  } catch (error) {
+    emitter.emit('showDialogueToaster', 'Invalid booking code. ')
+  } finally {
+    isReplacingBetslip.value = false
+  }
+}
+
+async function getReplacementBetslipData() {
+  if (Array.isArray(dialogueData.value.selections)) {
+    return dialogueData.value.selections
+  }
+
+  const shareCode =
+    dialogueData.value.shareCode ||
+    dialogueData.value.betslipId ||
+    dialogueData.value.data?.shareCode ||
+    dialogueData.value.data?.betslipId
+
+  if (!shareCode) return []
+
+  const res = await loadBetslipByCode(shareCode)
+  if (res?.status_code === 200 || res?.success) {
+    return res.data
+  }
+  throw new Error('Invalid booking code')
 }
 
 onMounted(() => {
@@ -273,6 +321,110 @@ onMounted(() => {
   text-decoration: none;
   vertical-align: middle;
   width: 30%;
+}
+
+.app-error-dialog {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  width: min(21rem, calc(100vw - 2rem));
+}
+
+.app-error-main {
+  text-align: left;
+}
+
+.app-error-main h3 {
+  color: #1b1e25;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.app-error-main p {
+  color: #62676f;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.app-error-dialog .es-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1.25rem 0 0;
+}
+
+.app-error-dialog .es-dialog-footer .es-dialog-btn {
+  border: 0;
+  border-radius: 0.41666667rem;
+  font-size: 0.95rem;
+  height: 2.75rem;
+  line-height: 1;
+  padding: 0 1.35rem;
+  text-align: center;
+  width: auto;
+}
+
+.app-error-ok {
+  background: #edf0f4;
+  color: #353a45 !important;
+}
+
+.betslip-replace-dialog {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  width: min(22rem, calc(100vw - 2rem));
+}
+
+.betslip-replace-main {
+  text-align: left;
+}
+
+.betslip-replace-main h3 {
+  color: #1b1e25;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.betslip-replace-main p {
+  color: #62676f;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.betslip-replace-dialog .es-dialog-footer {
+  display: flex;
+  gap: 0.66666667rem;
+  padding: 1.25rem 0 0;
+}
+
+.betslip-replace-dialog .es-dialog-footer .es-dialog-btn {
+  border: 0;
+  border-radius: 0.41666667rem;
+  flex: 1;
+  font-size: 0.95rem;
+  height: 2.75rem;
+  line-height: 1;
+  padding: 0 0.75rem;
+  text-align: center;
+  width: auto;
+}
+
+.betslip-dialog-cancel {
+  background: #edf0f4;
+  color: #353a45 !important;
+}
+
+.betslip-dialog-confirm {
+  background: var(--brand-primary);
+  color: #ffffff !important;
+}
+
+.betslip-replace-dialog .es-dialog-footer .es-dialog-btn:disabled {
+  opacity: 0.65;
 }
 .es-dialog.es-ani-show {
   -webkit-transition:

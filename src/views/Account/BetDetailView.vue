@@ -163,9 +163,22 @@ async function getBetDetails() {
 }
 
 async function rebet() {
+  const shareCode = betDetail.value.shareCode || betDetail.value.betslipId
+  if (couponStore.coupon.selections.length) {
+    emitter.emit('showBetslipConfirmation', {
+      shareCode,
+      title: 'Replace Betslip?',
+      message: 'You already have selections in your betslip. Do you want to replace them with this rebet?',
+      confirmText: 'Replace',
+      cancelText: 'Keep Current',
+      redirectToHome: true
+    })
+    return
+  }
+
   isRebetLoading.value = true
   try {
-    const res = await loadBetslipByCode(betDetail.value.shareCode || betDetail.value.betslipId)
+    const res = await loadBetslipByCode(shareCode)
     isRebetLoading.value = false
     if (res.status_code === 200) {
       const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(res.data)

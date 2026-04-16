@@ -454,7 +454,6 @@ onBeforeUnmount(() => {
 
 async function getEventDetail(id) {
   isLoading.value = true
-  console.log(unslugify(route.params.sport))
   const { sport_id } = sportsMenu.find((x) => x.sport_name == unslugify(route.params.sport))
   try {
     const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
@@ -474,6 +473,11 @@ async function getEventDetail(id) {
       eventMarkets.value = res[0].data?.market.filter((market) => market.statusName !== 'Suspended')
       marketGroups.value = res[1].data
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
+    }else{
+      emitter.emit('showErrorMessage', {
+        message: 'This event is no longer available for betting',
+        next_route: '/'
+      })
     }
   } catch (error) {
     console.log(error)
