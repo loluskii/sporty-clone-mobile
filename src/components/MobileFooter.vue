@@ -11,7 +11,11 @@
       class="betslip-float-wrapper"
       :class="[
         betslipMode ? 'sim-theme' : 'real-theme',
-        { 'is-dragging': isDraggingBetslip, 'is-settling': isSettlingBetslip }
+        {
+          'is-dragging': isDraggingBetslip,
+          'is-settling': isSettlingBetslip,
+          'is-popping': isBetslipPopping
+        }
       ]"
       :style="betslipFloatStyle"
     >
@@ -263,7 +267,7 @@
 </template>
 <script setup>
 import { useUtilsStore, useCouponStore } from '@/stores'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { formatTotalOdds } from '@/helpers'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -282,12 +286,27 @@ const suppressBetslipClick = ref(false)
 const dragState = ref(null)
 const isDraggingBetslip = ref(false)
 const isSettlingBetslip = ref(false)
+const isBetslipPopping = ref(false)
 const settlingTimer = ref(null)
+const popTimer = ref(null)
 const DRAG_THRESHOLD = 4
 const VIEWPORT_PADDING = 4
 
 const betslipCount = computed(() => {
   return couponStore.coupon.selections.length
+})
+
+watch(betslipCount, (count, previousCount) => {
+  if (count <= previousCount) return
+
+  isBetslipPopping.value = false
+  clearTimeout(popTimer.value)
+  requestAnimationFrame(() => {
+    isBetslipPopping.value = true
+    popTimer.value = setTimeout(() => {
+      isBetslipPopping.value = false
+    }, 380)
+  })
 })
 
 const betslipMode = computed(() => {
@@ -446,6 +465,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointerup', stopBetslipDrag)
   window.removeEventListener('pointercancel', stopBetslipDrag)
   clearTimeout(settlingTimer.value)
+  clearTimeout(popTimer.value)
 })
 </script>
 <style scoped>
@@ -640,6 +660,41 @@ a {
     top 260ms cubic-bezier(0.22, 1.45, 0.36, 1),
     left 260ms cubic-bezier(0.22, 1.45, 0.36, 1),
     transform 260ms cubic-bezier(0.22, 1.45, 0.36, 1);
+}
+
+.m-bottom-nav .betslip-float-wrapper.is-popping .count-wrapper {
+  animation: betslip-count-pop 380ms cubic-bezier(0.2, 1.45, 0.35, 1);
+}
+
+.m-bottom-nav .betslip-float-wrapper.is-popping .notification {
+  animation: betslip-badge-pop 380ms cubic-bezier(0.2, 1.45, 0.35, 1);
+}
+
+@keyframes betslip-count-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes betslip-badge-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .m-bottom-nav .switch-theme {
