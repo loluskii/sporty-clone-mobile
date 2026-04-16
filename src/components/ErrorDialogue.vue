@@ -139,6 +139,10 @@ async function replaceBetslip() {
   isReplacingBetslip.value = true
   try {
     const loadedData = await getReplacementBetslipData()
+    if (dialogueData.value.switchModeTo) {
+      couponStore.setBetslipMode(dialogueData.value.switchModeTo)
+      couponStore.isSimulating = false
+    }
     const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(loadedData)
     if (!loadedSelections) {
       emitter.emit('showDialogueToaster', 'All selections have expired')

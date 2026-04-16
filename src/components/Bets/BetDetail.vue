@@ -264,14 +264,18 @@ const isRebetLoading = ref(false)
 
 async function rebet() {
   if (!props.bet) return
-  if (couponStore.coupon.selections.length) {
+  if (couponStore.betslipMode || couponStore.coupon.selections.length) {
+    const isSimMode = couponStore.betslipMode
     emitter.emit('showBetslipConfirmation', {
       shareCode: props.bet.shareCode,
-      title: 'Replace Betslip?',
-      message: 'You already have selections in your betslip. Do you want to replace them with this rebet?',
-      confirmText: 'Replace',
+      title: isSimMode ? 'Switch to Real Mode?' : 'Replace Betslip?',
+      message: isSimMode
+        ? 'You are currently in SIM mode. To rebet, we need to switch back to real mode and replace the current betslip. Do you want to continue?'
+        : 'You already have selections in your betslip. Do you want to replace them with this rebet?',
+      confirmText: isSimMode ? 'Switch & Replace' : 'Replace',
       cancelText: 'Keep Current',
-      redirectToHome: true
+      redirectToHome: true,
+      switchModeTo: isSimMode ? 'real' : null
     })
     return
   }
