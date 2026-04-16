@@ -1,9 +1,6 @@
 <template>
   <div class="casino">
     <HeaderCasino></HeaderCasino>
-    <div class="carousel">
-      <Carousel></Carousel>
-    </div>
     <div v-if="!isLoading" class="games-container pb-5">
       <div class="head-top d-flex align-items-center">
         <div class="categories-list">

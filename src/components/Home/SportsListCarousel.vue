@@ -41,14 +41,6 @@
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Aviator</span>
         </a>
       </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" @click.prevent="playElbet"
-          ><div class="sport-icon">
-            <img src="@/assets/images/puzzle.png" loading="eager" width="24" height="24" />
-          </div>
-          <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Elbet</span>
-        </a>
-      </li>
       <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
           ><div class="sport-icon">
