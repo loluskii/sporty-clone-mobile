@@ -363,8 +363,6 @@ defineComponent({
             <AppFooter></AppFooter>
           </div>
           <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
-          <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
-            :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
           <CasinoDialog v-if="
             utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
           " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
@@ -378,6 +376,8 @@ defineComponent({
             />
         </div>
         <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
+        <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
+          :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
       </div>
   
       <!-- <transition name="move">

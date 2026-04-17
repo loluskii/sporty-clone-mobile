@@ -334,7 +334,16 @@ function hideBookBetModal() {
   emit('toggle-betslip')
 }
 function clearBetslip() {
-  return couponStore.clearBetslip()
+  if (!couponStore.coupon.selections.length) return
+
+  emitter.emit('showBetslipConfirmation', {
+    action: 'clearBetslip',
+    title: 'Clear Betslip?',
+    message: 'Are you sure you want to clear your betslip?',
+    confirmText: 'Clear',
+    cancelText: 'Cancel',
+    pendingText: 'Clearing...'
+  })
 }
 
 function setActiveSelectionInput(data) {

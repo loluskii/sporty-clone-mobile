@@ -44,7 +44,7 @@
           :disabled="isReplacingBetslip"
           @click.prevent="replaceBetslip"
         >
-          {{ isReplacingBetslip ? 'Replacing...' : betslipConfirmText }}
+          {{ isReplacingBetslip ? betslipPendingText : betslipConfirmText }}
         </button>
       </div>
     </div>
@@ -105,6 +105,7 @@ const betslipDialogMessage = computed(
 )
 const betslipCancelText = computed(() => dialogueData.value.cancelText || 'Keep Current')
 const betslipConfirmText = computed(() => dialogueData.value.confirmText || 'Replace')
+const betslipPendingText = computed(() => dialogueData.value.pendingText || 'Replacing...')
 const errorDialogTitle = computed(() => dialogueData.value.title || 'Notice')
 
 const dialogueType = () => {
@@ -138,6 +139,12 @@ async function replaceBetslip() {
   if (isReplacingBetslip.value) return
   isReplacingBetslip.value = true
   try {
+    if (dialogueData.value.action === 'clearBetslip') {
+      couponStore.clearBetslip()
+      emits('hide-dialogue')
+      return
+    }
+
     const loadedData = await getReplacementBetslipData()
     if (dialogueData.value.switchModeTo) {
       couponStore.setBetslipMode(dialogueData.value.switchModeTo)
@@ -232,7 +239,10 @@ onMounted(() => {
   transform: scale(0.9, 0.9);
 }
 .es-dialog-wrap {
+  inset: 0;
+  position: fixed;
   visibility: hidden;
+  z-index: 30000;
 }
 .es-dialog-wrap .layout {
   background: #353a45;
@@ -423,7 +433,7 @@ onMounted(() => {
 }
 
 .betslip-dialog-confirm {
-  background: var(--brand-primary);
+  background: var(--brand-primary-button);
   color: #ffffff !important;
 }
 
