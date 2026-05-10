@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { DEFAULT_DERIVED_MARKET_CONFIG } from '@/helpers'
+import { DEFAULT_DERIVED_MARKET_CONFIG, formatEarlyWinMarketName } from '@/helpers'
 
 const flattenFixtures = (fixtures) => {
   if (Array.isArray(fixtures)) return fixtures
@@ -120,9 +120,7 @@ export const useUpMode = ({
     return {
       ...baseMarket,
       marketID: derivedMarketId,
-      marketName: baseMarket.marketName
-        ? `${baseMarket.marketName} - ${upMode.value.toUpperCase()}`
-        : baseMarket.marketName,
+      marketName: formatEarlyWinMarketName(baseMarket.marketName, upMode.value),
       outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
     }
   })

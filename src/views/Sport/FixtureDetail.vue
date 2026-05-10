@@ -170,14 +170,7 @@
                                   sharedColClass(section.totalCols),
                                   {
                                     'm-outcome--checked': isSelected(
-                                      createID(
-                                        eventDetail.matchID,
-                                        cell.outcome.marketID,
-                                        cell.outcome.outcomeID,
-                                        cell.outcome.specifier,
-                                        cell.market.marketName,
-                                        cell.outcome.outcomeName
-                                      ),
+                                      getSelectionElementId(eventDetail, cell.market, cell.outcome),
                                       couponStore.coupon
                                     ),
                                     'm-outcome--disabled':
@@ -224,14 +217,7 @@
                             class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
                               'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.matchID,
-                                  cell.outcome.marketID,
-                                  cell.outcome.outcomeID,
-                                  cell.outcome.specifier,
-                                  cell.market.marketName,
-                                  cell.outcome.outcomeName
-                                ),
+                                getSelectionElementId(eventDetail, cell.market, cell.outcome),
                                 couponStore.coupon
                               ),
                               'm-outcome-two': leftoverRow.cells.length === 2,
@@ -271,14 +257,7 @@
                             class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
                               'm-outcome--checked': isSelected(
-                                createID(
-                                  eventDetail.matchID,
-                                  cell.outcome.marketID,
-                                  cell.outcome.outcomeID,
-                                  cell.outcome.specifier,
-                                  cell.market.marketName,
-                                  cell.outcome.outcomeName
-                                ),
+                                getSelectionElementId(eventDetail, cell.market, cell.outcome),
                                 couponStore.coupon
                               ),
                               'm-outcome-two': row.cells.length === 2,
@@ -340,7 +319,15 @@ import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { defineComponent, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getFixtureMarkets, getMarketsGrouping, formatDate, createID, isSelected, unslugify } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  getFixtureMarkets,
+  getMarketsGrouping,
+  formatDate,
+  isSelected,
+  unslugify
+} from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
@@ -501,29 +488,17 @@ function addToBetslip(market, outcome) {
     )
     return
   }
-  const id = createID(
-    eventDetail.value.matchID,
-    outcome.marketID,
-    outcome.outcomeID,
-    outcome.specifier,
-    market.marketName,
-    outcome.outcomeName
-  )
-  const data = {
+  const data = buildCouponSelectionPayload({
     fixture: eventDetail.value,
-    market_name: market.marketName,
-    market_id: market.marketID,
-    ele_id: id,
-    outcome: outcome,
-    odds: outcome.odds,
-    odd_id: outcome.outcomeID,
-    odd_name: outcome.outcomeName,
-    type: 'prematch',
-    event_id: eventDetail.value.matchID,
-    specifier: outcome.specifier || market.specifier
-  }
+    market,
+    outcome,
+    type: 'prematch'
+  })
   return couponStore.toggleCouponSelection(data)
 }
+
+const getSelectionElementId = (fixture, market, outcome) =>
+  buildCouponSelectionElementId({ fixture, market, outcome })
 
 const showFixtureAnalysis = (id, widgetName = 'headToHead.standalone') => {
   isH2HShowing.value = true

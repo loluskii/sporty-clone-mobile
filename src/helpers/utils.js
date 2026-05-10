@@ -6,6 +6,7 @@ import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
 import {
   buildEarlyWinSelectionState,
+  buildEarlyWinLocalQuoteMap,
   formatEarlyWinMarketName
 } from './early-win'
 
@@ -184,14 +185,59 @@ export const getDataFromPayload = (couponPayload) => {
     derivedMarketIds:
       couponPayload.fixture.derived_market_ids || couponPayload.fixture.derived_market_id
   })
+  const earlyWinLocalQuotes = buildEarlyWinLocalQuoteMap({
+    fixture: couponPayload.fixture,
+    sportId: couponPayload.fixture.sportID,
+    baseMarketId: earlyWinState.baseMarketId,
+    baseMarketName: earlyWinState.baseMarketName,
+    supportedDerivedMarketIds: earlyWinState.supportedDerivedMarketIds,
+    marketId: couponPayload.market_id,
+    specifier: couponPayload.specifier || '',
+    outcomeId: couponPayload.outcome.outcomeID,
+    outcomeName: couponPayload.outcome.outcomeName,
+    displayName: couponPayload.outcome.displayName
+  })
+  const supportedEarlyWinModes = earlyWinState.supportedEarlyWinModes
+  const supportedDerivedMarketIds = [
+    ...new Set([
+      ...earlyWinState.supportedDerivedMarketIds,
+      ...supportedEarlyWinModes
+        .map((mode) => Number(earlyWinLocalQuotes?.[mode]?.marketId))
+        .filter((marketId) => Number.isFinite(marketId) && marketId > 0)
+    ])
+  ]
+  const currentQuote = earlyWinLocalQuotes?.[earlyWinState.earlyWinMode] || null
+  const baseQuote = earlyWinLocalQuotes?.base || null
+  const baseOutcomeId = baseQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
+  const baseOutcomeName = baseQuote?.outcomeName || couponPayload.outcome.outcomeName
+  const baseDisplayName = baseQuote?.displayName || couponPayload.outcome.displayName
+  const baseOdds = Number(baseQuote?.odds ?? couponPayload.outcome.odds)
+  const baseStatusName = baseQuote?.statusName || 'Active'
+  const sourceSelectionKeySpecifier = couponPayload.outcome?.specifier ?? ''
+  const baseSelectionKeySpecifier = baseQuote?.idSpecifier ?? sourceSelectionKeySpecifier
+  const currentOutcomeId = currentQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
+  const currentOutcomeName = currentQuote?.outcomeName || couponPayload.outcome.outcomeName
+  const currentDisplayName = currentQuote?.displayName || couponPayload.outcome.displayName
+  const currentSpecifier = currentQuote?.specifier ?? couponPayload.specifier ?? ''
+  const currentSelectionKeySpecifier = currentQuote?.idSpecifier ?? sourceSelectionKeySpecifier
   const stableSelectionId = createID(
     couponPayload.fixture.matchID,
     earlyWinState.baseMarketId,
-    couponPayload.outcome.outcomeID,
-    couponPayload.specifier,
+    baseOutcomeId,
+    baseSelectionKeySpecifier,
     earlyWinState.baseMarketName,
-    couponPayload.outcome.outcomeName
+    baseOutcomeName
   )
+  const currentSelectionId = createID(
+    couponPayload.fixture.matchID,
+    couponPayload.market_id,
+    currentOutcomeId,
+    currentSelectionKeySpecifier,
+    formatEarlyWinMarketName(earlyWinState.baseMarketName, earlyWinState.earlyWinMode),
+    currentOutcomeName
+  )
+  const normalizedCurrentSelectionId = couponPayload.ele_id || currentSelectionId
+  const supportsEarlyWin = earlyWinState.supportsEarlyWin
 
   const data = {
     matchId: parseInt(couponPayload.fixture.matchID),
@@ -200,11 +246,11 @@ export const getDataFromPayload = (couponPayload) => {
     eventName: couponPayload.fixture.name,
     marketId: couponPayload.market_id,
     marketName: earlyWinState.currentMarketName || couponPayload.market_name,
-    specifier: couponPayload.specifier,
-    outcomeName: couponPayload.outcome.outcomeName,
-    displayName: couponPayload.outcome.displayName,
-    outcomeId: couponPayload.outcome.outcomeID,
-    odds: parseFloat(couponPayload.outcome.odds).toFixed(2),
+    specifier: currentSpecifier,
+    outcomeName: currentOutcomeName,
+    displayName: currentDisplayName,
+    outcomeId: currentOutcomeId,
+    odds: parseFloat(currentQuote?.odds ?? couponPayload.outcome.odds).toFixed(2),
     eventDate: couponPayload.fixture.date,
     tournament: couponPayload.fixture.tournament,
     category: couponPayload.fixture.categoryName,
@@ -215,7 +261,7 @@ export const getDataFromPayload = (couponPayload) => {
     combinability: couponPayload.fixture.combinability || 0,
     selectionId: stableSelectionId,
     element_id: stableSelectionId,
-    currentSelectionId: couponPayload.ele_id,
+    currentSelectionId: normalizedCurrentSelectionId,
     homeTeam: couponPayload.fixture.homeTeam || couponPayload.fixture.competitor1,
     awayTeam: couponPayload.fixture.awayTeam || couponPayload.fixture.competitor2,
     producerId: couponPayload.outcome.producerID || couponPayload.fixture.producerID,
@@ -223,15 +269,23 @@ export const getDataFromPayload = (couponPayload) => {
     suspended: false,
     unavailable: false,
     changed: false,
-    isDerived: earlyWinState.supportsEarlyWin,
+    isDerived: supportsEarlyWin,
     hasExplicitDerivedMarkets: earlyWinState.hasExplicitDerivedMarkets,
-    supportsEarlyWin: earlyWinState.supportsEarlyWin,
-    supportedDerivedMarketIds: earlyWinState.supportedDerivedMarketIds,
-    supportedEarlyWinModes: earlyWinState.supportedEarlyWinModes,
+    supportsEarlyWin,
+    supportedDerivedMarketIds,
+    supportedEarlyWinModes,
+    earlyWinLocalQuotes,
     earlyWinMode: earlyWinState.earlyWinMode,
+    selectionKeySpecifier: currentSelectionKeySpecifier,
     baseMarketId: earlyWinState.baseMarketId,
     baseMarketName: earlyWinState.baseMarketName,
-    baseSpecifier: couponPayload.specifier || '',
+    baseSpecifier: baseQuote?.specifier ?? couponPayload.specifier ?? '',
+    baseSelectionKeySpecifier,
+    baseOutcomeId,
+    baseOutcomeName,
+    baseDisplayName,
+    baseOdds: Number.isFinite(baseOdds) ? baseOdds.toFixed(2) : 0,
+    baseStatusName,
     earlyWinLabel: formatEarlyWinMarketName(
       earlyWinState.baseMarketName,
       earlyWinState.earlyWinMode
@@ -403,14 +457,88 @@ export const getPlacedBetStatus = (status) => {
   }
 }
 
-export const createID = (matchID, marketID, outcomeID, specifier = '', marketName = '', outcomeName = '') => {
-  // Create a unique ID based on match, market, outcome, specifier, and names
-  // This ensures selections are unique and human-readable
-  const cleanSpecifier = String(specifier || '').replace(/[^a-zA-Z0-9]/g, '_')
-  const cleanMarketName = String(marketName || '').replace(/\s+/g, '_')
-  const cleanOutcomeName = String(outcomeName || '').replace(/\s+/g, '_')
+export const createID = (
+  matchID,
+  marketID,
+  outcomeID,
+  specifier = '',
+  marketName = '',
+  outcomeName = ''
+) => {
+  const cleanSpecifier = String(specifier || '').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()
+  void marketName
+  void outcomeName
 
-  return `${matchID}_${marketID}_${outcomeID}${cleanSpecifier ? '_' + cleanSpecifier : ''}${cleanMarketName ? '_' + cleanMarketName : ''}${cleanOutcomeName ? '_' + cleanOutcomeName : ''}`
+  return `${matchID}_${marketID}_${outcomeID}${cleanSpecifier ? '_' + cleanSpecifier : ''}`
+}
+
+const getCouponSelectionMatchId = (fixture = {}) =>
+  fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id ?? ''
+
+const getCouponSelectionMarketId = (market = {}, outcome = {}) =>
+  market.marketID ?? market.marketId ?? market.market_id ?? outcome.marketID ?? outcome.marketId ?? outcome.market_id ?? ''
+
+const getCouponSelectionOutcomeId = (outcome = {}) =>
+  outcome.outcomeID ?? outcome.outcomeId ?? outcome.outcome_id ?? outcome.id ?? ''
+
+const getCouponSelectionMarketName = (market = {}, marketName = '') =>
+  String(marketName || market.marketName || market.market_name || market.name || '').trim()
+
+const getCouponSelectionOutcomeName = (outcome = {}) =>
+  String(outcome.outcomeName || outcome.outcome_name || outcome.name || outcome.displayName || '').trim()
+
+export const getCouponSelectionKeySpecifier = (market = {}, outcome = {}) =>
+  String(outcome.specifier ?? outcome.specifiers ?? '')
+
+export const getCouponSelectionRequestSpecifier = (market = {}, outcome = {}) =>
+  String(outcome.specifier ?? outcome.specifiers ?? market.specifier ?? market.specifiers ?? '')
+
+export const buildCouponSelectionElementId = ({
+  fixture = {},
+  market = {},
+  outcome = {},
+  marketName = ''
+}) => {
+  return createID(
+    getCouponSelectionMatchId(fixture),
+    getCouponSelectionMarketId(market, outcome),
+    getCouponSelectionOutcomeId(outcome),
+    getCouponSelectionKeySpecifier(market, outcome),
+    getCouponSelectionMarketName(market, marketName),
+    getCouponSelectionOutcomeName(outcome)
+  )
+}
+
+export const buildCouponSelectionPayload = ({
+  fixture = {},
+  market = {},
+  outcome = {},
+  marketName = '',
+  type = 'prematch'
+}) => {
+  const resolvedMarketName = getCouponSelectionMarketName(market, marketName)
+  const marketId = getCouponSelectionMarketId(market, outcome)
+  const outcomeId = getCouponSelectionOutcomeId(outcome)
+  const outcomeName = getCouponSelectionOutcomeName(outcome)
+
+  return {
+    fixture,
+    market_name: resolvedMarketName,
+    market_id: marketId,
+    ele_id: buildCouponSelectionElementId({
+      fixture,
+      market,
+      outcome,
+      marketName: resolvedMarketName
+    }),
+    outcome,
+    odds: outcome.odds,
+    odd_id: outcomeId,
+    odd_name: outcomeName,
+    type,
+    event_id: getCouponSelectionMatchId(fixture),
+    specifier: getCouponSelectionRequestSpecifier(market, outcome)
+  }
 }
 
 
@@ -441,8 +569,7 @@ export const isSelected = (ele_id, coupon) => {
 
   if (coupon.selections.length > 0) {
     let count = coupon.selections.find(
-      (selection) =>
-        selection.selectionId === ele_id || selection.currentSelectionId === ele_id
+      (selection) => String(selection.currentSelectionId || selection.selectionId || '') === String(ele_id)
     )
     if (count) {
       isExist = true

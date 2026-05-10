@@ -59,14 +59,7 @@
           @click="addToBetslip(matchDetails, market)"
           :class="
             isSelected(
-              createID(
-                matchDetails.matchID,
-                market.marketID,
-                market.outcomeID,
-                market.specifier,
-                '1X2',
-                market.outcomeName
-              ),
+              getSelectionElementId(matchDetails, market),
               couponStore.coupon
             )
               ? 'm-outcome--checked'
@@ -86,7 +79,13 @@
 
 <script setup>
 import { defineProps, computed, watch } from 'vue'
-import { formatDate, slugify, isSelected, createID } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  formatDate,
+  slugify,
+  isSelected
+} from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
@@ -150,6 +149,13 @@ function goToMarket() {
   })
 }
 
+const getSelectionElementId = (fixture, outcome) =>
+  buildCouponSelectionElementId({
+    fixture,
+    outcome,
+    marketName: '1X2'
+  })
+
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
   let marketId = parseInt(odd.marketID)
@@ -160,20 +166,12 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const id = createID(event.matchID, odd.marketID, odd.outcomeID, odd.specifier, '1X2', odd.outcomeName)
-  const data = {
+  const data = buildCouponSelectionPayload({
     fixture: event,
-    market_name: '1X2',
-    market_id: odd.marketID,
-    ele_id: id,
     outcome: odd,
-    odds: odd.odds,
-    odd_id: odd.outcomeID,
-    odd_name: odd.outcomeName,
-    type: 'prematch',
-    event_id: event.matchID,
-    specifier: odd.specifier || ''
-  }
+    marketName: '1X2',
+    type: 'prematch'
+  })
 
   return couponStore.toggleCouponSelection(data)
 }

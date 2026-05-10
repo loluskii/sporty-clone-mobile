@@ -49,18 +49,7 @@
                 </div>
                 <Odds @click="addToBetslip(eventData, odd)" v-for="(odd, index) in outcomes"
                   :key="index" :odds="odd" :selectionClass="
-                    isSelected(
-                      createID(
-                        eventData.matchID,
-                        odd.marketID,
-                        odd.outcomeID,
-                        odd.specifier,
-                        activeMarket.marketName,
-                        odd.outcomeName
-                      ),
-                      
-                      couponStore.coupon
-                    )
+                    isSelected(getSelectionElementId(eventData, activeMarket, odd), couponStore.coupon)
                       ? 'm-outcome--checked'
                       : ''
                   "></Odds>
@@ -86,7 +75,12 @@
 </template>
 <script setup>
 import { defineComponent, computed, watch, ref } from 'vue'
-import { createID, isSelected, slugify } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  isSelected,
+  slugify
+} from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
 import { useCouponStore } from '@/stores'
@@ -152,16 +146,11 @@ function showFixtureAnalysis(id) {
   )
 }
 
+const getSelectionElementId = (fixture, market, outcome) =>
+  buildCouponSelectionElementId({ fixture, market, outcome })
+
 function addToBetslip(event, odd) {
   if (odd.active === 0 || odd.odds <= 1) return
-  const id = createID(
-    event.matchID,
-    odd.marketID,
-    odd.outcomeID,
-    odd.specifier,
-    props.activeMarket.marketName,
-    odd.outcomeName
-  )
   const marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
@@ -170,19 +159,12 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const data = {
+  const data = buildCouponSelectionPayload({
     fixture: event,
-    market_name: props.activeMarket.marketName,
-    market_id: odd.marketID,
-    ele_id: id,
+    market: props.activeMarket,
     outcome: odd,
-    odds: odd.odds,
-    odd_id: odd.outcomeID,
-    odd_name: odd.outcomeName,
-    type: 'prematch',
-    event_id: event.matchID,
-    specifier: odd.specifier
-  }
+    type: 'prematch'
+  })
 
   return couponStore.toggleCouponSelection(data)
 }

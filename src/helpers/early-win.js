@@ -62,7 +62,162 @@ export const stripEarlyWinSuffix = (marketName = '') => {
 export const formatEarlyWinMarketName = (baseMarketName = '', mode = 'base') => {
   const safeBaseName = String(baseMarketName || '').trim()
   if (mode === 'base') return safeBaseName
-  return [safeBaseName, EARLY_WIN_MODE_LABELS[mode]].filter(Boolean).join(' ')
+  return [safeBaseName, EARLY_WIN_MODE_LABELS[mode]].filter(Boolean).join(' - ')
+}
+
+const normalizeFixtureText = (value = '') => String(value || '').trim().toLowerCase()
+
+const getFixtureMarkets = (fixture = {}) => {
+  if (Array.isArray(fixture?.market)) return fixture.market
+  if (Array.isArray(fixture?.markets)) return fixture.markets
+  return []
+}
+
+const getFixtureFlatOutcomes = (fixture = {}) => {
+  return Array.isArray(fixture?.outcomes) ? fixture.outcomes : []
+}
+
+const getFixtureMarketId = (market = {}) =>
+  Number(market.marketID ?? market.marketId ?? market.market_id ?? market.id ?? 0)
+
+const getFixtureMarketName = (market = {}) =>
+  String(market.marketName ?? market.market_name ?? market.name ?? '').trim()
+
+const getFixtureMarketSpecifier = (market = {}) =>
+  String(market.specifier ?? market.specifiers ?? '')
+
+const getFixtureMarketStatus = (market = {}) =>
+  String(market.statusName ?? market.status_name ?? '').trim()
+
+const getFixtureOutcomeId = (outcome = {}) =>
+  String(outcome.outcomeID ?? outcome.outcomeId ?? outcome.id ?? '')
+
+const getFixtureOutcomeSpecifier = (outcome = {}) =>
+  String(outcome.specifier ?? outcome.specifiers ?? '')
+
+const getFixtureOutcomeName = (outcome = {}) =>
+  String(outcome.outcomeName ?? outcome.name ?? outcome.displayName ?? '').trim()
+
+const getFixtureOutcomeDisplayName = (outcome = {}) =>
+  String(outcome.displayName ?? outcome.outcomeName ?? outcome.name ?? '').trim()
+
+const getFixtureOutcomeActive = (outcome = {}) =>
+  Number(outcome.active ?? outcome.isActive ?? 1)
+
+const getConfiguredDerivedMarketIds = (baseMarketId) => {
+  const modeMap = DERIVED_MARKET_BY_BASE_AND_MODE.get(Number(baseMarketId || 0))
+  return modeMap ? [...modeMap.values()] : []
+}
+
+const findFixtureMarket = (markets, marketId, specifier = '') => {
+  const candidates = markets.filter((market) => getFixtureMarketId(market) === Number(marketId))
+  if (!candidates.length) return null
+
+  const normalizedSpecifier = String(specifier || '')
+  return (
+    candidates.find(
+      (market) => String(getFixtureMarketSpecifier(market) || '') === normalizedSpecifier
+    ) || candidates[0]
+  )
+}
+
+const findFixtureOutcomes = (outcomes, marketId, specifier = '') => {
+  const candidates = outcomes.filter(
+    (outcome) =>
+      Number(outcome.marketID ?? outcome.marketId ?? outcome.market_id ?? 0) === Number(marketId)
+  )
+  if (!candidates.length) return []
+
+  const normalizedSpecifier = String(specifier || '')
+  const exactMatches = candidates.filter(
+    (outcome) => String(getFixtureOutcomeSpecifier(outcome) || '') === normalizedSpecifier
+  )
+
+  return exactMatches.length ? exactMatches : candidates
+}
+
+const findOutcomeIndex = (market, reference = {}) => {
+  const outcomes = Array.isArray(market?.outcomes) ? market.outcomes : []
+  if (!outcomes.length) return -1
+
+  const targetOutcomeId = String(reference.outcomeId || '')
+  if (targetOutcomeId) {
+    const idIndex = outcomes.findIndex((outcome) => getFixtureOutcomeId(outcome) === targetOutcomeId)
+    if (idIndex !== -1) return idIndex
+  }
+
+  const candidateNames = [
+    normalizeFixtureText(reference.outcomeName),
+    normalizeFixtureText(reference.displayName)
+  ].filter(Boolean)
+
+  if (candidateNames.length) {
+    const nameIndex = outcomes.findIndex((outcome) => {
+      const outcomeNames = [
+        normalizeFixtureText(getFixtureOutcomeName(outcome)),
+        normalizeFixtureText(getFixtureOutcomeDisplayName(outcome))
+      ].filter(Boolean)
+      return candidateNames.some((name) => outcomeNames.includes(name))
+    })
+    if (nameIndex !== -1) return nameIndex
+  }
+
+  return -1
+}
+
+const findOutcomeByReference = (market, reference = {}) => {
+  const outcomes = Array.isArray(market?.outcomes) ? market.outcomes : []
+  if (!outcomes.length) return null
+
+  const targetOutcomeId = String(reference.outcomeId || '')
+  if (targetOutcomeId) {
+    const byId = outcomes.find((outcome) => getFixtureOutcomeId(outcome) === targetOutcomeId)
+    if (byId) return byId
+  }
+
+  const candidateNames = [
+    normalizeFixtureText(reference.outcomeName),
+    normalizeFixtureText(reference.displayName)
+  ].filter(Boolean)
+
+  if (candidateNames.length) {
+    const byName = outcomes.find((outcome) => {
+      const outcomeNames = [
+        normalizeFixtureText(getFixtureOutcomeName(outcome)),
+        normalizeFixtureText(getFixtureOutcomeDisplayName(outcome))
+      ].filter(Boolean)
+      return candidateNames.some((name) => outcomeNames.includes(name))
+    })
+    if (byName) return byName
+  }
+
+  const sourceIndex = Number(reference.sourceIndex)
+  if (Number.isInteger(sourceIndex) && sourceIndex >= 0 && sourceIndex < outcomes.length) {
+    return outcomes[sourceIndex]
+  }
+
+  return null
+}
+
+const getLocalQuoteStatusName = ({ market, outcome, odds }) => {
+  const marketStatus = getFixtureMarketStatus(market)
+  if (marketStatus && marketStatus !== 'Active') {
+    return marketStatus
+  }
+
+  if (getFixtureOutcomeActive(outcome) !== 1) {
+    return 'Suspended'
+  }
+
+  return Number.isFinite(odds) && odds > 1 ? 'Active' : 'Suspended'
+}
+
+const getFlatQuoteStatusName = ({ outcome, odds }) => {
+  if (getFixtureOutcomeActive(outcome) !== 1) {
+    return 'Suspended'
+  }
+
+  return Number.isFinite(odds) && odds > 1 ? 'Active' : 'Suspended'
 }
 
 export const getSupportedDerivedMarketIds = ({ sportId, marketId, derivedMarketIds }) => {
@@ -99,6 +254,145 @@ export const getDerivedMarketIdForMode = (baseMarketId, mode, supportedDerivedMa
   }
 
   return DERIVED_MARKET_BY_BASE_AND_MODE.get(Number(baseMarketId || 0))?.get(normalizedMode) || 0
+}
+
+export const buildEarlyWinLocalQuoteMap = ({
+  fixture,
+  sportId,
+  baseMarketId,
+  baseMarketName = '',
+  supportedDerivedMarketIds = [],
+  marketId,
+  specifier = '',
+  outcomeId,
+  outcomeName,
+  displayName
+}) => {
+  if (!isFootballSport(sportId)) return {}
+
+  const markets = getFixtureMarkets(fixture)
+  const flatOutcomes = getFixtureFlatOutcomes(fixture)
+  if (!markets.length && !flatOutcomes.length) return {}
+
+  const configuredDerivedMarketIds = getConfiguredDerivedMarketIds(baseMarketId).filter(
+    (candidateId) =>
+      markets.some((market) => getFixtureMarketId(market) === Number(candidateId)) ||
+      flatOutcomes.some(
+        (outcome) =>
+          Number(outcome.marketID ?? outcome.marketId ?? outcome.market_id ?? 0) ===
+          Number(candidateId)
+      )
+  )
+
+  const candidateMarketIds = [
+    Number(baseMarketId || 0),
+    ...normalizeDerivedMarketIds([
+      ...supportedDerivedMarketIds,
+      ...configuredDerivedMarketIds
+    ])
+  ].filter((candidateId) => Number.isFinite(candidateId) && candidateId > 0)
+
+  const quotes = {}
+  const reference = {
+    outcomeId,
+    outcomeName,
+    displayName
+  }
+
+  if (markets.length) {
+    const sourceMarket =
+      findFixtureMarket(markets, marketId || baseMarketId, specifier) ||
+      findFixtureMarket(markets, baseMarketId, specifier)
+    if (!sourceMarket) return {}
+
+    const sourceIndex = findOutcomeIndex(sourceMarket, reference)
+
+    candidateMarketIds.forEach((candidateMarketId) => {
+      const market = findFixtureMarket(markets, candidateMarketId, specifier)
+      if (!market) return
+
+      const outcome = findOutcomeByReference(market, {
+        ...reference,
+        sourceIndex
+      })
+      if (!outcome) return
+
+      const normalizedOdds = Number(outcome.odds)
+      const mode =
+        Number(candidateMarketId) === Number(baseMarketId)
+          ? 'base'
+          : getEarlyWinModeFromMarketId(candidateMarketId)
+
+      quotes[mode] = {
+        marketId: Number(candidateMarketId),
+        marketName: getFixtureMarketName(market),
+        specifier: getFixtureMarketSpecifier(market),
+        idSpecifier: getFixtureOutcomeSpecifier(outcome),
+        outcomeId: getFixtureOutcomeId(outcome),
+        outcomeName: getFixtureOutcomeName(outcome),
+        displayName: getFixtureOutcomeDisplayName(outcome),
+        odds: normalizedOdds,
+        active: getFixtureOutcomeActive(outcome),
+        statusName: getLocalQuoteStatusName({
+          market,
+          outcome,
+          odds: normalizedOdds
+        })
+      }
+    })
+
+    return quotes
+  }
+
+  const primarySourceOutcomes = findFixtureOutcomes(
+    flatOutcomes,
+    marketId || baseMarketId,
+    specifier
+  )
+  const sourceOutcomes = primarySourceOutcomes.length
+    ? primarySourceOutcomes
+    : findFixtureOutcomes(flatOutcomes, baseMarketId, specifier)
+  if (!sourceOutcomes.length) return {}
+
+  const sourceIndex = findOutcomeIndex({ outcomes: sourceOutcomes }, reference)
+
+  candidateMarketIds.forEach((candidateMarketId) => {
+    const outcomesForMarket = findFixtureOutcomes(flatOutcomes, candidateMarketId, specifier)
+    if (!outcomesForMarket.length) return
+
+    const outcome = findOutcomeByReference(
+      { outcomes: outcomesForMarket },
+      {
+        ...reference,
+        sourceIndex
+      }
+    )
+    if (!outcome) return
+
+    const normalizedOdds = Number(outcome.odds)
+    const mode =
+      Number(candidateMarketId) === Number(baseMarketId)
+        ? 'base'
+        : getEarlyWinModeFromMarketId(candidateMarketId)
+
+    quotes[mode] = {
+      marketId: Number(candidateMarketId),
+      marketName: formatEarlyWinMarketName(baseMarketName, mode),
+      specifier: getFixtureOutcomeSpecifier(outcome) || String(specifier || ''),
+      idSpecifier: getFixtureOutcomeSpecifier(outcome),
+      outcomeId: getFixtureOutcomeId(outcome),
+      outcomeName: getFixtureOutcomeName(outcome),
+      displayName: getFixtureOutcomeDisplayName(outcome),
+      odds: normalizedOdds,
+      active: getFixtureOutcomeActive(outcome),
+      statusName: getFlatQuoteStatusName({
+        outcome,
+        odds: normalizedOdds
+      })
+    }
+  })
+
+  return quotes
 }
 
 export const buildEarlyWinSelectionState = ({
