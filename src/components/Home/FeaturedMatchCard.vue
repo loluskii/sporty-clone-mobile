@@ -175,10 +175,7 @@ function addToBetslip(event, odd) {
     specifier: odd.specifier || ''
   }
 
-  // return couponStore.addToCoupon(data)
-
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  return couponStore.toggleCouponSelection(data)
 }
 </script>
 

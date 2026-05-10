@@ -1,137 +1,78 @@
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useCouponStore } from '@/stores'
-import { validateBetslipSelections } from '@/helpers'
-import { DEFAULT_DERIVED_MARKET_CONFIG } from './useUpMode'
-
-const buildDerivedMarketIdMap = () => {
-  const map = {}
-  Object.values(DEFAULT_DERIVED_MARKET_CONFIG).forEach((entry) => {
-    ;(entry.modes || []).forEach((mode) => {
-      map[mode.key] = mode.id
-    })
-  })
-  return map
-}
+import { EARLY_WIN_DEFAULT_MODE } from '@/helpers'
 
 export function useBetslipUpMode() {
   const couponStore = useCouponStore()
 
-  const upMode = ref('none')
-  const isLoadingUpMode = ref(false)
-
-  const DERIVED_MARKET_IDS = buildDerivedMarketIdMap()
-
-  const hasDerivedMarkets = computed(() => {
-    const selections = couponStore.coupon.selections || []
-    return selections.some((sel) => sel.isDerived)
-  })
-
-  const applyDerivedMode = async (mode) => {
-    const derivedMarketId = DERIVED_MARKET_IDS[mode]
-    if (!derivedMarketId) return
-
-    const eligible = (couponStore.coupon.selections || []).filter((sel) => sel.isDerived)
-    if (!eligible.length) return
-
-    isLoadingUpMode.value = true
-    try {
-      const payload = eligible.map((sel) => ({
-        match_id: parseInt(sel.matchId),
-        market_id: derivedMarketId,
-        outcome_id: String(sel.outcomeId),
-        producer_id: sel.producerId || 3,
-        specifier: sel.specifier || ''
-      }))
-
-      const res = await validateBetslipSelections(payload)
-      if (res.status_code === 200 && res.data) {
-        const validated = Array.isArray(res.data) ? res.data : Object.values(res.data)
-        validated.forEach((v) => {
-          const sel = eligible.find(
-            (s) =>
-              String(s.matchId) === String(v.match_id) &&
-              String(s.outcomeId) === String(v.outcome_id)
-          )
-          if (!sel) return
-          if (sel._originalMarketId === undefined) {
-            sel._originalMarketId = sel.marketId
-          }
-          if (v.status_name === 'Active' && parseFloat(v.odds) > 1) {
-            sel.marketId = derivedMarketId
-            sel.odds = String(parseFloat(v.odds).toFixed(2))
-          }
-        })
-        couponStore.updateWinnings({ stake: couponStore.coupon.totalStake, id: 'all' })
-      }
-    } catch (e) {
-      console.error('[upMode] validate error', e)
-    } finally {
-      isLoadingUpMode.value = false
+  const selections = computed(() => couponStore.coupon.selections || [])
+  const bulkMode = computed({
+    get: () => couponStore.earlyWinBulkMode || EARLY_WIN_DEFAULT_MODE,
+    set: (mode) => {
+      couponStore.earlyWinBulkMode = mode || EARLY_WIN_DEFAULT_MODE
     }
-  }
+  })
+  const isLoadingUpMode = computed(() => couponStore.isEarlyWinLoading)
 
-  const restoreOriginalMode = async () => {
-    const selections = couponStore.coupon.selections || []
-    const switched = selections.filter((sel) => sel._originalMarketId !== undefined)
-    if (!switched.length) return
+  const supportedSelections = computed(() =>
+    selections.value.filter((selection) => selection.supportsEarlyWin)
+  )
+  const actionableSelections = computed(() =>
+    selections.value.filter(
+      (selection) => selection.supportsEarlyWin || selection.earlyWinMode === '1up' || selection.earlyWinMode === '2up'
+    )
+  )
+  const unsupportedSelections = computed(() =>
+    selections.value.filter(
+      (selection) => !selection.supportsEarlyWin && (selection.earlyWinMode || 'base') === 'base'
+    )
+  )
+  const hasDerivedMarkets = computed(() => supportedSelections.value.length > 0)
+  const hasUnsupportedSelections = computed(() => unsupportedSelections.value.length > 0)
+  const eligibleSelectionsCount = computed(() => supportedSelections.value.length)
+  const unsupportedSelectionsCount = computed(() => unsupportedSelections.value.length)
+  const isBulkEarlyWinEnabled = computed(() =>
+    selections.value.some((selection) => selection.earlyWinMode && selection.earlyWinMode !== 'base')
+  )
 
-    isLoadingUpMode.value = true
-    try {
-      const payload = switched.map((sel) => ({
-        match_id: parseInt(sel.matchId),
-        market_id: sel._originalMarketId,
-        outcome_id: String(sel.outcomeId),
-        producer_id: sel.producerId || 3,
-        specifier: sel.specifier || ''
-      }))
-
-      const res = await validateBetslipSelections(payload)
-      if (res.status_code === 200 && res.data) {
-        const validated = Array.isArray(res.data) ? res.data : Object.values(res.data)
-        validated.forEach((v) => {
-          const sel = switched.find(
-            (s) =>
-              String(s.matchId) === String(v.match_id) &&
-              String(s.outcomeId) === String(v.outcome_id)
-          )
-          if (!sel) return
-          sel.marketId = sel._originalMarketId
-          if (v.status_name === 'Active' && parseFloat(v.odds) > 1) {
-            sel.odds = String(parseFloat(v.odds).toFixed(2))
-          }
-          delete sel._originalMarketId
-        })
-        couponStore.updateWinnings({ stake: couponStore.coupon.totalStake, id: 'all' })
-      } else {
-        switched.forEach((sel) => {
-          sel.marketId = sel._originalMarketId
-          delete sel._originalMarketId
-        })
-      }
-    } catch (e) {
-      console.error('[upMode] restore error', e)
-      switched.forEach((sel) => {
-        sel.marketId = sel._originalMarketId
-        delete sel._originalMarketId
-      })
-    } finally {
-      isLoadingUpMode.value = false
+  const setSelectionUpMode = async (selection, mode) => {
+    if (!selection?.selectionId) return
+    const nextMode = selection.earlyWinMode === mode ? 'base' : mode
+    if (nextMode !== 'base') {
+      bulkMode.value = nextMode
     }
+    await couponStore.applyEarlyWinModeToSelections([String(selection.selectionId)], nextMode)
   }
 
-  const setUpMode = (mode) => {
-    if (isLoadingUpMode.value) return
-    upMode.value = upMode.value === mode ? 'none' : mode
+  const toggleBulkUpMode = async () => {
+    const selectionIds = (
+      isBulkEarlyWinEnabled.value ? actionableSelections.value : supportedSelections.value
+    ).map((selection) => String(selection.selectionId))
+    if (!selectionIds.length) return
+
+    const nextMode = isBulkEarlyWinEnabled.value ? 'base' : bulkMode.value || EARLY_WIN_DEFAULT_MODE
+    await couponStore.applyEarlyWinModeToSelections(selectionIds, nextMode)
   }
 
-  watch(upMode, async (newMode, oldMode) => {
-    if (oldMode !== 'none') await restoreOriginalMode()
-    if (newMode !== 'none') await applyDerivedMode(newMode)
-  })
+  const setBulkUpMode = async (mode) => {
+    bulkMode.value = mode || EARLY_WIN_DEFAULT_MODE
+    if (!isBulkEarlyWinEnabled.value) return
 
-  watch(hasDerivedMarkets, (val) => {
-    if (!val) upMode.value = 'none'
-  })
+    const selectionIds = supportedSelections.value.map((selection) => String(selection.selectionId))
+    if (!selectionIds.length) return
+    await couponStore.applyEarlyWinModeToSelections(selectionIds, bulkMode.value)
+  }
 
-  return { upMode, isLoadingUpMode, hasDerivedMarkets, setUpMode }
+  return {
+    bulkMode,
+    isLoadingUpMode,
+    hasDerivedMarkets,
+    hasUnsupportedSelections,
+    eligibleSelectionsCount,
+    unsupportedSelectionsCount,
+    isBulkEarlyWinEnabled,
+    toggleBulkUpMode,
+    setBulkUpMode,
+    setSelectionUpMode
+  }
 }

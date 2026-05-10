@@ -522,9 +522,7 @@ function addToBetslip(market, outcome) {
     event_id: eventDetail.value.matchID,
     specifier: outcome.specifier || market.specifier
   }
-  // return couponStore.addToCoupon(data)
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  return couponStore.toggleCouponSelection(data)
 }
 
 const showFixtureAnalysis = (id, widgetName = 'headToHead.standalone') => {

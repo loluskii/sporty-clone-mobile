@@ -4,6 +4,7 @@ import { useUsersStore } from '@/stores'
 import emitter from '../plugins/emitter'
 import CouponCalculation from '@/helpers/coupon-calculation.js'
 import {
+  buildEarlyWinSelectionState,
   calculateWinnings,
   groupSelections,
   groupTournament,
@@ -11,6 +12,10 @@ import {
   checkBetType,
   checkIfHasLive,
   getDataFromPayload,
+  getDerivedMarketIdForMode,
+  getPreferredEarlyWinModeForSelection,
+  EARLY_WIN_DEFAULT_MODE,
+  formatEarlyWinMarketName,
   calculateBonus,
   getSplitProps,
   placeBet2,
@@ -36,8 +41,10 @@ export const useCouponStore = defineStore({
     SportsbookGlobalVariable: {},
     isBetslipLoading: false,
     isBetslipBooking: false,
+    isEarlyWinLoading: false,
     mode: 'real',
     isSimulating: false,
+    earlyWinBulkMode: EARLY_WIN_DEFAULT_MODE,
     coupon: {
       acceptChanges: true,
       betslip_type: 'Single',
@@ -75,6 +82,9 @@ export const useCouponStore = defineStore({
     betslipMode: (state) => state.mode === 'sim'
   },
   actions: {
+    getValidationSelectionKey(matchId, marketId, outcomeId, specifier = '') {
+      return `${matchId}:${marketId}:${outcomeId}:${specifier || ''}`
+    },
     getSelectionKey(selection) {
       if (!selection) return ''
       const selectionId = selection.selectionId || selection.id
@@ -84,6 +94,281 @@ export const useCouponStore = defineStore({
       const outcomeId = selection.outcomeId || selection.odd_id || selection.outcomeID || ''
       const specifier = selection.specifier || ''
       return `${matchId}:${marketId}:${outcomeId}:${specifier}`
+    },
+    buildCurrentSelectionId(selection, overrides = {}) {
+      const marketId = overrides.marketId ?? selection.marketId ?? selection.baseMarketId ?? 0
+      const marketName =
+        overrides.marketName ??
+        selection.marketName ??
+        formatEarlyWinMarketName(selection.baseMarketName, selection.earlyWinMode)
+      const specifier = overrides.specifier ?? selection.specifier ?? selection.baseSpecifier ?? ''
+
+      return createID(
+        selection.matchId,
+        marketId,
+        selection.outcomeId,
+        specifier,
+        marketName,
+        selection.outcomeName
+      )
+    },
+    normalizeSelectionEarlyWinState(selection = {}) {
+      const currentMarketId = Number(selection.marketId || selection.market_id || 0)
+      const earlyWinState = buildEarlyWinSelectionState({
+        sportId: selection.sportId || selection.sportID || selection.sport_id,
+        marketId: currentMarketId,
+        marketName: selection.baseMarketName || selection.marketName || '',
+        derivedMarketIds:
+          selection.supportedDerivedMarketIds ||
+          selection.derived_market_ids ||
+          selection.derived_market_id
+      })
+
+      selection.baseMarketId = selection.baseMarketId || earlyWinState.baseMarketId
+      selection.baseMarketName = selection.baseMarketName || earlyWinState.baseMarketName
+      selection.baseSpecifier = selection.baseSpecifier ?? selection.specifier ?? ''
+      selection.hasExplicitDerivedMarkets =
+        selection.hasExplicitDerivedMarkets ?? earlyWinState.hasExplicitDerivedMarkets
+      selection.supportedDerivedMarketIds = [
+        ...new Set([
+          ...(Array.isArray(selection.supportedDerivedMarketIds)
+            ? selection.supportedDerivedMarketIds
+            : []),
+          ...earlyWinState.supportedDerivedMarketIds
+        ])
+      ]
+      selection.supportedEarlyWinModes = [
+        ...new Set([
+          ...(Array.isArray(selection.supportedEarlyWinModes)
+            ? selection.supportedEarlyWinModes
+            : []),
+          ...earlyWinState.supportedEarlyWinModes
+        ])
+      ]
+      selection.supportsEarlyWin =
+        selection.hasExplicitDerivedMarkets === true
+      selection.isDerived = selection.supportsEarlyWin
+      selection.earlyWinMode = selection.earlyWinMode || earlyWinState.earlyWinMode || 'base'
+      selection.marketName = formatEarlyWinMarketName(
+        selection.baseMarketName,
+        selection.earlyWinMode
+      )
+      selection.earlyWinLabel = selection.marketName
+      selection.currentSelectionId =
+        selection.currentSelectionId || this.buildCurrentSelectionId(selection)
+
+      return selection
+    },
+    applySelectionPayloadToExistingSelection(existingSelection, nextSelectionData) {
+      const normalized = this.normalizeSelectionEarlyWinState({
+        ...existingSelection,
+        ...nextSelectionData,
+        fixed: existingSelection.fixed,
+        stake: existingSelection.stake
+      })
+
+      Object.assign(existingSelection, normalized, {
+        suspended: false,
+        unavailable: false,
+        changed: false
+      })
+    },
+    updateSelectionModeState(selection, mode, odds, statusName = 'Active') {
+      const normalizedMode = mode || 'base'
+      const targetMarketId =
+        normalizedMode === 'base'
+          ? selection.baseMarketId
+          : getDerivedMarketIdForMode(
+              selection.baseMarketId,
+              normalizedMode,
+              selection.supportedDerivedMarketIds
+            )
+      const targetMarketName = formatEarlyWinMarketName(selection.baseMarketName, normalizedMode)
+      const normalizedOdds = Number(odds)
+      const isActive = statusName === 'Active' && Number.isFinite(normalizedOdds) && normalizedOdds > 1
+
+      selection.marketId = targetMarketId
+      selection.marketName = targetMarketName
+      selection.earlyWinMode = normalizedMode
+      selection.earlyWinLabel = targetMarketName
+      selection.specifier = selection.baseSpecifier || ''
+      selection.currentSelectionId = this.buildCurrentSelectionId(selection, {
+        marketId: targetMarketId,
+        marketName: targetMarketName,
+        specifier: selection.baseSpecifier || ''
+      })
+      selection.changed = false
+
+      if (isActive) {
+        selection.odds = normalizedOdds.toFixed(2)
+        selection.suspended = false
+        selection.unavailable = false
+        return
+      }
+
+      selection.odds =
+        Number.isFinite(normalizedOdds) && normalizedOdds > 1 ? normalizedOdds.toFixed(2) : 0
+      selection.suspended = statusName === 'Suspended' || !statusName
+      selection.unavailable = statusName === 'Deactivated' || !statusName
+    },
+    async refreshCouponAfterSelectionMutation() {
+      if (!Array.isArray(this.coupon.selections) || !this.coupon.selections.length) return
+
+      this.coupon.tournaments = groupTournament(this.coupon.selections)
+      this.coupon.fixtures = groupSelections(this.coupon.selections)
+
+      if (this.coupon.betslip_type === 'Combo' || this.coupon.bet_type === 'Combo') {
+        this.recalculateCombos()
+        const comboStake =
+          Number(this.betslipStakeCache?.Combo) ||
+          Number(this.coupon.combos?.find((combo) => Number(combo?.Stake ?? 0) > 0)?.Stake ?? 0)
+        this.updateComboWinnings(comboStake, null)
+        return
+      }
+
+      if (this.coupon.bet_type === 'Split' && this.coupon.betslip_type === 'Multiple') {
+        const splitProps = await getSplitProps(this.coupon)
+        this.coupon.minWin = splitProps.minWin
+        this.coupon.maxWin = splitProps.maxWin
+        this.coupon.minOdds = splitProps.minOdds
+        this.coupon.maxOdds = splitProps.maxOdds
+        this.coupon.maxBonus = splitProps.maxBonus
+        return
+      }
+
+      const stake =
+        this.coupon.betslip_type === 'Single' || this.coupon.bet_type === 'Single'
+          ? this.coupon.stake
+          : this.coupon.totalStake
+
+      await this.updateWinnings({
+        stake,
+        id: 'all'
+      })
+    },
+    async toggleCouponSelection(selectionPayload) {
+      const nextSelection = this.normalizeSelectionEarlyWinState(getDataFromPayload(selectionPayload))
+      const existingSelection = this.coupon.selections.find(
+        (selection) => String(selection.selectionId) === String(nextSelection.selectionId)
+      )
+
+      if (!existingSelection) {
+        return this.addToCoupon(selectionPayload)
+      }
+
+      if (String(existingSelection.currentSelectionId) === String(nextSelection.currentSelectionId)) {
+        return this.removeSelection(existingSelection.selectionId)
+      }
+
+      this.applySelectionPayloadToExistingSelection(existingSelection, nextSelection)
+      if (nextSelection.earlyWinMode !== 'base') {
+        this.earlyWinBulkMode = nextSelection.earlyWinMode
+      }
+      await this.refreshCouponAfterSelectionMutation()
+      return existingSelection
+    },
+    async applyEarlyWinModeToSelections(selectionIds = [], mode = 'base', options = {}) {
+      const targetSelections = (this.coupon.selections || []).filter((selection) =>
+        selectionIds.includes(String(selection.selectionId))
+      )
+      if (!targetSelections.length) return 0
+
+      this.isEarlyWinLoading = true
+
+      try {
+        const pendingSelections = targetSelections
+          .map((selection) => {
+            const desiredMode =
+              mode === 'base'
+                ? 'base'
+                : getPreferredEarlyWinModeForSelection(selection, mode)
+            if (desiredMode !== 'base' && !selection.supportedEarlyWinModes?.includes(desiredMode)) {
+              return null
+            }
+            if (desiredMode === (selection.earlyWinMode || 'base')) {
+              return null
+            }
+
+            const targetMarketId =
+              desiredMode === 'base'
+                ? selection.baseMarketId
+                : getDerivedMarketIdForMode(
+                    selection.baseMarketId,
+                    desiredMode,
+                    selection.supportedDerivedMarketIds
+                  )
+
+            if (!targetMarketId) return null
+
+            return {
+              selection,
+              desiredMode,
+              targetMarketId,
+              targetSpecifier: selection.baseSpecifier || '',
+              validationKey: this.getValidationSelectionKey(
+                selection.matchId,
+                targetMarketId,
+                selection.outcomeId,
+                selection.baseSpecifier || ''
+              )
+            }
+          })
+          .filter(Boolean)
+
+        if (!pendingSelections.length) {
+          return 0
+        }
+
+        const payload = pendingSelections.map((item) => ({
+          match_id: parseInt(item.selection.matchId),
+          market_id: parseInt(item.targetMarketId),
+          outcome_id: String(item.selection.outcomeId),
+          producer_id: item.selection.producerId || 3,
+          specifier: item.targetSpecifier
+        }))
+
+        const res = await validateBetslipSelections(payload)
+        const validatedSelections =
+          res?.status_code === 200 && res?.data
+            ? Array.isArray(res.data)
+              ? res.data
+              : Object.values(res.data)
+            : []
+        const validatedMap = new Map(
+          validatedSelections.map((item) => [
+            this.getValidationSelectionKey(
+              item.match_id,
+              item.market_id,
+              item.outcome_id,
+              item.specifier || ''
+            ),
+            item
+          ])
+        )
+
+        pendingSelections.forEach((item) => {
+          const validated = validatedMap.get(item.validationKey)
+          this.updateSelectionModeState(
+            item.selection,
+            item.desiredMode,
+            validated?.odds,
+            validated?.status_name
+          )
+        })
+
+        if (mode !== 'base') {
+          this.earlyWinBulkMode = mode
+        }
+
+        await this.refreshCouponAfterSelectionMutation()
+        return pendingSelections.length
+      } catch (error) {
+        console.error('[earlyWin] failed to update selections', error)
+        emitter.emit('showErrorMessage', 'Unable to update early win selections right now.')
+        return 0
+      } finally {
+        this.isEarlyWinLoading = false
+      }
     },
     hasSplitSelections(selections = this.coupon.selections) {
       if (!Array.isArray(selections)) return false
@@ -436,7 +721,7 @@ export const useCouponStore = defineStore({
       const globalVars = this.SportsbookGlobalVariable
       let type = couponPayload.type
 
-      const data = getDataFromPayload(couponPayload)
+      const data = this.normalizeSelectionEarlyWinState(getDataFromPayload(couponPayload))
 
       let couponData = { ...this.coupon }
       const bonusList = this.sportsbookBonusList
@@ -611,7 +896,11 @@ export const useCouponStore = defineStore({
           producerID: producerId,
           homeTeam: selection.homeTeam || homeTeam.trim(),
           awayTeam: selection.awayTeam || awayTeam.trim(),
-          combinability: selection.combinability || 0
+          combinability: selection.combinability || 0,
+          derived_market_ids:
+            selection.supportedDerivedMarketIds ||
+            selection.derived_market_ids ||
+            selection.derived_market_id
         },
         market_name: marketName,
         market_id: marketId,
@@ -1417,6 +1706,8 @@ export const useCouponStore = defineStore({
         this.coupon = coupon
         // Clear cached stakes when betslip is emptied.
         this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
+        this.earlyWinBulkMode = EARLY_WIN_DEFAULT_MODE
+        this.isEarlyWinLoading = false
       } catch (error) {
         // console.error("📊 Betslip: Error in clearBetslip:", error);
         // Still try to reset the coupon state even if cleanup fails
@@ -1443,6 +1734,8 @@ export const useCouponStore = defineStore({
         this.activeSubscriptions = []
         // Clear cached stakes when betslip is emptied.
         this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
+        this.earlyWinBulkMode = EARLY_WIN_DEFAULT_MODE
+        this.isEarlyWinLoading = false
       }
     },
     resubscribeToAllSelections() {
@@ -1486,7 +1779,8 @@ export const useCouponStore = defineStore({
               (sel) =>
                 String(sel.matchId) === String(validatedSelection.match_id) &&
                 String(sel.marketId) === String(validatedSelection.market_id) &&
-                String(sel.outcomeId) === String(validatedSelection.outcome_id)
+                String(sel.outcomeId) === String(validatedSelection.outcome_id) &&
+                String(sel.specifier || '') === String(validatedSelection.specifier || '')
             )
 
             if (selection) {

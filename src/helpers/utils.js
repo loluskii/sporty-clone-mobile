@@ -4,6 +4,10 @@ import moment from 'moment'
 // import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
+import {
+  buildEarlyWinSelectionState,
+  formatEarlyWinMarketName
+} from './early-win'
 
 export const applyBranding = async () => {
   try {
@@ -173,13 +177,29 @@ export const calculateBonus = (coupondata, globalVars, bonusList) => {
 }
 
 export const getDataFromPayload = (couponPayload) => {
+  const earlyWinState = buildEarlyWinSelectionState({
+    sportId: couponPayload.fixture.sportID,
+    marketId: couponPayload.market_id,
+    marketName: couponPayload.market_name,
+    derivedMarketIds:
+      couponPayload.fixture.derived_market_ids || couponPayload.fixture.derived_market_id
+  })
+  const stableSelectionId = createID(
+    couponPayload.fixture.matchID,
+    earlyWinState.baseMarketId,
+    couponPayload.outcome.outcomeID,
+    couponPayload.specifier,
+    earlyWinState.baseMarketName,
+    couponPayload.outcome.outcomeName
+  )
+
   const data = {
     matchId: parseInt(couponPayload.fixture.matchID),
     eventId: parseInt(couponPayload.fixture.gameID),
     event_id: parseInt(couponPayload.fixture.gameID),
     eventName: couponPayload.fixture.name,
     marketId: couponPayload.market_id,
-    marketName: couponPayload.market_name,
+    marketName: earlyWinState.currentMarketName || couponPayload.market_name,
     specifier: couponPayload.specifier,
     outcomeName: couponPayload.outcome.outcomeName,
     displayName: couponPayload.outcome.displayName,
@@ -193,8 +213,9 @@ export const getDataFromPayload = (couponPayload) => {
     type: couponPayload?.type || 'prematch',
     fixed: false,
     combinability: couponPayload.fixture.combinability || 0,
-    selectionId: couponPayload.ele_id,
-    element_id: couponPayload.ele_id,
+    selectionId: stableSelectionId,
+    element_id: stableSelectionId,
+    currentSelectionId: couponPayload.ele_id,
     homeTeam: couponPayload.fixture.homeTeam || couponPayload.fixture.competitor1,
     awayTeam: couponPayload.fixture.awayTeam || couponPayload.fixture.competitor2,
     producerId: couponPayload.outcome.producerID || couponPayload.fixture.producerID,
@@ -202,10 +223,19 @@ export const getDataFromPayload = (couponPayload) => {
     suspended: false,
     unavailable: false,
     changed: false,
-    isDerived: (() => {
-      const ids = couponPayload.fixture.derived_market_ids || couponPayload.fixture.derived_market_id
-      return Array.isArray(ids) && ids.length > 0
-    })()
+    isDerived: earlyWinState.supportsEarlyWin,
+    hasExplicitDerivedMarkets: earlyWinState.hasExplicitDerivedMarkets,
+    supportsEarlyWin: earlyWinState.supportsEarlyWin,
+    supportedDerivedMarketIds: earlyWinState.supportedDerivedMarketIds,
+    supportedEarlyWinModes: earlyWinState.supportedEarlyWinModes,
+    earlyWinMode: earlyWinState.earlyWinMode,
+    baseMarketId: earlyWinState.baseMarketId,
+    baseMarketName: earlyWinState.baseMarketName,
+    baseSpecifier: couponPayload.specifier || '',
+    earlyWinLabel: formatEarlyWinMarketName(
+      earlyWinState.baseMarketName,
+      earlyWinState.earlyWinMode
+    )
   }
 
   // if (couponPayload?.type === 'live') {
@@ -410,7 +440,10 @@ export const isSelected = (ele_id, coupon) => {
   let isExist = false
 
   if (coupon.selections.length > 0) {
-    let count = coupon.selections.find((selection) => selection.selectionId === ele_id)
+    let count = coupon.selections.find(
+      (selection) =>
+        selection.selectionId === ele_id || selection.currentSelectionId === ele_id
+    )
     if (count) {
       isExist = true
     }

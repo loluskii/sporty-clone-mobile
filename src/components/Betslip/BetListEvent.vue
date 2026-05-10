@@ -29,21 +29,35 @@
               <div>{{ selection.eventName }}</div>
             </div>
             <div class="m-market-desc-wrapper">
-              <div class="m-market-desc">{{ selection.marketName }}</div>
-
-              <div
-                v-if="selection.isDerived"
-                class="selection-2up-checkbox af-checkbox"
-                @click.stop="setUpMode('2up')"
-              >
-                <label>
-                  <input type="checkbox" :checked="upMode === '2up'" readonly />
-                  <span
-                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '2up' }]"
-                    style="width: 14px; height: 14px"
-                  ><svg viewBox="-1.5 -1.5 15 14"><polyline points="1 6.29411765 4.5 10 11 1"></polyline></svg></span>
-                  <span class="label span-no-warp">2UP</span>
-                </label>
+              <div class="selection-market-meta">
+                <div class="m-market-desc">{{ selectionMarketLabel }}</div>
+                <div
+                  v-if="selection.supportsEarlyWin"
+                  class="selection-earlywin-controls"
+                  @click.stop
+                >
+                  <button
+                    type="button"
+                    class="selection-earlywin-pill"
+                    :class="{ active: selection.earlyWinMode === '1up' }"
+                    :disabled="!supportsMode('1up') || isLoadingUpMode"
+                    @click.stop.prevent="toggleSelectionMode('1up')"
+                  >
+                    1UP
+                  </button>
+                  <button
+                    type="button"
+                    class="selection-earlywin-pill"
+                    :class="{ active: selection.earlyWinMode === '2up' }"
+                    :disabled="!supportsMode('2up') || isLoadingUpMode"
+                    @click.stop.prevent="toggleSelectionMode('2up')"
+                  >
+                    2UP
+                  </button>
+                </div>
+                <div v-else-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
+                  1UP / 2UP not supported
+                </div>
               </div>
 
               <span
@@ -92,7 +106,11 @@ import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboa
 const couponStore = useCouponStore()
 const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection', 'toggle-banker'])
 const router = useRouter()
-const { upMode, setUpMode } = inject('betslipUpMode', { upMode: { value: 'none' }, setUpMode: () => {} })
+const { isLoadingUpMode, isBulkEarlyWinEnabled, setSelectionUpMode } = inject('betslipUpMode', {
+  isLoadingUpMode: { value: false },
+  isBulkEarlyWinEnabled: { value: false },
+  setSelectionUpMode: () => {}
+})
 
 const props = defineProps({
   selection: Object,
@@ -114,6 +132,29 @@ const { isKeyboardVisible, openKeyboard, hideKeyboard, onKeyClick } = useSelecti
 
 const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
+})
+
+const selectionMarketLabel = computed(() => {
+  return props.selection.marketName || props.selection.baseMarketName || ''
+})
+
+const supportsMode = (mode) => {
+  return Array.isArray(props.selection?.supportedEarlyWinModes)
+    ? props.selection.supportedEarlyWinModes.includes(mode)
+    : false
+}
+
+const toggleSelectionMode = async (mode) => {
+  if (!supportsMode(mode) || isLoadingUpMode.value) return
+  await setSelectionUpMode(props.selection, mode)
+}
+
+const showUnsupportedEarlyWin = computed(() => {
+  return (
+    isBulkEarlyWinEnabled.value &&
+    !props.selection?.supportsEarlyWin &&
+    (props.selection?.earlyWinMode || 'base') === 'base'
+  )
 })
 
 
@@ -654,26 +695,53 @@ function toggleBanker() {
   border: 0px;
 }
 
-.selection-2up-checkbox {
-  display: flex;
+.selection-market-meta {
   align-items: center;
-  flex-shrink: 0;
-  margin-right: 0.33rem;
-  cursor: pointer;
-}
-.selection-2up-checkbox label {
   display: flex;
-  align-items: center;
-  gap: 3px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.selection-earlywin-controls {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.selection-earlywin-pill {
+  background: #f2f3f5;
+  border: 1px solid #d6dae1;
+  border-radius: 999px;
+  color: #62676f;
   cursor: pointer;
-  user-select: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 3.4rem;
+  padding: 0.45rem 0.7rem;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
-.selection-2up-checkbox input[type='checkbox'] {
-  display: none;
+
+.selection-earlywin-pill.active {
+  background: rgba(13, 151, 55, 0.12);
+  border-color: var(--brand-primary-button);
+  color: var(--brand-primary-button);
 }
-.selection-2up-checkbox .label {
-  font-size: 0.9rem;
-  white-space: nowrap;
+
+.selection-earlywin-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.selection-earlywin-unsupported {
+  color: #8d929b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: auto;
 }
 
 .m-keybord-input {

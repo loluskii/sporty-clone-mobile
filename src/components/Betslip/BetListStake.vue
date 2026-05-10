@@ -39,8 +39,8 @@
         ></BetlistStakeKeyboard>
       </div>
 
-      <div v-if="!betslipMode" class="sporty-insure-container">
-        <div class="alternative-bet-type-option alternative-bet-type-option">
+      <div class="sporty-insure-container">
+        <div class="alternative-bet-type-option insure-option">
           <div class="sporty-insure-logo">
             <div class="desc">
               <span>Insure</span>
@@ -59,84 +59,66 @@
               </svg>
             </div>
           </div>
-          <div class="check-group-container">
-            <div id="sporty-insure-panel-checkbox-group" class="checkbox-group">
-              <div
-                :aria-checked="upMode === '1up' ? 'true' : 'false'"
-                role="checkbox"
-                :tabindex="hasDerivedMarkets ? 0 : -1"
-                :class="['multiple-selections-two-up-checkbox two-up-checkbox af-checkbox', { 'two-up-loading': !hasDerivedMarkets || isLoadingUpMode }]"
-                @click="hasDerivedMarkets && setUpMode('1up')"
+          <div class="insure-panel">
+            <div class="insure-product insure-product--interactive">
+              <button
+                type="button"
+                class="insure-product-main"
+                :class="{ active: isBulkEarlyWinEnabled, disabled: !hasDerivedMarkets || isLoadingUpMode }"
+                :disabled="!hasDerivedMarkets || isLoadingUpMode"
+                @click.prevent="handleBulkEarlyWinToggle"
               >
-                <label
-                  ><input type="checkbox" name="" :checked="upMode === '1up'" :disabled="!hasDerivedMarkets || isLoadingUpMode" />
-                  <span
-                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '1up', disabled: !hasDerivedMarkets || isLoadingUpMode }]"
-                    style="width: 16px; height: 16px"
-                    ><svg viewBox="-1.5 -1.5 15 14">
-                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
-                    </svg>
-                  </span>
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="20px"
-                    width="20px"
-                    :class="['one-up-icon icon svg-icon-base', { disabled: !hasDerivedMarkets || isLoadingUpMode }]"
-                  >
-                    <path
-                      d="M3.088 17.409l11.921.091L18 2.512 3 2.5l.088 14.909z"
-                      fill="currentColor"
-                    ></path>
-                    <path
-                      d="M7.68 8.872H4.779a.373.373 0 01-.355-.237.38.38 0 01.097-.418l5.15-4.714a.365.365 0 01.508 0l5.097 4.716a.38.38 0 01.096.417.374.374 0 01-.353.238h-2.374a.374.374 0 00-.374.376v1.917c0 2.761-1.784 5.695-5.349 6.21-.156.023-.324.058-.444-.057a.379.379 0 01-.071-.445c1.012-2.252 1.452-3.234 1.281-5.7V8.873H7.68z"
-                      fill="#fff"
-                    ></path>
+                <span class="insure-product-check" :class="{ active: isBulkEarlyWinEnabled }">
+                  <svg viewBox="-1.5 -1.5 15 14">
+                    <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
                   </svg>
-                  <span
-                    :class="['label span-no-warp', { 'txt-disabled': !hasDerivedMarkets || isLoadingUpMode }]"
-                    >1UP</span
+                </span>
+                <span class="insure-product-copy">
+                  <span class="insure-product-name">{{ earlyWinTitle }}</span>
+                </span>
+              </button>
+              <div class="insure-product-picker">
+                <button
+                  type="button"
+                  class="insure-product-caret-button"
+                  :class="{ active: isBulkEarlyWinEnabled, disabled: !hasDerivedMarkets || isLoadingUpMode }"
+                  :disabled="!hasDerivedMarkets || isLoadingUpMode"
+                  @click.stop.prevent="toggleEarlyWinMenu"
+                >
+                  <span class="insure-product-caret" :class="{ open: showEarlyWinMenu }"></span>
+                </button>
+                <div v-if="showEarlyWinMenu" class="insure-product-menu">
+                  <button
+                    v-for="mode in earlyWinModes"
+                    :key="mode"
+                    type="button"
+                    class="insure-product-menu-option"
+                    :class="{ active: bulkMode === mode }"
+                    @click.stop.prevent="selectBulkMode(mode)"
                   >
-                </label>
-              </div>
-              <div
-                :aria-checked="upMode === '2up' ? 'true' : 'false'"
-                role="checkbox"
-                :tabindex="hasDerivedMarkets ? 0 : -1"
-                :class="['multiple-selections-two-up-checkbox two-up-checkbox af-checkbox', { 'two-up-loading': !hasDerivedMarkets || isLoadingUpMode }]"
-                @click="hasDerivedMarkets && setUpMode('2up')"
-              >
-                <label
-                  ><input type="checkbox" name="" :checked="upMode === '2up'" :disabled="!hasDerivedMarkets || isLoadingUpMode" />
-                  <span
-                    :class="['check-stroke-wrapper sportybet', { checked: upMode === '2up', disabled: !hasDerivedMarkets || isLoadingUpMode }]"
-                    style="width: 16px; height: 16px"
-                    ><svg viewBox="-1.5 -1.5 15 14">
-                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
-                    </svg>
-                  </span>
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="20px"
-                    width="20px"
-                    :class="['one-up-icon icon svg-icon-base', { disabled: !hasDerivedMarkets || isLoadingUpMode }]"
-                  >
-                    <path
-                      d="M3.088 17.409l11.921.091L18 2.512 3 2.5l.088 14.909z"
-                      fill="currentColor"
-                    ></path>
-                    <path
-                      d="M7.68 8.872H4.779a.373.373 0 01-.355-.237.38.38 0 01.097-.418l5.15-4.714a.365.365 0 01.508 0l5.097 4.716a.38.38 0 01.096.417.374.374 0 01-.353.238h-2.374a.374.374 0 00-.374.376v1.917c0 2.761-1.784 5.695-5.349 6.21-.156.023-.324.058-.444-.057a.379.379 0 01-.071-.445c1.012-2.252 1.452-3.234 1.281-5.7V8.873H7.68z"
-                      fill="#fff"
-                    ></path>
-                  </svg>
-                  <span :class="['label span-no-warp', { 'txt-disabled': !hasDerivedMarkets || isLoadingUpMode }]">2UP</span>
-                </label>
+                    {{ mode.toUpperCase() }}
+                  </button>
+                </div>
               </div>
             </div>
+
+            <div
+              v-for="placeholder in insurePlaceholderProducts"
+              :key="placeholder"
+              class="insure-product insure-product--placeholder"
+            >
+              <div class="insure-product-main is-static disabled">
+                <span class="insure-product-check"></span>
+                <span class="insure-product-copy">
+                  <span class="insure-product-name">{{ placeholder }}</span>
+                  <span class="insure-product-sub">Coming soon</span>
+                </span>
+              </div>
+            </div>
+
+            <p v-if="isBulkEarlyWinEnabled && hasUnsupportedSelections" class="earlywin-helper">
+              {{ unsupportedSelectionsLabel }}
+            </p>
           </div>
         </div>
       </div>
@@ -285,7 +267,7 @@ import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 import { useBetslipCalculations } from '@/composables/useBetslipCalculations'
 import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, onMounted, toRefs, inject } from 'vue'
+import { computed, onMounted, toRefs, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -319,10 +301,22 @@ const {
 } = useBetslipCalculations({ betSlipType, betType })
 const keyboardKey = 'betlist:total'
 const keyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey)
-const { upMode, isLoadingUpMode, hasDerivedMarkets, setUpMode } = inject('betslipUpMode')
+const {
+  bulkMode,
+  isLoadingUpMode,
+  hasDerivedMarkets,
+  hasUnsupportedSelections,
+  unsupportedSelectionsCount,
+  isBulkEarlyWinEnabled,
+  toggleBulkUpMode,
+  setBulkUpMode
+} = inject('betslipUpMode')
 const isSubmitting = computed(() => {
   return couponStore.isBetslipLoading || couponStore.isBetslipBooking
 })
+const showEarlyWinMenu = ref(false)
+const earlyWinModes = ['1up', '2up']
+const insurePlaceholderProducts = ['Cut 1', 'Flex']
 
 const goToDeposit = () => {
   emit('toggle-betslip')
@@ -352,6 +346,21 @@ const amountNeededToStake = computed(() => {
 
 const acceptedChanges = computed(() => {
   return couponStore.coupon.acceptChanges
+})
+
+const bulkModeLabel = computed(() => {
+  return String(bulkMode.value || '2up').toUpperCase()
+})
+
+const earlyWinTitle = computed(() => {
+  return isBulkEarlyWinEnabled.value ? `EarlyWin - ${bulkModeLabel.value}` : 'EarlyWin'
+})
+
+const unsupportedSelectionsLabel = computed(() => {
+  const count = Number(unsupportedSelectionsCount.value || 0)
+  return count === 1
+    ? '1 selection keeps base mode because EarlyWin is not supported.'
+    : `${count} selections keep base mode because EarlyWin is not supported.`
 })
 
 const toggleKeyboard = () => {
@@ -465,6 +474,22 @@ function onKeyClick(type, value) {
       break
     // Add more cases for other button types if necessary
   }
+}
+
+function toggleEarlyWinMenu() {
+  if (!hasDerivedMarkets.value || isLoadingUpMode.value) return
+  showEarlyWinMenu.value = !showEarlyWinMenu.value
+}
+
+async function handleBulkEarlyWinToggle() {
+  if (!hasDerivedMarkets.value || isLoadingUpMode.value) return
+  showEarlyWinMenu.value = false
+  await toggleBulkUpMode()
+}
+
+async function selectBulkMode(mode) {
+  showEarlyWinMenu.value = false
+  await setBulkUpMode(mode)
 }
 
 function handleAcceptChange() {
@@ -1504,6 +1529,181 @@ onMounted(() => {
   -webkit-flex-wrap: wrap;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+}
+
+.insure-option {
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.insure-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.insure-product {
+  position: relative;
+}
+
+.insure-product--interactive {
+  align-items: stretch;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.insure-product-main,
+.insure-product-caret-button {
+  align-items: center;
+  background: #f6f7f9;
+  border: 1px solid #d6dae1;
+  border-radius: 0.75rem;
+  color: #353a45;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1rem;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.insure-product-main {
+  flex: 1;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.insure-product-main.is-static {
+  width: 100%;
+}
+
+.insure-product-main.active,
+.insure-product-caret-button.active {
+  background: rgba(13, 151, 55, 0.09);
+  border-color: var(--brand-primary-button);
+  color: var(--brand-primary-button);
+}
+
+.insure-product-main.disabled,
+.insure-product-caret-button.disabled,
+.insure-product-main:disabled,
+.insure-product-caret-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.insure-product-check {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #c8ced8;
+  border-radius: 0.45rem;
+  color: transparent;
+  display: inline-flex;
+  height: 1.3rem;
+  justify-content: center;
+  width: 1.3rem;
+}
+
+.insure-product-check svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.insure-product-check.active {
+  background: var(--brand-primary-button);
+  border-color: var(--brand-primary-button);
+  color: #ffffff;
+}
+
+.insure-product-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.insure-product-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.insure-product-sub {
+  color: #8b919c;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.insure-product-picker {
+  position: relative;
+}
+
+.insure-product-caret-button {
+  justify-content: center;
+  min-width: 3rem;
+  padding: 0 0.85rem;
+}
+
+.insure-product-caret {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  height: 0;
+  transition: transform 0.18s ease;
+  width: 0;
+}
+
+.insure-product-caret.open {
+  transform: rotate(180deg);
+}
+
+.insure-product-menu {
+  background: #ffffff;
+  border: 1px solid #d6dae1;
+  border-radius: 0.85rem;
+  box-shadow: 0 10px 30px rgba(27, 30, 37, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 6.25rem;
+  padding: 0.4rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  z-index: 30;
+}
+
+.insure-product-menu-option {
+  background: transparent;
+  border: 0;
+  border-radius: 0.6rem;
+  color: #353a45;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+}
+
+.insure-product-menu-option.active {
+  background: rgba(13, 151, 55, 0.09);
+  color: var(--brand-primary-button);
+}
+
+.earlywin-helper {
+  color: #7b818c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
 }
 .alternative-bet-type-option .check-group-container .more-options-wrapper {
   max-width: 4.66666667rem;

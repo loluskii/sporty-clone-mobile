@@ -205,7 +205,8 @@ async function validateSelections() {
         (sel) =>
           String(sel.matchId) === String(validatedSelection.match_id) &&
           String(sel.marketId) === String(validatedSelection.market_id) &&
-          String(sel.outcomeId) === String(validatedSelection.outcome_id)
+          String(sel.outcomeId) === String(validatedSelection.outcome_id) &&
+          String(sel.specifier || '') === String(validatedSelection.specifier || '')
       )
 
       if (selection) {
