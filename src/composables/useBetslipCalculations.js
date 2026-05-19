@@ -1,18 +1,14 @@
 import { computed } from 'vue'
-import { useCouponStore, useUtilsStore } from '@/stores'
+import { useCouponStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 
 export function useBetslipCalculations({ betSlipType, betType }) {
   const couponStore = useCouponStore()
-  const { SportsbookGlobalVariable } = useUtilsStore()
 
   const selectionsLength = computed(() => couponStore.coupon.selections.length)
 
   const maxStake = computed(() => {
-    const raw = betSlipType.value === 'Combo'
-      ? SportsbookGlobalVariable.comboMaxStake
-      : SportsbookGlobalVariable.singleMaxStake
-    return Number(raw || 0)
+    return couponStore.getMaxStakeForBetslipType(betSlipType.value)
   })
 
   const updateStake = (stake) => {
@@ -59,8 +55,8 @@ export function useBetslipCalculations({ betSlipType, betType }) {
     return couponStore.coupon.totalStake === '' ? 0.0 : formatNumber(couponStore.coupon.totalStake)
   })
 
-  const taxEnabled = computed(() => SportsbookGlobalVariable.taxEnabled === '1')
-  const exciseTax = computed(() => parseFloat(SportsbookGlobalVariable.exciseTax || 0))
+  const taxEnabled = computed(() => couponStore.isTaxEnabled())
+  const exciseTax = computed(() => couponStore.getExciseTaxRate())
 
   const stakeAfterTax = computed(() => {
     const excise = totalStakeAmount.value * (exciseTax.value / 100)
@@ -68,7 +64,7 @@ export function useBetslipCalculations({ betSlipType, betType }) {
   })
 
   const wthTax = computed(() => {
-    const wth = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
+    const wth = couponStore.getWithholdingTaxRate() / 100
     return (stakeAfterTax.value * couponStore.coupon.totalOdds - totalStakeAmount.value) * wth
   })
 
@@ -90,7 +86,7 @@ export function useBetslipCalculations({ betSlipType, betType }) {
   const potentialWin = computed(() => {
     const stake = totalStakeAmount.value || 0
     const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
-    const wth = parseFloat(SportsbookGlobalVariable.wthTax || 0)
+    const wth = couponStore.getWithholdingTaxRate()
     const isSingleBet = betSlipType.value === 'Single' && selectionsLength.value === 1
     const isMultipleBet = betSlipType.value === 'Multiple' && betType.value === 'Multiple'
     const isSystemBet = betSlipType.value === 'Combo'
@@ -104,7 +100,7 @@ export function useBetslipCalculations({ betSlipType, betType }) {
         const stakeBase = totalStakeAmount.value || 0
         const stakeNet =
           exciseTax.value > 0 ? parseFloat(stakeAfterTax.value || 0) : stakeBase
-        const wthRate = parseFloat(SportsbookGlobalVariable.wthTax || 0) / 100
+        const wthRate = couponStore.getWithholdingTaxRate() / 100
         const minGross = stakeNet * (Number.isFinite(minOddValue) ? minOddValue : 0)
         const maxGross = stakeNet * (Number.isFinite(maxOddValue) ? maxOddValue : 0)
         const minWth = (minGross - stakeBase) * wthRate

@@ -9,6 +9,7 @@ import BookBetModal from '@/components/Betslip/BookBetModal.vue'
 import WinModal from '@/components/WinModal.vue'
 import {
   fetchBonusList,
+  fetchSportsbookFeatureConfig,
   fetchGlobalVars,
   getSportsMenu,
   loadBetslipByCode,
@@ -262,16 +263,27 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(),
+  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(), fetchSportsbookFeatureConfig()
   ]).then((results) => {
     couponStore.sportsbookBonusList =
       results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
 
-    // couponStore.SportsbookGlobalVariable =
-    //   results[1].status === "fulfilled" ? results[1].value.data.data : null
+    couponStore.SportsbookGlobalVariable =
+      results[1].status === "fulfilled" ? results[1].value.data.data : { ...utilsStore.SportsbookGlobalVariable }
+
+    couponStore.SportsbookGlobalVariable.Currency =
+      couponStore.SportsbookGlobalVariable.Currency || '₦'
+    couponStore.SportsbookGlobalVariable.CurrencyCode =
+      couponStore.SportsbookGlobalVariable.CurrencyCode || 'NGN'
+    couponStore.SportsbookGlobalVariable.DialCode =
+      couponStore.SportsbookGlobalVariable.DialCode || '+234'
+
+    couponStore.sportsbookFeatureConfig =
+      results[5].status === "fulfilled" ? results[5].value : { ...utilsStore.SportsbookFeatureConfig }
 
     utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    // utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+    utilsStore.SportsbookFeatureConfig = couponStore.sportsbookFeatureConfig
 
     utilsStore.sportsMenu =
       results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []

@@ -90,10 +90,7 @@ const amountNeededToStake = computed(() => {
 })
 
 const maxStake = computed(() => {
-  const raw = props.betSlipType === 'Combo'
-    ? SportsbookGlobalVariable.comboMaxStake
-    : SportsbookGlobalVariable.singleMaxStake
-  return Number(raw || 0)
+  return couponStore.getMaxStakeForBetslipType(props.betSlipType)
 })
 
 const displayStake = computed(() => {

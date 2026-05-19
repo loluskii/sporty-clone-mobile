@@ -289,7 +289,8 @@ const props = defineProps({
   betType: String
 })
 const couponStore = useCouponStore()
-const { SportsbookGlobalVariable } = useUtilsStore()
+const utilsStore = useUtilsStore()
+const { SportsbookGlobalVariable } = utilsStore
 const userStore = useUsersStore()
 const router = useRouter()
 const emit = defineEmits(['toggle-show', 'toggle-betslip', 'book-bet'])
@@ -328,7 +329,22 @@ const isSubmitting = computed(() => {
 })
 const showEarlyWinMenu = ref(false)
 const earlyWinModes = ['1up', '2up']
-const insurePlaceholderProducts = ['Cut 1', 'Flex']
+const insurePlaceholderProducts = computed(() => {
+  const products = []
+
+  if (utilsStore.SportsbookFeatureConfig?.cutOne?.is_active) {
+    products.push('Cut 1')
+  }
+
+  if (utilsStore.SportsbookFeatureConfig?.flex?.is_active) {
+    products.push('Flex')
+  }
+
+  return products
+})
+const minimumStake = computed(() => {
+  return couponStore.getMinStakeForBetslipType(betSlipType.value)
+})
 
 const goToDeposit = () => {
   emit('toggle-betslip')
@@ -337,7 +353,7 @@ const goToDeposit = () => {
 
 const placeBetDisabled = computed(() => {
   return (
-    totalStakeAmount.value < parseFloat(SportsbookGlobalVariable.MinBetStake) ||
+    totalStakeAmount.value < minimumStake.value ||
     couponStore.isBetslipLoading ||
     hasSuspendedSelections.value ||
     balanceLowerThanStake.value

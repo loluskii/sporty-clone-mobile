@@ -1,12 +1,11 @@
 import { computed } from 'vue'
-import { useCouponStore, useUtilsStore } from '@/stores'
+import { useCouponStore } from '@/stores'
 
 export function useSelectionStakeKeyboard(selectionRef, options = {}) {
   const couponStore = useCouponStore()
-  const { SportsbookGlobalVariable } = useUtilsStore()
 
-  const minStake = computed(() => Number(SportsbookGlobalVariable?.singleMinStake || 0))
-  const maxStake = computed(() => Number(SportsbookGlobalVariable?.singleMaxStake || 0))
+  const minStake = computed(() => couponStore.getMinStakeForBetslipType('Single'))
+  const maxStake = computed(() => couponStore.getMaxStakeForBetslipType('Single'))
 
   const keyboardKey = computed(() => `selection:${selectionRef.value?.matchId || ''}`)
   const isKeyboardVisible = computed(() => couponStore.activeKeyboardKey === keyboardKey.value)

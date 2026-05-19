@@ -14,6 +14,12 @@ export const useUtilsStore = defineStore({
     activeLiveMarkets: [],
     homeCarousel: [],
     SportsbookBonusList: [],
+    SportsbookFeatureConfig: {
+      accaBonus: null,
+      flex: null,
+      cutOne: null,
+      stakeLimits: null
+    },
     SportsbookGlobalVariable: {
       "AllowRegistration": "Yes",
       "EnableSplitBet": "0",
@@ -337,6 +343,7 @@ export const useUtilsStore = defineStore({
       'activeLiveMarkets',
       'homeCarousel',
       'SportsbookBonusList',
+      'SportsbookFeatureConfig',
       'SportsbookGlobalVariable',
       'showBetslipCount',
       'showFooter',

@@ -19,6 +19,7 @@
           <span data-cms-key="multiple">Multiple</span>
         </li>
         <li
+          v-if="showSystemTab"
           :class="betSlipType === 'Combo' ? 'active' : ''"
           @click="$emit('set-bet-type', 'Combo')"
           class="m-list-bet-type-item m-snap-nav-item"
@@ -36,6 +37,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useUtilsStore } from '@/stores'
+
 defineProps({
   betSlipType: String,
   betType: String,
@@ -43,4 +47,15 @@ defineProps({
 })
 
 defineEmits(['set-bet-type'])
+
+const utilsStore = useUtilsStore()
+
+const showSystemTab = computed(() => {
+  const systemFlag = utilsStore.SportsbookFeatureConfig?.stakeLimits?.accept_system_bet
+  if (systemFlag === undefined || systemFlag === null || systemFlag === '') {
+    return true
+  }
+
+  return systemFlag === true || Number(systemFlag) === 1
+})
 </script>

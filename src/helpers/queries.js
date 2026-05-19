@@ -47,6 +47,17 @@ const parseData = async (response) => {
   return response instanceof Promise ? (await response)?.data : response.data
 }
 
+export const normalizeSportsbookFeatureConfig = (payload = {}) => {
+  const data = payload?.data ?? payload ?? {}
+
+  return {
+    accaBonus: data.accaBonus ?? null,
+    flex: data.flex ?? null,
+    cutOne: data.cutOne ?? null,
+    stakeLimits: data.stakeLimits ?? null
+  }
+}
+
 let casinoCatalogPromise = null
 
 const formatCasinoCategoryName = (value = '') => {
@@ -162,6 +173,12 @@ export const fetchBanners = async () => {
 
 export const fetchBonusList = async () => {
   return fetchWrapper.get(`${NEW_BASE_API}/bonus/acca-bonus?section=onliners`)
+}
+
+export const fetchSportsbookFeatureConfig = async (category = 'online') => {
+  return normalizeSportsbookFeatureConfig(
+    await parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/features/config?category=${category}`))
+  )
 }
 
 export const getSplitPropsData = async (payload) => {

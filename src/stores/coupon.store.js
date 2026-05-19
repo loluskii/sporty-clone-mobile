@@ -39,6 +39,12 @@ export const useCouponStore = defineStore({
     loadedCoupon: null,
     confirm: false,
     sportsbookBonusList: [],
+    sportsbookFeatureConfig: {
+      accaBonus: null,
+      flex: null,
+      cutOne: null,
+      stakeLimits: null
+    },
     SportsbookGlobalVariable: {},
     isBetslipLoading: false,
     isBetslipBooking: false,
@@ -83,6 +89,114 @@ export const useCouponStore = defineStore({
     betslipMode: (state) => state.mode === 'sim'
   },
   actions: {
+    getFeatureStakeLimits() {
+      return this.sportsbookFeatureConfig?.stakeLimits || null
+    },
+    getFeatureConfigFlag(key, fallback = false) {
+      const stakeLimits = this.getFeatureStakeLimits()
+      const value = stakeLimits?.[key]
+      if (value === undefined || value === null || value === '') return fallback
+      return value === true || Number(value) === 1
+    },
+    getFeatureConfigNumber(key, fallback = 0) {
+      const stakeLimits = this.getFeatureStakeLimits()
+      const value = Number(stakeLimits?.[key])
+      return Number.isFinite(value) ? value : fallback
+    },
+    getGlobalVariableFlag(key, fallback = false) {
+      const value = this.SportsbookGlobalVariable?.[key]
+      if (value === undefined || value === null || value === '') return fallback
+      return String(value) === '1' || value === true || Number(value) === 1
+    },
+    getGlobalVariableNumber(key, fallback = 0) {
+      const value = Number(this.SportsbookGlobalVariable?.[key])
+      return Number.isFinite(value) ? value : fallback
+    },
+    isSystemBetEnabled() {
+      return this.getFeatureConfigFlag(
+        'accept_system_bet',
+        this.getGlobalVariableFlag('EnableSystemBet', true)
+      )
+    },
+    isSplitBetEnabled() {
+      return this.getFeatureConfigFlag(
+        'accept_split_bet',
+        this.getGlobalVariableFlag('EnableSplitBet', true)
+      )
+    },
+    isPrematchBetEnabled() {
+      return this.getFeatureConfigFlag('accept_prematch_bets', true)
+    },
+    isLiveBetEnabled() {
+      return this.getFeatureConfigFlag('accept_live_bets', true)
+    },
+    getLiveSelectionCount() {
+      return (this.coupon.selections || []).filter(
+        (selection) => String(selection?.type || '').toLowerCase() === 'live'
+      ).length
+    },
+    getSelectionLimit() {
+      return this.getFeatureConfigNumber(
+        'size_max',
+        this.getGlobalVariableNumber('MaxNoOfSelection', 0)
+      )
+    },
+    getLiveSelectionLimit() {
+      const liveLimit = this.getFeatureConfigNumber(
+        'live_size_max',
+        this.getGlobalVariableNumber('LiveTicketMax', 0)
+      )
+      if (liveLimit > 0) return liveLimit
+      return this.getSelectionLimit()
+    },
+    getMinStakeForBetslipType(betslipType) {
+      if (betslipType === 'Combo') {
+        return this.getFeatureConfigNumber(
+          'combi_min',
+          this.getGlobalVariableNumber('comboMinStake', 0)
+        )
+      }
+
+      return this.getFeatureConfigNumber(
+        'single_min',
+        this.getGlobalVariableNumber('singleMinStake', 0)
+      )
+    },
+    getMaxStakeForBetslipType(betslipType) {
+      if (betslipType === 'Combo') {
+        return this.getFeatureConfigNumber(
+          'combi_max',
+          this.getGlobalVariableNumber('comboMaxStake', 0)
+        )
+      }
+
+      return this.getFeatureConfigNumber(
+        'single_max',
+        this.getGlobalVariableNumber('singleMaxStake', 0)
+      )
+    },
+    getExciseTaxRate() {
+      return this.getFeatureConfigNumber(
+        'excise_tax',
+        this.getGlobalVariableNumber('exciseTax', 0)
+      )
+    },
+    getWithholdingTaxRate() {
+      return this.getFeatureConfigNumber('wth_tax', this.getGlobalVariableNumber('wthTax', 0))
+    },
+    getMinBonusOddValue() {
+      return this.getFeatureConfigNumber(
+        'min_bonus_odd',
+        this.getGlobalVariableNumber('MinBonusOdd', 0)
+      )
+    },
+    isTaxEnabled() {
+      return (
+        this.getExciseTaxRate() > 0 ||
+        this.getWithholdingTaxRate() > 0 ||
+        this.getGlobalVariableFlag('taxEnabled', false)
+      )
+    },
     getSelectionKey(selection) {
       if (!selection) return ''
       const selectionId = selection.selectionId || selection.id
@@ -623,9 +737,7 @@ export const useCouponStore = defineStore({
       // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
       this.mode = nextMode
       const isCombo = this.coupon.betslip_type === 'Combo' || this.coupon.bet_type === 'Combo'
-      const minStake = isCombo
-        ? Number(this.SportsbookGlobalVariable?.comboMinStake || 0)
-        : Number(this.SportsbookGlobalVariable?.singleMinStake || 0)
+      const minStake = this.getMinStakeForBetslipType(isCombo ? 'Combo' : 'Single')
       const currentStake = Number(this.coupon.totalStake || 0)
       if (minStake > 0 && (!Number.isFinite(currentStake) || currentStake === 0)) {
         if (isCombo && Array.isArray(this.coupon.combos) && this.coupon.combos.length > 0) {
@@ -774,10 +886,57 @@ export const useCouponStore = defineStore({
       }
       const couponPayload = selection
 
-      const globalVars = this.SportsbookGlobalVariable
+      const globalVars = {
+        ...this.SportsbookGlobalVariable,
+        MinBonusOdd: this.getMinBonusOddValue()
+      }
       let type = couponPayload.type
 
       const data = this.normalizeSelectionEarlyWinState(getDataFromPayload(couponPayload))
+      const selectionType = String(type || data.type || '').toLowerCase()
+      const totalSelectionLimit = this.getSelectionLimit()
+      const liveSelectionLimit = this.getLiveSelectionLimit()
+      const hasExistingSelectionFromMatch = this.coupon.selections.some(
+        (item) => String(item.matchId) === String(data.matchId)
+      )
+
+      if (selectionType === 'live' && !this.isLiveBetEnabled()) {
+        emitter.emit('showErrorMessage', 'Live bets are currently unavailable.')
+        return null
+      }
+
+      if (selectionType !== 'live' && !this.isPrematchBetEnabled()) {
+        emitter.emit('showErrorMessage', 'Prematch bets are currently unavailable.')
+        return null
+      }
+
+      if (totalSelectionLimit > 0 && this.coupon.selections.length >= totalSelectionLimit) {
+        emitter.emit(
+          'showErrorMessage',
+          `You can only add up to ${totalSelectionLimit} selections to this betslip.`
+        )
+        return null
+      }
+
+      if (
+        selectionType === 'live' &&
+        liveSelectionLimit > 0 &&
+        this.getLiveSelectionCount() >= liveSelectionLimit
+      ) {
+        emitter.emit(
+          'showErrorMessage',
+          `You can only add up to ${liveSelectionLimit} live selections to this betslip.`
+        )
+        return null
+      }
+
+      if (hasExistingSelectionFromMatch && !this.isSplitBetEnabled()) {
+        emitter.emit(
+          'showErrorMessage',
+          'Multiple selections from the same fixture are currently unavailable.'
+        )
+        return null
+      }
 
       let couponData = { ...this.coupon }
       const bonusList = this.sportsbookBonusList
@@ -830,7 +989,7 @@ export const useCouponStore = defineStore({
             let minStake =
               splitProps.minStake !== undefined && splitProps.minStake !== ''
                 ? splitProps.minStake
-                : this.coupon.stake || this.SportsbookGlobalVariable.singleMinStake || 0
+                : this.coupon.stake || this.getMinStakeForBetslipType('Single') || 0
             minStake = Number(minStake) || 0
             this.coupon.stake = minStake
             const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(minStake)
@@ -884,7 +1043,7 @@ export const useCouponStore = defineStore({
           const minStake =
             splitProps.minStake !== undefined && splitProps.minStake !== ''
               ? splitProps.minStake
-              : this.coupon.stake || this.SportsbookGlobalVariable.singleMinStake || 0
+              : this.coupon.stake || this.getMinStakeForBetslipType('Single') || 0
           this.coupon.minStake = Number(minStake) || 0
           this.coupon.stake = this.coupon.minStake
 
@@ -1027,7 +1186,6 @@ export const useCouponStore = defineStore({
       return this.coupon.selections.length
     },
     async removeSelection(id) {
-      const globalVars = this.SportsbookGlobalVariable
       const res = this.coupon.selections ? [...this.coupon.selections] : []
       const data = res.find((item) => item.selectionId === id || item.id === id)
       // Call manageSubscription after updating selections array
@@ -1035,6 +1193,10 @@ export const useCouponStore = defineStore({
         this.manageSubscription(data, false)
       }
 
+      const globalVars = {
+        ...this.SportsbookGlobalVariable,
+        MinBonusOdd: this.getMinBonusOddValue()
+      }
       const bonusList = this.sportsbookBonusList
       const newSelection = this.coupon.selections.filter(
         (item) => item.selectionId !== id && item.id !== id
@@ -1148,7 +1310,10 @@ export const useCouponStore = defineStore({
     },
     async updateWinnings(payload) {
       const { stake, id } = payload
-      const globalVars = { ...this.SportsbookGlobalVariable }
+      const globalVars = {
+        ...this.SportsbookGlobalVariable,
+        MinBonusOdd: this.getMinBonusOddValue()
+      }
       const coupondata = JSON.parse(JSON.stringify(this.coupon))
       const bonusList = this.sportsbookBonusList
 
@@ -1421,7 +1586,7 @@ export const useCouponStore = defineStore({
         coupondata.minStake = parseFloat(coupondata.stake) / comboLength;
 
         if (coupondata.Groupings && coupondata.Groupings.length) {
-          const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.SportsbookGlobalVariable.MinBonusOdd);
+          const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.getMinBonusOddValue());
           coupondata = couponCalculation.updateFromCalculatedCoupon(coupondata, calculatedCoupon, this.SportsbookGlobalVariable, this.sportsbookBonusList);
           // update combos with max win
           coupondata.combos.forEach((combo) => {
@@ -1475,7 +1640,7 @@ export const useCouponStore = defineStore({
         });
 
         if (coupondata.Groupings.length) {
-          const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.SportsbookGlobalVariable.MinBonusOdd);
+          const calculatedCoupon = couponCalculation.calcPotentialWins(coupondata, this.sportsbookBonusList, this.getMinBonusOddValue());
           coupondata = couponCalculation.updateFromCalculatedCoupon(coupondata, calculatedCoupon, this.SportsbookGlobalVariable, this.sportsbookBonusList);
         } else {
           coupondata.minWin = 0;
@@ -1515,6 +1680,11 @@ export const useCouponStore = defineStore({
       }
     },
     async setBetType(type) {
+      if (type === 'Combo' && !this.isSystemBetEnabled()) {
+        emitter.emit('showErrorMessage', 'System bets are currently unavailable.')
+        return
+      }
+
       const betslip_type = type
       if (betslip_type !== 'Combo') {
         this.clearBankers()
@@ -1529,9 +1699,7 @@ export const useCouponStore = defineStore({
         this.coupon.bet_type = betslip_type
       }
 
-      const minStake = betslip_type === 'Combo'
-        ? Number(this.SportsbookGlobalVariable?.comboMinStake || 0)
-        : Number(this.SportsbookGlobalVariable?.singleMinStake || 0)
+      const minStake = this.getMinStakeForBetslipType(betslip_type)
       const cachedStake = this.betslipStakeCache?.[betslip_type]
       // Restore the last stake for this mode; fall back to min stake on first visit.
       const nextStake =
