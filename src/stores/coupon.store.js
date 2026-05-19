@@ -1731,7 +1731,7 @@ export const useCouponStore = defineStore({
             useBonus: coupondata.useBonus || false
           }
 
-          const res = await bookBet2(payload)
+          const res = await placeBet2(payload)
           this.isBetslipLoading = false
           return res
         } catch (error) {
