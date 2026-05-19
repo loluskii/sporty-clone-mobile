@@ -60,65 +60,77 @@
             </div>
           </div>
           <div class="insure-panel">
-            <div class="insure-product insure-product--interactive">
-              <button
-                type="button"
-                class="insure-product-main"
-                :class="{ active: isBulkEarlyWinEnabled, disabled: !hasDerivedMarkets || isLoadingUpMode }"
-                :disabled="!hasDerivedMarkets || isLoadingUpMode"
-                @click.prevent="handleBulkEarlyWinToggle"
-              >
-                <span class="insure-product-check" :class="{ active: isBulkEarlyWinEnabled }">
-                  <svg viewBox="-1.5 -1.5 15 14">
-                    <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
-                  </svg>
-                </span>
-                <span class="insure-product-copy">
-                  <span class="insure-product-name">{{ earlyWinTitle }}</span>
-                </span>
-              </button>
-              <div class="insure-product-picker">
-                <button
-                  type="button"
-                  class="insure-product-caret-button"
-                  :class="{ active: isBulkEarlyWinEnabled, disabled: !hasDerivedMarkets || isLoadingUpMode }"
-                  :disabled="!hasDerivedMarkets || isLoadingUpMode"
-                  @click.stop.prevent="toggleEarlyWinMenu"
+            <div class="insure-products-row">
+              <div class="insure-product insure-product--interactive">
+                <div
+                  class="insure-product-chip"
+                  :class="{
+                    active: isBulkEarlyWinEnabled,
+                    disabled: !hasDerivedMarkets || isLoadingUpMode,
+                    open: showEarlyWinMenu
+                  }"
                 >
-                  <span class="insure-product-caret" :class="{ open: showEarlyWinMenu }"></span>
-                </button>
-                <div v-if="showEarlyWinMenu" class="insure-product-menu">
                   <button
-                    v-for="mode in earlyWinModes"
-                    :key="mode"
                     type="button"
-                    class="insure-product-menu-option"
-                    :class="{ active: bulkMode === mode }"
-                    @click.stop.prevent="selectBulkMode(mode)"
+                    class="insure-product-main"
+                    :disabled="!hasDerivedMarkets || isLoadingUpMode"
+                    @click.prevent="handleBulkEarlyWinToggle"
                   >
-                    {{ mode.toUpperCase() }}
+                    <span class="insure-product-check" :class="{ active: isBulkEarlyWinEnabled }">
+                      <svg viewBox="-1.5 -1.5 15 14">
+                        <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                      </svg>
+                    </span>
+                    <span class="insure-product-copy">
+                      <span class="insure-product-name">{{ earlyWinTitle }}</span>
+                    </span>
                   </button>
+                  <div class="insure-product-picker">
+                    <button
+                      type="button"
+                      class="insure-product-caret-button"
+                      :disabled="!hasDerivedMarkets || isLoadingUpMode"
+                      @click.stop.prevent="toggleEarlyWinMenu"
+                    >
+                      <span class="insure-product-caret" :class="{ open: showEarlyWinMenu }"></span>
+                    </button>
+                    <div v-if="showEarlyWinMenu" class="insure-product-menu">
+                      <button
+                        v-for="mode in earlyWinModes"
+                        :key="mode"
+                        type="button"
+                        class="insure-product-menu-option"
+                        :class="{ active: bulkMode === mode }"
+                        @click.stop.prevent="selectBulkMode(mode)"
+                      >
+                        {{ mode.toUpperCase() }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              v-for="placeholder in insurePlaceholderProducts"
-              :key="placeholder"
-              class="insure-product insure-product--placeholder"
-            >
-              <div class="insure-product-main is-static disabled">
-                <span class="insure-product-check"></span>
-                <span class="insure-product-copy">
-                  <span class="insure-product-name">{{ placeholder }}</span>
-                  <span class="insure-product-sub">Coming soon</span>
-                </span>
+              <div
+                v-for="placeholder in insurePlaceholderProducts"
+                :key="placeholder"
+                class="insure-product insure-product--placeholder"
+              >
+                <button
+                  type="button"
+                  class="insure-placeholder"
+                  disabled
+                >
+                  <span class="insure-product-check"></span>
+                  <span class="insure-product-copy">
+                    <span class="insure-product-name">{{ placeholder }}</span>
+                  </span>
+                </button>
               </div>
             </div>
 
-            <p v-if="isBulkEarlyWinEnabled && hasUnsupportedSelections" class="earlywin-helper">
+            <!-- <p v-if="isBulkEarlyWinEnabled && hasUnsupportedSelections" class="earlywin-helper">
               {{ unsupportedSelectionsLabel }}
-            </p>
+            </p> -->
           </div>
         </div>
       </div>
@@ -1543,30 +1555,30 @@ onMounted(() => {
   gap: 0.55rem;
 }
 
+.insure-products-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
 .insure-product {
   position: relative;
 }
 
 .insure-product--interactive {
-  align-items: stretch;
-  display: flex;
-  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
 }
 
-.insure-product-main,
-.insure-product-caret-button {
+.insure-product-chip {
   align-items: center;
-  background: #f6f7f9;
-  border: 1px solid #d6dae1;
-  border-radius: 0.75rem;
+  background: transparent;
+  border-bottom: 1px solid #d6dae1;
   color: #353a45;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.9rem;
-  font-weight: 700;
-  gap: 0.6rem;
-  min-height: 3rem;
-  padding: 0 1rem;
+  display: flex;
+  min-height: 2.45rem;
+  padding-bottom: 0.2rem;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
@@ -1575,27 +1587,39 @@ onMounted(() => {
 
 .insure-product-main {
   flex: 1;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.92rem;
+  font-weight: 700;
+  gap: 0.6rem;
   justify-content: flex-start;
+  min-width: 0;
+  padding: 0;
   text-align: left;
 }
 
-.insure-product-main.is-static {
-  width: 100%;
-}
-
-.insure-product-main.active,
-.insure-product-caret-button.active {
-  background: rgba(13, 151, 55, 0.09);
+.insure-product-chip.active {
+  background: transparent;
   border-color: var(--brand-primary-button);
   color: var(--brand-primary-button);
 }
 
-.insure-product-main.disabled,
-.insure-product-caret-button.disabled,
+.insure-product-chip.open {
+  border-color: var(--brand-primary-button);
+}
+
+.insure-product-chip.disabled,
 .insure-product-main:disabled,
 .insure-product-caret-button:disabled {
-  cursor: not-allowed;
   opacity: 0.5;
+}
+
+.insure-product-main:disabled {
+  cursor: not-allowed;
 }
 
 .insure-product-check {
@@ -1626,30 +1650,31 @@ onMounted(() => {
 
 .insure-product-copy {
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.12rem;
+  min-width: 0;
 }
 
 .insure-product-name {
   font-size: 0.92rem;
   font-weight: 800;
-}
-
-.insure-product-sub {
-  color: #8b919c;
-  font-size: 0.74rem;
-  font-weight: 600;
+  white-space: nowrap;
 }
 
 .insure-product-picker {
+  flex: 0 0 auto;
   position: relative;
 }
 
 .insure-product-caret-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
   justify-content: center;
-  min-width: 3rem;
-  padding: 0 0.85rem;
+  min-height: 100%;
+  min-width: 2rem;
+  padding: 0 0 0 0.6rem;
 }
 
 .insure-product-caret {
@@ -1663,6 +1688,28 @@ onMounted(() => {
 
 .insure-product-caret.open {
   transform: rotate(180deg);
+}
+
+.insure-product--placeholder {
+  flex: 0 0 auto;
+}
+
+.insure-placeholder {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #8b919c;
+  cursor: not-allowed;
+  display: inline-flex;
+  gap: 0.55rem;
+  min-height: 2.45rem;
+  padding: 0;
+}
+
+.insure-placeholder .insure-product-check {
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.6;
 }
 
 .insure-product-menu {
@@ -1704,6 +1751,7 @@ onMounted(() => {
   font-weight: 600;
   line-height: 1.35;
   margin: 0;
+  padding-left: 1.9rem;
 }
 .alternative-bet-type-option .check-group-container .more-options-wrapper {
   max-width: 4.66666667rem;

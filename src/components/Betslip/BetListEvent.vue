@@ -1,75 +1,13 @@
 <template>
   <div class="m-bet-container" :class="selection.changed ? 'm-change-item animated' : ''">
-    <div data-op="betslip-multi-odds" class="m-outcomes-row">
-      <div class="m-outcomes-opt" @click="removeSelection">
-        <div class="m-outcomes-color" :style="matchGroupStyle"></div>
-      </div>
-      <div class="m-outcome-right">
-        <div class="m-outcomes-row m-team-row" @click="goToGame">
-          <div class="m-team-cell">
-            <div class="m-outcome-desc-wrapper">
-              <div class="m-outcome-desc" style="text-transform: capitalize">
-                {{ selection.outcomeName }}
-              </div>
-              <div
-                class="m-outcome-odds"
-                :class="{
-                  'm-outcome-up': oddUp && !selectionIsUnavailable,
-                  'm-outcome-down': oddDown && !selectionIsUnavailable
-                }"
-              >
-                <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
-                <div class="m-outcome-suspended" v-else>
-                  {{ getUnavailabilityReason }}
-                </div>
-              </div>
-            </div>
-            <div class="m-vs-wrapper">
-              <i v-if="selection.type == 'live'" class="m-icon-live"><span>Live</span></i>
-              <div>{{ selection.eventName }}</div>
-            </div>
-            <div class="m-market-desc-wrapper">
-              <div class="selection-market-meta">
-                <div class="m-market-desc">{{ selectionMarketLabel }}</div>
-                <div
-                  v-if="selection.supportsEarlyWin"
-                  class="selection-earlywin-controls"
-                  @click.stop
-                >
-                  <button
-                    type="button"
-                    class="selection-earlywin-pill"
-                    :class="{ active: selection.earlyWinMode === '1up' }"
-                    :disabled="!supportsMode('1up') || isLoadingUpMode"
-                    @click.stop.prevent="toggleSelectionMode('1up')"
-                  >
-                    1UP
-                  </button>
-                  <button
-                    type="button"
-                    class="selection-earlywin-pill"
-                    :class="{ active: selection.earlyWinMode === '2up' }"
-                    :disabled="!supportsMode('2up') || isLoadingUpMode"
-                    @click.stop.prevent="toggleSelectionMode('2up')"
-                  >
-                    2UP
-                  </button>
-                </div>
-                <div v-else-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
-                  1UP / 2UP not supported
-                </div>
-              </div>
-
-              <span
-                tabindex="0"
-                class="m-keybord-input"
-                @click.stop="openKeyboard"
-                style="--fontsize: inherit"
-                v-html="selection.stake"
-                v-if="betSlipType === 'Single' && selectionsLength > 1"
-              ></span>
-            </div>
-          </div>
+    <div class="m-outcomes-color" :style="matchGroupStyle"></div>
+    <div class="m-outcome-right">
+      <div class="m-selection-header">
+        <button type="button" class="m-selection-event" @click="goToGame">
+          <i v-if="selection.type == 'live'" class="m-icon-live"><span>Live</span></i>
+          <span>{{ selection.eventName }}</span>
+        </button>
+        <div class="m-selection-actions">
           <button
             v-if="showBanker"
             type="button"
@@ -81,6 +19,120 @@
           >
             B
           </button>
+          <button
+            type="button"
+            class="m-selection-remove"
+            aria-label="Remove selection"
+            @click.stop.prevent="removeSelection"
+          >
+            <span class="m-selection-remove-icon"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="m-selection-body" @click="goToGame">
+        <div class="m-team-cell">
+          <div class="m-outcome-desc-wrapper">
+            <div class="m-outcome-desc" style="text-transform: capitalize">
+              {{ selection.outcomeName }}
+            </div>
+            <div
+              class="m-outcome-odds"
+              :class="{
+                'm-outcome-up': oddUp && !selectionIsUnavailable,
+                'm-outcome-down': oddDown && !selectionIsUnavailable
+              }"
+            >
+              <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
+              <div class="m-outcome-suspended" v-else>
+                {{ getUnavailabilityReason }}
+              </div>
+            </div>
+          </div>
+
+          <div class="m-market-desc-wrapper">
+            <div class="selection-market-meta">
+              <div class="selection-market-copy">
+                <div class="m-market-desc">{{ selectionMarketLabel }}</div>
+                <div v-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
+                  1UP / 2UP not supported
+                </div>
+              </div>
+              <div v-if="selection.supportsEarlyWin" class="selection-earlywin-controls" @click.stop>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlywin-pill--one"
+                  :class="{ active: selection.earlyWinMode === '1up' }"
+                  aria-label="1UP"
+                  :disabled="!supportsMode('1up') || isLoadingUpMode"
+                  @click.stop.prevent="toggleSelectionMode('1up')"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <svg
+                      class="selection-earlywin-pill-logo selection-earlywin-pill-logo--one"
+                      viewBox="0 0 60 30"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3.2 6.3L11.8 1.5H17.2V27.4H10.2V10.2L6.1 12.5L3.2 6.3Z"
+                        :fill="getEarlyWinAccentFill('1up')"
+                      />
+                      <path
+                        d="M20.5 2.1H27.8V16.7C27.8 19.1 29 20.5 31.3 20.5C33.6 20.5 34.8 19.1 34.8 16.7V2.1H42.1V17C42.1 24.1 38 28 31.3 28C24.6 28 20.5 24.1 20.5 17V2.1Z"
+                        :fill="getEarlyWinNeutralFill('1up')"
+                      />
+                      <path
+                        d="M44.7 2.1H52.1C56.7 2.1 59.3 4.7 59.3 8.7C59.3 12.7 56.7 15.3 52.1 15.3H50.7V27.4H44.7V2.1ZM51.4 10.5C52.9 10.5 53.8 9.8 53.8 8.7C53.8 7.5 52.9 6.9 51.4 6.9H50.7V10.5H51.4Z"
+                        :fill="getEarlyWinNeutralFill('1up')"
+                      />
+                      <circle cx="53.1" cy="8.7" r="1.2" :fill="getEarlyWinDotFill('1up')" />
+                    </svg>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlywin-pill--two"
+                  :class="{ active: selection.earlyWinMode === '2up' }"
+                  aria-label="2UP"
+                  :disabled="!supportsMode('2up') || isLoadingUpMode"
+                  @click.stop.prevent="toggleSelectionMode('2up')"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <svg
+                      class="selection-earlywin-pill-logo selection-earlywin-pill-logo--two"
+                      viewBox="0 0 64 30"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3.5 9.2C3.5 4.3 7.3 1.5 13.1 1.5C18.8 1.5 22.2 4.1 22.2 8.4C22.2 11.6 20.5 13.8 16.7 16.1L11.6 19.2H22.5V27.4H3.6V21.1L13.1 15.1C15 13.9 15.7 12.9 15.7 11.5C15.7 10.1 14.6 9.2 12.9 9.2C11 9.2 9.8 10.4 9.8 12.4H3.5V9.2Z"
+                        :fill="getEarlyWinAccentFill('2up')"
+                      />
+                      <path
+                        d="M25.2 2.1H32.5V16.7C32.5 19.1 33.7 20.5 36 20.5C38.3 20.5 39.5 19.1 39.5 16.7V2.1H46.8V17C46.8 24.1 42.7 28 36 28C29.3 28 25.2 24.1 25.2 17V2.1Z"
+                        :fill="getEarlyWinNeutralFill('2up')"
+                      />
+                      <path
+                        d="M49.4 2.1H56.8C61.4 2.1 64 4.7 64 8.7C64 12.7 61.4 15.3 56.8 15.3H55.4V27.4H49.4V2.1ZM56.1 10.5C57.6 10.5 58.5 9.8 58.5 8.7C58.5 7.5 57.6 6.9 56.1 6.9H55.4V10.5H56.1Z"
+                        :fill="getEarlyWinNeutralFill('2up')"
+                      />
+                      <circle cx="57.8" cy="8.7" r="1.2" :fill="getEarlyWinDotFill('2up')" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <span
+              tabindex="0"
+              class="m-keybord-input"
+              @click.stop="openKeyboard"
+              style="--fontsize: inherit"
+              v-html="selection.stake"
+              v-if="betSlipType === 'Single' && selectionsLength > 1"
+            ></span>
+          </div>
         </div>
       </div>
     </div>
@@ -138,11 +190,29 @@ const selectionMarketLabel = computed(() => {
   return props.selection.marketName || props.selection.baseMarketName || ''
 })
 
+const isEarlyWinModeActive = (mode) => props.selection?.earlyWinMode === mode
+
+const getEarlyWinAccentFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#9ca3af'
+}
+
+const getEarlyWinNeutralFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#9ca3af'
+}
+
+const getEarlyWinDotFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#d1d5db'
+}
+
 const supportsMode = (mode) => {
   return Array.isArray(props.selection?.supportedEarlyWinModes)
     ? props.selection.supportedEarlyWinModes.includes(mode)
     : false
 }
+
+const currentSelectionMarketId = computed(() => {
+  return Number(props.selection?.marketId || props.selection?.market_id || 0)
+})
 
 const toggleSelectionMode = async (mode) => {
   if (!supportsMode(mode) || isLoadingUpMode.value) return
@@ -153,6 +223,7 @@ const showUnsupportedEarlyWin = computed(() => {
   return (
     isBulkEarlyWinEnabled.value &&
     !props.selection?.supportsEarlyWin &&
+    currentSelectionMarketId.value === 1 &&
     (props.selection?.earlyWinMode || 'base') === 'base'
   )
 })
@@ -249,9 +320,12 @@ function toggleBanker() {
   box-sizing: border-box;
   position: relative;
   background-color: #fff;
-  /* margin: 8px; */
-  border-bottom: .5px solid #eaecef
-  /* border-radius: 9px; */
+  border: 1px solid #eaecef;
+  border-color: var(--brand-border-type1);
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.05);
+  margin: 0.55rem 0.667rem;
+  overflow: hidden;
 }
 .m-bet-container.m-change-item,
 .m-bet-container.m-item-error,
@@ -259,11 +333,12 @@ function toggleBanker() {
   background-color: #ffe3e5;
 }
 .m-bet-container .m-outcomes-color {
-  height: 100%;
+  border-radius: 999px;
+  height: calc(100% - 1rem);
   left: 0;
   position: absolute;
-  top: 0;
-  width: 3px;
+  top: 0.5rem;
+  width: 4px;
 }
 .m-bet-container.is-single {
   padding-bottom: 0.5rem;
@@ -312,7 +387,7 @@ function toggleBanker() {
   flex: 0 0 auto;
   text-align: center;
   width: 2rem;
-  padding-top: 0.41667rem;
+  padding-top: 0.7rem;
 }
 .m-bet-container .m-outcomes-row .m-outcomes-opt::before {
   content: '\e69a';
@@ -333,7 +408,7 @@ function toggleBanker() {
   -ms-flex: 1 0 0%;
   flex: 1 0 0%;
   overflow: hidden;
-  /* padding-left: 20px; */
+  border-bottom: 0;
 }
 .m-bet-container .m-outcomes-row .m-team-row {
   -webkit-align-content: center;
@@ -355,8 +430,8 @@ function toggleBanker() {
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
   justify-content: space-between;
-  padding: 0.41666667rem 0.83333333rem 0.41666667rem 0.4rem;
-  padding-right: 0.83333333rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.9rem 0.75rem 0.5rem;
   position: relative;
 }
 
@@ -413,6 +488,12 @@ function toggleBanker() {
   overflow: hidden;
   width: 100%;
 }
+
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper {
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+}
 .m-bet-container
   .m-outcomes-row
   .m-team-row
@@ -432,7 +513,7 @@ function toggleBanker() {
   padding-right: 1rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper {
-  font-size: 1.166rem;
+  font-size: 1.1rem;
   font-weight: bold;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-desc {
@@ -581,7 +662,9 @@ function toggleBanker() {
   line-height: 1.066rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper {
-  font-size: 1.066rem;
+  color: #6b7280;
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper .m-icon-live {
   background-color: var(--brand-secondary);
@@ -696,40 +779,121 @@ function toggleBanker() {
 }
 
 .selection-market-meta {
-  align-items: center;
+  align-items: flex-end;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  width: 100%;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.selection-market-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.selection-market-copy .m-market-desc {
+  color: #67707c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .selection-earlywin-controls {
+  align-items: center;
   display: inline-flex;
-  gap: 0.35rem;
-  margin-left: auto;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .selection-earlywin-pill {
-  background: #f2f3f5;
-  border: 1px solid #d6dae1;
-  border-radius: 999px;
-  color: #62676f;
+  align-items: center;
+  background: transparent;
+  border: 0;
   cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1;
-  min-width: 3.4rem;
-  padding: 0.45rem 0.7rem;
-  transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.18s ease;
 }
 
-.selection-earlywin-pill.active {
-  background: rgba(13, 151, 55, 0.12);
-  border-color: var(--brand-primary-button);
-  color: var(--brand-primary-button);
+.selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #d1d5db, #9ca3af);
+  align-items: center;
+  background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  height: 2.1rem;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 0.3rem;
+  position: relative;
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.selection-earlywin-pill--one .selection-earlywin-pill-surface {
+  min-width: 3.5rem;
+}
+
+.selection-earlywin-pill--two .selection-earlywin-pill-surface {
+  min-width: 3.5rem;
+}
+
+.selection-earlywin-pill-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 2px;
+  background: var(--badge-border);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.selection-earlywin-pill-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.selection-earlywin-pill-logo {
+  display: block;
+  height: auto;
+  position: relative;
+  z-index: 3;
+}
+
+.selection-earlywin-pill-logo--one {
+  width: 2.2rem;
+}
+
+.selection-earlywin-pill-logo--two {
+  width: 2.2rem;
+}
+
+.selection-earlywin-pill.active .selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
+}
+
+.selection-earlywin-pill--one.active .selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
 }
 
 .selection-earlywin-pill:disabled {
@@ -739,9 +903,9 @@ function toggleBanker() {
 
 .selection-earlywin-unsupported {
   color: #8d929b;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  margin-left: auto;
+  line-height: 1.3;
 }
 
 .m-keybord-input {
@@ -762,5 +926,150 @@ function toggleBanker() {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   text-align: right;
   width: 7.5rem;
+}
+
+.m-bet-container .m-outcome-right {
+  padding-left: 0.9rem;
+}
+
+.m-selection-header {
+  align-items: center;
+  border-bottom: 1px solid #e7ebf0;
+  border-bottom-color: var(--brand-border-type1);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.8rem 0.95rem 0.75rem 0;
+}
+
+.m-selection-event {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.m-selection-event > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-selection-event .m-icon-live {
+  margin-right: 0;
+}
+
+.m-selection-actions {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.m-selection-remove {
+  align-items: center;
+  background: #eff2f5;
+  border: 0;
+  border-radius: 999px;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.9rem;
+  justify-content: center;
+  padding: 0;
+  width: 1.9rem;
+}
+
+.m-selection-remove-icon::before {
+  content: '\e69a';
+  font-family: 'iconfont' !important;
+  font-size: 0.9rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.m-selection-body {
+  cursor: pointer;
+  padding: 0.95rem 0.95rem 0.95rem 0;
+}
+
+.m-selection-body .m-team-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.m-selection-body .m-outcome-desc-wrapper,
+.m-selection-body .m-market-desc-wrapper {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  max-width: 100%;
+  width: 100%;
+}
+
+.m-selection-body .m-market-desc-wrapper {
+  align-items: flex-end;
+}
+
+.m-selection-body .m-outcome-desc-wrapper {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.m-selection-body .m-outcome-desc {
+  flex: 1 1 0%;
+  min-width: 0;
+  padding-right: 0.83333333rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-selection-body .m-outcome-odds {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.m-selection-body .selection-market-meta {
+  align-items: flex-start;
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.m-selection-body .selection-market-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.m-selection-body .selection-market-copy .m-market-desc {
+  color: #67707c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.m-selection-body .selection-earlywin-unsupported {
+  margin-left: 0;
 }
 </style>
