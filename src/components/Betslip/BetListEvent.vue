@@ -4,7 +4,21 @@
     <div class="m-outcome-right">
       <div class="m-selection-header">
         <button type="button" class="m-selection-event" @click="goToGame">
-          <i v-if="selection.type == 'live'" class="m-icon-live"><span>Live</span></i>
+          <span v-if="showSelectionBadges" class="selection-status-badges">
+            <span v-if="isLiveSelection" class="selection-status-badge selection-status-badge--live">
+              Live
+            </span>
+            <span
+              v-if="selectionStatusBadgeLabel"
+              class="selection-status-badge selection-status-badge--state"
+              :class="{
+                'selection-status-badge--suspended': props.selection.suspended,
+                'selection-status-badge--unavailable': props.selection.unavailable
+              }"
+            >
+              {{ selectionStatusBadgeLabel }}
+            </span>
+          </span>
           <span>{{ selection.eventName }}</span>
         </button>
         <div class="m-selection-actions">
@@ -44,9 +58,6 @@
               }"
             >
               <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
-              <div class="m-outcome-suspended" v-else>
-                {{ getUnavailabilityReason }}
-              </div>
             </div>
           </div>
 
@@ -190,6 +201,10 @@ const selectionMarketLabel = computed(() => {
   return props.selection.marketName || props.selection.baseMarketName || ''
 })
 
+const isLiveSelection = computed(() => {
+  return props.selection?.type === 'live'
+})
+
 const isEarlyWinModeActive = (mode) => props.selection?.earlyWinMode === mode
 
 const getEarlyWinAccentFill = (mode) => {
@@ -228,37 +243,16 @@ const showUnsupportedEarlyWin = computed(() => {
   )
 })
 
-
-const selectionIsUnavailable = computed(() => {
-  // If explicitly marked as unavailable
-  if (props.selection.unavailable) {
-    return true
-  }
-
-  // If suspended
-  if (props.selection.suspended) {
-    return true
-  }
-
-  // // Check if expired based on time
-  // const parsedDate = new Date(props.selection.eventDate);
-  // const currentDate = new Date();
-  // const difference = currentDate - parsedDate;
-  // const hoursDifference = difference / (1000 * 60 * 60);
-
-  // return hoursDifference >= 5;
-})
-
 // Add a computed property to get the specific unavailability reason
 const getUnavailabilityReason = computed(() => {
   // If explicitly marked as unavailable
   if (props.selection.unavailable) {
-    return 'unavailable'
+    return 'Unavailable'
   }
 
   // If suspended
   if (props.selection.suspended) {
-    return 'suspended'
+    return 'Suspended'
   }
 
   // Check if expired based on time
@@ -272,6 +266,22 @@ const getUnavailabilityReason = computed(() => {
   // }
 
   // return "unavailable";
+})
+
+const selectionStatusBadgeLabel = computed(() => {
+  if (props.selection?.unavailable) {
+    return 'Unavailable'
+  }
+
+  if (props.selection?.suspended) {
+    return 'Suspended'
+  }
+
+  return ''
+})
+
+const showSelectionBadges = computed(() => {
+  return isLiveSelection.value || Boolean(selectionStatusBadgeLabel.value)
 })
 
 const getImageSrc = (sportId, sport) => {
@@ -958,14 +968,52 @@ function toggleBanker() {
   text-align: left;
 }
 
+.selection-status-badges {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.selection-status-badge {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  min-height: 1.35rem;
+  padding: 0.2rem 0.5rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.selection-status-badge--live {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e03131 100%);
+  color: #ffffff;
+}
+
+.selection-status-badge--state {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.selection-status-badge--suspended {
+  background: linear-gradient(135deg, #fff4db 0%, #ffe8b3 100%);
+  color: #9a6700;
+}
+
+.selection-status-badge--unavailable {
+  background: linear-gradient(135deg, #f1f3f5 0%, #e5e7eb 100%);
+  color: #6b7280;
+}
+
 .m-selection-event > span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.m-selection-event .m-icon-live {
-  margin-right: 0;
 }
 
 .m-selection-actions {

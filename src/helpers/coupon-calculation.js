@@ -3,6 +3,10 @@ import SlotKey from './SlotKey'
 import CalculatedGroup from './calculated-group'
 import CalculatedCoupon from './calculated-coupon'
 import { Combination, FastCombination } from './combination'
+import {
+  calculateAccaBonusPreview,
+  normalizeAccaBonusConfig
+} from './acca-bonus'
 
 const fastCombination = new FastCombination()
 
@@ -259,13 +263,14 @@ export default class CouponCalculation {
     return choosen
   }
 
-  calcPotentialWins = function (coupon, bonusList, MinBonusOdd) {
+  calcPotentialWins = function (coupon, bonusConfig) {
     // Ensure env-based limits are numeric; fall back to a high ceiling when undefined.
     var maxCombinationsByGrouping = Number(import.meta.env.VITE_MaxCombinationsByGrouping)
     var maxCouponCombinations = Number(import.meta.env.VITE_MaxCouponCombinations)
     if (!Number.isFinite(maxCombinationsByGrouping)) maxCombinationsByGrouping = 1000000
     if (!Number.isFinite(maxCouponCombinations)) maxCouponCombinations = 1000000
     var maxCombinationForCoupon = Math.min(maxCombinationsByGrouping, maxCouponCombinations)
+    var normalizedBonusConfig = normalizeAccaBonusConfig(bonusConfig)
     var oddsForSlotKeyMap = this.getOddsForSlotKeyMap(coupon)
     var bankers = []
     var nonBankers = []
@@ -303,13 +308,11 @@ export default class CouponCalculation {
       calculatedGroup.StakeForCombination = coupon.stake / combinations
       calculatedCouponGroups.push(calculatedGroup)
     }
-    var bankersValidEventForBonus = 0
     var bankersTotalOdds = 1.0
     for (var i = 0; i < bankers.length; i++) {
       var b = bankers[i]
       bankersTotalOdds *= b.odds
       bankersTotalOdds = Number(bankersTotalOdds.toFixed(10)) // Attempting to work around the javascript precision issue
-      if (b.OddValue >= MinBonusOdd) bankersValidEventForBonus++
     }
     for (var i = 0; i < calculatedCouponGroups.length; i++) {
       var calculatedGroup = calculatedCouponGroups[i]
@@ -322,18 +325,22 @@ export default class CouponCalculation {
       if (maxCombinationForCoupon > nc) {
         var combination = new Combination(n, k)
         for (var j = 0; j < nc; j++) {
-          var validEventsForBonus = bankersValidEventForBonus
           var winForUnit = bankersTotalOdds
           var combOdds = combination.applyTo(maxCombination)
           for (var l = 0; l < combOdds.length; l++) {
             var odd = combOdds[l]
             winForUnit *= odd.odds
             winForUnit = Number(winForUnit.toFixed(10)) // Attempting to work around the javascript precision issue
-            if (odd.odds >= MinBonusOdd) validEventsForBonus++
           }
-          var percBonus = this.bonusPercentageFromNumberOfEvents(bonusList, validEventsForBonus)
+          var preview = calculateAccaBonusPreview({
+            selections: bankers.concat(combOdds),
+            stake: 1,
+            totalOdds: winForUnit,
+            config: normalizedBonusConfig
+          })
+          var percBonus = preview.bonus_percentage / 100
           maxWinForUnit += winForUnit
-          maxBonusForUnit += winForUnit * percBonus
+          maxBonusForUnit += preview.bonus_amount
           combination = combination.successor()
           calculatedGroup.MaxPercentageBonus = percBonus
         }
@@ -342,7 +349,6 @@ export default class CouponCalculation {
       calculatedGroup.MaxWinForUnit = maxWinForUnit
       calculatedGroup.MaxBonusForUnit = maxBonusForUnit
       var minWinForUnit = bankersTotalOdds
-      var minEventForBonus = bankersValidEventForBonus
       var sortedMinComb = minCombination.sortAsc('odds')
       var subSortedMinComb = sortedMinComb.take(k)
 
@@ -354,11 +360,16 @@ export default class CouponCalculation {
         // A possible solution to this problem are libraries such as BigNumber and big.js
         minWinForUnit *= odd.odds
         minWinForUnit = Number(minWinForUnit.toFixed(10)) // Attempting to work around the javascript precision issue
-        if (odd.odds >= MinBonusOdd) minEventForBonus++
       }
-      var minPercBonus = this.bonusPercentageFromNumberOfEvents(bonusList, minEventForBonus)
+      var minPreview = calculateAccaBonusPreview({
+        selections: bankers.concat(subSortedMinComb),
+        stake: 1,
+        totalOdds: minWinForUnit,
+        config: normalizedBonusConfig
+      })
+      var minPercBonus = minPreview.bonus_percentage / 100
       calculatedGroup.MinWinForUnit = minWinForUnit
-      calculatedGroup.MinBonusForUnit = minWinForUnit * minPercBonus
+      calculatedGroup.MinBonusForUnit = minPreview.bonus_amount
       calculatedGroup.MinPercentageBonus = minPercBonus
     }
 
@@ -368,32 +379,9 @@ export default class CouponCalculation {
     })
     return calculatedCoupon
   }
-  bonusPercentageFromNumberOfEvents = function (bonusList, numberOfEvents) {
-    console.log('min/max bonus', bonusList.min('ticket_length'),  bonusList.max('ticket_length'))
-      console.log('no of events', numberOfEvents)
-    try {
-      if (bonusList.length === 0) return 0.0
-      if (numberOfEvents < bonusList.min('ticket_length')) return 0.0
-      if (numberOfEvents > bonusList.max('ticket_length')) {
-        return 0.0
-      }
-      const filteredBonus = bonusList.find(function (b) {
-        console.log(b.ticket_length, numberOfEvents)
-        return b.ticket_length == numberOfEvents
-      });
-      console.log('filtered bonus', filteredBonus);
-
-      if (filteredBonus) {
-        return filteredBonus.bonus / 100.0
-      }
-      return 0.0
-    } catch(e) {
-      console.log("Can't find the bonus percentage for " + numberOfEvents + ' events', e.message);
-      return 0.0
-    }
-  }
-  updateFromCalculatedCoupon = function (coupon, calculatedCoupon, globalVar, bonusList) {
+  updateFromCalculatedCoupon = function (coupon, calculatedCoupon, bonusConfig) {
     let betCoupon = { ...coupon }
+    const normalizedBonusConfig = normalizeAccaBonusConfig(bonusConfig)
     const Groupings = []
     if (betCoupon.Groupings.length > 0) {
       for (var i = 0; i < calculatedCoupon.Groups.length; i++) {
@@ -430,10 +418,10 @@ export default class CouponCalculation {
     betCoupon.NetStakeMinWin = this.getNetStakeMinWin(betCoupon)
     betCoupon.maxWin = this.getMaxWin(betCoupon)
     betCoupon.NetStakeMaxWin = this.getNetStakeMaxWin(betCoupon)
-    betCoupon.minBonus = this.getMinBonus(betCoupon, bonusList)
-    betCoupon.maxBonus = this.getMaxBonus(betCoupon, bonusList)
+    betCoupon.minBonus = this.getMinBonus(betCoupon, normalizedBonusConfig)
+    betCoupon.maxBonus = this.getMaxBonus(betCoupon, normalizedBonusConfig)
     betCoupon.maxWin = betCoupon.maxBonus + betCoupon.maxWin
-    betCoupon.minWin = this.getMinBonus(betCoupon, bonusList) + betCoupon.minWin
+    betCoupon.minWin = betCoupon.minBonus + betCoupon.minWin
 
     betCoupon.MinPercentageBonus = this.getMinPercentageBonus(betCoupon)
     betCoupon.MaxPercentageBonus = this.getMaxPercentageBonus(betCoupon)
@@ -511,19 +499,19 @@ export default class CouponCalculation {
       return 0
     }
   }
-  getMinBonus = function (betCoupon, bonusList) {
+  getMinBonus = function (betCoupon, bonusConfig) {
     const minGroup = this.getMinGroup(betCoupon)
-    const minBonus = this.getMinBonusLength(bonusList)
+    const minBonus = this.getMinBonusLength(bonusConfig)
 
     if (minGroup >= minBonus) {
-      return betCoupon.minBonus
+      return this.applyBonusCap(betCoupon.minBonus, bonusConfig)
     } else {
       return 0
     }
   }
-  getMaxBonus = function (betCoupon) {
+  getMaxBonus = function (betCoupon, bonusConfig) {
     if (betCoupon.Groupings.length > 0) {
-      return betCoupon.Groupings.sum('MaxBonus')
+      return this.applyBonusCap(betCoupon.Groupings.sum('MaxBonus'), bonusConfig)
     } else {
       return 0
     }
@@ -535,12 +523,25 @@ export default class CouponCalculation {
       return 0
     }
   }
-  getMinBonusLength = function (bonusList) {
-    if (bonusList.length > 0) {
-      return bonusList.min('ticket_length')
-    } else {
-      return 0
+  getMinBonusLength = function (bonusConfig) {
+    const normalizedBonusConfig = normalizeAccaBonusConfig(bonusConfig)
+    if (normalizedBonusConfig.tiers.length > 0) {
+      return normalizedBonusConfig.tiers[0].legs
     }
+    return 0
+  }
+  applyBonusCap = function (bonusAmount, bonusConfig) {
+    const normalizedBonusConfig = normalizeAccaBonusConfig(bonusConfig)
+    const normalizedBonusAmount = Number(bonusAmount || 0)
+
+    if (
+      normalizedBonusConfig.maxBonusAmount > 0 &&
+      normalizedBonusAmount > normalizedBonusConfig.maxBonusAmount
+    ) {
+      return normalizedBonusConfig.maxBonusAmount
+    }
+
+    return normalizedBonusAmount
   }
   getMinPercentageBonus = function (betCoupon) {
     if (betCoupon.Groupings.length > 0) {

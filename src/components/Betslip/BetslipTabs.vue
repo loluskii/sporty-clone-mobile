@@ -51,11 +51,8 @@ defineEmits(['set-bet-type'])
 const utilsStore = useUtilsStore()
 
 const showSystemTab = computed(() => {
-  const systemFlag = utilsStore.SportsbookFeatureConfig?.stakeLimits?.accept_system_bet
-  if (systemFlag === undefined || systemFlag === null || systemFlag === '') {
-    return true
-  }
-
+  const systemFlag = utilsStore.SportsbookGlobalVariable?.EnableSystemBet
+  if (systemFlag === undefined || systemFlag === null || systemFlag === '') return true
   return systemFlag === true || Number(systemFlag) === 1
 })
 </script>

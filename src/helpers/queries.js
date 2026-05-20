@@ -3,6 +3,7 @@ import {
 } from './fetch-wrapper'
 import {
   BASE_API,
+  BET_PROXY_API,
   CASINO_CLIENT_API,
   CLIENT_ID,
   NEW_BASE_API,
@@ -177,8 +178,16 @@ export const fetchBonusList = async () => {
 
 export const fetchSportsbookFeatureConfig = async (category = 'online') => {
   return normalizeSportsbookFeatureConfig(
-    await parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/features/config?category=${category}`))
+    await parseData(fetchWrapper.get(`${BET_PROXY_API}/${CLIENT_ID}/features/config?category=${category}`))
   )
+}
+
+export const previewAccaBonus = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/acca-bonus/preview`, payload))
+}
+
+export const previewCutOne = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/cut-one/preview`, payload))
 }
 
 export const getSplitPropsData = async (payload) => {

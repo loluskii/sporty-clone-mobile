@@ -73,6 +73,8 @@ export function useBetslipCalculations({ betSlipType, betType }) {
   const maxWin = computed(() => couponStore.coupon.maxWin)
 
   const totalOdds = computed(() => formatNumber(couponStore.coupon.totalOdds))
+  const displayedTotalOddsValue = computed(() => couponStore.getDisplayedTotalOddsValue())
+  const displayedTotalOdds = computed(() => formatNumber(displayedTotalOddsValue.value || 0))
   const minOdds = computed(() => formatNumber(couponStore.coupon.minOdds || 0))
   const maxOdds = computed(() => formatNumber(couponStore.coupon.maxOdds || 0))
   const showTotalOdds = computed(() => betType.value === 'Multiple' || betType.value === 'Split')
@@ -80,12 +82,12 @@ export function useBetslipCalculations({ betSlipType, betType }) {
     if (betType.value === 'Split') {
       return `${minOdds.value} ~ ${maxOdds.value}`
     }
-    return totalOdds.value
+    return displayedTotalOdds.value
   })
 
   const potentialWin = computed(() => {
     const stake = totalStakeAmount.value || 0
-    const totalOdd = parseFloat(couponStore.coupon.totalOdds) || 0
+    const totalOdd = Number(displayedTotalOddsValue.value || 0)
     const wth = couponStore.getWithholdingTaxRate()
     const isSingleBet = betSlipType.value === 'Single' && selectionsLength.value === 1
     const isMultipleBet = betSlipType.value === 'Multiple' && betType.value === 'Multiple'
@@ -128,6 +130,9 @@ export function useBetslipCalculations({ betSlipType, betType }) {
 
     if (isMultipleBet || isSingleBet) {
       // Multiple uses max win only.
+      if (couponStore.isCutOneApplied()) {
+        return formatNumber(parseFloat(couponStore.coupon.maxWin || 0))
+      }
       return formatNumber(parseFloat(maxWin.value || 0))
     }
     if (isSingleMulti.value || isSystemBet) {

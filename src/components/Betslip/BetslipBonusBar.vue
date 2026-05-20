@@ -1,16 +1,56 @@
 <template>
   <div id="bonus-progress-bar" class="real-theme">
     <div class="progress" :style="`width: ${progressWidth}%`"></div>
-    <p>Add more qualifying selections to boost your bonus</p>
+    <p>{{ bonusMessage }}</p>
   </div>
 </template>
 
 <script setup>
-import { useCouponStore } from '@/stores'
+import { computed } from 'vue'
+import { countAccaBonusQualifyingLegs, normalizeAccaBonusConfig } from '@/helpers'
+import { useCouponStore, useUtilsStore } from '@/stores'
 
-const { coupon } = useCouponStore()
+const couponStore = useCouponStore()
+const utilsStore = useUtilsStore()
 
-const progressWidth = Math.min(100, Math.max(0, (coupon.selections.length / 50) * 100))
+const accaBonusConfig = computed(() => {
+  return normalizeAccaBonusConfig(utilsStore.SportsbookFeatureConfig?.accaBonus)
+})
+
+const qualifyingLegs = computed(() => {
+  return countAccaBonusQualifyingLegs(
+    couponStore.coupon.selections,
+    accaBonusConfig.value.minOddsPerLeg
+  )
+})
+
+const maxTierLegs = computed(() => {
+  const tiers = accaBonusConfig.value.tiers
+  if (!tiers.length) return 1
+  return tiers[tiers.length - 1].legs
+})
+
+const nextTier = computed(() => {
+  return accaBonusConfig.value.tiers.find((tier) => tier.legs > qualifyingLegs.value) || null
+})
+
+const progressWidth = computed(() => {
+  return Math.min(100, Math.max(0, (qualifyingLegs.value / maxTierLegs.value) * 100))
+})
+
+const bonusMessage = computed(() => {
+  if (!accaBonusConfig.value.enabled) {
+    return 'ACCA bonus is currently unavailable'
+  }
+
+  if (!nextTier.value) {
+    return 'Highest ACCA bonus unlocked'
+  }
+
+  const legsNeeded = Math.max(0, nextTier.value.legs - qualifyingLegs.value)
+  const label = legsNeeded === 1 ? 'selection' : 'selections'
+  return `Add ${legsNeeded} more qualifying ${label} to unlock ${nextTier.value.percentage}% bonus`
+})
 </script>
 <style>
 #bonus-progress-bar {

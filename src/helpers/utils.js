@@ -4,6 +4,7 @@ import moment from 'moment'
 // import { brandDetails } from '/branding'
 import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
+import { calculateAccaBonusPreview } from './acca-bonus'
 import {
   buildEarlyWinSelectionState,
   buildEarlyWinLocalQuoteMap,
@@ -147,34 +148,19 @@ export const applyBranding = async () => {
 
 export default applyBranding
 
-export const calculateBonus = (coupondata, globalVars, bonusList) => {
-  if (!globalVars || !bonusList) {
-    return
+export const calculateBonus = (coupondata, bonusConfig) => {
+  if (!coupondata || !bonusConfig) {
+    return 0
   }
-  let ticket_length = 0,
-    totalBonusOdds = 1,
-    minBonusOdd = globalVars?.MinBonusOdd,
-    bonusInfo = {},
-    bonus = 0
-  //count eligible tickets for bonus
-  coupondata.selections.forEach((item) => {
-    if (item.odds >= minBonusOdd) {
-      totalBonusOdds = totalBonusOdds * item.odds
-      ticket_length++
-    }
+
+  const preview = calculateAccaBonusPreview({
+    selections: coupondata.selections || [],
+    stake: coupondata.totalStake,
+    totalOdds: coupondata.totalOdds,
+    config: bonusConfig
   })
 
-  //get bonus settings for ticket length
-  bonusList.forEach((item) => {
-    if (item.ticket_length === ticket_length) bonusInfo = item
-  })
-
-  //calculate total bonus
-  if (bonusInfo.bonus !== undefined) {
-    const maxWin = totalBonusOdds * coupondata.totalStake
-    bonus = (maxWin * parseFloat(bonusInfo.bonus)) / 100
-  }
-  return bonus
+  return Number(preview?.bonus_amount || 0)
 }
 
 export const getDataFromPayload = (couponPayload) => {
@@ -589,11 +575,11 @@ export const liveScore = (score, team) => {
   }
 }
 
-export const calculateWinnings = (couponData, globalVars, bonusList) => {
+export const calculateWinnings = (couponData, bonusConfig) => {
   //calculate winnings
   let maxWin = parseFloat(couponData.totalOdds) * parseFloat(couponData.totalStake)
   //calculate bonus
-  let maxBonus = calculateBonus(couponData, globalVars, bonusList)
+  let maxBonus = calculateBonus(couponData, bonusConfig)
   //add bonus to max winnings
   let total = maxWin + maxBonus
   // calculate With-holding tax

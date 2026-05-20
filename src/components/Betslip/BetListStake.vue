@@ -1,7 +1,6 @@
 <template>
   <div class="m-betslips-stake-wrapper">
     <div class="m-betslips-stake">
-      <BetslipBonusBar v-if="parseFloat(maxBonus) > 0"></BetslipBonusBar>
       <div class="m-input-keyboard-wrapper m-input mg-b-10">
         <div class="m-input-wrapper">
           <span data-cms-key="total_stake">
@@ -110,19 +109,38 @@
                 </div>
               </div>
 
-              <div
-                v-for="placeholder in insurePlaceholderProducts"
-                :key="placeholder"
-                class="insure-product insure-product--placeholder"
-              >
-                <button
-                  type="button"
-                  class="insure-placeholder"
-                  disabled
+              <div v-if="showCutOneProduct" class="insure-product insure-product--interactive">
+                <div
+                  class="insure-product-chip"
+                  :class="{
+                    active: isCutOneEnabled,
+                    disabled: isCutOneDisabled,
+                    loading: isCutOneLoadingState
+                  }"
                 >
+                  <button
+                    type="button"
+                    class="insure-product-main"
+                    :disabled="isCutOneDisabled"
+                    @click.prevent="handleCutOneToggle"
+                  >
+                    <span class="insure-product-check" :class="{ active: isCutOneEnabled }">
+                      <svg viewBox="-1.5 -1.5 15 14">
+                        <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                      </svg>
+                    </span>
+                    <span class="insure-product-copy">
+                      <span class="insure-product-name">Cut 1</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="showFlexPlaceholder" class="insure-product insure-product--placeholder">
+                <button type="button" class="insure-placeholder" disabled>
                   <span class="insure-product-check"></span>
                   <span class="insure-product-copy">
-                    <span class="insure-product-name">{{ placeholder }}</span>
+                    <span class="insure-product-name">Flex</span>
                   </span>
                 </button>
               </div>
@@ -136,7 +154,7 @@
       </div>
 
       <template v-if="taxEnabled && !betslipMode">
-        <div class="bonus mg-b-10">
+        <div class="bonus mg-b-5">
           <span>Stake After Tax</span>
           <span
             >{{ SportsbookGlobalVariable.Currency }}
@@ -145,30 +163,30 @@
         </div>
       </template>
 
-      <div class="bonus mg-b-10" v-if="isSingleMulti">
+      <div class="bonus mg-b-5" v-if="isSingleMulti">
         <span>Total Stake</span>
         <span>{{ totalStakeDisplay }}</span>
       </div>
 
-      <div class="total-odds mg-b-10" v-if="showTotalOdds">
+      <div class="total-odds mg-b-5" v-if="showTotalOdds">
         <span>Total Odds</span>
         <span>{{ totalOddsDisplay }}</span>
       </div>
 
-      <div class="bonus mg-b-10">
+      <div v-if="showMaxBonusRow" class="bonus mg-b-5">
         <span>Max Bonus</span>
         <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(maxBonus) }}</span>
       </div>
 
       <template v-if="taxEnabled && !betslipMode">
-        <div class="bonus mg-b-10">
+        <div class="bonus mg-b-5">
           <span>Excise Tax</span>
           <span
             >{{ SportsbookGlobalVariable.Currency }} {{ parseFloat(exciseTax).toFixed(2) }}</span
           >
         </div>
 
-        <div v-if="wthTax > 0" class="bonus mg-b-10">
+        <div v-if="wthTax > 0" class="bonus mg-b-5">
           <span>Withholding Tax</span>
           <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(wthTax) }}</span>
         </div>
@@ -178,9 +196,10 @@
         v-if="
           userStore.currentUser &&
           userStore.currentUser.sportBonusBalance > 0 &&
-          !couponStore.betslipMode
+          !couponStore.betslipMode &&
+          !isInsureBonusSuppressed
         "
-        class="bonus mg-b-10"
+        class="bonus mg-b-5"
       >
         <span>Use Bonus</span>
         <div style="display: flex; align-items: center">
@@ -202,9 +221,10 @@
           userStore.currentUser &&
           userStore.currentUser.sportBonusBalance < 1 &&
           userStore.activeCashback &&
-          !couponStore.betslipMode
+          !couponStore.betslipMode &&
+          !isInsureBonusSuppressed
         "
-        class="bonus mg-b-10"
+        class="bonus mg-b-5"
       >
         <span>Use Cashback</span>
         <div style="display: flex; align-items: center">
@@ -221,9 +241,10 @@
       <div class="potential-win bold real-theme">
         <span data-cms-key="potential_win" data-cms-page="component_betslip">Potential Win</span>
         <span>
-          <span class="m-value">
+          <span class="m-value" :class="{ 'm-value--loading': isPotentialWinLoading }">
             {{ SportsbookGlobalVariable.Currency }}
             {{ potentialWin }}
+            <span v-if="isPotentialWinLoading" class="potential-win-spinner" aria-hidden="true"></span>
           </span>
         </span>
       </div>
@@ -278,8 +299,7 @@
 import { useCouponStore, useUsersStore, useUtilsStore } from '@/stores'
 import { formatNumber } from '@/helpers'
 import { useBetslipCalculations } from '@/composables/useBetslipCalculations'
-import BetslipBonusBar from './BetslipBonusBar.vue'
-import { computed, onMounted, toRefs, inject, ref } from 'vue'
+import { computed, toRefs, inject, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import emitter from '@/plugins/emitter'
@@ -329,19 +349,20 @@ const isSubmitting = computed(() => {
 })
 const showEarlyWinMenu = ref(false)
 const earlyWinModes = ['1up', '2up']
-const insurePlaceholderProducts = computed(() => {
-  const products = []
-
-  if (utilsStore.SportsbookFeatureConfig?.cutOne?.is_active) {
-    products.push('Cut 1')
-  }
-
-  if (utilsStore.SportsbookFeatureConfig?.flex?.is_active) {
-    products.push('Flex')
-  }
-
-  return products
+const showCutOneProduct = computed(() => Boolean(utilsStore.SportsbookFeatureConfig?.cutOne?.is_active))
+const showFlexPlaceholder = computed(() => Boolean(utilsStore.SportsbookFeatureConfig?.flex?.is_active))
+const isCutOneEnabled = computed(() => couponStore.coupon.useCutOne)
+const isCutOneLoadingState = computed(() => couponStore.isCutOneLoading && couponStore.coupon.useCutOne)
+const isCutOneDisabled = computed(() => {
+  return couponStore.isCutOneLoading || (!couponStore.coupon.useCutOne && !couponStore.canSelectCutOne())
 })
+const isInsureBonusSuppressed = computed(() => {
+  return Boolean(couponStore.coupon.useCutOne || couponStore.coupon.useFlex)
+})
+const showMaxBonusRow = computed(() => {
+  return !isInsureBonusSuppressed.value
+})
+const isPotentialWinLoading = computed(() => isCutOneLoadingState.value)
 const minimumStake = computed(() => {
   return couponStore.getMinStakeForBetslipType(betSlipType.value)
 })
@@ -355,6 +376,7 @@ const placeBetDisabled = computed(() => {
   return (
     totalStakeAmount.value < minimumStake.value ||
     couponStore.isBetslipLoading ||
+    couponStore.isCutOneLoading ||
     hasSuspendedSelections.value ||
     balanceLowerThanStake.value
   )
@@ -520,6 +542,11 @@ async function selectBulkMode(mode) {
   await setBulkUpMode(mode)
 }
 
+async function handleCutOneToggle() {
+  if (couponStore.isCutOneLoading) return
+  await couponStore.toggleCutOne()
+}
+
 function handleAcceptChange() {
   // Set acceptChanges to true in the coupon store
   couponStore.coupon.acceptChanges = true
@@ -528,19 +555,25 @@ function handleAcceptChange() {
   couponStore.coupon.selections.forEach((selection) => {
     selection.changed = false
   })
-
-  // Recalculate winnings after accepting changes
-  couponStore.updateWinnings({
-    stake: couponStore.coupon.totalStake,
-    id: 'all'
-  })
 }
 
-onMounted(() => {
-  couponStore.updateWinnings({
-    stake: stakeDisplay.value
-  })
-})
+watch(
+  () => couponStore.coupon.useBonus,
+  async () => {
+    if (couponStore.coupon.betslip_type === 'Multiple' && couponStore.coupon.bet_type === 'Multiple') {
+      await couponStore.refreshMultipleBetslipPreview()
+    }
+  }
+)
+
+watch(
+  () => couponStore.coupon.useCashback,
+  async () => {
+    if (couponStore.coupon.betslip_type === 'Multiple' && couponStore.coupon.bet_type === 'Multiple') {
+      await couponStore.refreshMultipleBetslipPreview()
+    }
+  }
+)
 </script>
 <style>
 .m-bet-detail-wrap {
@@ -713,7 +746,7 @@ onMounted(() => {
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win,
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .to-win {
   margin: 0 0.66666667rem;
-  padding: 6px 0.66666667rem;
+  padding: 0px 0.66666667rem;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .m-value,
@@ -722,6 +755,24 @@ onMounted(() => {
   box-sizing: border-box;
   display: inline-block;
   padding: 0.08333333rem 0.25rem;
+}
+
+.m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .m-value.m-value--loading {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.potential-win-spinner {
+  border: 2px solid rgba(53, 58, 69, 0.16);
+  border-radius: 50%;
+  border-top-color: var(--brand-primary-button);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 0.78rem;
+  width: 0.78rem;
+  -webkit-animation: loading-rotate 0.85s linear infinite;
+  animation: loading-rotate 0.85s linear infinite;
 }
 
 .m-bet-detail-wrap .m-betslips-stake-wrapper .m-betslips-stake .potential-win .is--boost,
@@ -1306,8 +1357,8 @@ onMounted(() => {
   position: relative;
 }
 
-.m-bet-detail-wrap .m-betslips-stake-wrapper .mg-b-10 {
-  margin-bottom: 10px;
+.m-bet-detail-wrap .m-betslips-stake-wrapper .mg-b-5 {
+  margin-bottom: 0px;
 }
 
 .m-bet-detail-wrap .m-scroll {
@@ -1427,13 +1478,13 @@ onMounted(() => {
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
-  -webkit-flex-direction: row;
-  -ms-flex-direction: row;
-  flex-direction: row;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
   font-size: 1rem;
   padding-bottom: 1rem;
   position: relative;
-  row-gap: 16px;
+  column-gap: 16px;
 }
 
 .alternative-bet-type-option .sporty-insure-logo {
@@ -1624,6 +1675,10 @@ onMounted(() => {
   color: var(--brand-primary-button);
 }
 
+.insure-product-chip.loading {
+  border-color: var(--brand-primary-button);
+}
+
 .insure-product-chip.open {
   border-color: var(--brand-primary-button);
 }
@@ -1666,6 +1721,7 @@ onMounted(() => {
 
 .insure-product-copy {
   display: flex;
+  gap: 0.35rem;
   min-width: 0;
 }
 

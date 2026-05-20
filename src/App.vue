@@ -8,7 +8,6 @@ import CalendarBox from '@/components/CalendarBox.vue'
 import BookBetModal from '@/components/Betslip/BookBetModal.vue'
 import WinModal from '@/components/WinModal.vue'
 import {
-  fetchBonusList,
   fetchSportsbookFeatureConfig,
   fetchGlobalVars,
   getSportsMenu,
@@ -199,6 +198,7 @@ async function validateSelections() {
   if (res.status_code === 200 && res.data) {
     // data is already an array
     const validatedSelections = Array.isArray(res.data) ? res.data : Object.values(res.data)
+    let hasSelectionChange = false
 
     // Update each selection with the new odds and active status
     validatedSelections.forEach((validatedSelection) => {
@@ -211,13 +211,26 @@ async function validateSelections() {
       )
 
       if (selection) {
-        selection.odds = validatedSelection.odds
-
         // Handle different status states based on status_name
         const statusName = validatedSelection.status_name || ''
-        selection.suspended = statusName === 'Suspended'
-        selection.unavailable = statusName === 'Deactivated'
-        selection.changed = true
+        const nextOdds = Number(validatedSelection.odds)
+        const previousOdds = Number(selection.odds)
+        const nextSuspended = statusName === 'Suspended'
+        const nextUnavailable = statusName === 'Deactivated'
+        const didChange =
+          nextOdds !== previousOdds ||
+          selection.suspended !== nextSuspended ||
+          selection.unavailable !== nextUnavailable
+
+        selection.odds = validatedSelection.odds
+        selection.suspended = nextSuspended
+        selection.unavailable = nextUnavailable
+        selection.changed = didChange
+
+        if (didChange) {
+          hasSelectionChange = true
+          couponStore.coupon.acceptChanges = false
+        }
 
         // Reset the changed flag after 1 second
         setTimeout(() => {
@@ -229,7 +242,8 @@ async function validateSelections() {
     // Recalculate winnings after updating all selections
     couponStore.updateWinnings({
       stake: couponStore.coupon.totalStake,
-      id: 'all'
+      id: 'all',
+      skipPreview: !hasSelectionChange
     })
 
     emitter.emit('odds-validated', validatedSelections)
@@ -263,13 +277,12 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(), fetchSportsbookFeatureConfig()
+  await Promise.allSettled([fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(), fetchSportsbookFeatureConfig()
   ]).then((results) => {
-    couponStore.sportsbookBonusList =
-      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
+    couponStore.sportsbookBonusList = []
 
     couponStore.SportsbookGlobalVariable =
-      results[1].status === "fulfilled" ? results[1].value.data.data : { ...utilsStore.SportsbookGlobalVariable }
+      results[0].status === "fulfilled" ? results[0].value.data.data : { ...utilsStore.SportsbookGlobalVariable }
 
     couponStore.SportsbookGlobalVariable.Currency =
       couponStore.SportsbookGlobalVariable.Currency || '₦'
@@ -279,17 +292,17 @@ onMounted(async () => {
       couponStore.SportsbookGlobalVariable.DialCode || '+234'
 
     couponStore.sportsbookFeatureConfig =
-      results[5].status === "fulfilled" ? results[5].value : { ...utilsStore.SportsbookFeatureConfig }
+      results[4].status === "fulfilled" ? results[4].value : { ...utilsStore.SportsbookFeatureConfig }
 
     utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
     utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
     utilsStore.SportsbookFeatureConfig = couponStore.sportsbookFeatureConfig
 
     utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.data.filter((x) => x.games > 0) : []
+      results[1].status === "fulfilled" ? results[1].value.data.filter((x) => x.games > 0) : []
 
     utilsStore.banksList =
-      results[4].status === "fulfilled" ? results[4].value.data : []
+      results[3].status === "fulfilled" ? results[3].value.data : []
 
     isLoading.value = false
   })
