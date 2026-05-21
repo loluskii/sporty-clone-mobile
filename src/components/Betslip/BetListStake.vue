@@ -156,8 +156,17 @@
                 <span class="insure-option-label">Cut 1</span>
               </label>
 
-              <label class="insure-option disabled">
-                <input type="checkbox" class="insure-option-input" disabled />
+              <label
+                class="insure-option"
+                :class="{ disabled: isFlexDisabled, loading: isFlexLoadingState }"
+              >
+                <input
+                  type="checkbox"
+                  class="insure-option-input"
+                  :checked="isFlexEnabled"
+                  :disabled="isFlexDisabled"
+                  @change="handleFlexToggle"
+                />
                 <svg
                   class="insure-chip-icon insure-chip-icon--flex"
                   viewBox="0 0 256 228"
@@ -198,8 +207,51 @@
               >
                 <label class="insure-option disabled">
                   <input type="checkbox" class="insure-option-input" disabled />
+                  <svg
+                    class="insure-chip-icon insure-chip-icon--goals"
+                    viewBox="0 0 256 230"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M256 229V1H0V229H256Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M162.303 0L51 133.25H111.186L86.8644 230L206 93.2314H137.569L162.303 0Z"
+                      fill="currentColor"
+                    />
+                  </svg>
                   <span class="insure-option-label">Early Goals</span>
                 </label>
+              </div>
+            </Transition>
+
+            <Transition name="insure-row-expand">
+              <div v-if="isFlexEnabled" class="insure-flex-stepper">
+                <span class="insure-flex-stepper-label">Min. no. of selections to win</span>
+                <div class="insure-flex-stepper-control">
+                  <button
+                    type="button"
+                    class="insure-flex-stepper-action"
+                    :disabled="flexAmount <= minFlexAmount || isFlexDisabled"
+                    aria-label="Decrease flex amount"
+                    @click.prevent="decrementFlexAmount"
+                  >
+                    &minus;
+                  </button>
+                  <span class="insure-flex-stepper-value">{{ flexAmount }}</span>
+                  <button
+                    type="button"
+                    class="insure-flex-stepper-action"
+                    :disabled="flexAmount >= maxFlexAmount || isFlexDisabled"
+                    aria-label="Increase flex amount"
+                    @click.prevent="incrementFlexAmount"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </Transition>
 
@@ -414,13 +466,25 @@ const isCutOneDisabled = computed(() => {
     (!couponStore.coupon.useCutOne && !couponStore.canSelectCutOne())
   )
 })
+const isFlexEnabled = computed(() => couponStore.coupon.useFlex)
+const isFlexLoadingState = computed(() => couponStore.isFlexLoading && couponStore.coupon.useFlex)
+const isFlexDisabled = computed(() => {
+  return (
+    !isFlexFeatureActive.value ||
+    couponStore.isFlexLoading ||
+    (!couponStore.coupon.useFlex && !couponStore.canSelectFlex())
+  )
+})
+const flexAmount = computed(() => Number(couponStore.coupon.flexAmount || 1))
+const minFlexAmount = computed(() => 1)
+const maxFlexAmount = computed(() => couponStore.getFlexMaximumWins())
 const isInsureBonusSuppressed = computed(() => {
   return Boolean(couponStore.coupon.useCutOne || couponStore.coupon.useFlex)
 })
 const showMaxBonusRow = computed(() => {
   return !isInsureBonusSuppressed.value
 })
-const isPotentialWinLoading = computed(() => isCutOneLoadingState.value)
+const isPotentialWinLoading = computed(() => isCutOneLoadingState.value || isFlexLoadingState.value)
 const minimumStake = computed(() => {
   return couponStore.getMinStakeForBetslipType(betSlipType.value)
 })
@@ -435,6 +499,7 @@ const placeBetDisabled = computed(() => {
     totalStakeAmount.value < minimumStake.value ||
     couponStore.isBetslipLoading ||
     couponStore.isCutOneLoading ||
+    couponStore.isFlexLoading ||
     hasSuspendedSelections.value ||
     balanceLowerThanStake.value
   )
@@ -595,6 +660,21 @@ async function handleBulkEarlyWinMode(mode) {
 async function handleCutOneToggle() {
   if (couponStore.isCutOneLoading) return
   await couponStore.toggleCutOne()
+}
+
+async function handleFlexToggle() {
+  if (couponStore.isFlexLoading) return
+  await couponStore.toggleFlex()
+}
+
+async function incrementFlexAmount() {
+  if (isFlexDisabled.value) return
+  await couponStore.setFlexAmount(flexAmount.value + 1)
+}
+
+async function decrementFlexAmount() {
+  if (isFlexDisabled.value) return
+  await couponStore.setFlexAmount(flexAmount.value - 1)
 }
 
 function handleAcceptChange() {
@@ -1806,6 +1886,10 @@ watch(
   fill: #fff;
 }
 
+.insure-option:not(.disabled) .insure-chip-icon--goals path:nth-of-type(2) {
+  fill: #ffc107;
+}
+
 .insure-more-toggle {
   align-items: center;
   align-self: center;
@@ -1838,6 +1922,65 @@ watch(
 
 .insure-more-toggle.open .insure-more-toggle-caret {
   transform: rotate(180deg);
+}
+
+.insure-flex-stepper {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.insure-flex-stepper-label {
+  color: #353a45;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.insure-flex-stepper-control {
+  align-items: center;
+  border: 1px solid #e5e9ef;
+  border-radius: 0.55rem;
+  display: inline-flex;
+  overflow: hidden;
+}
+
+.insure-flex-stepper-action {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #353a45;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.05rem;
+  font-weight: 700;
+  height: 1.85rem;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.18s ease, color 0.18s ease;
+  width: 1.85rem;
+}
+
+.insure-flex-stepper-action:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.insure-flex-stepper-action:disabled {
+  color: #c8ced8;
+  cursor: not-allowed;
+}
+
+.insure-flex-stepper-value {
+  border-left: 1px solid #e5e9ef;
+  border-right: 1px solid #e5e9ef;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 3rem;
+  padding: 0 0.6rem;
+  text-align: center;
 }
 
 .insure-row-expand-enter-active,

@@ -190,6 +190,10 @@ export const previewCutOne = async (payload) => {
   return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/cut-one/preview`, payload))
 }
 
+export const previewFlex = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/flex/preview`, payload))
+}
+
 export const getSplitPropsData = async (payload) => {
   return fetchWrapper.post(`${BASE_API}/api/sports/get-split-props`, payload)
 }

@@ -275,7 +275,8 @@ export const getDataFromPayload = (couponPayload) => {
     earlyWinLabel: formatEarlyWinMarketName(
       earlyWinState.baseMarketName,
       earlyWinState.earlyWinMode
-    )
+    ),
+    probability: Number(couponPayload.outcome?.probability || 0)
   }
 
   // if (couponPayload?.type === 'live') {

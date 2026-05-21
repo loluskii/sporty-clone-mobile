@@ -23,6 +23,7 @@ import {
   normalizeAccaBonusConfig,
   previewAccaBonus,
   previewCutOne,
+  previewFlex,
   CLIENT_ID,
   validateBetslipSelections,
   formatNumber,
@@ -55,7 +56,10 @@ export const useCouponStore = defineStore({
     accaBonusPreviewRequestId: 0,
     cutOnePreviewRequestId: 0,
     cutOnePreview: null,
+    flexPreviewRequestId: 0,
+    flexPreview: null,
     isCutOneLoading: false,
+    isFlexLoading: false,
     mode: 'real',
     isSimulating: false,
     earlyWinBulkMode: EARLY_WIN_DEFAULT_MODE,
@@ -82,6 +86,8 @@ export const useCouponStore = defineStore({
       useBonus: false,
       useCashback: false,
       useCutOne: false,
+      useFlex: false,
+      flexAmount: 1,
       source: 'mobile'
     },
     activeSubscriptions: [], // Will store objects with topic and unsubscribe function
@@ -121,6 +127,8 @@ export const useCouponStore = defineStore({
         useBonus: false,
         useCashback: false,
         useCutOne: false,
+        useFlex: false,
+        flexAmount: 1,
         source: 'mobile',
         ...overrides
       }
@@ -233,11 +241,33 @@ export const useCouponStore = defineStore({
         this.coupon.useCutOne = false
       }
     },
+    clearFlexPreview({ resetSelection = false } = {}) {
+      this.flexPreviewRequestId += 1
+      this.flexPreview = null
+      this.isFlexLoading = false
+      if (resetSelection) {
+        this.coupon.useFlex = false
+      }
+    },
+    getSelectionProbability(selection = {}) {
+      const providedProbability = Number(selection?.probability)
+      if (Number.isFinite(providedProbability) && providedProbability > 0 && providedProbability <= 1) {
+        return providedProbability
+      }
+
+      const odds = Number(selection?.odds || 0)
+      if (!Number.isFinite(odds) || odds <= 0) {
+        return 0
+      }
+
+      return Number((1 / odds).toFixed(6))
+    },
     canSelectCutOne(activeSelections = this.getActiveCouponSelections()) {
       const cutOneConfig = this.getCutOneConfig()
       if (!cutOneConfig.enabled) return false
       if (this.coupon.betslip_type !== 'Multiple' || this.coupon.bet_type !== 'Multiple') return false
       if (this.coupon.useBonus || this.coupon.useCashback || Number(this.coupon.bonusId || 0) > 0) return false
+      if (this.coupon.useFlex) return false
       if (activeSelections.length < cutOneConfig.minSelections) return false
 
       return activeSelections.every((selection) => Number(selection?.odds || 0) >= cutOneConfig.minOddsPerLeg)
@@ -253,6 +283,10 @@ export const useCouponStore = defineStore({
     getDisplayedTotalOddsValue() {
       if (this.isCutOneApplied()) {
         return Number(this.cutOnePreview?.cut_one_odds || 0)
+      }
+
+      if (this.isFlexApplied()) {
+        return Number(this.flexPreview?.flex_odds || 0)
       }
 
       return Number(this.coupon.totalOdds || 0)
@@ -382,6 +416,16 @@ export const useCouponStore = defineStore({
         this.clearCutOnePreview()
       }
 
+      if (this.coupon.useFlex) {
+        this.accaBonusPreviewRequestId += 1
+        const flexApplied = await this.refreshFlexPreview(activeSelections)
+        if (flexApplied || this.coupon.useFlex) {
+          return
+        }
+      } else {
+        this.clearFlexPreview()
+      }
+
       await this.refreshAccaBonusPreview()
     },
     async toggleCutOne() {
@@ -400,6 +444,138 @@ export const useCouponStore = defineStore({
 
       this.coupon.useCutOne = true
       await this.refreshMultipleBetslipPreview()
+    },
+    getFlexConfig() {
+      const config = this.sportsbookFeatureConfig?.flex || {}
+      return {
+        id: config?.id ?? null,
+        enabled:
+          Boolean(config?.is_active) &&
+          String(config?.status || 'active').toLowerCase() === 'active',
+        minSelections: Number(config?.min_selections || 0),
+        maxSelections: Number(config?.max_selections || 0),
+        margin: Number(config?.margin || 0)
+      }
+    },
+    getFlexMaximumWins(activeSelections = this.getActiveCouponSelections()) {
+      const selectionCount = Array.isArray(activeSelections) ? activeSelections.length : 0
+      return Math.max(1, selectionCount - 1)
+    },
+    getDefaultFlexMinimumWins(activeSelections = this.getActiveCouponSelections()) {
+      return this.getFlexMaximumWins(activeSelections)
+    },
+    getResolvedFlexMinimumWins(activeSelections = this.getActiveCouponSelections()) {
+      const maxWins = this.getFlexMaximumWins(activeSelections)
+      const requestedMinWins = Math.floor(Number(this.coupon.flexAmount || 0))
+      const normalizedMinWins =
+        Number.isFinite(requestedMinWins) && requestedMinWins > 0
+          ? requestedMinWins
+          : this.getDefaultFlexMinimumWins(activeSelections)
+
+      return Math.min(maxWins, Math.max(1, normalizedMinWins))
+    },
+    canSelectFlex(activeSelections = this.getActiveCouponSelections()) {
+      const flexConfig = this.getFlexConfig()
+      if (!flexConfig.enabled) return false
+      if (this.coupon.betslip_type !== 'Multiple' || this.coupon.bet_type !== 'Multiple') return false
+      if (this.coupon.useBonus || this.coupon.useCashback || Number(this.coupon.bonusId || 0) > 0) return false
+      if (this.coupon.useCutOne) return false
+      if (activeSelections.length < flexConfig.minSelections) return false
+      if (flexConfig.maxSelections > 0 && activeSelections.length > flexConfig.maxSelections) return false
+      return true
+    },
+    isFlexApplied() {
+      return Boolean(
+        this.coupon.useFlex &&
+          this.flexPreview?.enabled &&
+          this.flexPreview?.qualifies &&
+          Number(this.flexPreview?.flex_odds || 0) > 0
+      )
+    },
+    async refreshFlexPreview(activeSelections = this.getActiveCouponSelections()) {
+      if (!this.coupon.useFlex) {
+        this.clearFlexPreview()
+        return false
+      }
+
+      if (!this.canSelectFlex(activeSelections)) {
+        this.clearFlexPreview({ resetSelection: true })
+        return false
+      }
+
+      const resolvedMinWins = this.getResolvedFlexMinimumWins(activeSelections)
+      if (Number(this.coupon.flexAmount || 0) !== resolvedMinWins) {
+        this.coupon.flexAmount = resolvedMinWins
+      }
+
+      const requestId = ++this.flexPreviewRequestId
+      const stake = Number(this.coupon.totalStake || this.coupon.stake || 0)
+      this.isFlexLoading = true
+
+      try {
+        const response = await previewFlex({
+          minWins: resolvedMinWins,
+          selections: activeSelections.map((selection) => ({
+            odds: Number(selection.odds),
+            probability: this.getSelectionProbability(selection)
+          })),
+          stake
+        })
+
+        if (requestId !== this.flexPreviewRequestId) {
+          return false
+        }
+
+        if (Number(response?.status_code) !== 200 || !response?.data?.enabled || !response?.data?.qualifies) {
+          this.clearFlexPreview({ resetSelection: true })
+          return false
+        }
+
+        this.flexPreview = response.data
+        this.coupon.maxBonus = 0
+        this.coupon.grossWin = Number(response.data?.potential_payout || 0)
+        this.coupon.maxWin = Number(response.data?.potential_payout || 0)
+        this.coupon.wthTax = 0
+        return true
+      } catch (error) {
+        if (requestId !== this.flexPreviewRequestId) {
+          return false
+        }
+        console.error('[flex] preview failed', error)
+        this.clearFlexPreview({ resetSelection: true })
+        return false
+      } finally {
+        if (requestId === this.flexPreviewRequestId) {
+          this.isFlexLoading = false
+        }
+      }
+    },
+    async toggleFlex() {
+      if (this.coupon.useFlex) {
+        this.coupon.useFlex = false
+        this.clearFlexPreview()
+        if (this.coupon.betslip_type === 'Multiple' && this.coupon.bet_type === 'Multiple') {
+          await this.refreshMultipleBetslipPreview()
+        }
+        return
+      }
+
+      if (!this.canSelectFlex()) {
+        return
+      }
+
+      this.coupon.flexAmount = this.getDefaultFlexMinimumWins()
+      this.coupon.useFlex = true
+      await this.refreshMultipleBetslipPreview()
+    },
+    async setFlexAmount(value) {
+      const next = Math.floor(Number(value) || 0)
+      const min = 1
+      const max = this.getFlexMaximumWins()
+      this.coupon.flexAmount = Math.min(max, Math.max(min, next))
+      if (this.coupon.useFlex && this.coupon.betslip_type === 'Multiple' && this.coupon.bet_type === 'Multiple') {
+        await this.refreshMultipleBetslipPreview()
+      }
     },
     isTaxEnabled() {
       return (
@@ -1232,6 +1408,7 @@ export const useCouponStore = defineStore({
             this.coupon.betslip_type = 'Multiple'
             this.accaBonusPreviewRequestId += 1
             this.clearCutOnePreview({ resetSelection: true })
+            this.clearFlexPreview({ resetSelection: true })
             this.clearBankers()
 
             const splitProps = await getSplitProps(this.coupon)
@@ -1289,6 +1466,7 @@ export const useCouponStore = defineStore({
         if (this.coupon.bet_type === 'Split') {
           this.accaBonusPreviewRequestId += 1
           this.clearCutOnePreview({ resetSelection: true })
+          this.clearFlexPreview({ resetSelection: true })
           this.clearBankers()
           const splitProps = await getSplitProps(this.coupon)
 
@@ -1372,6 +1550,7 @@ export const useCouponStore = defineStore({
         outcomeName,
         displayName: selection.displayName || outcomeName,
         odds: selection.odds,
+        probability: selection.probability,
         active: selection.active ?? 1,
         producerID: producerId,
         specifier:
@@ -1457,6 +1636,7 @@ export const useCouponStore = defineStore({
           this.coupon.betslip_type = 'Single'
           this.accaBonusPreviewRequestId += 1
           this.clearCutOnePreview({ resetSelection: true })
+          this.clearFlexPreview({ resetSelection: true })
         } else {
           this.coupon.bet_type = checkBetType(this.coupon.fixtures)
         }
@@ -1464,6 +1644,7 @@ export const useCouponStore = defineStore({
         if (this.coupon.bet_type === 'Split') {
           this.accaBonusPreviewRequestId += 1
           this.clearCutOnePreview({ resetSelection: true })
+          this.clearFlexPreview({ resetSelection: true })
           const splitProps = await getSplitProps(this.coupon)
           //calculate winnings
           const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(splitProps.minStake)
@@ -1556,10 +1737,12 @@ export const useCouponStore = defineStore({
           useBonus: false,
           useCashback: false,
           useCutOne: false,
+          useFlex: false,
           source: 'mobile'
         }
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview()
+        this.clearFlexPreview()
         this.coupon = coupon
       }
     },
@@ -1735,6 +1918,7 @@ export const useCouponStore = defineStore({
           this.coupon.minOdds = parseFloat(minOdds).toFixed(2)
           this.accaBonusPreviewRequestId += 1
           this.clearCutOnePreview({ resetSelection: true })
+          this.clearFlexPreview({ resetSelection: true })
           this.coupon.maxBonus = 0
           this.coupon.grossWin = Number(this.coupon.maxWin || 0)
           this.coupon.wthTax = 0
@@ -1751,6 +1935,7 @@ export const useCouponStore = defineStore({
             this.coupon.wthTax = 0
             this.coupon.grossWin = 0
             this.clearCutOnePreview({ resetSelection: true })
+            this.clearFlexPreview({ resetSelection: true })
           } else {
             // Calculate total odds using only active selections
             this.coupon.totalOdds = calculateTotalOdds(activeSelections).toFixed(2)
@@ -1767,6 +1952,7 @@ export const useCouponStore = defineStore({
             if (this.coupon.bet_type === 'Split' && this.coupon.betslip_type === 'Multiple') {
               this.accaBonusPreviewRequestId += 1
               this.clearCutOnePreview({ resetSelection: true })
+              this.clearFlexPreview({ resetSelection: true })
               // Split bets need server-calculated min/max wins based on current stake.
               try {
                 const updated = await getSplitProps(this.coupon)
@@ -1819,6 +2005,7 @@ export const useCouponStore = defineStore({
     updateComboWinnings(val, combo) {
       this.accaBonusPreviewRequestId += 1
       this.clearCutOnePreview({ resetSelection: true })
+      this.clearFlexPreview({ resetSelection: true })
       let coupondata = { ...this.coupon };
       let stake = val;
       if (stake === '') {
@@ -1981,6 +2168,7 @@ export const useCouponStore = defineStore({
       this.coupon.maxBonus = 0
       if (betslip_type !== 'Multiple') {
         this.clearCutOnePreview({ resetSelection: true })
+        this.clearFlexPreview({ resetSelection: true })
       }
 
       const newSelections = selections.map((item) => {
@@ -1994,6 +2182,7 @@ export const useCouponStore = defineStore({
       if (betslip_type === 'Combo' && this.coupon.combos?.length) {
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview({ resetSelection: true })
+        this.clearFlexPreview({ resetSelection: true })
         // Restore combo stakes on switch to system bets.
         this.coupon.combos = this.coupon.combos.map((combo) => ({
           ...combo,
@@ -2007,6 +2196,7 @@ export const useCouponStore = defineStore({
       if (this.coupon.bet_type === 'Split' && betslip_type === 'Multiple') {
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview({ resetSelection: true })
+        this.clearFlexPreview({ resetSelection: true })
         // Split requires min/max win from split props.
         await getSplitProps(this.coupon)
         // Persist stake for Multiple mode on split.
@@ -2088,6 +2278,41 @@ export const useCouponStore = defineStore({
         }
       }
 
+      const buildMultiplePayload = (selections) => {
+        const isStandardMultiple =
+          coupondata.betslip_type === 'Multiple' && coupondata.bet_type === 'Multiple'
+        const stake =
+          coupondata.bet_type === 'Split' && coupondata.betslip_type === 'Multiple'
+            ? Number(coupondata.stake || 0)
+            : Number(coupondata.totalStake || coupondata.stake || 0)
+
+        if (isStandardMultiple && coupondata.useFlex) {
+          return {
+            betType: 'flex',
+            selections: buildSelections(selections),
+            stake,
+            totalStake: stake,
+            flex: {
+              minWins: Number(coupondata.flexAmount || 0)
+            }
+          }
+        }
+
+        return {
+          betType: 'multi',
+          selections: buildSelections(selections),
+          stake,
+          totalStake: stake,
+          ...(isStandardMultiple && coupondata.useCutOne
+            ? {
+                cutOne: {
+                  enabled: true
+                }
+              }
+            : {})
+        }
+      }
+
       const buildBets = () => {
         const selections = coupondata.selections || []
         if (coupondata.betslip_type === 'Combo' || coupondata.bet_type === 'Combo') {
@@ -2112,26 +2337,14 @@ export const useCouponStore = defineStore({
             bets.push(...buildSingleBets(singles))
           }
           if (multiples.length) {
-            bets.push({
-              betType: 'multi',
-              selections: buildSelections(multiples),
-              stake: Number(coupondata.stake || 0),
-              totalStake: Number(coupondata.stake || 0)
-            })
+            bets.push(buildMultiplePayload(multiples))
           }
           return bets
         }
         if (coupondata.betslip_type === 'Single' || coupondata.bet_type === 'Single') {
           return buildSingleBets(selections)
         }
-        return [
-          {
-            betType: 'multi',
-            selections: buildSelections(selections),
-            stake: Number(coupondata.stake || 0),
-            totalStake: Number(coupondata.totalStake || coupondata.stake || 0)
-          }
-        ]
+        return [buildMultiplePayload(selections)]
       }
 
       if (type === 'bet') {
@@ -2143,12 +2356,13 @@ export const useCouponStore = defineStore({
         }
 
         // Transform coupon data to new API format
+        const suppressBonusFunding = Boolean(coupondata.useCutOne || coupondata.useFlex)
         const payload = {
           bets: buildBets(),
-          bonusId: coupondata.bonusId || 0,
+          bonusId: suppressBonusFunding ? 0 : coupondata.bonusId || 0,
           isBooking: coupondata.isBooking,
           source: coupondata.source || 'web',
-          useBonus: coupondata.useBonus || false
+          useBonus: suppressBonusFunding ? false : coupondata.useBonus || false
         }
 
         try {
@@ -2163,12 +2377,13 @@ export const useCouponStore = defineStore({
           coupondata.isBooking = 1
 
           // Transform coupon data to new API format for booking
+          const suppressBonusFunding = Boolean(coupondata.useCutOne || coupondata.useFlex)
           const payload = {
             bets: buildBets(),
-            bonusId: coupondata.bonusId || 0,
+            bonusId: suppressBonusFunding ? 0 : coupondata.bonusId || 0,
             isBooking: 1,
             source: coupondata.source || 'web',
-            useBonus: coupondata.useBonus || false
+            useBonus: suppressBonusFunding ? false : coupondata.useBonus || false
           }
 
           const res = await placeBet2(payload)
@@ -2198,6 +2413,7 @@ export const useCouponStore = defineStore({
         const coupon = this.createEmptyCouponState()
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview()
+        this.clearFlexPreview()
         this.coupon = coupon
         // Clear cached stakes when betslip is emptied.
         this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
@@ -2209,6 +2425,7 @@ export const useCouponStore = defineStore({
         this.coupon = this.createEmptyCouponState()
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview()
+        this.clearFlexPreview()
         this.activeSubscriptions = []
         // Clear cached stakes when betslip is emptied.
         this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
