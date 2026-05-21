@@ -39,7 +39,7 @@
       </div>
 
       <div class="sporty-insure-container">
-        <div class="alternative-bet-type-option insure-option">
+        <div class="alternative-bet-type-option insure-option" style="width: 100%;">
           <div class="sporty-insure-logo">
             <div class="desc">
               <span>Insure</span>
@@ -137,11 +137,43 @@
                   :disabled="isCutOneDisabled"
                   @change="handleCutOneToggle"
                 />
+                <svg
+                  class="insure-chip-icon insure-chip-icon--cut"
+                  viewBox="0 0 256 228"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M256 223V5C256 2.23858 253.762 0 251 0H5C2.23858 0 0 2.23857 0 4.99999V223C0 225.761 2.23858 228 5 228H251C253.762 228 256 225.761 256 223Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M46.5 53.5L69 30H171.5V228H102V89H46.5V53.5Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 <span class="insure-option-label">Cut 1</span>
               </label>
 
               <label class="insure-option disabled">
                 <input type="checkbox" class="insure-option-input" disabled />
+                <svg
+                  class="insure-chip-icon insure-chip-icon--flex"
+                  viewBox="0 0 256 228"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M256 228V0H0V228H256Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M36 64L71 30H221L201 82.5H92V109.5H206.5L185.5 162H92V228H36V64Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 <span class="insure-option-label">Flex</span>
               </label>
 
@@ -170,6 +202,7 @@
                 </label>
               </div>
             </Transition>
+
           </div>
         </div>
       </div>
@@ -1668,17 +1701,18 @@ watch(
 
 .insure-option {
   align-items: center;
-  color: #353a45;
+  color: #9b9da1;
   cursor: pointer;
   display: inline-flex;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   font-size: 0.9rem;
   font-weight: 600;
   gap: 0.4rem;
-  justify-content: center;
-  min-width: 0;
   padding: 0.25rem 0.1rem;
-  width: 100%;
+}
+
+.insure-option:not(.disabled) {
+  color: #000;
 }
 
 .insure-option.disabled {
@@ -1730,7 +1764,10 @@ watch(
 }
 
 .insure-option-label {
+  font-size: 0.95rem;
+  font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .insure-chip-logo {
@@ -1744,6 +1781,29 @@ watch(
 
 .insure-chip-logo--two {
   width: 2.13rem;
+}
+
+.insure-chip-icon {
+  display: block;
+  flex: 0 0 auto;
+  height: 1.1rem;
+  width: 1.23rem;
+}
+
+.insure-chip-icon path {
+  transition: fill 0.18s ease;
+}
+
+.insure-option:not(.disabled) .insure-chip-icon path:nth-of-type(1) {
+  fill: #000;
+}
+
+.insure-option.disabled .insure-chip-icon path:nth-of-type(1) {
+  fill: #9b9da1;
+}
+
+.insure-option:not(.disabled) .insure-chip-icon path:nth-of-type(2) {
+  fill: #fff;
 }
 
 .insure-more-toggle {
