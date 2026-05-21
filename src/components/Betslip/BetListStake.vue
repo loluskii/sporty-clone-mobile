@@ -1503,21 +1503,22 @@ watch(
   padding-bottom: 1rem;
   position: relative;
   column-gap: 16px;
-  background:
-    radial-gradient(circle at top right, rgba(13, 151, 55, 0.08), transparent 38%),
-    linear-gradient(180deg, #f9fcfa 0%, #f5f8fb 100%);
-  border: 1px solid rgba(214, 224, 235, 0.85);
+  background: #f5f7fa;
+  border: 1px solid #e5e9ef;
   border-radius: 1rem;
   margin-top: 0.2rem;
   overflow: hidden;
-  padding: 0.7rem 0.95rem 0.9rem;
+  padding: 2.2rem 0.95rem 0.9rem;
 }
 
 .alternative-bet-type-option .sporty-insure-logo {
-  margin-left: -0.95rem;
+  left: 0;
+  position: absolute;
+  top: 0;
   width: -webkit-max-content;
   width: -moz-max-content;
   width: max-content;
+  
 }
 .alternative-bet-type-option .desc {
   background: linear-gradient(135deg, #12b56c 0%, #0d9737 100%);
@@ -1651,6 +1652,7 @@ watch(
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  padding-top: 30px;
 }
 
 .insure-products-row {
@@ -1665,7 +1667,7 @@ watch(
 }
 
 .insure-option {
-  align-items: start;
+  align-items: center;
   color: #353a45;
   cursor: pointer;
   display: inline-flex;
@@ -1689,12 +1691,38 @@ watch(
 }
 
 .insure-option-input {
-  accent-color: var(--brand-secondary);
+  appearance: none;
+  -webkit-appearance: none;
+  background: #ffffff;
+  border: 1.5px solid #c8ced8;
+  border-radius: 50%;
   cursor: inherit;
   flex: 0 0 auto;
-  height: 1.05rem;
+  height: 1.35rem;
   margin: 0;
-  width: 1.05rem;
+  padding: 0;
+  position: relative;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+  width: 1.35rem;
+}
+
+.insure-option-input:checked {
+  background: var(--brand-secondary);
+  border-color: var(--brand-secondary);
+}
+
+.insure-option-input:checked::after {
+  background: #ffffff;
+  border-radius: 50%;
+  content: '';
+  height: 0.55rem;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.55rem;
 }
 
 .insure-option-input:disabled {
