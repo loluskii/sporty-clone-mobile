@@ -475,8 +475,8 @@ const isFlexDisabled = computed(() => {
     (!couponStore.coupon.useFlex && !couponStore.canSelectFlex())
   )
 })
-const flexAmount = computed(() => Number(couponStore.coupon.flexAmount || 1))
-const minFlexAmount = computed(() => 1)
+const flexAmount = computed(() => Number(couponStore.coupon.flexAmount || couponStore.getFlexMinimumWins()))
+const minFlexAmount = computed(() => couponStore.getFlexMinimumWins())
 const maxFlexAmount = computed(() => couponStore.getFlexMaximumWins())
 const isInsureBonusSuppressed = computed(() => {
   return Boolean(couponStore.coupon.useCutOne || couponStore.coupon.useFlex)

@@ -87,7 +87,7 @@ export const useCouponStore = defineStore({
       useCashback: false,
       useCutOne: false,
       useFlex: false,
-      flexAmount: 1,
+      flexAmount: 2,
       source: 'mobile'
     },
     activeSubscriptions: [], // Will store objects with topic and unsubscribe function
@@ -128,7 +128,7 @@ export const useCouponStore = defineStore({
         useCashback: false,
         useCutOne: false,
         useFlex: false,
-        flexAmount: 1,
+        flexAmount: 2,
         source: 'mobile',
         ...overrides
       }
@@ -461,6 +461,9 @@ export const useCouponStore = defineStore({
       const selectionCount = Array.isArray(activeSelections) ? activeSelections.length : 0
       return Math.max(1, selectionCount - 1)
     },
+    getFlexMinimumWins() {
+      return 2
+    },
     getDefaultFlexMinimumWins(activeSelections = this.getActiveCouponSelections()) {
       return this.getFlexMaximumWins(activeSelections)
     },
@@ -472,7 +475,7 @@ export const useCouponStore = defineStore({
           ? requestedMinWins
           : this.getDefaultFlexMinimumWins(activeSelections)
 
-      return Math.min(maxWins, Math.max(1, normalizedMinWins))
+      return Math.min(maxWins, Math.max(this.getFlexMinimumWins(), normalizedMinWins))
     },
     canSelectFlex(activeSelections = this.getActiveCouponSelections()) {
       const flexConfig = this.getFlexConfig()
@@ -570,7 +573,7 @@ export const useCouponStore = defineStore({
     },
     async setFlexAmount(value) {
       const next = Math.floor(Number(value) || 0)
-      const min = 1
+      const min = this.getFlexMinimumWins()
       const max = this.getFlexMaximumWins()
       this.coupon.flexAmount = Math.min(max, Math.max(min, next))
       if (this.coupon.useFlex && this.coupon.betslip_type === 'Multiple' && this.coupon.bet_type === 'Multiple') {
