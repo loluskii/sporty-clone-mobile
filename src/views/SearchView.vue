@@ -177,7 +177,7 @@ const liveSports = computed(() => {
 .m-search {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
-  min-height: 100%;
+  min-height: 80vh;
 }
 .m-search .m-col2 {
   -webkit-box-align: center;
@@ -324,7 +324,7 @@ const liveSports = computed(() => {
 }
 
 .m-search--bar {
-  background: var(--brand-primary);
+  background: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   grid-template-columns: 3.66666667rem 1fr;
@@ -345,7 +345,6 @@ const liveSports = computed(() => {
 }
 .m-search--bar .m-input-wap-wrapper {
   background-color: #ffffff;
-  background-color: var(--c-search-input-bg);
   border: none;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
