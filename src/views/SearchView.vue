@@ -364,7 +364,6 @@ const liveSports = computed(() => {
 }
 .m-search--bar .m-input-wap-wrapper .m-input-wap {
   background-color: #ffffff;
-  background-color: var(--c-search-input-bg);
   border: none !important;
   height: 2.16666667rem;
   padding-left: 0.16666667rem;
