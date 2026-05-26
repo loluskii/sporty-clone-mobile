@@ -250,7 +250,7 @@ export const getUserDetailsByToken = async () => {
 }
 
 export const getTopBets = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/${CLIENT_ID}/top-bets`))
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/top_tournament`))
 }
 
 export const getCodeHubItems = async (data) => {
@@ -424,7 +424,11 @@ export const getBets = async (payload) => {
   const { page = 1, perPage = 5, status, start, end } = payload
   const params = new URLSearchParams({ page, perPage })
 
-  if (status !== undefined && status !== null) {
+  if (Array.isArray(status)) {
+    status
+      .filter((value) => value !== undefined && value !== null && value !== '')
+      .forEach((value) => params.append('status', value))
+  } else if (status !== undefined && status !== null && status !== '') {
     params.set('status', status)
   }
   if (start) {

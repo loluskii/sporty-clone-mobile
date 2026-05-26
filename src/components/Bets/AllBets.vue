@@ -60,7 +60,7 @@
                       >
                         <span class="type"
                           ><span
-                            >{{ bet.selections?.length > 1 ? 'Multiple' : 'Single' }}&nbsp;
+                            >{{ betTypeDescription(bet) }}&nbsp;
                             {{ bet.isBooked === 2 ? '(SIM)' : '' }}</span
                           >
                         </span>
@@ -92,7 +92,11 @@
                   </div>
                 </div>
               </div>
-              <div style="width: 100%; opacity: 0; visibility: hidden"></div>
+              <div ref="loadMoreSentinel" class="load-more-sentinel" aria-hidden="true"></div>
+              <div v-if="isLoadingMore" class="load-more-status">Loading more…</div>
+              <div v-else-if="!hasMore && Object.keys(settledBets).length" class="load-more-status load-more-status--end">
+                No more bets
+              </div>
             </div>
           </div>
           <div v-if="!props.isLoading && !Object.keys(settledBets).length" class="m-list-none-wrap">
@@ -162,7 +166,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import _ from 'lodash'
 import moment from 'moment'
 import { formatNumber } from '@/helpers'
@@ -172,7 +176,7 @@ import BetHistoryMatchList from '@/components/BetHistoryMatchList.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
-const emit = defineEmits(['view-detail', 'fetch-bets'])
+const emit = defineEmits(['view-detail', 'fetch-bets', 'load-more'])
 const props = defineProps({
   bets: {
     type: Array,
@@ -185,8 +189,55 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false
+  },
+  isLoadingMore: {
+    type: Boolean,
+    default: false
+  },
+  hasMore: {
+    type: Boolean,
+    default: false
   }
 })
+
+const loadMoreSentinel = ref(null)
+let scrollObserver = null
+
+function setupScrollObserver() {
+  if (typeof IntersectionObserver === 'undefined') return
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+  }
+  if (!loadMoreSentinel.value) return
+  scrollObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (!entry || !entry.isIntersecting) return
+      if (props.isLoading || props.isLoadingMore || !props.hasMore) return
+      emit('load-more')
+    },
+    { rootMargin: '200px 0px' }
+  )
+  scrollObserver.observe(loadMoreSentinel.value)
+}
+
+onMounted(() => {
+  nextTick(setupScrollObserver)
+})
+
+onBeforeUnmount(() => {
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+    scrollObserver = null
+  }
+})
+
+watch(
+  () => [props.hasMore, props.bets.length],
+  () => {
+    nextTick(setupScrollObserver)
+  }
+)
 
 const { SportsbookGlobalVariable } = useUtilsStore()
 
@@ -207,6 +258,19 @@ const getDateWithoutTime = (dateString) => {
   return `${year}-${month}-${day}`
 }
 
+
+const betTypeDescription = (bet) => {
+    switch (bet.betType) {
+        case "flex":
+            return `Flex (${bet.flex.min_wins}+ of ${bet.flex.original_legs})`
+            break;
+    
+        default:
+            return bet.betType[0].toUpperCase() + bet.betType.slice(1);
+            break;
+    }
+}
+
 function redirectToBet(bet) {
   localStorage.setItem('betDetail', JSON.stringify(bet))
   emit('view-detail', bet)
@@ -214,9 +278,6 @@ function redirectToBet(bet) {
 
 function setBetStatus(status) {
   activeBetStatus.value = status
-  if (status == '' || status == 'settled') {
-    status = ''
-  }
   emit('fetch-bets', status)
 }
 
@@ -232,12 +293,6 @@ const handleDate = () => {
 
 const filteredBets = computed(() => {
   let list = Array.isArray(props.bets) ? props.bets : []
-
-  if (activeBetStatus.value === 'settled') {
-    list = list.filter((bet) => bet.statusCode === 1 || bet.statusCode === 2)
-  } else if (activeBetStatus.value === -1) {
-    list = list.filter((bet) => bet.statusCode === 0 || bet.statusDescription === 'Pending')
-  }
 
   if (Array.isArray(range.value) && range.value.length === 2) {
     const start = moment(range.value[0]).startOf('day')
@@ -295,6 +350,23 @@ const settledBets = computed(() => {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 1rem 1rem 0 1rem;
+}
+
+.m-order .load-more-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+.m-order .load-more-status {
+  color: #9ca0ab;
+  font-size: 0.92rem;
+  padding: 1.25rem 0 1.5rem;
+  text-align: center;
+}
+
+.m-order .load-more-status--end {
+  color: #9ca0ab;
+  opacity: 0.7;
 }
 
 .m-order .m-scroll {

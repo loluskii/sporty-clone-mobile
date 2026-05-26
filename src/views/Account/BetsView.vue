@@ -44,8 +44,11 @@
       :bet="selectedBet"
       :isAuthenticated="isAuthenticated"
       :isLoading="isLoading"
+      :isLoadingMore="isLoadingMore"
+      :hasMore="hasMore"
       @view-detail="handleViewDetail"
       @fetch-bets="handleFetchBets"
+      @load-more="handleLoadMore"
       @refresh-open-bets="handleRefreshOpenBets"
       @back="activeTab = 'all_bets'"
     />
@@ -82,8 +85,13 @@ const componentMap = {
 const currentComponent = computed(() => componentMap[activeTab.value] || OpenBets)
 const selectedBet = ref(null || JSON.parse(localStorage.getItem('betDetail')))
 
+const PER_PAGE = 20
 const betData = ref([])
 const isLoading = ref(true)
+const isLoadingMore = ref(false)
+const hasMore = ref(false)
+const currentPage = ref(1)
+const currentBetStatus = ref('') // tracks the API status filter currently applied for all_bets
 const { isAuthenticated } = useAuthStore()
 const { SportsbookGlobalVariable } = utilsStore
 const usersStore = useUsersStore()
@@ -93,21 +101,51 @@ const cashoutData = ref({})
 const cashingOut = ref(false)
 const codes = ref([])
 
+function mapTabStatusToApi(statusKey) {
+  if (statusKey === -1) return -1
+  if (statusKey === 'settled') return [0, 1]
+  return ''
+}
+
 async function getBetsData(status, options = {}) {
-  const { silent = false } = options
-  if (!silent) {
+  const { silent = false, append = false, page = 1 } = options
+
+  if (append) {
+    if (!hasMore.value || isLoadingMore.value) return
+    isLoadingMore.value = true
+  } else if (!silent) {
     isLoading.value = true
   }
+
   try {
-    const payload = status === '' ? {perPage: 20} : { status: -1 }
+    const payload = { page, perPage: PER_PAGE }
+    if (status !== '' && status !== null && status !== undefined) {
+      payload.status = status
+    }
     const res = await getBets(payload)
-    betData.value = res?.data?.data || []
+    const meta = res?.data || {}
+    const newBets = meta.data || []
+
+    if (append) {
+      betData.value = [...betData.value, ...newBets]
+    } else {
+      betData.value = newBets
+    }
+
+    const nextPage = Number(meta.nextPage || 0)
+    const lastPage = Number(meta.lastPage || 0)
+    const returnedPage = Number(meta.currentPage || page)
+    hasMore.value = nextPage > 0 || (lastPage > 0 && returnedPage < lastPage)
+    currentPage.value = returnedPage
   } catch (error) {
-    if (!silent) {
+    if (!silent && !append) {
       betData.value = []
     }
+    hasMore.value = false
   } finally {
-    if (!silent) {
+    if (append) {
+      isLoadingMore.value = false
+    } else if (!silent) {
       isLoading.value = false
     }
   }
@@ -150,7 +188,9 @@ async function confirmCashout() {
   if (res.success) {
     console.log('cashout successful')
     emitter.emit('showDialogueToaster', 'Cashout Successful!')
-    await getBetsData('')
+    currentPage.value = 1
+    hasMore.value = false
+    await getBetsData(currentBetStatus.value, { page: 1 })
   } else {
     emitter.emit('showDialogueToaster', res.message)
   }
@@ -163,45 +203,65 @@ function handleViewDetail(bet) {
   }
 }
 
+function resetPagination() {
+  currentPage.value = 1
+  hasMore.value = false
+  isLoadingMore.value = false
+}
+
 function setActiveTab(tab) {
   isLoading.value = true
   betData.value = []
+  resetPagination()
   activeTab.value = tab
   if (!isAuthenticated) return
   if (tab === 'open_bets') {
-    getBetsData(-1)
+    currentBetStatus.value = -1
+    getBetsData(-1, { page: 1 })
   } else if (tab === 'all_bets') {
-    getBetsData('')
+    currentBetStatus.value = ''
+    getBetsData('', { page: 1 })
   }
 }
 
 function resetView(){
   localStorage.removeItem('betDetail')
   activeTab.value = 'all_bets'
+  resetPagination()
+  currentBetStatus.value = ''
   if (!isAuthenticated) return
-  getBetsData('')
+  getBetsData('', { page: 1 })
 }
 
 function handleFetchBets(statusKey) {
   if (activeTab.value !== 'all_bets') return
-  if (statusKey === -1) {
-    getBetsData(-1)
-    return
-  }
-  getBetsData('')
+  const apiStatus = mapTabStatusToApi(statusKey)
+  currentBetStatus.value = apiStatus
+  resetPagination()
+  getBetsData(apiStatus, { page: 1 })
+}
+
+function handleLoadMore() {
+  if (!hasMore.value || isLoadingMore.value || isLoading.value) return
+  getBetsData(currentBetStatus.value, {
+    page: currentPage.value + 1,
+    append: true
+  })
 }
 
 function handleRefreshOpenBets(options = {}) {
   if (activeTab.value !== 'open_bets' || !isAuthenticated) return
-  getBetsData(-1, { silent: options.silent === true })
+  getBetsData(-1, { silent: options.silent === true, page: 1 })
 }
 
 onMounted(() => {
   if (isAuthenticated) {
     if (activeTab.value === 'all_bets') {
-      getBetsData('')
-    }else {
-      getBetsData(-1)
+      currentBetStatus.value = ''
+      getBetsData('', { page: 1 })
+    } else {
+      currentBetStatus.value = -1
+      getBetsData(-1, { page: 1 })
     }
   }
 })
