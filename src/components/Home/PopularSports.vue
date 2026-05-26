@@ -47,7 +47,7 @@
               srcset=""
             />
           </div> -->
-          <div class="text">{{ match.tournamentName }}</div>
+          <div class="text">{{ match.tournament_name }}</div>
         </div>
       </template>
     </div>
@@ -78,13 +78,13 @@
                   >
                     <div
                       class="featuredMatchCategory"
-                      :class="activeFeaturedTournament == top.tournamentID ? 'active' : ''"
+                      :class="activeFeaturedTournament == top.tournament_id ? 'active' : ''"
                     >
                       <div class="wrapper">
                         <div class="img">
-                          <img :src="getImageURL(top.tournamentName)" />
+                          <img :src="getImageURL(top.tournament_name)" />
                         </div>
-                        <div class="name">{{ top.tournamentName }}</div>
+                        <div class="name">{{ top.tournament_name }}</div>
                       </div>
                     </div>
                   </li>
@@ -177,7 +177,7 @@ function getImageURL(name) {
 }
 
 const setActiveTournament = (tournament) => {
-  utilsStore.setActiveFeaturedTournament(tournament.tournamentID)
+  utilsStore.setActiveFeaturedTournament(tournament.tournament_id)
   scrollGamesIntoView()
 }
 

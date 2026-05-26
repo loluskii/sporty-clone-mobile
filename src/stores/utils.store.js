@@ -94,73 +94,7 @@ export const useUtilsStore = defineStore({
       this.featuredError = null
 
       try {
-        const response = {
-          data: [
-            {
-              id: 935,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 1,
-              categoryName: 'England',
-              tournamentID: 18,
-              tournamentName: 'Championship'
-            },
-            {
-              id: 937,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 7,
-              categoryName: 'France',
-              tournamentID: 34,
-              tournamentName: 'Ligue 1'
-            },
-            {
-              id: 947,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 1,
-              categoryName: 'England',
-              tournamentID: 17,
-              tournamentName: 'Premier League'
-            },
-            {
-              id: 957,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 32,
-              categoryName: 'Spain',
-              tournamentID: 8,
-              tournamentName: 'LaLiga'
-            },
-            {
-              id: 958,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 31,
-              categoryName: 'Italy',
-              tournamentID: 23,
-              tournamentName: 'Serie A'
-            },
-            {
-              id: 959,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 35,
-              categoryName: 'Netherlands',
-              tournamentID: 37,
-              tournamentName: 'Eredivisie'
-            },
-            {
-              id: 960,
-              sportID: 1,
-              sportName: 'Soccer',
-              categoryID: 44,
-              categoryName: 'Portugal',
-              tournamentID: 238,
-              tournamentName: 'Liga Portugal'
-            }
-          ]
-        }
+        const response = await getTopBets()
 
         if (response?.data) {
           // Process tournaments
@@ -168,20 +102,20 @@ export const useUtilsStore = defineStore({
           const uniqueTournaments = []
 
           for (const tournament of response.data) {
-            if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-              uniqueTournamentIds.add(tournament.tournamentID)
+            if (!uniqueTournamentIds.has(tournament.tournament_id)) {
+              uniqueTournamentIds.add(tournament.tournament_id)
               uniqueTournaments.push(tournament)
             }
           }
 
           this.featuredTournaments = uniqueTournaments.sort(
-            (a, b) => a.tournamentID - b.tournamentID
+            (a, b) => a.tournament_id - b.tournament_id
           )
           this.featuredLastFetchTime = Date.now()
 
           // Set active tournament to the first one if not already set
           if (!this.activeFeaturedTournament && this.featuredTournaments.length > 0) {
-            this.activeFeaturedTournament = this.featuredTournaments[0].tournamentID
+            this.activeFeaturedTournament = this.featuredTournaments[0].tournament_id
           }
 
           // Fetch games for each tournament
@@ -221,13 +155,13 @@ export const useUtilsStore = defineStore({
                   page: 1,
                   sid: tournament.sportID,
                   per_page: 5,
-                  tournament_id: tournament.tournamentID
+                  tournament_id: tournament.tournament_id
                 })
 
                 if (!games?.data?.fixtures?.length || !games?.data?.markets?.length) {
                   // Early return if no valid data
                   const index = this.featuredTournaments.findIndex(
-                    (x) => x.tournamentID === tournament.tournamentID
+                    (x) => x.tournament_id === tournament.tournament_id
                   )
                   if (index !== -1) {
                     this.featuredTournaments.splice(index, 1)
@@ -238,7 +172,7 @@ export const useUtilsStore = defineStore({
                 if (games?.data?.fixtures?.length && games?.data?.markets?.length) {
                   // Take only first 5 fixtures
                   const tournamentGames = {
-                    tournamentID: tournament.tournamentID,
+                    tournamentID: tournament.tournament_id,
                     fixtures: games.data.fixtures,
                     markets: games.data.markets
                   }
@@ -246,7 +180,7 @@ export const useUtilsStore = defineStore({
                   this.featuredTournamentGames.push(tournamentGames)
                 }
               } catch (error) {
-                console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
+                console.error(`Error processing tournament ${tournament.tournament_id}:`, error)
               }
             })
           )
