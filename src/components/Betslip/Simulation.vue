@@ -236,9 +236,9 @@ watch(timerEnded, (ended) => {
       amount: amountWon,
       currency: SportsbookGlobalVariable?.Currency || ''
     })
-    // Close the betslip only when there is a win.
-    handleSimulationExit('close')
-    emitter.emit('closeBetslip')
+    // Modal renders globally from App.vue at z-index 2000, overlaying
+    // the simulation + betslip. User dismisses the modal, then exits the
+    // simulation themselves via the controls — same flow as a loss.
   }
 })
 
