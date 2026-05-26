@@ -22,10 +22,8 @@
           <span>{{ moment(new Date(bet.created)).format('DD/MM HH:mm') }}</span>
         </div>
         <div class="bar seperate">
-          <span class="type"
-            ><span data-cms-key="multiple" data-cms-page="bet_history">{{
-              bet.betType === 'multi' ? 'Multiple' : bet.betType === 'single' ? 'Single' :bet.betType
-            }}</span>
+          <span class="type">
+            <span data-cms-key="multiple" data-cms-page="bet_history">{{ betTypeDescription }}</span>
           </span>
 
           <span
@@ -262,6 +260,19 @@ const router = useRouter()
 const couponStore = useCouponStore()
 const isRebetLoading = ref(false)
 
+
+const betTypeDescription = computed(() => {
+  switch (props.bet.betType) {
+    case "flex":
+      return `Flex (${props.bet.flex.min_wins}+ of ${props.bet.flex.original_legs})`
+      break;
+
+    default:
+      return props.bet.betType[0].toUpperCase() + props.bet.betType.slice(1);
+      break;
+  }
+})
+
 async function rebet() {
   if (!props.bet) return
   if (couponStore.betslipMode || couponStore.coupon.selections.length) {
@@ -343,6 +354,21 @@ function copyCode() {
 .m-ticket-detail {
   background-color: #fff;
   font-size: 1rem;
+}
+
+.m-ticket-detail .bet-feature-icons {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.m-ticket-detail .bet-feature-icon {
+  display: block;
+  flex: 0 0 auto;
+  height: 1.1rem;
+  width: 1.23rem;
 }
 .m-ticket-detail .seperate {
   -webkit-box-align: center;

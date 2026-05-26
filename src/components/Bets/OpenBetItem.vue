@@ -3,13 +3,49 @@
         <div>
             <div class="m-item-wrap">
                 <div class="m-title" @click="isExpanded = !isExpanded">
-                    <div><span style="text-transform: capitalize;" class="m-t-14 m-t-bold m-list-t-default">
-                            {{ bet.betType === 'multi' ? 'Multiple' : bet.betType === 'single' ? 'Single' : bet.betType
-                                === 'system' ? 'System' : bet.betType }}
-                        </span> <span data-op="openbet-item-live-tag" style="display: none;"><span
+                    <div>
+                        <span class="m-t-14 m-t-bold m-list-t-default">
+                            {{ betTypeDescription }}
+                        </span> 
+                        <span data-op="openbet-item-live-tag" style="display: none;"><span
                                 class="m-i-live m-t-b5" data-cms-key="live"
                                 data-cms-page="common_functions">Live</span></span>
-                        <div class="insure-info-block flexibet-title" data-op="openbet-item-sporty-insure"></div>
+                        <div class="insure-info-block flexibet-title" data-op="openbet-item-sporty-insure">
+                            <svg
+                                v-if="bet.cutOne.status !== 'none'"
+                                class="bet-feature-icon bet-feature-icon--cut"
+                                viewBox="0 0 256 228"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-label="Cut 1"
+                            >
+                                <path
+                                    d="M256 223V5C256 2.23858 253.762 0 251 0H5C2.23858 0 0 2.23857 0 4.99999V223C0 225.761 2.23858 228 5 228H251C253.762 228 256 225.761 256 223Z"
+                                    fill="#000"
+                                />
+                                <path
+                                    d="M46.5 53.5L69 30H171.5V228H102V89H46.5V53.5Z"
+                                    fill="#fff"
+                                />
+                            </svg>
+                            <svg
+                                v-if="bet.betType === 'flex'"
+                                class="bet-feature-icon bet-feature-icon--flex"
+                                viewBox="0 0 256 228"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-label="Flex"
+                            >
+                                <path
+                                    d="M256 228V0H0V228H256Z"
+                                    fill="#000"
+                                />
+                                <path
+                                    d="M36 64L71 30H221L201 82.5H92V109.5H206.5L185.5 162H92V228H36V64Z"
+                                    fill="#fff"
+                                />
+                            </svg>
+                        </div>
                     </div>
                     <div class="actions">
                         <div @click="shareTicket" class="icon-font-base icon-share" data-op="share-bet" role="button"
@@ -195,7 +231,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import $ from 'jquery'
 import { formatNumber, formatDate, slugify } from '@/helpers'
@@ -224,6 +260,18 @@ const isExpanded = ref(false)
 function handleCashout(bet) {
     emit('cashout', bet)
 }
+
+const betTypeDescription = computed(() => {
+    switch (props.bet.betType) {
+        case "flex":
+            return `Flex (${props.bet.flex.min_wins}+ of ${props.bet.flex.original_legs})`
+            break;
+    
+        default:
+            return props.bet.betType[0].toUpperCase() + props.bet.betType.slice(1);
+            break;
+    }
+})
 
 function shouldShowLiveEventStatus(event) {
     const matchStatus = String(event.matchStatus || '').trim().toLowerCase()
@@ -275,6 +323,21 @@ function showChild(e, index) {
 </script>
 
 <style scoped>
+/* Feature icons (Cut 1 / Flex) next to bet type description */
+.insure-info-block {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.3rem;
+    margin-left: 0.5rem;
+}
+
+.bet-feature-icon {
+    display: block;
+    flex: 0 0 auto;
+    height: 1rem;
+    width: 1.12rem;
+}
+
 /* Bet Item Container */
 .m-bet-item {
     background: #ffffff;
