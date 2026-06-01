@@ -9,9 +9,10 @@
           </div>
           <div class="m-event-title-team-horizontal">
             <div class="watermark">
-              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+              <div><img 
+                :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
                 encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
-                '.png?alt=media'
+                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
                 " draggable="false" class="home" style=""></div>
               <div class="switch-button-left"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
@@ -20,9 +21,9 @@
                 </svg></div>
             </div>
             <div class="team">
-              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
                 encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
-                '.png?alt=media'
+                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
                 " draggable="false" style=""></div>
               <div class="team-name">{{ eventDetail.homeTeam }}</div>
             </div>
@@ -35,16 +36,16 @@
               </div>
             </div>
             <div class="team">
-              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
                 encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
-                '.png?alt=media'
+                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
                 " draggable="false" style=""></div>
               <div class="team-name">{{ eventDetail.awayTeam }}</div>
             </div>
             <div class="watermark">
-              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/teams%2F' +
+              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
                 encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
-                '.png?alt=media'
+                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
                 " draggable="false" class="away" style=""></div>
               <div class="switch-button-right"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
