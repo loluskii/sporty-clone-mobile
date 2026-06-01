@@ -55,6 +55,7 @@ export const normalizeSportsbookFeatureConfig = (payload = {}) => {
     accaBonus: data.accaBonus ?? null,
     flex: data.flex ?? null,
     cutOne: data.cutOne ?? null,
+    earlyGoal: data.earlyGoal ?? null,
     stakeLimits: data.stakeLimits ?? null
   }
 }
@@ -192,6 +193,10 @@ export const previewCutOne = async (payload) => {
 
 export const previewFlex = async (payload) => {
   return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/flex/preview`, payload))
+}
+
+export const previewEarlyGoal = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/early-goal/preview`, payload))
 }
 
 export const getSplitPropsData = async (payload) => {
@@ -531,6 +536,13 @@ export const getCasinoListGames = async () => {
   }
 }
 
+export const getCasinoGameById = async (gameId) => {
+  const response = await getCasinoCatalog()
+  const normalizedGameId = String(gameId ?? '')
+
+  return response.data.games.find((game) => String(game.id) === normalizedGameId) || null
+}
+
 export const getCasinoGamesByProviderCategory = async (providerId, categoryId = '') => {
   const params = new URLSearchParams()
 
@@ -577,6 +589,12 @@ export const getProviders = async () => {
 
 export const getCasinoStartUrl = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start`, payload))
+}
+
+export const getGoldenRaceLobbyUrl = async (payload) => {
+  return parseData(
+    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/goldenrace/lobby`, payload)
+  )
 }
 
 export const getSmatVirtualStartUrl = async (payload) => {

@@ -1,10 +1,6 @@
 <template>
   <div class="casino">
     <HeaderCasino />
-    <Winners />
-    <div class="carousel">
-      <Carousel></Carousel>
-    </div>
     <div class="games-container">
       <template v-if="viewMode === 'games-group-view'">
         <Providers v-if="viewType === 'provider'" :providers="providers" />

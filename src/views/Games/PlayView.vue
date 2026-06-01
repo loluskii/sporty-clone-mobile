@@ -12,7 +12,14 @@
 
 <script setup>
 import { watch, ref, onMounted, onBeforeMount, computed } from 'vue'
-import { getCasinoStartUrl, gamesByTopCategory, slugify, getSmatVirtualStartUrl } from '@/helpers'
+import {
+  getCasinoStartUrl,
+  getCasinoGameById,
+  getGoldenRaceLobbyUrl,
+  gamesByTopCategory,
+  slugify,
+  getSmatVirtualStartUrl
+} from '@/helpers'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
@@ -49,6 +56,8 @@ async function getCasinoURL() {
     const { game_id } = route.params
     const { bonusId, balanceType, bonusType } = route.query
     const { username, id, authCode } = currentUser || {}
+    const selectedGame = game_id === 'smat_virtual' ? null : await getCasinoGameById(game_id)
+    const isGoldenRace = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '3'
 
     let payload = {
       gameId: parseInt(game_id),
@@ -78,6 +87,16 @@ async function getCasinoURL() {
             userId: id,
             token: authCode
           })
+        : isGoldenRace
+          ? await getGoldenRaceLobbyUrl({
+              game: String(selectedGame?.game_name || selectedGame?.title || 'GRTerminalLobby'),
+              game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
+              mode: 'real',
+              language: 'en',
+              group: 'vip',
+              provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
+              category_id: String(selectedGame?.categoryId || selectedGame?.category_id || '')
+            })
         : await getCasinoStartUrl(payload, 'real')
 
     window.location.href = res.url
