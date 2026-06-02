@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sortArr } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
+import { isSupportedDerivedOutcome } from '@/helpers'
 
 export function useMatchOdds({
   matchId,
@@ -67,10 +68,24 @@ export function useMatchOdds({
       const oddsValue = cached?.odds ?? outcome.odds
       // MQTT overrides odds/active; bet_stop forces inactive regardless of API odds.
       const activeValue = betStopped.value ? 0 : cached?.active ?? outcome.active
+      const activeMarketId = Number(activeMarket.value?.marketID || 0)
+      const baseMarketId = activeMarketId === 60100 || activeMarketId === 60200
+        ? 1
+        : activeMarketId === 60180
+          ? 18
+          : activeMarketId
+      const isSupported = isSupportedDerivedOutcome({
+        marketId: activeMarketId,
+        baseMarketId,
+        outcomeId: outcome.outcomeID,
+        outcomeName: outcome.outcomeName,
+        displayName: outcome.displayName,
+        specifier: outcome.specifier || ''
+      })
       return {
         ...outcome,
         odds: oddsValue,
-        active: activeValue
+        active: isSupported ? activeValue : 0
       }
     })
   }

@@ -21,8 +21,10 @@ export const EARLY_WIN_MODE_LABELS = {
 }
 export const EARLY_WIN_DEFAULT_MODE = '2up'
 export const EARLY_WIN_FOOTBALL_SPORT_ID = 1
+export const EARLY_WIN_BASE_MARKET_ID = 1
 export const EARLY_GOAL_BASE_MARKET_ID = 18
 export const EARLY_GOAL_DERIVED_MARKET_ID = 60180
+export const EARLY_GOAL_ALLOWED_TOTALS = ['1.5', '2.5', '3.5']
 
 const MODE_BY_DERIVED_MARKET_ID = new Map()
 const BASE_MARKET_BY_DERIVED_ID = new Map()
@@ -134,6 +136,70 @@ const splitSpecifierSegments = (specifier = '') =>
     .map((segment) => segment.trim())
     .filter(Boolean)
 
+const getSpecifierValue = (specifier = '', key = '') => {
+  const normalizedKey = String(key || '').trim().toLowerCase()
+  if (!normalizedKey) return ''
+
+  const segment = splitSpecifierSegments(specifier).find((part) =>
+    part.toLowerCase().startsWith(`${normalizedKey}=`)
+  )
+
+  return segment ? segment.split('=').slice(1).join('=').trim() : ''
+}
+
+const isSupported1x2DerivedOutcome = ({ outcomeId, displayName = '', outcomeName = '' }) => {
+  const normalizedOutcomeId = String(outcomeId || '').trim()
+  if (normalizedOutcomeId === '1' || normalizedOutcomeId === '3') {
+    return true
+  }
+
+  const normalizedLabel = String(displayName || outcomeName || '')
+    .trim()
+    .toLowerCase()
+
+  return normalizedLabel === '1' || normalizedLabel === '2'
+}
+
+const isSupportedEarlyGoalOutcome = ({ outcomeId, specifier = '' }) => {
+  const normalizedOutcomeId = String(outcomeId || '').trim()
+  const total = getSpecifierValue(specifier, 'total')
+
+  return normalizedOutcomeId === '12' && EARLY_GOAL_ALLOWED_TOTALS.includes(total)
+}
+
+export const isSupportedDerivedOutcome = ({
+  marketId,
+  baseMarketId,
+  mode = 'base',
+  outcomeId,
+  outcomeName = '',
+  displayName = '',
+  specifier = ''
+}) => {
+  const normalizedMode = String(mode || 'base').toLowerCase()
+  const normalizedBaseMarketId = Number(baseMarketId || getBaseMarketIdFromMarketId(marketId) || 0)
+  const normalizedMarketId = Number(marketId || 0)
+
+  if (
+    normalizedBaseMarketId === EARLY_WIN_BASE_MARKET_ID &&
+    (normalizedMode === '1up' ||
+      normalizedMode === '2up' ||
+      normalizedMarketId === 60100 ||
+      normalizedMarketId === 60200)
+  ) {
+    return isSupported1x2DerivedOutcome({ outcomeId, displayName, outcomeName })
+  }
+
+  if (
+    normalizedBaseMarketId === EARLY_GOAL_BASE_MARKET_ID &&
+    (normalizedMode === 'earlygoal' || normalizedMarketId === EARLY_GOAL_DERIVED_MARKET_ID)
+  ) {
+    return isSupportedEarlyGoalOutcome({ outcomeId, specifier })
+  }
+
+  return true
+}
+
 const specifierMatches = (candidateSpecifier = '', referenceSpecifier = '') => {
   const normalizedCandidate = String(candidateSpecifier || '')
   const normalizedReference = String(referenceSpecifier || '')
@@ -218,7 +284,11 @@ const findOutcomeIndex = (market, reference = {}) => {
   return -1
 }
 
-const findOutcomeByReference = (market, reference = {}) => {
+const findOutcomeByReference = (
+  market,
+  reference = {},
+  { allowSpecifierOnlyMatch = true, allowSourceIndexMatch = true } = {}
+) => {
   const outcomes = Array.isArray(market?.outcomes) ? market.outcomes : []
   if (!outcomes.length) return null
 
@@ -233,7 +303,7 @@ const findOutcomeByReference = (market, reference = {}) => {
     if (byId) return byId
   }
 
-  if (targetSpecifier) {
+  if (targetSpecifier && allowSpecifierOnlyMatch) {
     const bySpecifier = outcomes.find((outcome) =>
       specifierMatches(getFixtureOutcomeSpecifier(outcome), targetSpecifier)
     )
@@ -257,7 +327,12 @@ const findOutcomeByReference = (market, reference = {}) => {
   }
 
   const sourceIndex = Number(reference.sourceIndex)
-  if (Number.isInteger(sourceIndex) && sourceIndex >= 0 && sourceIndex < outcomes.length) {
+  if (
+    allowSourceIndexMatch &&
+    Number.isInteger(sourceIndex) &&
+    sourceIndex >= 0 &&
+    sourceIndex < outcomes.length
+  ) {
     return outcomes[sourceIndex]
   }
 
@@ -334,6 +409,14 @@ export const buildEarlyWinLocalQuoteMap = ({
   displayName
 }) => {
   if (!isFootballSport(sportId)) return {}
+  const baseOutcomeSupported = isSupportedDerivedOutcome({
+    baseMarketId,
+    mode: '1up',
+    outcomeId,
+    outcomeName,
+    displayName,
+    specifier
+  })
 
   const markets = getFixtureMarkets(fixture)
   const flatOutcomes = getFixtureFlatOutcomes(fixture)
@@ -377,10 +460,17 @@ export const buildEarlyWinLocalQuoteMap = ({
       const market = findFixtureMarket(markets, candidateMarketId, specifier)
       if (!market) return
 
-      const outcome = findOutcomeByReference(market, {
-        ...reference,
-        sourceIndex
-      })
+      const outcome = findOutcomeByReference(
+        market,
+        {
+          ...reference,
+          sourceIndex
+        },
+        {
+          allowSpecifierOnlyMatch: false,
+          allowSourceIndexMatch: false
+        }
+      )
       if (!outcome) return
 
       const normalizedOdds = Number(outcome.odds)
@@ -388,6 +478,7 @@ export const buildEarlyWinLocalQuoteMap = ({
         Number(candidateMarketId) === Number(baseMarketId)
           ? 'base'
           : getEarlyWinModeFromMarketId(candidateMarketId)
+      if (mode !== 'base' && !baseOutcomeSupported) return
 
       quotes[mode] = {
         marketId: Number(candidateMarketId),
@@ -431,6 +522,10 @@ export const buildEarlyWinLocalQuoteMap = ({
       {
         ...reference,
         sourceIndex
+      },
+      {
+        allowSpecifierOnlyMatch: false,
+        allowSourceIndexMatch: false
       }
     )
     if (!outcome) return
@@ -440,6 +535,7 @@ export const buildEarlyWinLocalQuoteMap = ({
       Number(candidateMarketId) === Number(baseMarketId)
         ? 'base'
         : getEarlyWinModeFromMarketId(candidateMarketId)
+    if (mode !== 'base' && !baseOutcomeSupported) return
 
     quotes[mode] = {
       marketId: Number(candidateMarketId),
@@ -517,6 +613,14 @@ export const buildEarlyGoalLocalQuoteMap = ({
   derivedMarketIds = []
 }) => {
   if (!isFootballSport(sportId)) return {}
+  const baseOutcomeSupported = isSupportedDerivedOutcome({
+    baseMarketId,
+    mode: 'earlygoal',
+    outcomeId,
+    outcomeName,
+    displayName,
+    specifier
+  })
 
   const normalizedCurrentMarketId = Number(marketId || 0)
   const isCurrentEarlyGoal = normalizedCurrentMarketId === EARLY_GOAL_DERIVED_MARKET_ID
@@ -555,14 +659,22 @@ export const buildEarlyGoalLocalQuoteMap = ({
       const market = findFixtureMarket(markets, candidateMarketId, specifier)
       if (!market) return
 
-      const outcome = findOutcomeByReference(market, {
-        ...reference,
-        sourceIndex
-      })
+      const outcome = findOutcomeByReference(
+        market,
+        {
+          ...reference,
+          sourceIndex
+        },
+        {
+          allowSpecifierOnlyMatch: false,
+          allowSourceIndexMatch: false
+        }
+      )
       if (!outcome) return
 
       const normalizedOdds = Number(outcome.odds)
       const mode = Number(candidateMarketId) === resolvedBaseMarketId ? 'base' : 'earlygoal'
+      if (mode !== 'base' && !baseOutcomeSupported) return
 
       quotes[mode] = {
         marketId: Number(candidateMarketId),
@@ -609,12 +721,17 @@ export const buildEarlyGoalLocalQuoteMap = ({
       {
         ...reference,
         sourceIndex
+      },
+      {
+        allowSpecifierOnlyMatch: false,
+        allowSourceIndexMatch: false
       }
     )
     if (!outcome) return
 
     const normalizedOdds = Number(outcome.odds)
     const mode = Number(candidateMarketId) === resolvedBaseMarketId ? 'base' : 'earlygoal'
+    if (mode !== 'base' && !baseOutcomeSupported) return
 
     quotes[mode] = {
       marketId: Number(candidateMarketId),

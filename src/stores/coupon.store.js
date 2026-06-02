@@ -893,11 +893,16 @@ export const useCouponStore = defineStore({
         selection.earlyGoalLocalQuotes && typeof selection.earlyGoalLocalQuotes === 'object'
           ? selection.earlyGoalLocalQuotes
           : {}
-      selection.hasExplicitDerivedMarkets =
-        selection.hasExplicitDerivedMarkets ?? earlyWinState.hasExplicitDerivedMarkets
       const localSupportedModes = ['1up', '2up'].filter((mode) =>
         Boolean(selection.earlyWinLocalQuotes?.[mode])
       )
+      const isDerivedEarlyWinSelection =
+        (selection.earlyWinMode || earlyWinState.earlyWinMode || 'base') !== 'base' &&
+        Number(selection.baseMarketId || selectionBaseState.baseMarketId || 0) === 1
+      selection.hasExplicitDerivedMarkets =
+        localSupportedModes.length > 0 ||
+        selection.hasExplicitDerivedMarkets === true ||
+        (isDerivedEarlyWinSelection && Array.isArray(selection.supportedEarlyWinModes) && selection.supportedEarlyWinModes.length > 0)
       selection.supportedDerivedMarketIds = [
         ...new Set([
           ...(Array.isArray(selection.supportedDerivedMarketIds)
@@ -911,17 +916,14 @@ export const useCouponStore = defineStore({
       ]
       selection.supportedEarlyWinModes = [
         ...new Set([
-          ...(Array.isArray(selection.supportedEarlyWinModes)
+          ...(isDerivedEarlyWinSelection && Array.isArray(selection.supportedEarlyWinModes)
             ? selection.supportedEarlyWinModes
             : []),
-          ...earlyWinState.supportedEarlyWinModes,
           ...localSupportedModes
         ])
       ]
       selection.supportsEarlyWin =
-        selection.hasExplicitDerivedMarkets === true ||
-        selection.supportsEarlyWin === true ||
-        earlyWinState.supportsEarlyWin === true
+        localSupportedModes.length > 0 || isDerivedEarlyWinSelection
       selection.isDerived = selection.supportsEarlyWin
       selection.earlyWinMode = selection.earlyWinMode || earlyWinState.earlyWinMode || 'base'
       selection.supportedEarlyGoalMarketIds = [

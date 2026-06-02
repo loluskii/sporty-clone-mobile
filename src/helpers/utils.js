@@ -206,7 +206,9 @@ export const getDataFromPayload = (couponPayload) => {
     displayName: couponPayload.outcome.displayName,
     derivedMarketIds
   })
-  const supportedEarlyWinModes = earlyWinState.supportedEarlyWinModes
+  const supportedEarlyWinModes = ['1up', '2up'].filter((mode) =>
+    Boolean(earlyWinLocalQuotes?.[mode])
+  )
   const supportedDerivedMarketIds = [
     ...new Set([
       ...earlyWinState.supportedDerivedMarketIds,
@@ -264,7 +266,7 @@ export const getDataFromPayload = (couponPayload) => {
     currentOutcomeName
   )
   const normalizedCurrentSelectionId = couponPayload.ele_id || currentSelectionId
-  const supportsEarlyWin = earlyWinState.supportsEarlyWin
+  const supportsEarlyWin = supportedEarlyWinModes.length > 0
   const supportsEarlyGoal = Boolean(earlyGoalLocalQuotes?.earlygoal)
 
   const data = {
