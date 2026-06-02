@@ -64,9 +64,14 @@
           <div class="m-market-desc-wrapper">
             <div class="selection-market-meta">
               <div class="selection-market-copy">
-                <div class="m-market-desc">{{ selectionMarketLabel }}</div>
-                <div v-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
-                  1UP / 2UP not supported
+                <div class="m-market-desc">
+                  <span>{{ selection.marketName }}</span>
+                  <span v-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
+                    - 1UP/2UP not supported
+                  </span>
+                  <span v-else-if="showUnsupportedEarlyGoal" class="selection-earlywin-unsupported">
+                    - Early goal not supported
+                  </span>
                 </div>
               </div>
               <div v-if="selection.supportsEarlyWin" class="selection-earlywin-controls" @click.stop>
@@ -197,8 +202,14 @@ const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
 })
 
-const selectionMarketLabel = computed(() => {
-  return props.selection.marketName || props.selection.baseMarketName || ''
+const selectionSportId = computed(() => {
+  return Number(
+    props.selection?.sportId ||
+      props.selection?.sportID ||
+      props.selection?.sport_id ||
+      props.selection?.fixture?.sport_id ||
+      0
+  )
 })
 
 const isLiveSelection = computed(() => {
@@ -229,6 +240,10 @@ const currentSelectionMarketId = computed(() => {
   return Number(props.selection?.marketId || props.selection?.market_id || 0)
 })
 
+const currentSelectionBaseMarketId = computed(() => {
+  return Number(props.selection?.baseMarketId || props.selection?.marketId || props.selection?.market_id || 0)
+})
+
 const toggleSelectionMode = async (mode) => {
   if (!supportsMode(mode) || isLoadingUpMode.value) return
   await setSelectionUpMode(props.selection, mode)
@@ -237,10 +252,19 @@ const toggleSelectionMode = async (mode) => {
 const showUnsupportedEarlyWin = computed(() => {
   return (
     isBulkEarlyWinEnabled.value &&
+    selectionSportId.value === 1 &&
     !props.selection?.supportsEarlyWin &&
     currentSelectionMarketId.value === 1 &&
     (props.selection?.earlyWinMode || 'base') === 'base'
   )
+})
+
+const showUnsupportedEarlyGoal = computed(() => {
+  if (!couponStore.coupon.useEarlyGoal) return false
+  if (selectionSportId.value !== 1) return false
+  if (currentSelectionBaseMarketId.value !== 18) return false
+  if (props.selection?.supportsEarlyGoal) return false
+  return true
 })
 
 // Add a computed property to get the specific unavailability reason
@@ -913,9 +937,12 @@ function toggleBanker() {
 
 .selection-earlywin-unsupported {
   color: #8d929b;
+  display: inline;
   font-size: 0.76rem;
   font-weight: 600;
   line-height: 1.3;
+  margin-left: 0.2rem;
+  white-space: nowrap;
 }
 
 .m-keybord-input {

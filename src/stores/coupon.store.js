@@ -4,6 +4,7 @@ import { useUsersStore } from '@/stores'
 import emitter from '../plugins/emitter'
 import CouponCalculation from '@/helpers/coupon-calculation.js'
 import {
+  buildEarlyGoalSelectionState,
   buildEarlyWinSelectionState,
   calculateWinnings,
   groupSelections,
@@ -15,6 +16,7 @@ import {
   getDerivedMarketIdForMode,
   getPreferredEarlyWinModeForSelection,
   EARLY_WIN_DEFAULT_MODE,
+  formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
   calculateBonus,
   getSplitProps,
@@ -35,6 +37,17 @@ import { useMqttService } from '@/composables/useMqtt'
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
 const { subscribe } = useMqttService()
+
+// Shared payload shape for all preview endpoints — server derives odds/eligibility
+// from these identifiers, so clients only need to send selection coordinates.
+const buildPreviewSelection = (selection = {}) => ({
+  marketId: Number(selection.marketId || selection.market_id || 0),
+  matchId: selection.matchId || selection.match_id,
+  outcomeId: String(
+    selection.outcomeId || selection.outcomeID || selection.odd_id || ''
+  ),
+  specifier: String(selection.specifier || selection.specifiers || '')
+})
 
 export const useCouponStore = defineStore({
   id: 'coupon',
@@ -60,6 +73,7 @@ export const useCouponStore = defineStore({
     flexPreview: null,
     isCutOneLoading: false,
     isFlexLoading: false,
+    isEarlyGoalLoading: false,
     mode: 'real',
     isSimulating: false,
     earlyWinBulkMode: EARLY_WIN_DEFAULT_MODE,
@@ -88,6 +102,7 @@ export const useCouponStore = defineStore({
       useCutOne: false,
       useFlex: false,
       flexAmount: 2,
+      useEarlyGoal: false,
       source: 'mobile'
     },
     activeSubscriptions: [], // Will store objects with topic and unsubscribe function
@@ -129,6 +144,7 @@ export const useCouponStore = defineStore({
         useCutOne: false,
         useFlex: false,
         flexAmount: 2,
+        useEarlyGoal: false,
         source: 'mobile',
         ...overrides
       }
@@ -267,7 +283,6 @@ export const useCouponStore = defineStore({
       if (!cutOneConfig.enabled) return false
       if (this.coupon.betslip_type !== 'Multiple' || this.coupon.bet_type !== 'Multiple') return false
       if (this.coupon.useBonus || this.coupon.useCashback || Number(this.coupon.bonusId || 0) > 0) return false
-      if (this.coupon.useFlex) return false
       if (activeSelections.length < cutOneConfig.minSelections) return false
 
       return activeSelections.every((selection) => Number(selection?.odds || 0) >= cutOneConfig.minOddsPerLeg)
@@ -291,6 +306,9 @@ export const useCouponStore = defineStore({
 
       return Number(this.coupon.totalOdds || 0)
     },
+    getDisplayedMaxWin() {
+      return Number(this.coupon.maxWin || 0)
+    },
     async refreshCutOnePreview(activeSelections = this.getActiveCouponSelections()) {
       if (!this.coupon.useCutOne) {
         this.clearCutOnePreview()
@@ -308,9 +326,7 @@ export const useCouponStore = defineStore({
 
       try {
         const response = await previewCutOne({
-          selections: activeSelections.map((selection) => ({
-            odds: Number(selection.odds)
-          })),
+          selections: activeSelections.map(buildPreviewSelection),
           stake
         })
 
@@ -346,6 +362,9 @@ export const useCouponStore = defineStore({
       const accaBonusConfig = this.getAccaBonusConfig()
       const stake = Number(this.coupon.totalStake || this.coupon.stake || 0)
 
+      // Acca Bonus is suppressed whenever Flex or Cut-1 is selected.
+      if (this.coupon.useFlex || this.coupon.useCutOne) return false
+
       return Boolean(
         accaBonusConfig.enabled &&
           this.coupon.betslip_type === 'Multiple' &&
@@ -371,9 +390,7 @@ export const useCouponStore = defineStore({
 
       try {
         const response = await previewAccaBonus({
-          selections: activeSelections.map((selection) => ({
-            odds: Number(selection.odds)
-          })),
+          selections: activeSelections.map(buildPreviewSelection),
           stake
         })
 
@@ -442,6 +459,12 @@ export const useCouponStore = defineStore({
         return
       }
 
+      // Cut One and Flex are mutually exclusive — selecting one cancels the other.
+      if (this.coupon.useFlex) {
+        this.coupon.useFlex = false
+        this.clearFlexPreview()
+      }
+
       this.coupon.useCutOne = true
       await this.refreshMultipleBetslipPreview()
     },
@@ -482,7 +505,6 @@ export const useCouponStore = defineStore({
       if (!flexConfig.enabled) return false
       if (this.coupon.betslip_type !== 'Multiple' || this.coupon.bet_type !== 'Multiple') return false
       if (this.coupon.useBonus || this.coupon.useCashback || Number(this.coupon.bonusId || 0) > 0) return false
-      if (this.coupon.useCutOne) return false
       if (activeSelections.length < flexConfig.minSelections) return false
       if (flexConfig.maxSelections > 0 && activeSelections.length > flexConfig.maxSelections) return false
       return true
@@ -518,10 +540,7 @@ export const useCouponStore = defineStore({
       try {
         const response = await previewFlex({
           minWins: resolvedMinWins,
-          selections: activeSelections.map((selection) => ({
-            odds: Number(selection.odds),
-            probability: this.getSelectionProbability(selection)
-          })),
+          selections: activeSelections.map(buildPreviewSelection),
           stake
         })
 
@@ -567,6 +586,12 @@ export const useCouponStore = defineStore({
         return
       }
 
+      // Flex and Cut One are mutually exclusive — selecting one cancels the other.
+      if (this.coupon.useCutOne) {
+        this.coupon.useCutOne = false
+        this.clearCutOnePreview()
+      }
+
       this.coupon.flexAmount = this.getDefaultFlexMinimumWins()
       this.coupon.useFlex = true
       await this.refreshMultipleBetslipPreview()
@@ -578,6 +603,173 @@ export const useCouponStore = defineStore({
       this.coupon.flexAmount = Math.min(max, Math.max(min, next))
       if (this.coupon.useFlex && this.coupon.betslip_type === 'Multiple' && this.coupon.bet_type === 'Multiple') {
         await this.refreshMultipleBetslipPreview()
+      }
+    },
+    isSelectionEarlyGoalEligible(selection) {
+      if (!selection) return false
+      return Boolean(selection?.supportsEarlyGoal || selection?.earlyGoalMode === 'earlygoal')
+    },
+    canSelectEarlyGoal(activeSelections = this.getActiveCouponSelections()) {
+      return activeSelections.some((selection) => selection?.supportsEarlyGoal)
+    },
+    updateSelectionEarlyGoalState(selection, mode = 'base', quote = null) {
+      const normalizedMode = mode === 'earlygoal' ? 'earlygoal' : 'base'
+      const resolvedQuote =
+        quote ||
+        (normalizedMode === 'base'
+          ? {
+              marketId: selection.baseMarketId,
+              marketName: selection.baseMarketName,
+              specifier: selection.baseSpecifier ?? '',
+              idSpecifier: selection.baseSelectionKeySpecifier ?? '',
+              outcomeId: selection.baseOutcomeId || selection.outcomeId,
+              outcomeName: selection.baseOutcomeName || selection.outcomeName,
+              displayName: selection.baseDisplayName || selection.displayName,
+              odds: selection.baseOdds ?? selection.odds,
+              statusName: selection.baseStatusName || 'Active'
+            }
+          : null)
+
+      const targetMarketId =
+        Number(resolvedQuote?.marketId) || (normalizedMode === 'base' ? selection.baseMarketId : 0)
+      const targetMarketName = formatEarlyGoalMarketName(selection.baseMarketName, normalizedMode)
+      const targetSpecifier = resolvedQuote?.specifier ?? selection.baseSpecifier ?? ''
+      const targetOutcomeId =
+        resolvedQuote?.outcomeId ??
+        (normalizedMode === 'base'
+          ? selection.baseOutcomeId || selection.outcomeId
+          : selection.outcomeId)
+      const targetOutcomeName =
+        resolvedQuote?.outcomeName ??
+        (normalizedMode === 'base'
+          ? selection.baseOutcomeName || selection.outcomeName
+          : selection.outcomeName)
+      const targetDisplayName =
+        resolvedQuote?.displayName ??
+        (normalizedMode === 'base'
+          ? selection.baseDisplayName || selection.displayName
+          : selection.displayName)
+      const targetSelectionKeySpecifier =
+        resolvedQuote?.idSpecifier ??
+        (normalizedMode === 'base'
+          ? selection.baseSelectionKeySpecifier ?? selection.selectionKeySpecifier ?? ''
+          : selection.selectionKeySpecifier ?? '')
+      const normalizedOdds = Number(resolvedQuote?.odds)
+      const resolvedStatusName = resolvedQuote?.statusName || 'Active'
+      const isActive =
+        resolvedStatusName === 'Active' && Number.isFinite(normalizedOdds) && normalizedOdds > 1
+
+      selection.marketId = targetMarketId
+      selection.marketName = targetMarketName
+      selection.earlyGoalMode = normalizedMode
+      selection.earlyGoalLabel = targetMarketName
+      selection.specifier = targetSpecifier
+      selection.selectionKeySpecifier = targetSelectionKeySpecifier
+      selection.outcomeId = targetOutcomeId
+      selection.outcomeName = targetOutcomeName
+      selection.displayName = targetDisplayName
+      selection.currentSelectionId = this.buildCurrentSelectionId(selection, {
+        marketId: targetMarketId,
+        marketName: targetMarketName,
+        selectionKeySpecifier: targetSelectionKeySpecifier,
+        outcomeId: targetOutcomeId,
+        outcomeName: targetOutcomeName
+      })
+      selection.changed = false
+
+      if (isActive) {
+        selection.odds = normalizedOdds.toFixed(2)
+        selection.suspended = false
+        selection.unavailable = false
+        return
+      }
+
+      selection.odds =
+        Number.isFinite(normalizedOdds) && normalizedOdds > 1 ? normalizedOdds.toFixed(2) : 0
+      selection.suspended = resolvedStatusName === 'Suspended' || !resolvedStatusName
+      selection.unavailable = resolvedStatusName === 'Deactivated' || !resolvedStatusName
+    },
+    async applyEarlyGoalToSelections(selectionIds = [], enabled = true) {
+      const targetSelections = (this.coupon.selections || []).filter((selection) =>
+        selectionIds.includes(String(selection.selectionId))
+      )
+      if (!targetSelections.length) return 0
+
+      this.isEarlyGoalLoading = true
+
+      try {
+        const pendingSelections = targetSelections
+          .map((selection) => {
+            const desiredMode = enabled ? 'earlygoal' : 'base'
+            if (desiredMode === 'earlygoal' && !selection.supportsEarlyGoal) {
+              return null
+            }
+            if (desiredMode === (selection.earlyGoalMode || 'base')) {
+              return null
+            }
+
+            const localQuote =
+              selection.earlyGoalLocalQuotes?.[desiredMode] ||
+              (desiredMode === 'base' ? selection.earlyGoalLocalQuotes?.base || null : null)
+            if (desiredMode !== 'base' && !localQuote) return null
+
+            return {
+              selection,
+              desiredMode,
+              localQuote
+            }
+          })
+          .filter(Boolean)
+
+        if (!pendingSelections.length) {
+          return 0
+        }
+
+        let appliedCount = 0
+        pendingSelections.forEach((item) => {
+          this.updateSelectionEarlyGoalState(
+            item.selection,
+            item.desiredMode,
+            item.localQuote
+          )
+          appliedCount += 1
+        })
+
+        if (!appliedCount) {
+          return 0
+        }
+
+        await this.refreshCouponAfterSelectionMutation()
+        return appliedCount
+      } catch (error) {
+        console.error('[earlyGoal] failed to update selections', error)
+        emitter.emit('showErrorMessage', 'Unable to update early goal selections right now.')
+        return 0
+      } finally {
+        this.isEarlyGoalLoading = false
+      }
+    },
+    async toggleEarlyGoal() {
+      if (this.coupon.useEarlyGoal) {
+        this.coupon.useEarlyGoal = false
+        const actionableSelectionIds = (this.coupon.selections || [])
+          .filter(
+            (selection) => selection.supportsEarlyGoal || selection.earlyGoalMode === 'earlygoal'
+          )
+          .map((selection) => String(selection.selectionId))
+        if (actionableSelectionIds.length) {
+          await this.applyEarlyGoalToSelections(actionableSelectionIds, false)
+        }
+        return
+      }
+      if (!this.canSelectEarlyGoal()) return
+      this.coupon.useEarlyGoal = true
+      const supportedSelectionIds = this.getActiveCouponSelections()
+        .filter((selection) => selection.supportsEarlyGoal)
+        .map((selection) => String(selection.selectionId))
+      const appliedCount = await this.applyEarlyGoalToSelections(supportedSelectionIds, true)
+      if (!appliedCount) {
+        this.coupon.useEarlyGoal = false
       }
     },
     isTaxEnabled() {
@@ -602,7 +794,9 @@ export const useCouponStore = defineStore({
       const marketName =
         overrides.marketName ??
         selection.marketName ??
-        formatEarlyWinMarketName(selection.baseMarketName, selection.earlyWinMode)
+        (selection.earlyGoalMode === 'earlygoal'
+          ? formatEarlyGoalMarketName(selection.baseMarketName, selection.earlyGoalMode)
+          : formatEarlyWinMarketName(selection.baseMarketName, selection.earlyWinMode))
       const specifier =
         overrides.selectionKeySpecifier ??
         selection.selectionKeySpecifier ??
@@ -633,9 +827,22 @@ export const useCouponStore = defineStore({
           selection.derived_market_ids ||
           selection.derived_market_id
       })
+      const earlyGoalState = buildEarlyGoalSelectionState({
+        sportId: selection.sportId || selection.sportID || selection.sport_id,
+        marketId: currentMarketId,
+        marketName: selection.baseMarketName || selection.marketName || '',
+        baseMarketId: selection.baseMarketId,
+        derivedMarketIds:
+          selection.supportedEarlyGoalMarketIds ||
+          selection.supportedDerivedMarketIds ||
+          selection.derived_market_ids ||
+          selection.derived_market_id
+      })
+      const isEarlyGoalMarketCandidate = earlyGoalState.isEarlyGoalMarketCandidate
+      const selectionBaseState = isEarlyGoalMarketCandidate ? earlyGoalState : earlyWinState
 
-      selection.baseMarketId = selection.baseMarketId || earlyWinState.baseMarketId
-      selection.baseMarketName = selection.baseMarketName || earlyWinState.baseMarketName
+      selection.baseMarketId = selection.baseMarketId || selectionBaseState.baseMarketId
+      selection.baseMarketName = selection.baseMarketName || selectionBaseState.baseMarketName
       selection.baseSpecifier = selection.baseSpecifier ?? selection.specifier ?? ''
       selection.baseSelectionKeySpecifier =
         selection.baseSelectionKeySpecifier ??
@@ -655,6 +862,10 @@ export const useCouponStore = defineStore({
         selection.baseOdds ?? selection.earlyWinLocalQuotes?.base?.odds ?? selection.odds
       selection.baseStatusName =
         selection.baseStatusName || selection.earlyWinLocalQuotes?.base?.statusName || 'Active'
+      selection.earlyGoalLocalQuotes =
+        selection.earlyGoalLocalQuotes && typeof selection.earlyGoalLocalQuotes === 'object'
+          ? selection.earlyGoalLocalQuotes
+          : {}
       selection.hasExplicitDerivedMarkets =
         selection.hasExplicitDerivedMarkets ?? earlyWinState.hasExplicitDerivedMarkets
       const localSupportedModes = ['1up', '2up'].filter((mode) =>
@@ -686,11 +897,32 @@ export const useCouponStore = defineStore({
         earlyWinState.supportsEarlyWin === true
       selection.isDerived = selection.supportsEarlyWin
       selection.earlyWinMode = selection.earlyWinMode || earlyWinState.earlyWinMode || 'base'
-      selection.marketName = formatEarlyWinMarketName(
+      selection.supportedEarlyGoalMarketIds = [
+        ...new Set([
+          ...(Array.isArray(selection.supportedEarlyGoalMarketIds)
+            ? selection.supportedEarlyGoalMarketIds
+            : []),
+          ...earlyGoalState.supportedDerivedMarketIds,
+          Number(selection.earlyGoalLocalQuotes?.earlygoal?.marketId || 0)
+        ].filter((marketId) => Number.isFinite(marketId) && marketId > 0))
+      ]
+      const hasLocalEarlyGoalQuote = Number(selection.earlyGoalLocalQuotes?.earlygoal?.marketId || 0) > 0
+      selection.supportsEarlyGoal =
+        hasLocalEarlyGoalQuote ||
+        selection.earlyGoalMode === 'earlygoal'
+      selection.earlyGoalMode = selection.earlyGoalMode || earlyGoalState.earlyGoalMode || 'base'
+      selection.marketName =
+        selection.earlyGoalMode === 'earlygoal'
+          ? formatEarlyGoalMarketName(selection.baseMarketName, selection.earlyGoalMode)
+          : formatEarlyWinMarketName(selection.baseMarketName, selection.earlyWinMode)
+      selection.earlyWinLabel = formatEarlyWinMarketName(
         selection.baseMarketName,
         selection.earlyWinMode
       )
-      selection.earlyWinLabel = selection.marketName
+      selection.earlyGoalLabel = formatEarlyGoalMarketName(
+        selection.baseMarketName,
+        selection.earlyGoalMode
+      )
       selection.currentSelectionId =
         selection.currentSelectionId || this.buildCurrentSelectionId(selection)
 
@@ -1123,9 +1355,17 @@ export const useCouponStore = defineStore({
       const normalized = Number(value)
       this.betslipStakeCache[betslipType] = Number.isFinite(normalized) ? normalized : null
     },
-    setBetslipMode(nextMode) {
-      // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
+    async setBetslipMode(nextMode) {
       this.mode = nextMode
+
+      // Sim mode only supports Multiple bets — force the switch so Single
+      // and Combo (System) coupons aren't simulated with an incompatible type.
+      if (nextMode === 'sim' && this.coupon.betslip_type !== 'Multiple') {
+        await this.setBetType('Multiple')
+        return
+      }
+
+      // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
       const isCombo = this.coupon.betslip_type === 'Combo' || this.coupon.bet_type === 'Combo'
       const minStake = this.getMinStakeForBetslipType(isCombo ? 'Combo' : 'Single')
       const currentStake = Number(this.coupon.totalStake || 0)
@@ -1538,10 +1778,25 @@ export const useCouponStore = defineStore({
         homeTeam: selection.homeTeam || homeTeam.trim(),
         awayTeam: selection.awayTeam || awayTeam.trim(),
         combinability: selection.combinability || 0,
-        derived_market_ids:
-          selection.supportedDerivedMarketIds ||
-          selection.derived_market_ids ||
-          selection.derived_market_id
+        derived_market_ids: [
+          ...new Set(
+            [
+              ...(Array.isArray(selection.supportedDerivedMarketIds)
+                ? selection.supportedDerivedMarketIds
+                : []),
+              ...(Array.isArray(selection.supportedEarlyGoalMarketIds)
+                ? selection.supportedEarlyGoalMarketIds
+                : []),
+              ...(Array.isArray(selection.derived_market_ids)
+                ? selection.derived_market_ids
+                : selection.derived_market_id != null
+                  ? [selection.derived_market_id]
+                  : [])
+            ]
+              .map(Number)
+              .filter((value) => Number.isFinite(value) && value > 0)
+          )
+        ]
       }
       const market = {
         marketID: marketId,
@@ -2359,7 +2614,9 @@ export const useCouponStore = defineStore({
         }
 
         // Transform coupon data to new API format
-        const suppressBonusFunding = Boolean(coupondata.useCutOne || coupondata.useFlex)
+        const suppressBonusFunding = Boolean(
+          coupondata.useCutOne || coupondata.useFlex
+        )
         const payload = {
           bets: buildBets(),
           bonusId: suppressBonusFunding ? 0 : coupondata.bonusId || 0,
@@ -2380,7 +2637,9 @@ export const useCouponStore = defineStore({
           coupondata.isBooking = 1
 
           // Transform coupon data to new API format for booking
-          const suppressBonusFunding = Boolean(coupondata.useCutOne || coupondata.useFlex)
+          const suppressBonusFunding = Boolean(
+          coupondata.useCutOne || coupondata.useFlex
+        )
           const payload = {
             bets: buildBets(),
             bonusId: suppressBonusFunding ? 0 : coupondata.bonusId || 0,

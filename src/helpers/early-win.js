@@ -12,10 +12,13 @@ export const EARLY_WIN_MODE_KEYS = ['1up', '2up']
 export const EARLY_WIN_MODE_LABELS = {
   base: 'Base',
   '1up': '1UP',
-  '2up': '2UP'
+  '2up': '2UP',
+  earlygoal: 'Early Goals'
 }
 export const EARLY_WIN_DEFAULT_MODE = '2up'
 export const EARLY_WIN_FOOTBALL_SPORT_ID = 1
+export const EARLY_GOAL_BASE_MARKET_ID = 18
+export const EARLY_GOAL_DERIVED_MARKET_ID = 60180
 
 const MODE_BY_DERIVED_MARKET_ID = new Map()
 const BASE_MARKET_BY_DERIVED_ID = new Map()
@@ -65,6 +68,18 @@ export const formatEarlyWinMarketName = (baseMarketName = '', mode = 'base') => 
   return [safeBaseName, EARLY_WIN_MODE_LABELS[mode]].filter(Boolean).join(' - ')
 }
 
+export const stripEarlyGoalSuffix = (marketName = '') => {
+  return String(marketName || '')
+    .replace(/\s*[-–]?\s*early goals$/i, '')
+    .trim()
+}
+
+export const formatEarlyGoalMarketName = (baseMarketName = '', mode = 'base') => {
+  const safeBaseName = String(baseMarketName || '').trim()
+  if (mode === 'base') return safeBaseName
+  return [safeBaseName, EARLY_WIN_MODE_LABELS[mode]].filter(Boolean).join(' - ')
+}
+
 const normalizeFixtureText = (value = '') => String(value || '').trim().toLowerCase()
 
 const getFixtureMarkets = (fixture = {}) => {
@@ -109,6 +124,28 @@ const getConfiguredDerivedMarketIds = (baseMarketId) => {
   return modeMap ? [...modeMap.values()] : []
 }
 
+const splitSpecifierSegments = (specifier = '') =>
+  String(specifier || '')
+    .split('|')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+
+const specifierMatches = (candidateSpecifier = '', referenceSpecifier = '') => {
+  const normalizedCandidate = String(candidateSpecifier || '')
+  const normalizedReference = String(referenceSpecifier || '')
+
+  if (!normalizedReference) return true
+  if (!normalizedCandidate) return false
+  if (normalizedCandidate === normalizedReference) return true
+
+  const candidateSegments = splitSpecifierSegments(normalizedCandidate)
+  const referenceSegments = splitSpecifierSegments(normalizedReference)
+
+  if (!referenceSegments.length) return normalizedCandidate === normalizedReference
+
+  return referenceSegments.every((segment) => candidateSegments.includes(segment))
+}
+
 const findFixtureMarket = (markets, marketId, specifier = '') => {
   const candidates = markets.filter((market) => getFixtureMarketId(market) === Number(marketId))
   if (!candidates.length) return null
@@ -116,7 +153,7 @@ const findFixtureMarket = (markets, marketId, specifier = '') => {
   const normalizedSpecifier = String(specifier || '')
   return (
     candidates.find(
-      (market) => String(getFixtureMarketSpecifier(market) || '') === normalizedSpecifier
+      (market) => specifierMatches(getFixtureMarketSpecifier(market), normalizedSpecifier)
     ) || candidates[0]
   )
 }
@@ -130,7 +167,7 @@ const findFixtureOutcomes = (outcomes, marketId, specifier = '') => {
 
   const normalizedSpecifier = String(specifier || '')
   const exactMatches = candidates.filter(
-    (outcome) => String(getFixtureOutcomeSpecifier(outcome) || '') === normalizedSpecifier
+    (outcome) => specifierMatches(getFixtureOutcomeSpecifier(outcome), normalizedSpecifier)
   )
 
   return exactMatches.length ? exactMatches : candidates
@@ -435,6 +472,183 @@ export const buildEarlyWinSelectionState = ({
     supportedEarlyWinModes,
     supportsEarlyWin: isFootballSport(sportId) && explicitDerivedMarketIds.length > 0,
     currentMarketName: formatEarlyWinMarketName(baseMarketName, currentMode)
+  }
+}
+
+export const buildEarlyGoalLocalQuoteMap = ({
+  fixture,
+  sportId,
+  marketId,
+  baseMarketId,
+  baseMarketName = '',
+  specifier = '',
+  outcomeId,
+  outcomeName,
+  displayName,
+  derivedMarketIds = []
+}) => {
+  if (!isFootballSport(sportId)) return {}
+
+  const normalizedCurrentMarketId = Number(marketId || 0)
+  const isCurrentEarlyGoal = normalizedCurrentMarketId === EARLY_GOAL_DERIVED_MARKET_ID
+  const resolvedBaseMarketId = isCurrentEarlyGoal
+    ? Number(baseMarketId || 0)
+    : normalizedCurrentMarketId
+  if (resolvedBaseMarketId !== EARLY_GOAL_BASE_MARKET_ID) return {}
+
+  const explicitDerivedIds = normalizeDerivedMarketIds(derivedMarketIds)
+  const supportsDerived =
+    explicitDerivedIds.includes(EARLY_GOAL_DERIVED_MARKET_ID) || isCurrentEarlyGoal
+  if (!supportsDerived) return {}
+
+  const markets = getFixtureMarkets(fixture)
+  const flatOutcomes = getFixtureFlatOutcomes(fixture)
+  if (!markets.length && !flatOutcomes.length) return {}
+
+  const candidateMarketIds = [resolvedBaseMarketId, EARLY_GOAL_DERIVED_MARKET_ID]
+  const quotes = {}
+  const reference = {
+    outcomeId,
+    outcomeName,
+    displayName
+  }
+
+  if (markets.length) {
+    const sourceMarket =
+      findFixtureMarket(markets, normalizedCurrentMarketId || resolvedBaseMarketId, specifier) ||
+      findFixtureMarket(markets, resolvedBaseMarketId, specifier)
+    if (!sourceMarket) return {}
+
+    const sourceIndex = findOutcomeIndex(sourceMarket, reference)
+
+    candidateMarketIds.forEach((candidateMarketId) => {
+      const market = findFixtureMarket(markets, candidateMarketId, specifier)
+      if (!market) return
+
+      const outcome = findOutcomeByReference(market, {
+        ...reference,
+        sourceIndex
+      })
+      if (!outcome) return
+
+      const normalizedOdds = Number(outcome.odds)
+      const mode = Number(candidateMarketId) === resolvedBaseMarketId ? 'base' : 'earlygoal'
+
+      quotes[mode] = {
+        marketId: Number(candidateMarketId),
+        marketName:
+          mode === 'base'
+            ? getFixtureMarketName(market)
+            : formatEarlyGoalMarketName(baseMarketName, mode),
+        specifier: getFixtureMarketSpecifier(market),
+        idSpecifier: getFixtureOutcomeSpecifier(outcome),
+        outcomeId: getFixtureOutcomeId(outcome),
+        outcomeName: getFixtureOutcomeName(outcome),
+        displayName: getFixtureOutcomeDisplayName(outcome),
+        odds: normalizedOdds,
+        active: getFixtureOutcomeActive(outcome),
+        statusName: getLocalQuoteStatusName({
+          market,
+          outcome,
+          odds: normalizedOdds
+        })
+      }
+    })
+
+    return quotes
+  }
+
+  const primarySourceOutcomes = findFixtureOutcomes(
+    flatOutcomes,
+    normalizedCurrentMarketId || resolvedBaseMarketId,
+    specifier
+  )
+  const sourceOutcomes = primarySourceOutcomes.length
+    ? primarySourceOutcomes
+    : findFixtureOutcomes(flatOutcomes, resolvedBaseMarketId, specifier)
+  if (!sourceOutcomes.length) return {}
+
+  const sourceIndex = findOutcomeIndex({ outcomes: sourceOutcomes }, reference)
+
+  candidateMarketIds.forEach((candidateMarketId) => {
+    const outcomesForMarket = findFixtureOutcomes(flatOutcomes, candidateMarketId, specifier)
+    if (!outcomesForMarket.length) return
+
+    const outcome = findOutcomeByReference(
+      { outcomes: outcomesForMarket },
+      {
+        ...reference,
+        sourceIndex
+      }
+    )
+    if (!outcome) return
+
+    const normalizedOdds = Number(outcome.odds)
+    const mode = Number(candidateMarketId) === resolvedBaseMarketId ? 'base' : 'earlygoal'
+
+    quotes[mode] = {
+      marketId: Number(candidateMarketId),
+      marketName: formatEarlyGoalMarketName(baseMarketName, mode),
+      specifier: getFixtureOutcomeSpecifier(outcome) || String(specifier || ''),
+      idSpecifier: getFixtureOutcomeSpecifier(outcome),
+      outcomeId: getFixtureOutcomeId(outcome),
+      outcomeName: getFixtureOutcomeName(outcome),
+      displayName: getFixtureOutcomeDisplayName(outcome),
+      odds: normalizedOdds,
+      active: getFixtureOutcomeActive(outcome),
+      statusName: getFlatQuoteStatusName({
+        outcome,
+        odds: normalizedOdds
+      })
+    }
+  })
+
+  return quotes
+}
+
+export const buildEarlyGoalSelectionState = ({
+  sportId,
+  marketId,
+  marketName,
+  derivedMarketIds,
+  baseMarketId
+}) => {
+  const normalizedMarketId = Number(marketId || 0)
+  const isCurrentEarlyGoal = normalizedMarketId === EARLY_GOAL_DERIVED_MARKET_ID
+  const resolvedBaseMarketId = isCurrentEarlyGoal
+    ? Number(baseMarketId || 0)
+    : normalizedMarketId
+  const isEarlyGoalMarketCandidate =
+    isFootballSport(sportId) &&
+    Number(resolvedBaseMarketId) === EARLY_GOAL_BASE_MARKET_ID
+  const baseMarketName =
+    isCurrentEarlyGoal
+      ? stripEarlyGoalSuffix(marketName) || String(marketName || '').trim()
+      : String(marketName || '').trim()
+  const explicitDerivedMarketIds = isEarlyGoalMarketCandidate
+    ? normalizeDerivedMarketIds(derivedMarketIds).filter(
+        (id) => id === EARLY_GOAL_DERIVED_MARKET_ID
+      )
+    : []
+  const supportedDerivedMarketIds = [...explicitDerivedMarketIds]
+
+  if (isCurrentEarlyGoal && !supportedDerivedMarketIds.includes(EARLY_GOAL_DERIVED_MARKET_ID)) {
+    supportedDerivedMarketIds.push(EARLY_GOAL_DERIVED_MARKET_ID)
+  }
+
+  return {
+    baseMarketId: resolvedBaseMarketId,
+    baseMarketName,
+    earlyGoalMode: isCurrentEarlyGoal ? 'earlygoal' : 'base',
+    explicitDerivedMarketIds,
+    isEarlyGoalMarketCandidate,
+    hasExplicitDerivedMarkets: isEarlyGoalMarketCandidate && explicitDerivedMarketIds.length > 0,
+    supportedDerivedMarketIds,
+    supportsEarlyGoal: isEarlyGoalMarketCandidate && explicitDerivedMarketIds.length > 0,
+    currentMarketName: formatEarlyGoalMarketName(
+      baseMarketName,
+      isCurrentEarlyGoal ? 'earlygoal' : 'base'
+    )
   }
 }
 

@@ -55,7 +55,6 @@ export const normalizeSportsbookFeatureConfig = (payload = {}) => {
     accaBonus: data.accaBonus ?? null,
     flex: data.flex ?? null,
     cutOne: data.cutOne ?? null,
-    earlyGoal: data.earlyGoal ?? null,
     stakeLimits: data.stakeLimits ?? null
   }
 }
@@ -193,10 +192,6 @@ export const previewCutOne = async (payload) => {
 
 export const previewFlex = async (payload) => {
   return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/flex/preview`, payload))
-}
-
-export const previewEarlyGoal = async (payload) => {
-  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/early-goal/preview`, payload))
 }
 
 export const getSplitPropsData = async (payload) => {
@@ -591,9 +586,12 @@ export const getCasinoStartUrl = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start`, payload))
 }
 
-export const getGoldenRaceLobbyUrl = async (payload) => {
+export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/goldenrace/lobby`, payload)
+    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/goldenrace/lobby`, payload, {
+      authToken,
+      skipAuthLogout: true
+    })
   )
 }
 

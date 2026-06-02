@@ -24,6 +24,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
 import emitter from '@/plugins/emitter'
+import Cookies from 'js-cookie'
 import HeaderCasinoPlay from '../../components/HeaderCasinoPlay.vue'
 import leaveCasinoPopup from '../../components/Casino/leaveCasinoPopup.vue'
 import { useUtilsStore } from '@/stores'
@@ -56,6 +57,7 @@ async function getCasinoURL() {
     const { game_id } = route.params
     const { bonusId, balanceType, bonusType } = route.query
     const { username, id, authCode } = currentUser || {}
+    const bearerToken = Cookies.get('SBE-TOKEN') || undefined
     const selectedGame = game_id === 'smat_virtual' ? null : await getCasinoGameById(game_id)
     const isGoldenRace = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '3'
 
@@ -80,24 +82,25 @@ async function getCasinoURL() {
       })
     }
 
-    const res =
-      game_id === 'smat_virtual'
-        ? await getSmatVirtualStartUrl({
-            clientId: payload.clientId,
-            userId: id,
-            token: authCode
-          })
-        : isGoldenRace
-          ? await getGoldenRaceLobbyUrl({
-              game: String(selectedGame?.game_name || selectedGame?.title || 'GRTerminalLobby'),
-              game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
-              mode: 'real',
-              language: 'en',
-              group: 'vip',
-              provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
-              category_id: String(selectedGame?.categoryId || selectedGame?.category_id || '')
-            })
-        : await getCasinoStartUrl(payload, 'real')
+    let res
+
+    if (isGoldenRace) {
+      res = await getGoldenRaceLobbyUrl(
+        {
+          game: String(selectedGame?.game_name || selectedGame?.title || 'GRTerminalLobby'),
+          game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
+          mode: 'real',
+          language: 'en',
+          group: 'vip',
+          provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
+          category_id: String(selectedGame?.categoryId || selectedGame?.category_id || '')
+        },
+        bearerToken
+      )
+      debugger
+    } else {
+      res = await getCasinoStartUrl(payload, 'real')
+    }
 
     window.location.href = res.url
   } catch (error) {

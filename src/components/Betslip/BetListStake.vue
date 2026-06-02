@@ -205,8 +205,17 @@
                 id="insure-secondary-row"
                 class="insure-products-row insure-products-row--secondary"
               >
-                <label class="insure-option disabled">
-                  <input type="checkbox" class="insure-option-input" disabled />
+                <label
+                  class="insure-option"
+                  :class="{ disabled: isEarlyGoalDisabled, loading: isEarlyGoalLoadingState }"
+                >
+                  <input
+                    type="checkbox"
+                    class="insure-option-input"
+                    :checked="isEarlyGoalEnabled"
+                    :disabled="isEarlyGoalDisabled"
+                    @change="handleEarlyGoalToggle"
+                  />
                   <svg
                     class="insure-chip-icon insure-chip-icon--goals"
                     viewBox="0 0 256 230"
@@ -475,11 +484,20 @@ const isFlexDisabled = computed(() => {
     (!couponStore.coupon.useFlex && !couponStore.canSelectFlex())
   )
 })
+const isEarlyGoalEnabled = computed(() => couponStore.coupon.useEarlyGoal)
+const isEarlyGoalLoadingState = computed(
+  () => couponStore.isEarlyGoalLoading && couponStore.coupon.useEarlyGoal
+)
+const isEarlyGoalDisabled = computed(() => {
+  return couponStore.isEarlyGoalLoading || (!couponStore.coupon.useEarlyGoal && !couponStore.canSelectEarlyGoal())
+})
 const flexAmount = computed(() => Number(couponStore.coupon.flexAmount || couponStore.getFlexMinimumWins()))
 const minFlexAmount = computed(() => couponStore.getFlexMinimumWins())
 const maxFlexAmount = computed(() => couponStore.getFlexMaximumWins())
 const isInsureBonusSuppressed = computed(() => {
-  return Boolean(couponStore.coupon.useCutOne || couponStore.coupon.useFlex)
+  return Boolean(
+    couponStore.coupon.useCutOne || couponStore.coupon.useFlex
+  )
 })
 const showMaxBonusRow = computed(() => {
   return !isInsureBonusSuppressed.value
@@ -665,6 +683,11 @@ async function handleCutOneToggle() {
 async function handleFlexToggle() {
   if (couponStore.isFlexLoading) return
   await couponStore.toggleFlex()
+}
+
+async function handleEarlyGoalToggle() {
+  if (couponStore.isEarlyGoalLoading) return
+  await couponStore.toggleEarlyGoal()
 }
 
 async function incrementFlexAmount() {
