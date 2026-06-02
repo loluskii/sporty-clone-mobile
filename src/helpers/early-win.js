@@ -5,6 +5,10 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
       { key: '1up', id: 60100, label: '1UP' },
       { key: '2up', id: 60200, label: '2UP' }
     ]
+  },
+  18: {
+    baseLabel: 'Base',
+    modes: [{ key: 'earlygoal', id: 60180, label: 'Early Goals' }]
   }
 }
 
