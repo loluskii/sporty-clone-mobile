@@ -65,7 +65,7 @@
             <div class="selection-market-meta">
               <div class="selection-market-copy">
                 <div class="m-market-desc">
-                  <span>{{ selection.marketName }}</span>
+                  <span>{{ displayMarketName }}</span>
                   <span v-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
                     - 1UP/2UP not supported
                   </span>
@@ -74,7 +74,7 @@
                   </span>
                 </div>
               </div>
-              <div v-if="selection.supportsEarlyWin" class="selection-earlywin-controls" @click.stop>
+              <div v-if="showEarlyWinControls" class="selection-earlywin-controls" @click.stop>
                 <button
                   type="button"
                   class="selection-earlywin-pill selection-earlywin-pill--one"
@@ -138,6 +138,20 @@
                   </span>
                 </button>
               </div>
+              <div v-else-if="showEarlyGoalControl" class="selection-earlywin-controls" @click.stop>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlygoal-pill"
+                  :class="{ active: selection.earlyGoalMode === 'earlygoal' }"
+                  aria-label="Early Goals"
+                  :disabled="couponStore.isEarlyGoalLoading"
+                  @click.stop.prevent="toggleSelectionEarlyGoal"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <span class="selection-earlygoal-pill-label">Early Goals</span>
+                  </span>
+                </button>
+              </div>
             </div>
 
             <span
@@ -170,6 +184,12 @@ import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
 import { useOddsChangeIndicator } from '@/composables/useOddsChangeIndicator'
 import { useMatchGroupStyle } from '@/composables/useMatchGroupStyle'
 import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboard'
+import {
+  formatEarlyGoalMarketName,
+  formatEarlyWinMarketName,
+  stripEarlyGoalSuffix,
+  stripEarlyWinSuffix
+} from '@/helpers'
 
 const couponStore = useCouponStore()
 const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection', 'toggle-banker'])
@@ -236,12 +256,45 @@ const supportsMode = (mode) => {
     : false
 }
 
-const currentSelectionMarketId = computed(() => {
-  return Number(props.selection?.marketId || props.selection?.market_id || 0)
-})
-
 const currentSelectionBaseMarketId = computed(() => {
   return Number(props.selection?.baseMarketId || props.selection?.marketId || props.selection?.market_id || 0)
+})
+
+const displayMarketName = computed(() => {
+  const marketName = String(props.selection?.marketName || '').trim()
+  const baseMarketName = String(props.selection?.baseMarketName || marketName).trim()
+
+  if (currentSelectionBaseMarketId.value === 18) {
+    const normalizedBaseMarketName = stripEarlyGoalSuffix(baseMarketName) || stripEarlyGoalSuffix(marketName) || baseMarketName
+    return props.selection?.earlyGoalMode === 'earlygoal'
+      ? formatEarlyGoalMarketName(normalizedBaseMarketName, 'earlygoal')
+      : normalizedBaseMarketName
+  }
+
+  if (currentSelectionBaseMarketId.value === 1) {
+    const normalizedBaseMarketName = stripEarlyWinSuffix(baseMarketName) || stripEarlyWinSuffix(marketName) || baseMarketName
+    const mode = props.selection?.earlyWinMode || 'base'
+    return mode === 'base'
+      ? normalizedBaseMarketName
+      : formatEarlyWinMarketName(normalizedBaseMarketName, mode)
+  }
+
+  return marketName || baseMarketName
+})
+
+const showEarlyWinControls = computed(() => {
+  return (
+    currentSelectionBaseMarketId.value === 1 &&
+    Array.isArray(props.selection?.supportedEarlyWinModes) &&
+    props.selection.supportedEarlyWinModes.length > 0
+  )
+})
+
+const showEarlyGoalControl = computed(() => {
+  return (
+    currentSelectionBaseMarketId.value === 18 &&
+    (props.selection?.supportsEarlyGoal || props.selection?.earlyGoalMode === 'earlygoal')
+  )
 })
 
 const toggleSelectionMode = async (mode) => {
@@ -249,12 +302,17 @@ const toggleSelectionMode = async (mode) => {
   await setSelectionUpMode(props.selection, mode)
 }
 
+const toggleSelectionEarlyGoal = async () => {
+  if (!showEarlyGoalControl.value || couponStore.isEarlyGoalLoading) return
+  await couponStore.setSelectionEarlyGoalMode(props.selection, 'earlygoal')
+}
+
 const showUnsupportedEarlyWin = computed(() => {
   return (
     isBulkEarlyWinEnabled.value &&
     selectionSportId.value === 1 &&
     !props.selection?.supportsEarlyWin &&
-    currentSelectionMarketId.value === 1 &&
+    currentSelectionBaseMarketId.value === 1 &&
     (props.selection?.earlyWinMode || 'base') === 'base'
   )
 })
@@ -882,6 +940,11 @@ function toggleBanker() {
   min-width: 3.5rem;
 }
 
+.selection-earlygoal-pill .selection-earlywin-pill-surface {
+  min-width: 5.8rem;
+  padding: 0 0.75rem;
+}
+
 .selection-earlywin-pill-surface::before {
   content: '';
   position: absolute;
@@ -920,6 +983,17 @@ function toggleBanker() {
   width: 2.2rem;
 }
 
+.selection-earlygoal-pill-label {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  position: relative;
+  text-transform: uppercase;
+  z-index: 3;
+}
+
 .selection-earlywin-pill.active .selection-earlywin-pill-surface {
   --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
   background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
@@ -928,6 +1002,10 @@ function toggleBanker() {
 .selection-earlywin-pill--one.active .selection-earlywin-pill-surface {
   --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
   background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
+}
+
+.selection-earlygoal-pill.active .selection-earlygoal-pill-label {
+  color: #111827;
 }
 
 .selection-earlywin-pill:disabled {

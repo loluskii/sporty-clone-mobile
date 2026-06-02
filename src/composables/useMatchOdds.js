@@ -21,6 +21,33 @@ export function useMatchOdds({
 
   const { subscribe } = useMqttService()
 
+  const getDisplaySpecifierValue = (specifier = '') => {
+    const rawSpecifier = String(specifier || '').trim()
+    if (!rawSpecifier) return ''
+
+    const segments = rawSpecifier
+      .split('|')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+
+    const totalSegment = segments.find((segment) => segment.startsWith('total='))
+    if (totalSegment) {
+      return totalSegment.split('=')[1] || ''
+    }
+
+    const hcpSegment = segments.find((segment) => segment.startsWith('hcp='))
+    if (hcpSegment) {
+      return hcpSegment.split('=')[1] || ''
+    }
+
+    const lastKeyValueSegment = [...segments].reverse().find((segment) => segment.includes('='))
+    if (lastKeyValueSegment) {
+      return lastKeyValueSegment.split('=').slice(1).join('=') || ''
+    }
+
+    return rawSpecifier
+  }
+
   const uniqueOutcomes = (items) => {
     return items.filter(
       (outcome, index, self) =>
@@ -100,7 +127,7 @@ export function useMatchOdds({
     const specifiers = uniqueFiltered
       .map((item) => {
         const specifier = item.specifier || ''
-        const value = specifier.includes('=') ? specifier.split('=')[1] : specifier
+        const value = getDisplaySpecifierValue(specifier)
         return { specifier, value }
       })
       .filter((item) => item.specifier !== '')
@@ -140,9 +167,7 @@ export function useMatchOdds({
       if (specifierKey) {
         uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === specifierKey)
         activeSpecifierKey.value = specifierKey
-        activeSpecifier.value = specifierKey.includes('=')
-          ? specifierKey.split('=')[1]
-          : specifierKey
+        activeSpecifier.value = getDisplaySpecifierValue(specifierKey)
       }
     } else {
       activeSpecifierKey.value = ''

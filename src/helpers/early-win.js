@@ -182,9 +182,21 @@ const findOutcomeIndex = (market, reference = {}) => {
   if (!outcomes.length) return -1
 
   const targetOutcomeId = String(reference.outcomeId || '')
+  const targetSpecifier = String(reference.specifier || reference.idSpecifier || '')
   if (targetOutcomeId) {
-    const idIndex = outcomes.findIndex((outcome) => getFixtureOutcomeId(outcome) === targetOutcomeId)
+    const idIndex = outcomes.findIndex((outcome) => {
+      if (getFixtureOutcomeId(outcome) !== targetOutcomeId) return false
+      if (!targetSpecifier) return true
+      return specifierMatches(getFixtureOutcomeSpecifier(outcome), targetSpecifier)
+    })
     if (idIndex !== -1) return idIndex
+  }
+
+  if (targetSpecifier) {
+    const specifierIndex = outcomes.findIndex((outcome) =>
+      specifierMatches(getFixtureOutcomeSpecifier(outcome), targetSpecifier)
+    )
+    if (specifierIndex !== -1) return specifierIndex
   }
 
   const candidateNames = [
@@ -211,9 +223,21 @@ const findOutcomeByReference = (market, reference = {}) => {
   if (!outcomes.length) return null
 
   const targetOutcomeId = String(reference.outcomeId || '')
+  const targetSpecifier = String(reference.specifier || reference.idSpecifier || '')
   if (targetOutcomeId) {
-    const byId = outcomes.find((outcome) => getFixtureOutcomeId(outcome) === targetOutcomeId)
+    const byId = outcomes.find((outcome) => {
+      if (getFixtureOutcomeId(outcome) !== targetOutcomeId) return false
+      if (!targetSpecifier) return true
+      return specifierMatches(getFixtureOutcomeSpecifier(outcome), targetSpecifier)
+    })
     if (byId) return byId
+  }
+
+  if (targetSpecifier) {
+    const bySpecifier = outcomes.find((outcome) =>
+      specifierMatches(getFixtureOutcomeSpecifier(outcome), targetSpecifier)
+    )
+    if (bySpecifier) return bySpecifier
   }
 
   const candidateNames = [
@@ -337,7 +361,8 @@ export const buildEarlyWinLocalQuoteMap = ({
   const reference = {
     outcomeId,
     outcomeName,
-    displayName
+    displayName,
+    specifier
   }
 
   if (markets.length) {
@@ -453,7 +478,7 @@ export const buildEarlyWinSelectionState = ({
     sportId,
     marketId: baseMarketId,
     derivedMarketIds
-  })
+  }).filter((id) => EARLY_WIN_MODE_KEYS.includes(getEarlyWinModeFromMarketId(id)))
   const supportedDerivedMarketIds = [...explicitDerivedMarketIds]
 
   if (currentMode !== 'base' && !supportedDerivedMarketIds.includes(Number(marketId))) {
@@ -474,7 +499,7 @@ export const buildEarlyWinSelectionState = ({
     hasExplicitDerivedMarkets: isFootballSport(sportId) && explicitDerivedMarketIds.length > 0,
     supportedDerivedMarketIds,
     supportedEarlyWinModes,
-    supportsEarlyWin: isFootballSport(sportId) && explicitDerivedMarketIds.length > 0,
+    supportsEarlyWin: isFootballSport(sportId) && supportedEarlyWinModes.length > 0,
     currentMarketName: formatEarlyWinMarketName(baseMarketName, currentMode)
   }
 }
@@ -514,7 +539,8 @@ export const buildEarlyGoalLocalQuoteMap = ({
   const reference = {
     outcomeId,
     outcomeName,
-    displayName
+    displayName,
+    specifier
   }
 
   if (markets.length) {

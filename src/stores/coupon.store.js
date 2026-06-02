@@ -16,6 +16,8 @@ import {
   getDerivedMarketIdForMode,
   getPreferredEarlyWinModeForSelection,
   EARLY_WIN_DEFAULT_MODE,
+  EARLY_GOAL_BASE_MARKET_ID,
+  EARLY_GOAL_DERIVED_MARKET_ID,
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
   calculateBonus,
@@ -609,8 +611,24 @@ export const useCouponStore = defineStore({
       if (!selection) return false
       return Boolean(selection?.supportsEarlyGoal || selection?.earlyGoalMode === 'earlygoal')
     },
+    syncEarlyGoalStateFromSelections(selections = this.coupon.selections) {
+      const hasActiveEarlyGoal = Array.isArray(selections)
+        ? selections.some((selection) => (selection?.earlyGoalMode || 'base') === 'earlygoal')
+          || selections.some(
+            (selection) =>
+              Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
+          )
+        : false
+
+      this.coupon.useEarlyGoal = hasActiveEarlyGoal
+      return hasActiveEarlyGoal
+    },
     canSelectEarlyGoal(activeSelections = this.getActiveCouponSelections()) {
-      return activeSelections.some((selection) => selection?.supportsEarlyGoal)
+      return activeSelections.some(
+        (selection) =>
+          Number(selection?.baseMarketId || selection?.marketId || selection?.market_id || 0) ===
+            EARLY_GOAL_BASE_MARKET_ID && selection?.supportsEarlyGoal
+      )
     },
     updateSelectionEarlyGoalState(selection, mode = 'base', quote = null) {
       const normalizedMode = mode === 'earlygoal' ? 'earlygoal' : 'base'
@@ -739,6 +757,7 @@ export const useCouponStore = defineStore({
           return 0
         }
 
+        this.syncEarlyGoalStateFromSelections()
         await this.refreshCouponAfterSelectionMutation()
         return appliedCount
       } catch (error) {
@@ -751,7 +770,6 @@ export const useCouponStore = defineStore({
     },
     async toggleEarlyGoal() {
       if (this.coupon.useEarlyGoal) {
-        this.coupon.useEarlyGoal = false
         const actionableSelectionIds = (this.coupon.selections || [])
           .filter(
             (selection) => selection.supportsEarlyGoal || selection.earlyGoalMode === 'earlygoal'
@@ -763,7 +781,6 @@ export const useCouponStore = defineStore({
         return
       }
       if (!this.canSelectEarlyGoal()) return
-      this.coupon.useEarlyGoal = true
       const supportedSelectionIds = this.getActiveCouponSelections()
         .filter((selection) => selection.supportsEarlyGoal)
         .map((selection) => String(selection.selectionId))
@@ -771,6 +788,15 @@ export const useCouponStore = defineStore({
       if (!appliedCount) {
         this.coupon.useEarlyGoal = false
       }
+    },
+    async setSelectionEarlyGoalMode(selection, mode = 'base') {
+      if (!selection?.selectionId || this.isEarlyGoalLoading) return 0
+
+      const currentMode = selection.earlyGoalMode || 'base'
+      const desiredMode = mode === 'earlygoal' ? 'earlygoal' : 'base'
+      const nextEnabled = desiredMode === 'earlygoal' ? currentMode !== 'earlygoal' : false
+
+      return this.applyEarlyGoalToSelections([String(selection.selectionId)], nextEnabled)
     },
     isTaxEnabled() {
       return (
@@ -842,7 +868,8 @@ export const useCouponStore = defineStore({
       const selectionBaseState = isEarlyGoalMarketCandidate ? earlyGoalState : earlyWinState
 
       selection.baseMarketId = selection.baseMarketId || selectionBaseState.baseMarketId
-      selection.baseMarketName = selection.baseMarketName || selectionBaseState.baseMarketName
+      selection.baseMarketName =
+        selectionBaseState.baseMarketName || selection.baseMarketName || selection.marketName || ''
       selection.baseSpecifier = selection.baseSpecifier ?? selection.specifier ?? ''
       selection.baseSelectionKeySpecifier =
         selection.baseSelectionKeySpecifier ??
@@ -1026,7 +1053,12 @@ export const useCouponStore = defineStore({
       selection.unavailable = resolvedStatusName === 'Deactivated' || !resolvedStatusName
     },
     async refreshCouponAfterSelectionMutation() {
-      if (!Array.isArray(this.coupon.selections) || !this.coupon.selections.length) return
+      if (!Array.isArray(this.coupon.selections) || !this.coupon.selections.length) {
+        this.coupon.useEarlyGoal = false
+        return
+      }
+
+      this.syncEarlyGoalStateFromSelections()
 
       this.coupon.tournaments = groupTournament(this.coupon.selections)
       this.coupon.fixtures = groupSelections(this.coupon.selections)
@@ -1561,6 +1593,9 @@ export const useCouponStore = defineStore({
       const accaBonusConfig = this.getAccaBonusConfig()
 
       const data = this.normalizeSelectionEarlyWinState(getDataFromPayload(couponPayload))
+      if (this.coupon.useEarlyGoal && data.supportsEarlyGoal && data.earlyGoalLocalQuotes?.earlygoal) {
+        this.updateSelectionEarlyGoalState(data, 'earlygoal', data.earlyGoalLocalQuotes.earlygoal)
+      }
       const selectionType = String(type || data.type || '').toLowerCase()
       const totalSelectionLimit = this.getSelectionLimit()
       const liveSelectionLimit = this.getLiveSelectionLimit()
@@ -1883,6 +1918,7 @@ export const useCouponStore = defineStore({
       )
 
       this.coupon.selections = newSelection
+      this.syncEarlyGoalStateFromSelections(newSelection)
 
       if (this.coupon.selections.length > 0) {
         const prevBetType = this.coupon.bet_type

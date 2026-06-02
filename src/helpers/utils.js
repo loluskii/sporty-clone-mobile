@@ -239,7 +239,8 @@ export const getDataFromPayload = (couponPayload) => {
   const baseDisplayName = baseQuote?.displayName || couponPayload.outcome.displayName
   const baseOdds = Number(baseQuote?.odds ?? couponPayload.outcome.odds)
   const baseStatusName = baseQuote?.statusName || 'Active'
-  const sourceSelectionKeySpecifier = couponPayload.outcome?.specifier ?? ''
+  const sourceSelectionKeySpecifier =
+    couponPayload.selection_key_specifier ?? couponPayload.outcome?.specifier ?? couponPayload.specifier ?? ''
   const baseSelectionKeySpecifier = baseQuote?.idSpecifier ?? sourceSelectionKeySpecifier
   const currentOutcomeId = currentQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
   const currentOutcomeName = currentQuote?.outcomeName || couponPayload.outcome.outcomeName
@@ -521,7 +522,7 @@ const getCouponSelectionOutcomeName = (outcome = {}) =>
   String(outcome.outcomeName || outcome.outcome_name || outcome.name || outcome.displayName || '').trim()
 
 export const getCouponSelectionKeySpecifier = (market = {}, outcome = {}) =>
-  String(outcome.specifier ?? outcome.specifiers ?? '')
+  String(outcome.specifier ?? outcome.specifiers ?? market.specifier ?? market.specifiers ?? '')
 
 export const getCouponSelectionRequestSpecifier = (market = {}, outcome = {}) =>
   String(outcome.specifier ?? outcome.specifiers ?? market.specifier ?? market.specifiers ?? '')
@@ -553,6 +554,7 @@ export const buildCouponSelectionPayload = ({
   const marketId = getCouponSelectionMarketId(market, outcome)
   const outcomeId = getCouponSelectionOutcomeId(outcome)
   const outcomeName = getCouponSelectionOutcomeName(outcome)
+  const selectionKeySpecifier = getCouponSelectionKeySpecifier(market, outcome)
 
   return {
     fixture,
@@ -568,6 +570,7 @@ export const buildCouponSelectionPayload = ({
     odds: outcome.odds,
     odd_id: outcomeId,
     odd_name: outcomeName,
+    selection_key_specifier: selectionKeySpecifier,
     type,
     event_id: getCouponSelectionMatchId(fixture),
     specifier: getCouponSelectionRequestSpecifier(market, outcome)
