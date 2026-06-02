@@ -133,7 +133,7 @@ export function useBetslipCalculations({ betSlipType, betType }) {
       if (couponStore.isCutOneApplied()) {
         return formatNumber(parseFloat(couponStore.coupon.maxWin || 0))
       }
-      return formatNumber(parseFloat(maxWin.value || 0))
+      return formatNumber(parseFloat(couponStore.getDisplayedMaxWin() || 0))
     }
     if (isSingleMulti.value || isSystemBet) {
       // Combo and single show a min~max range.

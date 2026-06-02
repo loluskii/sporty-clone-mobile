@@ -609,7 +609,11 @@ export const useCouponStore = defineStore({
     },
     isSelectionEarlyGoalEligible(selection) {
       if (!selection) return false
-      return Boolean(selection?.supportsEarlyGoal || selection?.earlyGoalMode === 'earlygoal')
+      return Boolean(
+        selection?.supportsEarlyGoal ||
+          selection?.earlyGoalMode === 'earlygoal' ||
+          Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
+      )
     },
     syncEarlyGoalStateFromSelections(selections = this.coupon.selections) {
       const hasActiveEarlyGoal = Array.isArray(selections)
@@ -771,9 +775,7 @@ export const useCouponStore = defineStore({
     async toggleEarlyGoal() {
       if (this.coupon.useEarlyGoal) {
         const actionableSelectionIds = (this.coupon.selections || [])
-          .filter(
-            (selection) => selection.supportsEarlyGoal || selection.earlyGoalMode === 'earlygoal'
-          )
+          .filter((selection) => this.isSelectionEarlyGoalEligible(selection))
           .map((selection) => String(selection.selectionId))
         if (actionableSelectionIds.length) {
           await this.applyEarlyGoalToSelections(actionableSelectionIds, false)
@@ -782,7 +784,11 @@ export const useCouponStore = defineStore({
       }
       if (!this.canSelectEarlyGoal()) return
       const supportedSelectionIds = this.getActiveCouponSelections()
-        .filter((selection) => selection.supportsEarlyGoal)
+        .filter(
+          (selection) =>
+            Number(selection?.baseMarketId || selection?.marketId || selection?.market_id || 0) ===
+              EARLY_GOAL_BASE_MARKET_ID && selection.supportsEarlyGoal
+        )
         .map((selection) => String(selection.selectionId))
       const appliedCount = await this.applyEarlyGoalToSelections(supportedSelectionIds, true)
       if (!appliedCount) {
@@ -1650,6 +1656,7 @@ export const useCouponStore = defineStore({
       if (!this.coupon.selections.length) {
         //add selection to selections list
         this.coupon.selections.push(data)
+        this.syncEarlyGoalStateFromSelections()
 
         this.coupon.bet_type = 'Single'
         this.coupon.betslip_type = 'Single'
@@ -1676,6 +1683,7 @@ export const useCouponStore = defineStore({
           if (couponData.selections[i].matchId === data.matchId) {
             //add selection to selections list
             this.coupon.selections.push(data)
+            this.syncEarlyGoalStateFromSelections()
             // const bonus = calculateBonus(this.coupon, globalVars, bonusList);
             // console.log(bonus, "bon");
             //group selections by match
@@ -1721,6 +1729,7 @@ export const useCouponStore = defineStore({
 
         //add selection to selections list
         this.coupon.selections.push(data)
+        this.syncEarlyGoalStateFromSelections()
         // const bonus = calculateBonus(this.coupon, globalVars, bonusList);
         // console.log(bonus, "bon");
 

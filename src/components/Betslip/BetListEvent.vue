@@ -187,6 +187,7 @@ import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboa
 import {
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
+  getBaseMarketIdFromMarketId,
   stripEarlyGoalSuffix,
   stripEarlyWinSuffix
 } from '@/helpers'
@@ -236,6 +237,10 @@ const isLiveSelection = computed(() => {
   return props.selection?.type === 'live'
 })
 
+const selectionIsUnavailable = computed(() => {
+  return Boolean(props.selection?.unavailable || props.selection?.suspended)
+})
+
 const isEarlyWinModeActive = (mode) => props.selection?.earlyWinMode === mode
 
 const getEarlyWinAccentFill = (mode) => {
@@ -257,7 +262,8 @@ const supportsMode = (mode) => {
 }
 
 const currentSelectionBaseMarketId = computed(() => {
-  return Number(props.selection?.baseMarketId || props.selection?.marketId || props.selection?.market_id || 0)
+  const marketId = Number(props.selection?.marketId || props.selection?.market_id || 0)
+  return Number(props.selection?.baseMarketId || getBaseMarketIdFromMarketId(marketId) || marketId || 0)
 })
 
 const displayMarketName = computed(() => {
