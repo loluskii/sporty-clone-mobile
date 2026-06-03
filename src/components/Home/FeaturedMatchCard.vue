@@ -144,7 +144,7 @@ function goToMarket() {
       sport: slugify(props.matchDetails.sportName),
       tournament_name: slugify(props.matchDetails.tournament),
       event_name: slugify(props.matchDetails.name),
-      event_id: slugify(props.matchDetails.matchID)
+      event_id: (props.matchDetails.matchID)
     }
   })
 }

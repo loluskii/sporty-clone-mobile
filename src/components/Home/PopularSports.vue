@@ -34,7 +34,7 @@
               params: {
                 sport: 'Soccer',
                 categories: `sr:category:${match.categoryID}`,
-                tournaments: `sr:tournament:${match.tournamentID}`
+                tournaments: `sr:tournament:${match.tournament_id}`
               }
             })
           "
