@@ -17,72 +17,26 @@
               </div>
             </div>
           </div>
-          <div
-            v-if="showUpToggle"
-            class="market-assist-rail"
-            :class="{ active: upMode !== 'none', loading: isModeLoading }"
+        </div>
+        <div v-if="showUpToggle" class="up-mode-bar">
+          <button
+            class="up-mode-tab"
+            type="button"
+            :class="{ active: upMode === 'none' }"
+            @click="setUpMode('none')"
           >
-            <span class="market-assist-divider"></span>
-            <button
-              v-for="option in modeOptions"
-              :key="option.key"
-              class="market-assist-pill"
-              :class="[
-                `market-assist-pill--${option.key}`,
-                { active: upMode === option.key }
-              ]"
-              type="button"
-              :disabled="isModeLoading"
-              :aria-pressed="upMode === option.key ? 'true' : 'false'"
-              :aria-label="getAssistModeAriaLabel(option)"
-              @click="setUpMode(option.key)"
-            >
-              <span v-if="option.key === 'earlygoal'" class="market-assist-icon">⚡</span>
-              <svg
-                v-else-if="option.key === '1up'"
-                class="market-assist-logo market-assist-logo--one"
-                viewBox="0 0 60 30"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.2 6.3L11.8 1.5H17.2V27.4H10.2V10.2L6.1 12.5L3.2 6.3Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M20.5 2.1H27.8V16.7C27.8 19.1 29 20.5 31.3 20.5C33.6 20.5 34.8 19.1 34.8 16.7V2.1H42.1V17C42.1 24.1 38 28 31.3 28C24.6 28 20.5 24.1 20.5 17V2.1Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M44.7 2.1H52.1C56.7 2.1 59.3 4.7 59.3 8.7C59.3 12.7 56.7 15.3 52.1 15.3H50.7V27.4H44.7V2.1ZM51.4 10.5C52.9 10.5 53.8 9.8 53.8 8.7C53.8 7.5 52.9 6.9 51.4 6.9H50.7V10.5H51.4Z"
-                  fill="currentColor"
-                />
-                <circle cx="53.1" cy="8.7" r="1.2" fill="currentColor" />
-              </svg>
-              <svg
-                v-else-if="option.key === '2up'"
-                class="market-assist-logo market-assist-logo--two"
-                viewBox="0 0 64 30"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.5 9.2C3.5 4.3 7.3 1.5 13.1 1.5C18.8 1.5 22.2 4.1 22.2 8.4C22.2 11.6 20.5 13.8 16.7 16.1L11.6 19.2H22.5V27.4H3.6V21.1L13.1 15.1C15 13.9 15.7 12.9 15.7 11.5C15.7 10.1 14.6 9.2 12.9 9.2C11 9.2 9.8 10.4 9.8 12.4H3.5V9.2Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M25.2 2.1H32.5V16.7C32.5 19.1 33.7 20.5 36 20.5C38.3 20.5 39.5 19.1 39.5 16.7V2.1H46.8V17C46.8 24.1 42.7 28 36 28C29.3 28 25.2 24.1 25.2 17V2.1Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M49.4 2.1H56.8C61.4 2.1 64 4.7 64 8.7C64 12.7 61.4 15.3 56.8 15.3H55.4V27.4H49.4V2.1ZM56.1 10.5C57.6 10.5 58.5 9.8 58.5 8.7C58.5 7.5 57.6 6.9 56.1 6.9H55.4V10.5H56.1Z"
-                  fill="currentColor"
-                />
-                <circle cx="57.8" cy="8.7" r="1.2" fill="currentColor" />
-              </svg>
-              <span v-else class="market-assist-label">{{ getAssistModeLabel(option) }}</span>
-            </button>
-          </div>
+            {{ baseLabel }}
+          </button>
+          <button
+            v-for="option in modeOptions"
+            :key="option.key"
+            class="up-mode-tab"
+            type="button"
+            :class="{ active: upMode === option.key }"
+            @click="setUpMode(option.key)"
+          >
+            {{ option.label }}
+          </button>
         </div>
       </div>
       <div class="fixtures-content">
@@ -191,6 +145,7 @@ const fixtures = ref(props.highlightsData || {})
 const isLoading = computed(() => props.isLoading)
 const upMode = computed(() => props.upMode || 'none')
 const modeOptions = computed(() => props.modeOptions || [])
+const baseLabel = computed(() => props.baseLabel || 'Base')
 
 const getSportbyId = computed(() => {
   return utilsStore.sportsMenu.find((sport) => sport.sport_id == props.activeMarket.sportID)
@@ -219,15 +174,6 @@ const setUpMode = (mode) => {
   // Emit exclusive derived-market toggle state to parent.
   const nextMode = props.upMode === mode ? 'none' : mode
   emits('set-up-mode', nextMode)
-}
-
-const getAssistModeLabel = (option = {}) => {
-  if (option.key === 'earlygoal') return 'EG'
-  return option.label || ''
-}
-
-const getAssistModeAriaLabel = (option = {}) => {
-  return option.key === 'earlygoal' ? 'Toggle Early Goals' : `Toggle ${option.label || option.key}`
 }
 
 const removeFixtureByMatchId = (matchId) => {
@@ -354,134 +300,12 @@ onBeforeUnmount(() => {
 .market-header {
   align-items: center;
   display: flex;
-  gap: 0.25rem;
-  overflow: hidden;
+  gap: 0.75rem;
 }
 
 .market-header .m-today-tab {
   flex: 1;
   min-width: 0;
-}
-
-.market-assist-rail {
-  align-items: center;
-  background: linear-gradient(
-    90deg,
-    rgba(250, 250, 250, 0) 0%,
-    var(--background-general-primary, #fafafa) 28%,
-    var(--background-general-primary, #fafafa) 100%
-  );
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.3rem;
-  min-height: 2.75rem;
-  padding: 0 0.55rem 0 0.25rem;
-  position: relative;
-  z-index: 2;
-}
-
-.market-assist-divider {
-  background: #c8cdd7;
-  border-radius: 999px;
-  display: inline-block;
-  height: 1.7rem;
-  margin-right: 0.15rem;
-  width: 1px;
-}
-
-.market-assist-pill {
-  align-items: center;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 48%, #edf1f5 100%);
-  border: 1px solid #d5dbe5;
-  border-radius: 999px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 6px rgba(16, 24, 40, 0.06);
-  color: #8f96a5;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.82rem;
-  font-weight: 900;
-  gap: 0.18rem;
-  height: 2.05rem;
-  justify-content: center;
-  letter-spacing: -0.03em;
-  min-width: 3.05rem;
-  padding: 0 0.58rem;
-  text-transform: uppercase;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.market-assist-pill.active {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fffb 46%, #eaf8ef 100%);
-  border-color: #20bd62;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 1px rgba(32, 189, 98, 0.1),
-    0 4px 12px rgba(21, 168, 83, 0.12);
-  color: #111827;
-}
-
-.market-assist-pill:active {
-  transform: translateY(1px);
-}
-
-.market-assist-pill:disabled {
-  cursor: wait;
-  opacity: 0.72;
-}
-
-.market-assist-pill--earlygoal {
-  min-width: 3.25rem;
-}
-
-.market-assist-pill--1up,
-.market-assist-pill--2up {
-  min-width: 3.45rem;
-  padding: 0 0.48rem;
-}
-
-.market-assist-logo {
-  display: block;
-  height: 1.18rem;
-  width: auto;
-}
-
-.market-assist-logo--one {
-  width: 2.45rem;
-}
-
-.market-assist-logo--two {
-  width: 2.62rem;
-}
-
-.market-assist-icon {
-  align-items: center;
-  background: currentColor;
-  border-radius: 999px;
-  color: inherit;
-  display: inline-flex;
-  font-size: 0.66rem;
-  height: 1.12rem;
-  justify-content: center;
-  line-height: 1;
-  position: relative;
-  width: 1.12rem;
-}
-
-.market-assist-pill:not(.active) .market-assist-icon {
-  background: #eef2f7;
-  color: #9aa3b2;
-}
-
-.market-assist-pill.active .market-assist-icon {
-  background: #18b95f;
-  color: #ffffff;
 }
 
 .fixtures-content {
@@ -496,6 +320,41 @@ onBeforeUnmount(() => {
   justify-content: center;
   position: absolute;
   z-index: 3;
+}
+
+.up-mode-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem 0.6rem;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: #f1f3f6;
+  background: var(--background-general-secondary);
+  border: 1px solid #d8dde5;
+  border-radius: 999px;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-width: 5.75rem;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 2rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.up-mode-tab.active {
+  background-color: var(--c-prematch-tab-name-active);
+  border-color: var(--c-prematch-tab-name-active);
+  color: #ffffff;
 }
 
 .m-sports .nav-fixed .market-wrapper {

@@ -5,81 +5,33 @@
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
       <div v-show="marketsGroup?.length" class="m-snap-nav-container" id="m-sanp-nav-container">
-        <div
-          class="m-snap-nav-wrap m-sport-type has-live"
-          :class="{ 'm-sport-type-fixed': isTop }"
-        >
-          <ul class="m-snap-nav flex market-tabs-scroll">
+        <div class="m-snap-nav-wrap m-sport-type has-live" :class="{ 'm-sport-type-fixed': isTop }"
+          style="overflow: auto">
+          <ul class="m-snap-nav flex">
             <li v-for="(market, m) in marketsGroup" :key="m"
               :class="market.marketID === activeMarket.marketID ? 'active' : ''"
               class="m-sport-type-item m-snap-nav-item" @click="selectMarket(market)">
               {{ market.marketName === '1x2' ? '1X2':market.marketName }}
             </li>
           </ul>
-          <div
-            v-if="showUpToggle"
-            class="market-assist-rail"
-            :class="{ active: upMode !== 'none', loading: isModeLoading }"
-          >
-            <span class="market-assist-divider"></span>
+          <div v-if="showUpToggle" class="up-mode-bar">
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === 'none' }"
+              @click="handleUpModeChange('none')"
+            >
+              {{ baseLabel }}
+            </button>
             <button
               v-for="option in modeOptions"
               :key="option.key"
-              class="market-assist-pill"
-              :class="[
-                `market-assist-pill--${option.key}`,
-                { active: upMode === option.key }
-              ]"
+              class="up-mode-tab"
               type="button"
-              :disabled="isModeLoading"
-              :aria-pressed="upMode === option.key ? 'true' : 'false'"
-              :aria-label="getAssistModeAriaLabel(option)"
+              :class="{ active: upMode === option.key }"
               @click="handleUpModeChange(option.key)"
             >
-              <span v-if="option.key === 'earlygoal'" class="market-assist-icon">⚡</span>
-              <svg
-                v-else-if="option.key === '1up'"
-                class="market-assist-logo market-assist-logo--one"
-                viewBox="0 0 60 30"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.2 6.3L11.8 1.5H17.2V27.4H10.2V10.2L6.1 12.5L3.2 6.3Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M20.5 2.1H27.8V16.7C27.8 19.1 29 20.5 31.3 20.5C33.6 20.5 34.8 19.1 34.8 16.7V2.1H42.1V17C42.1 24.1 38 28 31.3 28C24.6 28 20.5 24.1 20.5 17V2.1Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M44.7 2.1H52.1C56.7 2.1 59.3 4.7 59.3 8.7C59.3 12.7 56.7 15.3 52.1 15.3H50.7V27.4H44.7V2.1ZM51.4 10.5C52.9 10.5 53.8 9.8 53.8 8.7C53.8 7.5 52.9 6.9 51.4 6.9H50.7V10.5H51.4Z"
-                  fill="currentColor"
-                />
-                <circle cx="53.1" cy="8.7" r="1.2" fill="currentColor" />
-              </svg>
-              <svg
-                v-else-if="option.key === '2up'"
-                class="market-assist-logo market-assist-logo--two"
-                viewBox="0 0 64 30"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.5 9.2C3.5 4.3 7.3 1.5 13.1 1.5C18.8 1.5 22.2 4.1 22.2 8.4C22.2 11.6 20.5 13.8 16.7 16.1L11.6 19.2H22.5V27.4H3.6V21.1L13.1 15.1C15 13.9 15.7 12.9 15.7 11.5C15.7 10.1 14.6 9.2 12.9 9.2C11 9.2 9.8 10.4 9.8 12.4H3.5V9.2Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M25.2 2.1H32.5V16.7C32.5 19.1 33.7 20.5 36 20.5C38.3 20.5 39.5 19.1 39.5 16.7V2.1H46.8V17C46.8 24.1 42.7 28 36 28C29.3 28 25.2 24.1 25.2 17V2.1Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M49.4 2.1H56.8C61.4 2.1 64 4.7 64 8.7C64 12.7 61.4 15.3 56.8 15.3H55.4V27.4H49.4V2.1ZM56.1 10.5C57.6 10.5 58.5 9.8 58.5 8.7C58.5 7.5 57.6 6.9 56.1 6.9H55.4V10.5H56.1Z"
-                  fill="currentColor"
-                />
-                <circle cx="57.8" cy="8.7" r="1.2" fill="currentColor" />
-              </svg>
-              <span v-else class="market-assist-label">{{ getAssistModeLabel(option) }}</span>
+              {{ option.label }}
             </button>
           </div>
         </div>
@@ -214,6 +166,7 @@ const {
   resetUpMode,
   showUpToggle,
   modeOptions,
+  baseLabel,
   effectiveMarket,
   filteredFixtures,
   sanitizeMarkets
@@ -225,8 +178,6 @@ const {
   requireDerivedFixturesForToggle: false,
   filterFixturesByDerived: false
 })
-
-const isModeLoading = computed(() => isLoading.value && upMode.value !== 'none')
 
 watch(
   () => [route.name, route.params.sport, route.query.period, route.query.startDate, route.query.endDate],
@@ -483,15 +434,6 @@ async function handleUpModeChange(mode) {
   await refreshFixturesForCurrentRoute()
 }
 
-const getAssistModeLabel = (option = {}) => {
-  if (option.key === 'earlygoal') return 'EG'
-  return option.label || ''
-}
-
-const getAssistModeAriaLabel = (option = {}) => {
-  return option.key === 'earlygoal' ? 'Toggle Early Goals' : `Toggle ${option.label || option.key}`
-}
-
 const isScrolled = ref(false)
 const isTop = ref(false)
 const divPosition = ref(null)
@@ -731,6 +673,41 @@ defineComponent({
   transform: rotate(180deg);
 }
 
+.up-mode-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0rem 0.6rem;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: #f1f3f6;
+  background: var(--background-general-secondary);
+  border: 1px solid #d8dde5;
+  border-radius: 999px;
+  color: #353a45;
+  color: var(--text-type1-primary);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-width: 5.75rem;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 2rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.up-mode-tab.active {
+  background-color: var(--c-prematch-tab-name-active);
+  border-color: var(--c-prematch-tab-name-active);
+  color: #ffffff;
+}
+
 .m-event-list .m-topnav .trans-select {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -955,142 +932,6 @@ defineComponent({
 
 .m-event-list .m-sport-type.m-sport-type-fixed.choose-open {
   z-index: -1;
-}
-
-.m-event-list .m-sport-type.has-live {
-  align-items: center;
-  display: flex;
-  overflow: hidden;
-}
-
-.market-tabs-scroll {
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.market-tabs-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.market-assist-rail {
-  align-items: center;
-  background: linear-gradient(
-    90deg,
-    rgba(250, 250, 250, 0) 0%,
-    var(--background-type1-primary, #fafafa) 28%,
-    var(--background-type1-primary, #fafafa) 100%
-  );
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.3rem;
-  min-height: 3rem;
-  padding: 0 0.55rem 0 0.25rem;
-  position: relative;
-  z-index: 2;
-}
-
-.market-assist-divider {
-  background: #c8cdd7;
-  border-radius: 999px;
-  display: inline-block;
-  height: 1.7rem;
-  margin-right: 0.15rem;
-  width: 1px;
-}
-
-.market-assist-pill {
-  align-items: center;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 48%, #edf1f5 100%);
-  border: 1px solid #d5dbe5;
-  border-radius: 999px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 6px rgba(16, 24, 40, 0.06);
-  color: #8f96a5;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.82rem;
-  font-weight: 900;
-  gap: 0.18rem;
-  height: 2.05rem;
-  justify-content: center;
-  letter-spacing: -0.03em;
-  min-width: 3.05rem;
-  padding: 0 0.58rem;
-  text-transform: uppercase;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.market-assist-pill.active {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fffb 46%, #eaf8ef 100%);
-  border-color: #20bd62;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 1px rgba(32, 189, 98, 0.1),
-    0 4px 12px rgba(21, 168, 83, 0.12);
-  color: #111827;
-}
-
-.market-assist-pill:active {
-  transform: translateY(1px);
-}
-
-.market-assist-pill:disabled {
-  cursor: wait;
-  opacity: 0.72;
-}
-
-.market-assist-pill--earlygoal {
-  min-width: 3.25rem;
-}
-
-.market-assist-pill--1up,
-.market-assist-pill--2up {
-  min-width: 3.45rem;
-  padding: 0 0.48rem;
-}
-
-.market-assist-logo {
-  display: block;
-  height: 1.18rem;
-  width: auto;
-}
-
-.market-assist-logo--one {
-  width: 2.45rem;
-}
-
-.market-assist-logo--two {
-  width: 2.62rem;
-}
-
-.market-assist-icon {
-  align-items: center;
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: 0.66rem;
-  height: 1.12rem;
-  justify-content: center;
-  line-height: 1;
-  width: 1.12rem;
-}
-
-.market-assist-pill:not(.active) .market-assist-icon {
-  background: #eef2f7;
-  color: #9aa3b2;
-}
-
-.market-assist-pill.active .market-assist-icon {
-  background: #18b95f;
-  color: #ffffff;
 }
 
 .m-event-list .m-outright-bar {
