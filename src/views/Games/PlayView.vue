@@ -87,22 +87,22 @@ async function getCasinoURL() {
     if (isGoldenRace) {
       res = await getGoldenRaceLobbyUrl(
         {
+          client_id: import.meta.env.VITE_CLIENT_ID,
+          provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
           game: String(selectedGame?.game_name || selectedGame?.title || 'GRTerminalLobby'),
-          game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
           mode: 'real',
           language: 'en',
           group: 'vip',
-          provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
-          category_id: String(selectedGame?.categoryId || selectedGame?.category_id || '')
+          clientPlatform: 'desktop',
+          game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
         },
         bearerToken
       )
-      debugger
     } else {
       res = await getCasinoStartUrl(payload, 'real')
     }
 
-    window.location.href = res.url
+    window.location.href = res.launchUrl
   } catch (error) {
     errorState.value = true
     console.error(error)
