@@ -80,7 +80,7 @@
                   class="selection-earlywin-pill selection-earlywin-pill--one"
                   :class="{ active: selection.earlyWinMode === '1up' }"
                   aria-label="1UP"
-                  :disabled="!supportsMode('1up') || isLoadingUpMode"
+                  :disabled="!canRequestMode('1up') || isLoadingUpMode"
                   @click.stop.prevent="toggleSelectionMode('1up')"
                 >
                   <span class="selection-earlywin-pill-surface">
@@ -111,7 +111,7 @@
                   class="selection-earlywin-pill selection-earlywin-pill--two"
                   :class="{ active: selection.earlyWinMode === '2up' }"
                   aria-label="2UP"
-                  :disabled="!supportsMode('2up') || isLoadingUpMode"
+                  :disabled="!canRequestMode('2up') || isLoadingUpMode"
                   @click.stop.prevent="toggleSelectionMode('2up')"
                 >
                   <span class="selection-earlywin-pill-surface">
@@ -188,6 +188,7 @@ import {
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
   getBaseMarketIdFromMarketId,
+  getDerivedMarketIdForMode,
   stripEarlyGoalSuffix,
   stripEarlyWinSuffix
 } from '@/helpers'
@@ -266,6 +267,26 @@ const currentSelectionBaseMarketId = computed(() => {
   return Number(props.selection?.baseMarketId || getBaseMarketIdFromMarketId(marketId) || marketId || 0)
 })
 
+const canRequestMode = (mode) => {
+  if (supportsMode(mode)) return true
+  if (currentSelectionBaseMarketId.value !== 1) return false
+
+  const currentMode = props.selection?.earlyWinMode || 'base'
+  const hasDerivedContext =
+    props.selection?.hasExplicitDerivedMarkets ||
+    currentMode === '1up' ||
+    currentMode === '2up'
+  if (!hasDerivedContext) return false
+
+  return Boolean(
+    getDerivedMarketIdForMode(
+      currentSelectionBaseMarketId.value,
+      mode,
+      props.selection?.supportedDerivedMarketIds
+    )
+  )
+}
+
 const displayMarketName = computed(() => {
   const marketName = String(props.selection?.marketName || '').trim()
   const baseMarketName = String(props.selection?.baseMarketName || marketName).trim()
@@ -304,7 +325,7 @@ const showEarlyGoalControl = computed(() => {
 })
 
 const toggleSelectionMode = async (mode) => {
-  if (!supportsMode(mode) || isLoadingUpMode.value) return
+  if (!canRequestMode(mode) || isLoadingUpMode.value) return
   await setSelectionUpMode(props.selection, mode)
 }
 
