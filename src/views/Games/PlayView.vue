@@ -89,15 +89,16 @@ async function getCasinoURL() {
         {
           client_id: import.meta.env.VITE_CLIENT_ID,
           provider_id: String(selectedGame?.providerId || selectedGame?.provider_id || ''),
-          game: String(selectedGame?.game_name || selectedGame?.title || 'GRTerminalLobby'),
-          mode: 'real',
+          mode: '1',
           language: 'en',
-          group: 'vip',
-          clientPlatform: 'desktop',
-          game_code: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
+          group: 'master',
+          game: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
+          category_id: String(selectedGame?.categoryId || selectedGame?.category_id || ''),
+          currency: "NGN"
         },
         bearerToken
       )
+      debugger
     } else {
       res = await getCasinoStartUrl(payload, 'real')
     }
