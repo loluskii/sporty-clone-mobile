@@ -98,7 +98,6 @@ async function getCasinoURL() {
         },
         bearerToken
       )
-      debugger
     } else {
       res = await getCasinoStartUrl(payload, 'real')
     }
