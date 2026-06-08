@@ -7,7 +7,7 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
     ]
   },
   18: {
-    baseLabel: 'Base',
+    baseLabel: 'Over/Under Base',
     modes: [{ key: 'earlygoal', id: 60180, label: 'Early Goals' }]
   }
 }

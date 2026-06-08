@@ -14,27 +14,15 @@
               {{ market.marketName === '1x2' ? '1X2':market.marketName }}
             </li>
           </ul>
-          <div v-if="showUpToggle" class="up-mode-bar">
-            <button
-              class="up-mode-tab"
-              type="button"
-              :class="{ active: upMode === 'none' }"
-              @click="handleUpModeChange('none')"
-            >
-              {{ baseLabel }}
-            </button>
-            <button
-              v-for="option in modeOptions"
-              :key="option.key"
-              class="up-mode-tab"
-              type="button"
-              :class="{ active: upMode === option.key }"
-              @click="handleUpModeChange(option.key)"
-            >
-              {{ option.label }}
-            </button>
-          </div>
         </div>
+        <MarketExtendSelector
+          v-if="showUpToggle"
+          :up-mode="upMode"
+          :base-label="baseLabel"
+          :mode-options="modeOptions"
+          :is-loading="isLoading"
+          @set-mode="handleUpModeChange"
+        />
       </div>
       <div class="m-bet-content" style="position: relative">
         <FixtureGroupingTournament :fixtures-list="filteredFixtures" :active-market="effectiveMarket"
@@ -67,6 +55,7 @@ import { useUtilsStore } from '@/stores'
 import ChooseBarPad from '@/components/ChooseBarPad.vue'
 import FixtureGroupingTournament from '@/components/FixtureGrouping/FixtureGroupingTournament.vue'
 import FixtureGroupingDefault from '@/components/FixtureGrouping/FixtureGroupingDefault.vue'
+import MarketExtendSelector from '@/components/MarketExtendSelector.vue'
 import {
   getSportHighlights,
   getFixturesByCategories,
@@ -671,41 +660,6 @@ defineComponent({
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
-}
-
-.up-mode-bar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0rem 0.6rem;
-  width: 100%;
-}
-
-.up-mode-tab {
-  background: #f1f3f6;
-  background: var(--background-general-secondary);
-  border: 1px solid #d8dde5;
-  border-radius: 999px;
-  color: #353a45;
-  color: var(--text-type1-primary);
-  cursor: pointer;
-  flex: 0 0 auto;
-  font-size: 0.9rem;
-  font-weight: 700;
-  min-width: 5.75rem;
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 2rem;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-}
-
-.up-mode-tab.active {
-  background-color: var(--c-prematch-tab-name-active);
-  border-color: var(--c-prematch-tab-name-active);
-  color: #ffffff;
 }
 
 .m-event-list .m-topnav .trans-select {

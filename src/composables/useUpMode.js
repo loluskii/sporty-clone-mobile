@@ -162,7 +162,15 @@ export const useUpMode = ({
 
   watch(
     () => activeMarket?.value?.marketID,
-    (marketId) => {
+    (marketId, previousMarketId) => {
+      if (
+        previousMarketId !== undefined &&
+        Number(marketId || 0) !== Number(previousMarketId || 0)
+      ) {
+        upMode.value = 'none'
+        return
+      }
+
       if (!derivedMarketConfig?.[Number(marketId || 0)]) {
         upMode.value = 'none'
       }

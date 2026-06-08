@@ -18,26 +18,14 @@
             </div>
           </div>
         </div>
-        <div v-if="showUpToggle" class="up-mode-bar">
-          <button
-            class="up-mode-tab"
-            type="button"
-            :class="{ active: upMode === 'none' }"
-            @click="setUpMode('none')"
-          >
-            {{ baseLabel }}
-          </button>
-          <button
-            v-for="option in modeOptions"
-            :key="option.key"
-            class="up-mode-tab"
-            type="button"
-            :class="{ active: upMode === option.key }"
-            @click="setUpMode(option.key)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
+        <MarketExtendSelector
+          v-if="showUpToggle"
+          :up-mode="upMode"
+          :base-label="baseLabel"
+          :mode-options="modeOptions"
+          :is-loading="isModeLoading"
+          @set-mode="setUpMode"
+        />
       </div>
       <div class="fixtures-content">
         <div v-if="showLoadingMask" class="up-mode-loading-mask">
@@ -98,6 +86,7 @@ import { defineComponent, computed, onMounted, onBeforeUnmount, ref, watch } fro
 import { formatDate } from '@/helpers'
 import PrematchFixture from '@/components/Prematch/PrematchFixture.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
+import MarketExtendSelector from '@/components/MarketExtendSelector.vue'
 import _ from 'lodash'
 import { useRouter } from 'vue-router'
 import { useUtilsStore } from '@/stores'
@@ -322,41 +311,6 @@ onBeforeUnmount(() => {
   z-index: 3;
 }
 
-.up-mode-bar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.75rem 0.6rem;
-  width: 100%;
-}
-
-.up-mode-tab {
-  background: #f1f3f6;
-  background: var(--background-general-secondary);
-  border: 1px solid #d8dde5;
-  border-radius: 999px;
-  color: #353a45;
-  color: var(--text-type1-primary);
-  cursor: pointer;
-  flex: 0 0 auto;
-  font-size: 0.9rem;
-  font-weight: 700;
-  min-width: 5.75rem;
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 2rem;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-}
-
-.up-mode-tab.active {
-  background-color: var(--c-prematch-tab-name-active);
-  border-color: var(--c-prematch-tab-name-active);
-  color: #ffffff;
-}
-
 .m-sports .nav-fixed .market-wrapper {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -377,7 +331,7 @@ onBeforeUnmount(() => {
   margin-right: 0px !important;
 }
 .m-tab-active {
-  border-bottom: 3px solid var(--c-prematch-tab-name-active);
+  border-bottom: 3px solid var(--brand-active-tab-bg);
 }
 
 .m-tabs-tab {
