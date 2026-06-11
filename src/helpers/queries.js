@@ -156,7 +156,7 @@ const getCasinoCatalog = async (forceRefresh = false) => {
 const getCasinoListTab = async (tab, params = {}) => {
   const query = new URLSearchParams({ tab, ...params })
   return normalizeCasinoListResponse(
-    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list?${query.toString()}`))
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list?${query.toString()}&game_type=casino`))
   )
 }
 
@@ -550,7 +550,7 @@ export const getCasinoGamesByProviderCategory = async (providerId, categoryId = 
   }
 
   const response = normalizeCasinoListResponse(
-    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_providers?${params.toString()}`))
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_providers?${params.toString()}&game_type=casino`))
   )
 
   const normalizedProviderId = providerId !== undefined && providerId !== null && providerId !== ''

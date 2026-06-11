@@ -108,9 +108,9 @@ async function getCasinoURL() {
           country: "NG",
           lang: "en_US",
           device: "mobile",
-          sessionId: authCode,
-          lobbyUrl: `${window.location.hostname}/Games`,
-          depositUrl: `${window.location.hostname}/Account/Deposit`,
+          walletSessionId: bearerToken,
+          lobbyUrl: `https://clientapi.sportsbookengine.com/providers/qtech/accounts/${id}/session?gameId=${selectedGame.game_code}`,
+          depositUrl: `http://${window.location.hostname}/Account/Deposit`,
           mode: "real"
         },
         bearerToken
