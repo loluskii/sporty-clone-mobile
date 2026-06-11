@@ -60,6 +60,7 @@ async function getCasinoURL() {
     const bearerToken = Cookies.get('SBE-TOKEN') || undefined
     const selectedGame = game_id === 'smat_virtual' ? null : await getCasinoGameById(game_id)
     const isGoldenRace = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '3'
+    const isQtechGames = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '4'
 
     let payload = {
       gameId: parseInt(game_id),
@@ -98,9 +99,26 @@ async function getCasinoURL() {
         },
         bearerToken
       )
-    } else {
+    } else if(isQtechGames) {
+      res = await getQtechLaunchUrl(
+        {
+          playerId: id,
+          currency: "NGN",
+          country: "NG",
+          lang: "en_US",
+          device: "mobile",
+          sessionId: authCode,
+          lobbyUrl: `${window.location.hostname}/Games`,
+          depositUrl: `${window.location.hostname}/Account/Deposit`,
+          mode: "real"
+        }
+        bearerToken
+      )
+    }
+    else {
       res = await getCasinoStartUrl(payload, 'real')
     }
+    debugger
 
     window.location.href = res.launchUrl
   } catch (error) {

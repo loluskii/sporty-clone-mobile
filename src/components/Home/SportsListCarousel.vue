@@ -78,9 +78,11 @@
 import { useUtilsStore, useUsersStore } from '@/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { slugify } from '@/helpers'
+import { slugify, getGoldenRaceLobbyUrl} from '@/helpers'
 import MD5 from 'crypto-js/md5'
 import emitter from '@/plugins/emitter'
+import Cookies from 'js-cookie'
+
 
 // const { sports, sport_id } = useUtilsStore()
 const utilsStore = useUtilsStore()
@@ -151,12 +153,22 @@ const goToStatistics = () => {
   return window.open(`https://s5.sir.sportradar.com/bematrics`, 'stats', 'width=1078,height=768')
 }
 
-function openVirtual() {
-  window.location.href = `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
-    token.value
-  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
-    mode.value
-  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`
+async function openVirtual() {
+  const bearerToken = Cookies.get('SBE-TOKEN') || undefined
+  const res = await getGoldenRaceLobbyUrl(
+    {
+      client_id: import.meta.env.VITE_CLIENT_ID,
+      provider_id: "3",
+      mode: "1",
+      language: "en",
+      group: "master",
+      game: "10100",
+      category_id: "3",
+      currency: "NGN"
+    },
+    bearerToken
+  )
+  window.location.href = res.launchUrl
 }
 
 async function playAviator() {
