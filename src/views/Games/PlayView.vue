@@ -15,7 +15,7 @@ import { watch, ref, onMounted, onBeforeMount, computed } from 'vue'
 import {
   getCasinoStartUrl,
   getCasinoGameById,
-  getGoldenRaceLobbyUrl,
+  getGoldenRaceLobbyUrl,getQtechLaunchUrl,
   gamesByTopCategory,
   slugify,
   getSmatVirtualStartUrl
@@ -101,6 +101,7 @@ async function getCasinoURL() {
       )
     } else if(isQtechGames) {
       res = await getQtechLaunchUrl(
+        selectedGame?.game_code,
         {
           playerId: id,
           currency: "NGN",
@@ -111,7 +112,7 @@ async function getCasinoURL() {
           lobbyUrl: `${window.location.hostname}/Games`,
           depositUrl: `${window.location.hostname}/Account/Deposit`,
           mode: "real"
-        }
+        },
         bearerToken
       )
     }

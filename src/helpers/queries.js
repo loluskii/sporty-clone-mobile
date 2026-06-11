@@ -595,6 +595,15 @@ export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
   )
 }
 
+export const getQtechLaunchUrl = async (gameId, payload, authToken) => {
+  return parseData(
+    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
+      authToken,
+      skipAuthLogout: true
+    })
+  )
+}
+
 export const getSmatVirtualStartUrl = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start-url`, payload))
 }
