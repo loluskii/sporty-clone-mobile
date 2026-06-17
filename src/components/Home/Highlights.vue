@@ -273,17 +273,28 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .home .m-sports .m-today-tab .m-tabs-tab {
-  color: #353a45;
+  align-items: center;
+  background: #e6e7eb;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #53565f;
   color: var(--c-sports-prematch-market-title-text);
+  display: inline-flex;
   -webkit-box-flex: initial;
   -webkit-flex: initial;
   -ms-flex: initial;
   flex: initial;
-  font-size: 1.066rem;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
   margin: 0;
-  padding: 0.33333333rem 0.91666667rem;
+  min-height: 2.15rem;
+  padding: 0 1.2rem;
   text-transform: capitalize;
-  /* width: calc(100); */
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .market-header {
@@ -295,6 +306,20 @@ onBeforeUnmount(() => {
 .market-header .m-today-tab {
   flex: 1;
   min-width: 0;
+}
+
+.market-header .m-tabs-nav {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding: 0.45rem 0.75rem;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.market-header .m-tabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .fixtures-content {
@@ -323,15 +348,20 @@ onBeforeUnmount(() => {
 }
 
 .m-tabs-tab {
-  line-height: 2rem !important;
-  margin-right: 10px !important;
+  line-height: 1 !important;
+  margin-right: 0 !important;
 }
 
 .m-tabs-tab:last-child {
   margin-right: 0px !important;
 }
-.m-tab-active {
-  border-bottom: 3px solid var(--brand-active-tab-bg);
+.home .m-sports .m-today-tab .m-tabs-tab.m-tab-active {
+  /* background: var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
+  color: #ffffff !important; */
+  background-color: white;
+  border: 1px solid var(--brand-active-tab-bg);
+  color: var(--brand-highlight-text) !important;
 }
 
 .m-tabs-tab {

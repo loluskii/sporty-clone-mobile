@@ -2010,7 +2010,7 @@ export const useCouponStore = defineStore({
       const sportId = selection.sportId || selection.sportID || selection.sport_id
       const producerId = selection.producerId || selection.producerID || selection.producer_id
       const specifier = selection.specifier || ''
-      const inferredDerivedMarketIds = [60100, 60200, EARLY_GOAL_DERIVED_MARKET_ID].includes(marketId)
+      const inferredDerivedMarketIds = [1601, 60100, 60200, EARLY_GOAL_DERIVED_MARKET_ID].includes(marketId)
         ? [marketId]
         : []
       const loadedOutcome = {

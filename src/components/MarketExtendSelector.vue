@@ -1,9 +1,6 @@
 <template>
   <div class="market-extend-selector">
-    <div
-      class="market-extend-selector-options"
-      :style="{ '--selector-option-count': selectorOptionCount }"
-    >
+    <div class="market-extend-selector-options">
       <button
         class="market-extend-selector-item"
         :class="{ active: upMode === 'none' }"
@@ -33,6 +30,15 @@
         <span v-if="option.key !== '1up' && option.key !== '2up'">{{ option.label }}</span>
       </button>
     </div>
+
+    <button
+      class="market-extend-selector-info"
+      type="button"
+      aria-label="More information"
+      @click.stop="emit('show-info')"
+    >
+      i
+    </button>
   </div>
 </template>
 
@@ -58,7 +64,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['set-mode'])
+const emit = defineEmits(['set-mode', 'show-info'])
 
 const orderedOptions = computed(() => {
   const priority = {
@@ -89,8 +95,6 @@ const baseIconType = computed(() => {
   if (label.includes('o/u') || label.includes('over/under')) return 'over-under'
   return ''
 })
-
-const selectorOptionCount = computed(() => orderedOptions.value.length + 1)
 
 const selectMode = (mode) => {
   if (props.isLoading) return
@@ -207,43 +211,46 @@ const UpIcon = defineComponent({
 <style scoped>
 .market-extend-selector {
   align-items: center;
-  background: var(--background-general-primary);
-  border-top: 1px solid var(--brand-border-type1, rgba(0, 0, 0, 0.08));
-  border-bottom: 1px solid var(--brand-border-type1, rgba(0, 0, 0, 0.08));
+  background: var(--background-general-primary, #fafafa);
   box-sizing: border-box;
   display: flex;
-  gap: 0.35rem;
-  overflow: visible;
-  padding: 0.55rem 0.6rem 0.65rem;
+  gap: 0.45rem;
+  overflow: hidden;
+  padding: 0.45rem 0.75rem 0.55rem;
   position: relative;
   width: 100%;
 }
 
 .market-extend-selector-options {
+  align-items: center;
+  background: #e6e7eb;
+  border-radius: 999px;
   box-sizing: border-box;
-  display: grid;
+  display: flex;
   flex: 1 1 auto;
-  gap: 0.35rem;
-  grid-template-columns: repeat(var(--selector-option-count, 3), minmax(0, 1fr));
+  gap: 0.15rem;
   min-width: 0;
+  overflow: hidden;
+  padding: 0.12rem;
 }
 
 .market-extend-selector-item {
   align-items: center;
-  background: #dcdee5;
-  border: 1px solid var(--brand-border-type1, #d8dde5);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 999px;
   box-sizing: border-box;
-  color: #9aa1ad;
+  color: #8d909b;
   cursor: pointer;
   display: inline-flex;
-  font-size: 0.98rem;
+  flex: 1 1 0;
+  font-size: 0.9rem;
   font-weight: 900;
-  gap: 0.35rem;
-  height: 2.25rem;
+  gap: 0.28rem;
+  height: 2.15rem;
   line-height: 1;
   min-width: 0;
-  padding: 0 0.45rem;
+  padding: 0 0.55rem;
   justify-content: center;
   transition:
     background-color 160ms ease,
@@ -258,9 +265,10 @@ const UpIcon = defineComponent({
 }
 
 .market-extend-selector-item.active {
-  background-color: var(--brand-active-ta-bg, #1b1e25);
-  border-color: var(--brand-active-tb-bg, #1b1e25);
-  color: #ffffff;
+  background-color: var(--background-general-primary, #fafafa);
+  border-color: var(--brand-active-tab-bg, var(--brand-highlight-text, #5b4a99));
+  box-shadow: 0 0.08rem 0.22rem rgba(27, 30, 37, 0.08);
+  color: var(--brand-highlight-text);
 }
 
 .market-extend-selector-item:disabled {
@@ -288,6 +296,24 @@ const UpIcon = defineComponent({
   font-size: 1rem;
   justify-content: center;
   width: 1rem;
+}
+
+.market-extend-selector-info {
+  align-items: center;
+  background: #8d909b;
+  border: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 1.65rem;
+  font-size: 0.9rem;
+  font-weight: 900;
+  height: 1.65rem;
+  justify-content: center;
+  line-height: 1;
+  width: 1.65rem;
 }
 
 </style>

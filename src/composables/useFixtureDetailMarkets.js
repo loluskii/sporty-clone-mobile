@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { chunks } from '@/helpers'
 
-const DEFAULT_DERIVED_MARKET_IDS = [60100, 60200]
+const DEFAULT_DERIVED_MARKET_IDS = [1601, 60100, 60200]
 
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 

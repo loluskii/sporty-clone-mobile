@@ -69,7 +69,7 @@ export function useMatchOdds({
       // MQTT overrides odds/active; bet_stop forces inactive regardless of API odds.
       const activeValue = betStopped.value ? 0 : cached?.active ?? outcome.active
       const activeMarketId = Number(activeMarket.value?.marketID || 0)
-      const baseMarketId = activeMarketId === 60100 || activeMarketId === 60200
+      const baseMarketId = activeMarketId === 1601 || activeMarketId === 60100 || activeMarketId === 60200
         ? 1
         : activeMarketId === 60180
           ? 18

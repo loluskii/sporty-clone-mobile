@@ -14,9 +14,16 @@ const flattenFixtures = (fixtures) => {
 }
 
 const getDerivedIds = (config) => {
-  return Object.values(config || {}).flatMap((entry) =>
-    (entry?.modes || []).map((mode) => Number(mode.id)).filter((id) => Number.isFinite(id))
-  )
+  return Object.values(config || {}).flatMap((entry) => {
+    const modeIds = (entry?.modes || [])
+      .map((mode) => Number(mode.id))
+      .filter((id) => Number.isFinite(id))
+    const featureMarketId = Number(entry?.featureMarketId || 0)
+
+    return Number.isFinite(featureMarketId) && featureMarketId > 0
+      ? [...modeIds, featureMarketId]
+      : modeIds
+  })
 }
 
 export const useUpMode = ({
@@ -56,7 +63,10 @@ export const useUpMode = ({
   })
 
   const hasDerivedMarkets = computed(() => {
-    const targetIds = modeOptions.value.map((option) => Number(option.id))
+    const targetIds = [
+      ...modeOptions.value.map((option) => Number(option.id)),
+      Number(activeConfig.value?.featureMarketId || 0)
+    ].filter((id) => Number.isFinite(id) && id > 0)
     if (!targetIds.length) return false
     return flattenFixtures(fixtures?.value).some((fixture) => {
       const derived = fixture?.derived_market_id || fixture?.derived_market_ids
@@ -89,18 +99,20 @@ export const useUpMode = ({
   const filterFixturesByUpMode = (list, mode) => {
     if (!list || mode === 'none') return list
     const targetId = modeIdMap.value.get(mode)
-    if (!targetId) return list
+    const featureMarketId = Number(activeConfig.value?.featureMarketId || 0)
+    const targetIds = [targetId, featureMarketId].filter((id) => Number.isFinite(id) && id > 0)
+    if (!targetIds.length) return list
     if (Array.isArray(list)) {
       return list.filter((fixture) => {
         const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-        return Array.isArray(derived) && derived.map(Number).includes(targetId)
+        return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
       })
     }
     const next = {}
     Object.entries(list).forEach(([key, group]) => {
       const filtered = (group || []).filter((fixture) => {
         const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-        return Array.isArray(derived) && derived.map(Number).includes(targetId)
+        return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
       })
       if (filtered.length) {
         next[key] = filtered

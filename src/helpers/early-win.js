@@ -1,6 +1,7 @@
 export const DEFAULT_DERIVED_MARKET_CONFIG = {
   1: {
     baseLabel: '1X2 Base',
+    featureMarketId: 1601,
     modes: [
       { key: '1up', id: 60100, label: '1UP' },
       { key: '2up', id: 60200, label: '2UP' }
@@ -22,6 +23,7 @@ export const EARLY_WIN_MODE_LABELS = {
 export const EARLY_WIN_DEFAULT_MODE = '2up'
 export const EARLY_WIN_FOOTBALL_SPORT_ID = 1
 export const EARLY_WIN_BASE_MARKET_ID = 1
+export const X_UP_FEATURE_MARKET_ID = 1601
 export const EARLY_GOAL_BASE_MARKET_ID = 18
 export const EARLY_GOAL_DERIVED_MARKET_ID = 60180
 export const EARLY_GOAL_ALLOWED_TOTALS = ['1.5', '2.5', '3.5']
@@ -56,6 +58,13 @@ export const isFootballSport = (sportId) => {
 
 export const getEarlyWinModeFromMarketId = (marketId) => {
   return MODE_BY_DERIVED_MARKET_ID.get(Number(marketId)) || 'base'
+}
+
+export const getFeatureMarketIdForMode = (mode = 'none') => {
+  const normalizedMode = String(mode || 'none').toLowerCase()
+  if (normalizedMode === '1up' || normalizedMode === '2up') return X_UP_FEATURE_MARKET_ID
+  if (normalizedMode === 'earlygoal') return EARLY_GOAL_DERIVED_MARKET_ID
+  return ''
 }
 
 export const getBaseMarketIdFromMarketId = (marketId) => {
@@ -366,12 +375,23 @@ const getFlatQuoteStatusName = ({ outcome, odds }) => {
 }
 
 export const getSupportedDerivedMarketIds = ({ sportId, marketId, derivedMarketIds }) => {
-  const explicitIds = normalizeDerivedMarketIds(derivedMarketIds).filter((id) =>
-    MODE_BY_DERIVED_MARKET_ID.has(id)
-  )
-
   if (!isFootballSport(sportId)) {
     return []
+  }
+
+  const normalizedDerivedIds = normalizeDerivedMarketIds(derivedMarketIds)
+  const explicitIds = normalizedDerivedIds.filter((id) => MODE_BY_DERIVED_MARKET_ID.has(id))
+  const supportsXUpFeature =
+    Number(marketId || 0) === EARLY_WIN_BASE_MARKET_ID &&
+    normalizedDerivedIds.includes(X_UP_FEATURE_MARKET_ID)
+
+  if (supportsXUpFeature) {
+    return [
+      ...new Set([
+        ...explicitIds,
+        ...getConfiguredDerivedMarketIds(EARLY_WIN_BASE_MARKET_ID)
+      ])
+    ]
   }
 
   return explicitIds

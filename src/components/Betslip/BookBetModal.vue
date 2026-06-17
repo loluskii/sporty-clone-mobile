@@ -65,7 +65,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['hide-modal'])
-const bookingShareCode = computed(() => props.betDetails?.data?.shareCode || props.betDetails?.data?.betslipId || '')
+const bookingShareCode = computed(() => props.betDetails?.bets[0]?.share_code || '')
 
 function hideModal(e) {
   if (e && e.target.classList.contains('booking-code')) {

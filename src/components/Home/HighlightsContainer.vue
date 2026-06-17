@@ -94,7 +94,7 @@ import Countries from '@/components/Home/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
+import { getFeatureMarketIdForMode, getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
@@ -239,8 +239,8 @@ async function setActiveSport(sid) {
   })
 }
 
-const getDerivedOnlyParam = () => {
-  return upMode.value === 'none' ? '' : 1
+const getFeatureMarketIdParam = () => {
+  return getFeatureMarketIdForMode(upMode.value)
 }
 
 async function getHighlightGames({ force = false, preserveContent = false } = {}) {
@@ -264,7 +264,7 @@ async function getHighlightGames({ force = false, preserveContent = false } = {}
         today: tabView.value === 'today' ? 1 : 0,
         order_type: 'priority|desc',
         per_page: 30,
-        derived_only: getDerivedOnlyParam()
+        feature_market_id: getFeatureMarketIdParam()
       })
       if (response.data.fixtures && response.data.markets) {
         fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
@@ -488,7 +488,6 @@ defineComponent({
 }
 
 </style>
-
 
 
 

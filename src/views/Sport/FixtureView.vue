@@ -64,7 +64,8 @@ import {
   getToday2,
   extractIdsFromURL,
   getDateRange,
-  FEED_TOGGLE
+  FEED_TOGGLE,
+  getFeatureMarketIdForMode
 } from '@/helpers'
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
@@ -202,8 +203,8 @@ const fixtureGroupingType = computed(() => {
     : 'default'
 })
 
-const getDerivedOnlyParam = () => {
-  return upMode.value === 'none' ? '' : 1
+const getFeatureMarketIdParam = () => {
+  return getFeatureMarketIdForMode(upMode.value)
 }
 
 watch(
@@ -252,7 +253,7 @@ async function getTournamentFixtures(sid) {
           sid: sid,
           per_page: 30,
           tournament_id: cat.tournamentID,
-          derived_only: getDerivedOnlyParam()
+          feature_market_id: getFeatureMarketIdParam()
         })
       )
     )
@@ -289,7 +290,7 @@ async function getCategoryFixtures(sid, cid) {
       sid,
       per_page: 30,
       category_id: cid,
-      derived_only: getDerivedOnlyParam()
+      feature_market_id: getFeatureMarketIdParam()
     })
     const { fixtures, markets, per_page, page: currentPage, total } = res.data
     lastPage.value = Math.ceil(total / per_page)
@@ -326,7 +327,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
       sid: id,
       page: page.value,
       per_page: 30,
-      derived_only: getDerivedOnlyParam()
+      feature_market_id: getFeatureMarketIdParam()
     }
     if (period) {
       if (period === 'tomorrow') {
@@ -841,23 +842,48 @@ defineComponent({
   -webkit-flex: 1 1 auto;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
-  background-color: var(--background-type1-primary);
+  background-color: var(--background-general-primary);
+  padding: 0.45rem 0.75rem;
+  scrollbar-width: none;
+}
+
+.m-event-list .m-sport-type::-webkit-scrollbar {
+  display: none;
+}
+
+.m-event-list .m-sport-type .m-snap-nav {
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .m-event-list .m-sport-type .m-sport-type-item {
+  align-items: center;
+  background: #e6e7eb;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #53565f;
+  display: inline-flex;
   font-size: 1.066rem;
-  font-weight: normal;
-  padding: 0.61666667rem 1.25rem;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1;
+  min-height: 2.45rem;
+  padding: 0 1.2rem;
   text-transform: capitalize;
-  /* border-radius: 30px; */
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .m-event-list .m-sport-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--brand-active-tab-bg);
+  background: var(--brand-highlight-text);
+  border-color: var(--brand-highlight-text);
+  color: #ffffff;
 }
 
 .m-event-list .m-sport-type .m-sport-type-item:last-child {
-  margin-right: 0.83333333rem;
+  margin-right: 0;
 }
 
 .m-event-list .m-sport-type.m-sport-type-fixed {

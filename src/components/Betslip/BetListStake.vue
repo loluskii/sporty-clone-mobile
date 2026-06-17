@@ -568,8 +568,8 @@ async function book(e) {
     couponStore.isBetslipBooking = false
     e.target.classList.remove('loading-icon')
 
-    if (res.success) {
-      emit('book-bet', res)
+    if (res.status_code === 200) {
+      emit('book-bet', res.data)
     } else {
       // Handle error display or other actions as needed
       emit('toggle-betslip')

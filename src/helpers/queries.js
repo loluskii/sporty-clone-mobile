@@ -361,8 +361,15 @@ export const getLiveCountBySport = async (sid) => {
 }
 
 export const getSportHighlights = async (payload) => {
-  const { sid = 1, page = 1, per_page = 60, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority|asc', derived_only = '' } = payload;
-  const params = new URLSearchParams({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end, derived_only })
+  const { sid = 1, page = 1, per_page = 60, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority|asc', feature_market_id = '' } = payload;
+  const params = new URLSearchParams()
+  Object.entries({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end, feature_market_id }).forEach(
+    ([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        params.set(key, value)
+      }
+    }
+  )
   return parseData(
     fetchWrapper.get(
       `${NEW_FIXTURES_API}/v1/fixtures/highlights/${sid}?${params}`
