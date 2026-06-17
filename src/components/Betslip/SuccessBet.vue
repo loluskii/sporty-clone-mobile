@@ -1,37 +1,56 @@
 <template>
   <div class="success-wrap">
     <div class="success-dialog">
-      <div style="align-items: center; text-align: center">
-        <img
-          src="@/assets/images/checklist.png"
-          style="height: 80px; align-items: center; margin-bottom: 15px; filter: grayscale()"
-          alt=""
-          sizes=""
-          srcset=""
-        />
+      <div class="success-hero">
+        <div class="success-badge" aria-hidden="true">
+          <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="28" fill="currentColor" />
+            <path
+              d="M17.5 28.8L24.25 35.55L39.5 20.45"
+              stroke="white"
+              stroke-width="5.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <p class="success-kicker">Ticket accepted</p>
+        <h3 class="title">
+          <span>Bet Successful</span>
+        </h3>
       </div>
-      <h3 class="title">
-        <span>Bet Successful</span>
-      </h3>
-      <ul class="list">
+
+      <ul class="list" aria-label="Bet summary">
         <li data-op="betslip-success-stake">
           <span>Total Stake</span>
-          <span>{{ formatNumber(response.data.bets[0].stake) }}</span>
+          <strong>{{ formatNumber(stake) }}</strong>
         </li>
 
         <li>
           <span>Potential Win</span>
-          <span>{{ formatNumber(response.data.bets[0].possibleWin) }}</span>
+          <strong>{{ formatNumber(possibleWin) }}</strong>
         </li>
+
         <li class="share-code">
-          <span><span>Booking Code</span> <em></em></span>
-          <span>
-            <span @click="activateShare">
+          <span class="share-code-label">
+            <span>Booking Code</span>
+            <span
+              class="booking-info"
+              aria-hidden="true"
+            >
+              i
+            </span>
+          </span>
+          <strong class="booking-code-value">
+            <button
+              class="booking-icon-btn"
+              type="button"
+              aria-label="Share booking code"
+              @click="activateShare"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 18 18"
-                height="22px"
-                width="22px"
                 class="svg-icon-base"
               >
                 <g fill="none" fill-rule="evenodd">
@@ -43,14 +62,17 @@
                   ></path>
                 </g>
               </svg>
-            </span>
-            <span data-clipboard-text="FB40C24" @click="copyToClipboard(response.data.bets[0].share_code)">
+            </button>
+            <button
+              class="booking-icon-btn"
+              type="button"
+              :aria-label="copied ? 'Booking code copied' : 'Copy booking code'"
+              @click="copyToClipboard(shareCode)"
+            >
               <svg
                 viewBox="5 2 15 20"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                height="18px"
-                width="18px"
                 class="svg-icon-base"
               >
                 <path
@@ -58,22 +80,27 @@
                   fill="currentColor"
                 ></path>
               </svg>
-            </span>
-            {{ response.data.bets[0].share_code }}
-          </span>
+            </button>
+            <span class="booking-code-text">{{ shareCode }}</span>
+          </strong>
         </li>
       </ul>
 
       <div class="jump-box">
-        <span data-op="betslip-success-history" @click="viewOpenBets">View Open Bets</span>
-        <i></i>
+        <button data-op="betslip-success-history" type="button" @click="viewOpenBets">
+          <span>View Open Bets</span>
+          <i></i>
+        </button>
       </div>
     </div>
+
+    <div v-if="copied" class="success-toast">Booking code copied</div>
+
     <div class="btn-box">
-      <button class="af-button rebet af-button--primary" @click="$emit('rebet')">
+      <button class="af-button rebet af-button--primary" type="button" @click="$emit('rebet')">
         <span><span data-cms-key="rebet">Rebet</span></span>
       </button>
-      <button class="af-button btn-ok af-button--primary" @click="$emit('hide-success')">
+      <button class="af-button btn-ok af-button--primary" type="button" @click="$emit('hide-success')">
         <span><span data-cms-key="ok" style="color: white">OK</span></span>
       </button>
     </div>
@@ -83,12 +110,20 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { formatNumber } from '@/helpers'
+import { computed, ref } from 'vue'
 const router = useRouter()
 const props = defineProps({
   response: Object
 })
 
 const emit = defineEmits(['hide-success', 'rebet', 'activate-share'])
+const copied = ref(false)
+
+const firstBet = computed(() => props.response?.data?.bets?.[0] || {})
+const stake = computed(() => firstBet.value?.stake || 0)
+const possibleWin = computed(() => firstBet.value?.possibleWin || 0)
+const shareCode = computed(() => firstBet.value?.share_code || '')
+
 function viewOpenBets() {
   emit('hide-success')
   return router.push({ name: 'bets-view' })
@@ -98,20 +133,31 @@ function activateShare() {
   emit('activate-share', props.response)
 }
 
-function copyToClipboard(text) {
+async function copyToClipboard(text) {
+  if (!text) return
   const textarea = document.createElement('textarea')
   textarea.value = text
   document.body.appendChild(textarea)
   textarea.select()
 
   try {
-    navigator.clipboard.writeText(text)
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      document.execCommand('copy')
+    }
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 1600)
   } catch (err) {
     console.error('Unable to copy to clipboard', err)
+  } finally {
+    document.body.removeChild(textarea)
   }
 }
 </script>
-<style>
+<style scoped>
 .success-wrap {
   bottom: 0;
   -webkit-box-sizing: border-box;
@@ -121,27 +167,75 @@ function copyToClipboard(text) {
   left: 0;
   position: absolute;
   width: 100%;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .success-wrap .success-dialog {
-  background: #ffffff;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(42, 201, 99, 0.14), transparent 15rem),
+    #ffffff;
   bottom: 0px;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #353a45;
   overflow: auto;
-  padding: 1.33333333rem 2.66666667rem 6.33333333rem 2.66666667rem;
+  padding: 2.25rem 1.35rem 6.5rem;
   position: absolute;
   width: 100%;
   z-index: 333;
+  border-radius: 1.35rem 1.35rem 0 0;
+  box-shadow: 0 -0.5rem 1.8rem rgba(16, 24, 40, 0.14);
+}
+
+.success-hero {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.success-badge {
+  color: var(--brand-highlight-text, #16a34a);
+  display: grid;
+  height: 5.2rem;
+  margin-bottom: 0.85rem;
+  place-items: center;
+  position: relative;
+  width: 5.2rem;
+}
+
+.success-badge::before {
+  background: currentColor;
+  border-radius: 999px;
+  content: '';
+  inset: -0.55rem;
+  opacity: 0.1;
+  position: absolute;
+}
+
+.success-badge svg {
+  filter: drop-shadow(0 0.55rem 0.9rem rgba(0, 145, 70, 0.24));
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.success-kicker {
+  color: var(--brand-highlight-text, #16a34a);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
 }
 
 .success-wrap .success-dialog .title {
-  font-size: 1.66666667rem;
-  font-weight: bold;
-  line-height: 1.83333333rem;
-  padding-bottom: 1.75rem;
+  color: #1f2430;
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 2rem;
+  margin: 0;
+  padding-bottom: 1.45rem;
   text-align: center;
 }
 
@@ -173,20 +267,30 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .list {
-  border-bottom: 1px solid #353a45;
-  border-top: 1px solid #353a45;
-  margin: 0 0.83333333rem;
-  padding: 0.83333333rem 0;
+  background: #f7f8fa;
+  border: 1px solid #eef0f4;
+  border-radius: 1.05rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.45rem 0.95rem;
 }
 
 .success-wrap .success-dialog .list li {
+  align-items: center;
+  border-bottom: 1px solid rgba(53, 58, 69, 0.08);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  font-size: 1.066rem;
-  line-height: 2.66666667rem;
-  min-height: 2.66666667rem;
+  font-size: 1rem;
+  gap: 1rem;
+  line-height: 1.25rem;
+  min-height: 3.4rem;
+  padding: 0.35rem 0;
+}
+
+.success-wrap .success-dialog .list li:last-child {
+  border-bottom: 0;
 }
 
 .success-wrap .success-dialog .list li span {
@@ -196,13 +300,17 @@ function copyToClipboard(text) {
   flex: 1 0 0%;
 }
 
-.success-wrap .success-dialog .list li span:last-child {
-  font-weight: bold;
+.success-wrap .success-dialog .list li strong {
+  color: #252a36;
+  flex: 1 0 0%;
+  font-size: 1.08rem;
+  font-weight: 900;
   text-align: right;
 }
 
 .success-wrap .success-dialog .list li span:first-child {
-  color: #9ca0ab;
+  color: #8f96a3;
+  font-weight: 700;
 }
 
 .success-wrap .success-dialog .list li.share-code img {
@@ -211,18 +319,63 @@ function copyToClipboard(text) {
   transform: translateY(-2px);
 }
 
-.success-wrap .success-dialog .list li.share-code i {
-  border: solid 1px var(--brand-primary);
-  border-radius: 2px;
-  color: var(--brand-primary);
-  display: inline-block;
-  font-size: 1rem;
-  height: 2.5rem;
-  line-height: 2.5rem;
-  margin-right: 0.58333333rem;
-  text-align: center;
-  vertical-align: middle;
-  width: 4.66666667rem;
+.share-code-label {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.booking-info {
+  align-items: center;
+  background: #a2a7b3;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 900;
+  height: 1.25rem;
+  justify-content: center;
+  width: 1.25rem;
+}
+
+.booking-code-value {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7ec;
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto !important;
+  gap: 0.45rem;
+  justify-content: flex-end;
+  padding: 0.45rem 0.65rem;
+  text-align: right;
+}
+
+.booking-icon-btn {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #8f96a3;
+  cursor: pointer;
+  display: inline-flex;
+  height: 1.35rem;
+  justify-content: center;
+  padding: 0;
+  width: 1.35rem;
+}
+
+.booking-icon-btn .svg-icon-base {
+  height: 1.22rem;
+  width: 1.22rem;
+}
+
+.booking-code-text {
+  color: #252a36 !important;
+  flex: 0 0 auto !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em;
+  text-align: right;
 }
 
 .success-wrap .success-dialog .list li.share-code em:before {
@@ -246,13 +399,23 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .jump-box {
-  margin-top: 3rem;
+  margin-top: 1.25rem;
   text-align: center;
 }
 
-.success-wrap .success-dialog .jump-box span {
-  color: var(--brand-primary);
-  font-size: 1rem;
+.success-wrap .success-dialog .jump-box button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--brand-highlight-text, #16a34a);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.05rem;
+  font-weight: 900;
+  gap: 0.35rem;
+  justify-content: center;
+  min-height: 2.8rem;
+  padding: 0 0.5rem;
 }
 
 .success-wrap .success-dialog .jump-box i {
@@ -271,7 +434,7 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .success-dialog .jump-box i::before {
-  color: var(--brand-primary);
+  color: var(--brand-highlight-text, #16a34a);
 }
 
 .success-wrap .success-dialog .bottomImg {
@@ -315,10 +478,11 @@ function copyToClipboard(text) {
   position: absolute;
   width: 100%;
   z-index: 350;
+  box-shadow: 0 -0.25rem 1rem rgba(16, 24, 40, 0.08);
 }
 
 .success-wrap .btn-box .rebet {
-  background-color: #353a45;
+  background-color: #252a36;
   border: none;
   border-radius: 0;
   line-height: 4rem;
@@ -327,7 +491,7 @@ function copyToClipboard(text) {
 }
 
 .success-wrap .btn-box .btn-ok {
-  background-color: var(--brand-primary);
+  background-color: var(--brand-primary-button, var(--brand-primary));
   border: none;
   border-radius: 0;
   -webkit-box-flex: 1;
@@ -337,5 +501,19 @@ function copyToClipboard(text) {
   line-height: 4rem;
   padding: 0 2.08333333rem;
   color: black;
+}
+
+.success-toast {
+  background: rgba(31, 36, 48, 0.92);
+  border-radius: 999px;
+  bottom: 5.2rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  left: 50%;
+  padding: 0.62rem 1rem;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 360;
 }
 </style>
