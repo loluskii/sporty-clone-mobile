@@ -4,10 +4,10 @@ export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
 export const NEW_FIXTURES_API = 'https://fixture.sportsbookengine.com'
 export const NEW_BET_API = 'https://bet.staging.sportsbookengine.com/v1'
 export const BET_PROXY_API = import.meta.env.VITE_BET_PROXY_API || '/bet'
-export const CASINO_CLIENT_API =
-  import.meta.env.VITE_CASINO_CLIENT_API || 'https://clientapi.sportsbookengine.com/client'
-export const CASINO_PROVIDER_API =
-  import.meta.env.VITE_CASINO_PROVIDER_API || 'https://clientapi.sportsbookengine.com'
+export const CASINO_CLIENT_API = import.meta.env.VITE_CASINO_CLIENT_API || '/casino-client'
+export const CASINO_PROVIDER_API = import.meta.env.VITE_CASINO_PROVIDER_API || CASINO_CLIENT_API
+export const CASINO_PROVIDER_PUBLIC_API =
+  import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API || 'https://clientapi.sportsbookengine.com'
 export const CLIENT_ID = 4
 // export const FEEDS_API = import.meta.env.VITE_FEEDS_API
 // export const FEEDS_API_BASE = import.meta.env.VITE_FEEDS_API?.replace('/v1', '') || ''

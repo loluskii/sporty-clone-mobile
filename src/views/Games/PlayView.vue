@@ -22,7 +22,7 @@ import { useRoute } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
 import Cookies from 'js-cookie'
-import { CASINO_PROVIDER_API } from '@/helpers/constants'
+import { CASINO_PROVIDER_PUBLIC_API } from '@/helpers/constants'
 
 const route = useRoute()
 const isLoading = ref(false)
@@ -95,9 +95,9 @@ async function getCasinoURL() {
           currency: 'NGN',
           country: 'NG',
           lang: 'en_US',
-          device: 'mobile',
+          device: 'desktop',
           walletSessionId: bearerToken,
-          lobbyUrl: `${CASINO_PROVIDER_API}/providers/qtech/accounts/${id}/session?gameId=${gameCode}`,
+          lobbyUrl: `${CASINO_PROVIDER_PUBLIC_API}/providers/qtech/accounts/${id}/session?gameId=${gameCode}`,
           mode: 'real'
         },
         bearerToken
