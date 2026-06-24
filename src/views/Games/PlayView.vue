@@ -11,35 +11,22 @@
 </template>
 
 <script setup>
-import { watch, ref, onMounted, onBeforeMount, computed } from 'vue'
+import { watch, ref } from 'vue'
 import {
   getCasinoStartUrl,
   getCasinoGameById,
-  getGoldenRaceLobbyUrl,getQtechLaunchUrl,
-  gamesByTopCategory,
-  slugify,
-  getSmatVirtualStartUrl
+  getGoldenRaceLobbyUrl,
+  getQtechLaunchUrl
 } from '@/helpers'
-import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
+import { useRoute } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
-import emitter from '@/plugins/emitter'
 import Cookies from 'js-cookie'
-import HeaderCasinoPlay from '../../components/HeaderCasinoPlay.vue'
-import leaveCasinoPopup from '../../components/Casino/leaveCasinoPopup.vue'
-import { useUtilsStore } from '@/stores'
+import { CASINO_PROVIDER_API } from '@/helpers/constants'
 
 const route = useRoute()
-const router = useRouter()
-const gameURL = ref('')
 const isLoading = ref(false)
 const { currentUser } = useUsersStore()
-const utilsStore = useUtilsStore()
-const showRecommendedGames = ref(false)
-const gamesList = ref([])
-const confirmLeave = ref(null)
-const bonus = ref(null)
-const previousRoute = ref(null)
 const errorState = ref(false)
 
 watch(
@@ -61,6 +48,7 @@ async function getCasinoURL() {
     const selectedGame = game_id === 'smat_virtual' ? null : await getCasinoGameById(game_id)
     const isGoldenRace = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '3'
     const isQtechGames = String(selectedGame?.providerId || selectedGame?.provider_id || '') === '4'
+    const gameCode = String(selectedGame?.gameCode || selectedGame?.game_code || game_id || '')
 
     let payload = {
       gameId: parseInt(game_id),
@@ -93,34 +81,38 @@ async function getCasinoURL() {
           mode: '1',
           language: 'en',
           group: 'master',
-          game: String(selectedGame?.gameCode || selectedGame?.game_code || ''),
+          game: gameCode,
           category_id: String(selectedGame?.categoryId || selectedGame?.category_id || ''),
-          currency: "NGN"
+          currency: 'NGN'
         },
         bearerToken
       )
-    } else if(isQtechGames) {
+    } else if (isQtechGames) {
       res = await getQtechLaunchUrl(
-        selectedGame?.game_code,
+        gameCode,
         {
           playerId: id,
-          currency: "NGN",
-          country: "NG",
-          lang: "en_US",
-          device: "mobile",
+          currency: 'NGN',
+          country: 'NG',
+          lang: 'en_US',
+          device: 'mobile',
           walletSessionId: bearerToken,
-          lobbyUrl: `https://clientapi.sportsbookengine.com/providers/qtech/accounts/${id}/session?gameId=${selectedGame.game_code}`,
-          mode: "real"
+          lobbyUrl: `${CASINO_PROVIDER_API}/providers/qtech/accounts/${id}/session?gameId=${gameCode}`,
+          mode: 'real'
         },
         bearerToken
       )
-    }
-    else {
+    } else {
       res = await getCasinoStartUrl(payload, 'real')
     }
-    debugger
 
-    window.location.href = res.launchUrl
+    const launchUrl = res?.launchUrl || res?.url || res?.data?.launchUrl || res?.data?.url
+
+    if (!launchUrl) {
+      throw new Error(`Casino launch response did not include a launch URL: ${JSON.stringify(res)}`)
+    }
+
+    window.location.href = launchUrl
   } catch (error) {
     errorState.value = true
     console.error(error)
@@ -128,14 +120,6 @@ async function getCasinoURL() {
     isLoading.value = false
   }
 }
-
-onMounted(async () => {
-  await getCasinoURL()
-  router.beforeEach((to, from, next) => {
-    previousRoute.value = from.fullPath // Store the previous route
-    next()
-  })
-})
 </script>
 
 <style scoped>

@@ -21,16 +21,6 @@ export default ({ mode }) => {
           target: 'https://bet.staging.sportsbookengine.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/bet/, '/v1')
-        },
-        '/casino-client/providers': {
-          target: 'https://clientapi.sportsbookengine.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/casino-client/, '')
-        },
-        '/casino-client': {
-          target: 'https://clientapi.sportsbookengine.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/casino-client/, '/client')
         }
       }
     }

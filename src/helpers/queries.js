@@ -5,6 +5,7 @@ import {
   BASE_API,
   BET_PROXY_API,
   CASINO_CLIENT_API,
+  CASINO_PROVIDER_API,
   CLIENT_ID,
   NEW_BASE_API,
   NEW_BET_API,
@@ -507,6 +508,22 @@ export const loadBetslipByCode = async (shareCode) => {
   )
 }
 
+export const fetchCustomCodes = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/custom-codes`))
+}
+
+export const createCustomCode = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/custom-codes`, payload))
+}
+
+export const deleteCustomCode = async (code) => {
+  return parseData(fetchWrapper.delete(`${NEW_BET_API}/${CLIENT_ID}/custom-codes/${code}`))
+}
+
+export const assignCustomCode = async (code, payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/custom-codes/${code}/assign`, payload))
+}
+
 export const getPromotions = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/games/promotions?clientId=${import.meta.env.VITE_CLIENT_ID}`)
@@ -595,7 +612,7 @@ export const getCasinoStartUrl = async (payload) => {
 
 export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/goldenrace/lobby`, payload, {
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/goldenrace/lobby`, payload, {
       authToken,
       skipAuthLogout: true
     })
@@ -604,7 +621,7 @@ export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
 
 export const getQtechLaunchUrl = async (gameId, payload, authToken) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_CLIENT_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
       authToken,
       skipAuthLogout: true
     })
