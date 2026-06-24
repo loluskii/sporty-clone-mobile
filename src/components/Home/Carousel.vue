@@ -62,7 +62,7 @@
                 v-if="activeStory.link"
                 class="story-cta"
                 type="button"
-                @click="goToSlide(activeStory)"
+                @click.stop="goToSlide(activeStory)"
               >
                 Open
               </button>
@@ -355,7 +355,7 @@ onBeforeUnmount(() => {
   left: 1rem;
   position: absolute;
   right: 1rem;
-  z-index: 2;
+  z-index: 4;
 }
 
 .story-caption-title {
