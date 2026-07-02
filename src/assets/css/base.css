@@ -590,7 +590,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 
@@ -601,7 +601,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 17px;
+    font-size: 15px;
   }
 }
 
@@ -612,7 +612,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 
