@@ -397,7 +397,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 @media screen and (min-width: 450px) {
@@ -407,7 +407,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 17px;
+    font-size: 15px;
   }
 }
 @media screen and (min-width: 480px) {
@@ -417,7 +417,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 @media screen and (min-width: 540px) {
@@ -427,7 +427,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 20.25px;
+    font-size: 18.25px;
   }
 }
 @media screen and (min-width: 600px) {
