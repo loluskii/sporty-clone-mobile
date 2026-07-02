@@ -48,6 +48,32 @@
         </button>
       </div>
     </div>
+    <div v-if="dialogIsNotification" class="es-dialog m-dialog app-notification-dialog">
+      <div class="es-dialog-body m-dialog-body">
+        <div class="es-dialog-main m-dialog-main app-notification-main">
+          <div class="app-notification-eyebrow">Notifications</div>
+          <h3>Latest updates</h3>
+          <div class="app-notification-list">
+            <article
+              v-for="(notification, index) in notificationItems"
+              :key="notification.id || notification.notificationId || index"
+              class="app-notification-item"
+            >
+              <span class="app-notification-dot"></span>
+              <div>
+                <h4>{{ notification.title || notification.subject || 'Notification' }}</h4>
+                <p>{{ notification.message || notification.body || notification.content || notification.text }}</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="m-dialog-footer es-dialog-footer">
+        <button type="button" @click.prevent="$emit('hide-dialogue')" class="es-dialog-btn app-error-ok">
+          OK
+        </button>
+      </div>
+    </div>
     <WithdrawalModal
       v-if="dialogIsWithdrawal"
       @close-modal="$emit('hide-dialogue')"
@@ -87,6 +113,7 @@ const dialogIsError = ref(false)
 const dialogIsWithdrawal = ref(false)
 const dialogIsToast = ref(false)
 const dialogIsBetslip = ref(false)
+const dialogIsNotification = ref(false)
 const isReplacingBetslip = ref(false)
 const router = useRouter()
 const couponStore = useCouponStore()
@@ -107,6 +134,17 @@ const betslipCancelText = computed(() => dialogueData.value.cancelText || 'Keep 
 const betslipConfirmText = computed(() => dialogueData.value.confirmText || 'Replace')
 const betslipPendingText = computed(() => dialogueData.value.pendingText || 'Replacing...')
 const errorDialogTitle = computed(() => dialogueData.value.title || 'Notice')
+const notificationItems = computed(() => {
+  const data =
+    dialogueData.value.notifications ||
+    dialogueData.value.data?.notifications ||
+    dialogueData.value.data ||
+    []
+
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.items)) return data.items
+  return []
+})
 
 const dialogueType = () => {
   switch (props.dialogueType) {
@@ -121,6 +159,9 @@ const dialogueType = () => {
       break
     case 'betslip':
       dialogIsBetslip.value = true
+      break
+    case 'notification':
+      dialogIsNotification.value = notificationItems.value.length > 0
       break
 
     default:
@@ -440,6 +481,73 @@ onMounted(() => {
 .betslip-replace-dialog .es-dialog-footer .es-dialog-btn:disabled {
   opacity: 0.65;
 }
+
+.app-notification-dialog {
+  max-width: 24rem;
+  overflow: hidden;
+  border-radius: 1.25rem;
+}
+
+.app-notification-main {
+  min-height: auto !important;
+  padding: 1.5rem 1.25rem 0.25rem !important;
+  text-align: left !important;
+}
+
+.app-notification-eyebrow {
+  color: var(--brand-primary, #0f9f45);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-notification-main h3 {
+  margin: 0.4rem 0 1rem;
+  color: #2f3542;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.app-notification-list {
+  display: grid;
+  gap: 0.75rem;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.app-notification-item {
+  display: grid;
+  grid-template-columns: 0.65rem 1fr;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e7ebf1;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+}
+
+.app-notification-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.4rem;
+  border-radius: 50%;
+  background: var(--brand-primary, #0f9f45);
+}
+
+.app-notification-item h4 {
+  margin: 0 0 0.25rem;
+  color: #303642;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.app-notification-item p {
+  margin: 0;
+  color: #717988;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
 .es-dialog.es-ani-show {
   -webkit-transition:
     width,

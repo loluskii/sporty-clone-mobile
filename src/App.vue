@@ -18,7 +18,8 @@ import {
   validateBetslipSelections,
   fetchBanners,
   getUserCashbackBonus,
-  getBanksList
+  getBanksList,
+  fetchUserNotifications
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
@@ -55,6 +56,7 @@ const depositWithdrawalShown = ref(false)
 const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
+let notificationRequestInFlight = false
 // Centralized handler to close betslip from child features (e.g., simulation end).
 const closeBetslip = async () => {
   if (!showBetslip.value) return
@@ -68,6 +70,13 @@ const winModalCurrency = ref('')
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
 })
+
+watch(
+  () => usersStore.currentUser?.id,
+  () => {
+    loadUserNotifications()
+  }
+)
 
 async function toggleBetslip() {
   couponStore.recordAbandonedBetslipInteraction()
@@ -120,6 +129,55 @@ function showWinModal(data = {}) {
 
 function hideWinModal() {
   winModalShown.value = false
+}
+
+function getNotificationItems(payload) {
+  const looksLikeNotification = (value) => {
+    return Boolean(
+      value &&
+        typeof value === 'object' &&
+        (value.id ||
+          value.notificationId ||
+          value.title ||
+          value.subject ||
+          value.body ||
+          value.content ||
+          value.text)
+    )
+  }
+  const data = payload?.data ?? payload?.notifications ?? payload?.notification ?? payload
+
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.notifications)) return data.notifications
+  if (Array.isArray(data?.items)) return data.items
+  if (Array.isArray(data?.data)) return data.data
+  if (looksLikeNotification(data)) return [data]
+
+  return []
+}
+
+async function loadUserNotifications() {
+  if (!isAuthenticated.value || !usersStore.currentUser?.id || notificationRequestInFlight) return
+
+  const sessionKey = `sbe:notification-modal:${CLIENT_ID}:${usersStore.currentUser.id}`
+  if (window.sessionStorage.getItem(sessionKey)) return
+
+  notificationRequestInFlight = true
+  try {
+    const response = await fetchUserNotifications()
+    const notifications = getNotificationItems(response)
+
+    if (!notifications.length) return
+
+    dialogueMessage.value = { notifications }
+    dialogueType.value = 'notification'
+    dialogueShown.value = true
+    window.sessionStorage.setItem(sessionKey, '1')
+  } catch (error) {
+    console.warn('Failed to load user notifications:', error)
+  } finally {
+    notificationRequestInFlight = false
+  }
 }
 
 function showDepositWithdrawal(data) {
@@ -344,6 +402,7 @@ onMounted(async () => {
     isLoading.value = false
   }
 
+  await loadUserNotifications()
   couponStore.startAbandonedBetslipTracker()
 
   emitter.on('openBetslip', toggleBetslip)

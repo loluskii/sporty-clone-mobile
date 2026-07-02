@@ -741,6 +741,10 @@ export const getUserCashbackBonus = async () => {
   )
 }
 
+export const fetchUserNotifications = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/notification/user`))
+}
+
 export const checkFirstDeposit = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/bonus/user/check-deposit-bonus?client_id=${CLIENT_ID}`)
