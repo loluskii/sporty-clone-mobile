@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, computed } from 'vue'
+import { defineComponent, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
 import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
@@ -70,6 +70,7 @@ const isAuthenticated = computed(() => {
 })
 
 async function toggleBetslip() {
+  couponStore.recordAbandonedBetslipInteraction()
   showBetslip.value = !showBetslip.value
   if (showBetslip.value) {
     document.body.style.overflowY = 'hidden'
@@ -343,6 +344,8 @@ onMounted(async () => {
     isLoading.value = false
   }
 
+  couponStore.startAbandonedBetslipTracker()
+
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
   emitter.on('showBetslipConfirmation', handleBetslipConfirmation)
@@ -355,6 +358,10 @@ onMounted(async () => {
   emitter.on('showDepositWithdrawalModal', showDepositWithdrawal)
   emitter.on('showWinModal', showWinModal)
   emitter.on('closeBetslip', closeBetslip)
+})
+
+onBeforeUnmount(() => {
+  couponStore.stopAbandonedBetslipTracker()
 })
 
 defineComponent({

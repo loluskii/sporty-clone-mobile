@@ -27,6 +27,7 @@ import {
   previewAccaBonus,
   previewCutOne,
   previewFlex,
+  reportBetslipAbandoned,
   CLIENT_ID,
   validateBetslipSelections,
   formatNumber,
@@ -38,6 +39,19 @@ import { useMqttService } from '@/composables/useMqtt'
 const couponCalculation = new CouponCalculation()
 const WTH_PERC = import.meta.env.VITE_WTH_PERC
 const { subscribe } = useMqttService()
+const configuredAbandonedBetslipTimeout = Number(import.meta.env.VITE_ABANDONED_BETSLIP_TIMEOUT_MS)
+const ABANDONED_BETSLIP_TIMEOUT_MS =
+  Number.isFinite(configuredAbandonedBetslipTimeout) && configuredAbandonedBetslipTimeout > 0
+    ? configuredAbandonedBetslipTimeout
+    : 60 * 60 * 1000
+const ABANDONED_BETSLIP_STORAGE_KEY = `sbe:abandoned-betslip:${CLIENT_ID}`
+
+let abandonedBetslipTimer = null
+let abandonedBetslipUnsubscribe = null
+let abandonedBetslipSessionId = ''
+let abandonedBetslipPendingEventId = ''
+let abandonedBetslipLastActivitySignature = ''
+let abandonedBetslipLastReportedSignature = ''
 
 // Shared payload shape for all preview endpoints — server derives odds/eligibility
 // from these identifiers, so clients only need to send selection coordinates.
@@ -65,6 +79,98 @@ const getSpecifierSegmentValue = (specifier = '', key = '') => {
 const toEarlyGoalBaseSpecifier = (specifier = '') => {
   const total = getSpecifierSegmentValue(specifier, 'total')
   return total ? `total=${total}` : String(specifier || '')
+}
+
+const parseCouponNumber = (value) => {
+  const parsed = Number(String(value ?? 0).replace(/,/g, ''))
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const buildAbandonedBetslipActivitySignature = (coupon = {}) => {
+  const selections = Array.isArray(coupon.selections) ? coupon.selections : []
+
+  return JSON.stringify({
+    selections: selections.map((selection = {}) => ({
+      matchId: String(selection.matchId || selection.match_id || ''),
+      marketId: String(selection.marketId || selection.market_id || ''),
+      outcomeId: String(selection.outcomeId || selection.outcomeID || selection.odd_id || ''),
+      specifier: String(selection.specifier || selection.specifiers || '')
+    }))
+  })
+}
+
+const createAbandonedBetslipId = (prefix = 'betslip') => {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+const readAbandonedBetslipStorage = () => {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const storedValue = window.localStorage.getItem(ABANDONED_BETSLIP_STORAGE_KEY)
+    return storedValue ? JSON.parse(storedValue) : null
+  } catch (error) {
+    console.warn('Failed to read abandoned betslip storage:', error)
+    return null
+  }
+}
+
+const writeAbandonedBetslipStorage = (payload) => {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(ABANDONED_BETSLIP_STORAGE_KEY, JSON.stringify(payload))
+  } catch (error) {
+    console.warn('Failed to persist abandoned betslip storage:', error)
+  }
+}
+
+const clearAbandonedBetslipStorage = () => {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.removeItem(ABANDONED_BETSLIP_STORAGE_KEY)
+  } catch (error) {
+    console.warn('Failed to clear abandoned betslip storage:', error)
+  }
+}
+
+const buildAbandonedSelectionSnapshot = (selection = {}) => ({
+  fixtureId: String(selection.matchId || selection.match_id || selection.fixtureId || ''),
+  matchId: selection.matchId || selection.match_id || null,
+  eventId: selection.eventId || selection.event_id || null,
+  sportId: selection.sportId || selection.sportID || selection.fixture?.sportID || null,
+  producerId: selection.producerId || selection.producerID || selection.fixture?.producerID || 0,
+  marketId: Number(selection.marketId || selection.market_id || 0),
+  marketName: selection.marketName || selection.market_name || '',
+  outcomeId: String(selection.outcomeId || selection.outcomeID || selection.odd_id || ''),
+  outcomeName: selection.outcomeName || selection.outcome_name || selection.name || '',
+  specifier: String(selection.specifier || selection.specifiers || ''),
+  odds: parseCouponNumber(selection.odds),
+  eventName: selection.eventName || selection.fixture?.name || selection.matchName || '',
+  startTime: selection.startTime || selection.date || selection.fixture?.date || null,
+  type: selection.type || ''
+})
+
+const buildAbandonedBetslipSnapshot = (coupon = {}) => {
+  const selections = Array.isArray(coupon.selections) ? coupon.selections : []
+  const potentialPayout = parseCouponNumber(coupon.maxWin || coupon.grossWin || coupon.potentialPayout || 0)
+
+  return {
+    betslipType: coupon.betslip_type,
+    betType: coupon.bet_type,
+    stake: parseCouponNumber(coupon.stake),
+    totalStake: parseCouponNumber(coupon.totalStake),
+    totalOdds: parseCouponNumber(coupon.totalOdds),
+    potentialPayout,
+    useBonus: Boolean(coupon.useBonus),
+    useCashback: Boolean(coupon.useCashback),
+    useCutOne: Boolean(coupon.useCutOne),
+    useFlex: Boolean(coupon.useFlex),
+    flexAmount: parseCouponNumber(coupon.flexAmount),
+    useEarlyGoal: Boolean(coupon.useEarlyGoal),
+    selections: selections.map(buildAbandonedSelectionSnapshot)
+  }
 }
 
 export const useCouponStore = defineStore({
@@ -136,6 +242,203 @@ export const useCouponStore = defineStore({
     betslipMode: (state) => state.mode === 'sim'
   },
   actions: {
+    startAbandonedBetslipTracker() {
+      if (abandonedBetslipUnsubscribe) {
+        return
+      }
+
+      abandonedBetslipUnsubscribe = this.$subscribe(
+        () => {
+          this.handleAbandonedBetslipActivity()
+        },
+        { detached: true }
+      )
+
+      this.handleAbandonedBetslipActivity()
+    },
+    stopAbandonedBetslipTracker() {
+      if (typeof abandonedBetslipUnsubscribe === 'function') {
+        abandonedBetslipUnsubscribe()
+      }
+
+      abandonedBetslipUnsubscribe = null
+      this.clearAbandonedBetslipTimer()
+    },
+    clearAbandonedBetslipTimer({ resetSession = false, clearStorage = false } = {}) {
+      if (abandonedBetslipTimer) {
+        clearTimeout(abandonedBetslipTimer)
+      }
+
+      abandonedBetslipTimer = null
+      abandonedBetslipPendingEventId = ''
+
+      if (resetSession || clearStorage) {
+        clearAbandonedBetslipStorage()
+      }
+
+      if (resetSession) {
+        abandonedBetslipSessionId = ''
+        abandonedBetslipLastActivitySignature = ''
+        abandonedBetslipLastReportedSignature = ''
+      }
+    },
+    handleAbandonedBetslipActivity() {
+      const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
+      if (!selections.length) {
+        const storedSession = readAbandonedBetslipStorage()
+        if (storedSession?.snapshot?.selections?.length) {
+          if (abandonedBetslipTimer && storedSession.signature === abandonedBetslipLastActivitySignature) {
+            return
+          }
+
+          abandonedBetslipSessionId = storedSession.sessionId || ''
+          abandonedBetslipPendingEventId = storedSession.eventId || ''
+          abandonedBetslipLastActivitySignature = storedSession.signature || ''
+          this.scheduleAbandonedBetslipReport(storedSession.signature, {
+            eventId: storedSession.eventId,
+            lastActivityAt: Number(storedSession.lastActivityAt || Date.now()),
+            snapshot: storedSession.snapshot,
+            potentialPayout: parseCouponNumber(storedSession.potentialPayout),
+            totalLegs: Number(storedSession.totalLegs || storedSession.snapshot.selections.length)
+          })
+          return
+        }
+
+        this.clearAbandonedBetslipTimer({ resetSession: true })
+        return
+      }
+
+      const nextSignature = buildAbandonedBetslipActivitySignature(this.coupon)
+      if (nextSignature === abandonedBetslipLastActivitySignature && abandonedBetslipTimer) {
+        this.refreshStoredAbandonedBetslipSnapshot(nextSignature)
+        return
+      }
+
+      const storedSession = readAbandonedBetslipStorage()
+      if (nextSignature === abandonedBetslipLastReportedSignature && !storedSession) {
+        return
+      }
+
+      abandonedBetslipLastActivitySignature = nextSignature
+
+      if (storedSession?.signature === nextSignature && Number(storedSession?.lastActivityAt || 0) > 0) {
+        abandonedBetslipSessionId = storedSession.sessionId || ''
+        abandonedBetslipPendingEventId = storedSession.eventId || ''
+        this.scheduleAbandonedBetslipReport(nextSignature, {
+          eventId: storedSession.eventId,
+          lastActivityAt: Number(storedSession.lastActivityAt)
+        })
+        return
+      }
+
+      this.scheduleAbandonedBetslipReport(nextSignature)
+    },
+    refreshStoredAbandonedBetslipSnapshot(signature) {
+      const storedSession = readAbandonedBetslipStorage()
+      if (!storedSession || storedSession.signature !== signature) return
+
+      const snapshot = buildAbandonedBetslipSnapshot(this.coupon)
+      if (!snapshot.selections.length) return
+
+      writeAbandonedBetslipStorage({
+        ...storedSession,
+        totalLegs: snapshot.selections.length,
+        potentialPayout: parseCouponNumber(snapshot.potentialPayout),
+        snapshot
+      })
+    },
+    recordAbandonedBetslipInteraction() {
+      const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
+      if (!selections.length) return
+
+      const nextSignature = buildAbandonedBetslipActivitySignature(this.coupon)
+      abandonedBetslipLastActivitySignature = nextSignature
+      this.scheduleAbandonedBetslipReport(nextSignature)
+    },
+    scheduleAbandonedBetslipReport(signature, options = {}) {
+      if (!abandonedBetslipSessionId) {
+        abandonedBetslipSessionId = createAbandonedBetslipId('session')
+      }
+
+      abandonedBetslipPendingEventId = options.eventId || createAbandonedBetslipId('abandon')
+      const lastActivityAt = Number(options.lastActivityAt || Date.now())
+      const elapsedMs = Date.now() - lastActivityAt
+      const delayMs = Math.max(0, ABANDONED_BETSLIP_TIMEOUT_MS - elapsedMs)
+      const snapshot = options.snapshot || buildAbandonedBetslipSnapshot(this.coupon)
+      const totalLegs = Number(options.totalLegs || snapshot.selections?.length || 0)
+      const potentialPayout = parseCouponNumber(options.potentialPayout || snapshot.potentialPayout)
+
+      if (abandonedBetslipTimer) {
+        clearTimeout(abandonedBetslipTimer)
+      }
+
+      writeAbandonedBetslipStorage({
+        sessionId: abandonedBetslipSessionId,
+        eventId: abandonedBetslipPendingEventId,
+        signature,
+        lastActivityAt,
+        totalLegs,
+        potentialPayout,
+        snapshot
+      })
+
+      abandonedBetslipTimer = setTimeout(() => {
+        this.reportAbandonedBetslip(signature, abandonedBetslipPendingEventId)
+      }, delayMs)
+    },
+    async reportAbandonedBetslip(signature, eventId) {
+      if (signature !== abandonedBetslipLastActivitySignature) return
+      if (signature === abandonedBetslipLastReportedSignature) return
+
+      const usersStore = useUsersStore()
+      const user = usersStore.currentUser || {}
+      const storedSession = readAbandonedBetslipStorage()
+      const storedSnapshot = storedSession?.signature === signature ? storedSession.snapshot : null
+      const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
+      const userId = user.id || user.userId || user.user_id
+      const totalLegs = selections.length || Number(storedSession?.totalLegs || storedSnapshot?.selections?.length || 0)
+
+      if (!totalLegs) {
+        this.clearAbandonedBetslipTimer({ resetSession: true })
+        return
+      }
+
+      if (!userId) {
+        this.clearAbandonedBetslipTimer()
+        return
+      }
+
+      const potentialPayout = parseCouponNumber(
+        selections.length
+          ? this.coupon.maxWin || this.coupon.grossWin || this.coupon.potentialPayout || 0
+          : storedSession?.potentialPayout || storedSnapshot?.potentialPayout || 0
+      )
+      const betslipSnapshot = selections.length
+        ? buildAbandonedBetslipSnapshot(this.coupon)
+        : storedSnapshot
+
+      const payload = {
+        userId: String(userId),
+        username: String(user.username || user.mobileNumber || user.mobile_number || user.phone || ''),
+        totalLegs,
+        potentialPayout,
+        sessionId: abandonedBetslipSessionId,
+        eventId,
+        betslipSnapshot
+      }
+
+      let didReport = false
+
+      try {
+        await reportBetslipAbandoned(payload)
+        abandonedBetslipLastReportedSignature = signature
+        didReport = true
+      } catch (error) {
+        console.warn('Failed to report abandoned betslip:', error)
+      } finally {
+        this.clearAbandonedBetslipTimer({ clearStorage: didReport })
+      }
+    },
     createEmptyCouponState(overrides = {}) {
       return {
         acceptChanges: false,

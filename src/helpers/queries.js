@@ -486,6 +486,15 @@ export const placeBet2 = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/bet`, payload))
 }
 
+export const reportBetslipAbandoned = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/abandoned?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
+}
+
 export const validateBetslipSelections = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_FIXTURES_API}/odd/status`, payload))
 }
