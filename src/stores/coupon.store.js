@@ -43,7 +43,7 @@ const configuredAbandonedBetslipTimeout = Number(import.meta.env.VITE_ABANDONED_
 const ABANDONED_BETSLIP_TIMEOUT_MS =
   Number.isFinite(configuredAbandonedBetslipTimeout) && configuredAbandonedBetslipTimeout > 0
     ? configuredAbandonedBetslipTimeout
-    : 60 * 60 * 1000
+    : 5 * 60 * 1000
 const ABANDONED_BETSLIP_STORAGE_KEY = `sbe:abandoned-betslip:${CLIENT_ID}`
 
 let abandonedBetslipTimer = null
