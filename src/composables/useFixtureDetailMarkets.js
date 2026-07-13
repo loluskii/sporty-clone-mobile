@@ -1,8 +1,7 @@
 import { computed, ref, watch } from 'vue'
-import { chunks } from '@/helpers'
-import { X_UP_FEATURE_MARKET_ID } from '@/helpers'
+import { chunks, X_UP_FEATURE_MARKET_ID, getFixtureDerivedMarketIds } from '@/helpers'
 
-const DEFAULT_DERIVED_MARKET_IDS = [1601, 60100, 60200]
+const DEFAULT_DERIVED_MARKET_IDS = [1601, 60180]
 
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -19,12 +18,19 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   const activeSectionByGroup = ref({})
 
   const derivedMarketIds = computed(() => {
-    const derived = fixtureDetail?.value?.derived_market_ids || fixtureDetail?.value?.derived_market_id
-    const normalizedDerived = Array.isArray(derived) ? derived : derived != null ? [derived] : null
-    if (!normalizedDerived) {
-      return DEFAULT_DERIVED_MARKET_IDS
-    }
-    const ids = normalizedDerived.map(Number).filter((id) => Number.isFinite(id))
+    const directDerivedIds = getFixtureDerivedMarketIds(fixtureDetail?.value || {})
+    const marketExtendIds = Array.isArray(eventMarkets.value)
+      ? [...new Set(
+          eventMarkets.value
+            .flatMap((market = {}) =>
+              Array.isArray(market.marketExtendVOS) ? market.marketExtendVOS : []
+            )
+            .map((extend = {}) => Number(extend.nodeMarketId || extend.node_market_id || 0))
+            .filter((id) => Number.isFinite(id) && id > 0)
+        )]
+      : []
+
+    const ids = [...new Set([...directDerivedIds, ...marketExtendIds])]
     return ids.length ? ids : DEFAULT_DERIVED_MARKET_IDS
   })
 
@@ -204,6 +210,30 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
 
     cleaned = (ordinalPrefix + cleaned).replace(/\s{2,}/g, ' ').trim()
     return cleaned || name
+  }
+
+  function isXupMarketGroup(marketGroup) {
+    return Number(marketGroup?.marketID || 0) === X_UP_FEATURE_MARKET_ID
+  }
+
+  function getXupSortValue(marketGroup) {
+    const specifier = String(marketGroup?.specifier || '')
+    const specifierMatch = specifier.match(/xup\s*=\s*(\d+)/i)
+    if (specifierMatch) {
+      return Number(specifierMatch[1])
+    }
+
+    const marketName = String(marketGroup?.marketName || '')
+    const nameMatch = marketName.match(/\b([123])\s*up\b/i)
+    return nameMatch ? Number(nameMatch[1]) : Number.MAX_SAFE_INTEGER
+  }
+
+  function getGroupIdentity(marketGroup) {
+    const cleanedName = cleanMarketName(marketGroup.marketName, marketGroup.specifier)
+    if (isXupMarketGroup(marketGroup)) {
+      return `${marketGroup.marketID}|${cleanedName}|${marketGroup.specifier || ''}`
+    }
+    return `${marketGroup.marketID}|${cleanedName}`
   }
 
   function createCell(market, outcome) {
@@ -499,9 +529,7 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     const groupedMarkets = {}
     data.forEach((marketGroup) => {
       const { marketID, marketName, specifier } = marketGroup
-      // Key by cleaned name so split specifier-prefixed titles collapse correctly.
-      const cleanedName = cleanMarketName(marketName, specifier)
-      const key = `${marketID}|${cleanedName}`
+      const key = getGroupIdentity({ marketID, marketName, specifier })
       if (!groupedMarkets[key]) {
         groupedMarkets[key] = {
           marketID,
@@ -541,29 +569,45 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
     }
 
     const derivedSet = new Set(ids.map(Number))
-    const firstGroup = groups[0]
+    const baseGroup = groups.find((group) => !derivedSet.has(Number(group.marketID))) || groups[0]
+    const xupGroups = []
     const derivedGroups = []
     const remainingGroups = []
 
-    groups.slice(1).forEach((group) => {
+    groups.forEach((group, index) => {
+      if (group === baseGroup) return
       if (derivedSet.has(Number(group.marketID))) {
-        derivedGroups.push(group)
+        const taggedGroup = { ...group, __groupIndex: index }
+        if (isXupMarketGroup(group)) {
+          xupGroups.push(taggedGroup)
+        } else {
+          derivedGroups.push(taggedGroup)
+        }
       } else {
-        remainingGroups.push(group)
+        remainingGroups.push({ ...group, __groupIndex: index })
       }
     })
 
-    // Keep X_UP directly after the base market, then preserve the rest of the configured order.
-    const orderedIds = [
-      X_UP_FEATURE_MARKET_ID,
-      ...ids.filter((id) => Number(id) !== Number(X_UP_FEATURE_MARKET_ID))
+    const orderedXupGroups = xupGroups
+      .slice()
+      .sort((left, right) => getXupSortValue(left) - getXupSortValue(right) || left.__groupIndex - right.__groupIndex)
+
+    const orderedDerivedGroups = ids
+      .filter((id) => Number(id) !== Number(X_UP_FEATURE_MARKET_ID))
+      .flatMap((id) =>
+        derivedGroups
+          .filter((group) => Number(group.marketID) === Number(id))
+          .sort((left, right) => left.__groupIndex - right.__groupIndex)
+      )
+
+    return [
+      baseGroup,
+      ...orderedXupGroups.map(({ __groupIndex, ...group }) => group),
+      ...orderedDerivedGroups.map(({ __groupIndex, ...group }) => group),
+      ...remainingGroups
+        .sort((left, right) => left.__groupIndex - right.__groupIndex)
+        .map(({ __groupIndex, ...group }) => group)
     ]
-
-    const orderedDerivedGroups = orderedIds
-      .map((id) => derivedGroups.find((group) => Number(group.marketID) === Number(id)))
-      .filter(Boolean)
-
-    return [firstGroup, ...orderedDerivedGroups, ...remainingGroups]
   }
 
   watch(
@@ -575,7 +619,7 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   )
 
   function getGroupKey(marketGroup) {
-    return `${marketGroup.marketID}|${cleanMarketName(marketGroup.marketName, marketGroup.specifier)}`
+    return getGroupIdentity(marketGroup)
   }
 
   function getSectionOptions(marketGroup) {

@@ -11,7 +11,8 @@ import {
   buildEarlyWinSelectionState,
   buildEarlyWinLocalQuoteMap,
   formatEarlyGoalMarketName,
-  formatEarlyWinMarketName
+  formatEarlyWinMarketName,
+  getFixtureDerivedMarketIds
 } from './early-win'
 
 export const applyBranding = async () => {
@@ -167,8 +168,7 @@ export const calculateBonus = (coupondata, bonusConfig) => {
 }
 
 export const getDataFromPayload = (couponPayload) => {
-  const derivedMarketIds =
-    couponPayload.fixture.derived_market_ids || couponPayload.fixture.derived_market_id
+  const derivedMarketIds = getFixtureDerivedMarketIds(couponPayload.fixture)
   const earlyWinState = buildEarlyWinSelectionState({
     sportId: couponPayload.fixture.sportID,
     marketId: couponPayload.market_id,

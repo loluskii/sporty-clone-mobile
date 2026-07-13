@@ -103,6 +103,18 @@ const getFixtureMarkets = (fixture = {}) => {
   return []
 }
 
+export const getFixtureDerivedMarketIds = (fixture = {}) => {
+  const directDerivedIds = normalizeDerivedMarketIds(
+    fixture?.derived_market_ids || fixture?.derived_market_id
+  )
+  const extendDerivedIds = getFixtureMarkets(fixture)
+    .flatMap((market = {}) => (Array.isArray(market.marketExtendVOS) ? market.marketExtendVOS : []))
+    .map((extend = {}) => Number(extend.nodeMarketId || extend.node_market_id || 0))
+    .filter((marketId) => Number.isFinite(marketId) && marketId > 0)
+
+  return [...new Set([...directDerivedIds, ...extendDerivedIds])]
+}
+
 const getFixtureFlatOutcomes = (fixture = {}) => {
   return Array.isArray(fixture?.outcomes) ? fixture.outcomes : []
 }

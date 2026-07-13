@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import {
   DEFAULT_DERIVED_MARKET_CONFIG,
+  getFixtureDerivedMarketIds,
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName
 } from '@/helpers'
@@ -69,8 +70,8 @@ export const useUpMode = ({
     ].filter((id) => Number.isFinite(id) && id > 0)
     if (!targetIds.length) return false
     return flattenFixtures(fixtures?.value).some((fixture) => {
-      const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-      return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
+      const derived = getFixtureDerivedMarketIds(fixture || {})
+      return derived.some((id) => targetIds.includes(id))
     })
   })
 
@@ -104,15 +105,15 @@ export const useUpMode = ({
     if (!targetIds.length) return list
     if (Array.isArray(list)) {
       return list.filter((fixture) => {
-        const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-        return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
+        const derived = getFixtureDerivedMarketIds(fixture || {})
+        return derived.some((id) => targetIds.includes(id))
       })
     }
     const next = {}
     Object.entries(list).forEach(([key, group]) => {
       const filtered = (group || []).filter((fixture) => {
-        const derived = fixture?.derived_market_id || fixture?.derived_market_ids
-        return Array.isArray(derived) && derived.map(Number).some((id) => targetIds.includes(id))
+        const derived = getFixtureDerivedMarketIds(fixture || {})
+        return derived.some((id) => targetIds.includes(id))
       })
       if (filtered.length) {
         next[key] = filtered
