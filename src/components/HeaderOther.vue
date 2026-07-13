@@ -159,6 +159,7 @@ defineProps({
   display: flex;
   height: 100%;
 }
+
 .m-nav-secondary .home-link {
   -webkit-box-align: center;
   -webkit-align-items: center;

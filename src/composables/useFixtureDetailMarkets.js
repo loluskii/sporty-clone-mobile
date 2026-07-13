@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { chunks } from '@/helpers'
+import { X_UP_FEATURE_MARKET_ID } from '@/helpers'
 
 const DEFAULT_DERIVED_MARKET_IDS = [1601, 60100, 60200]
 
@@ -552,8 +553,13 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
       }
     })
 
-    // Keep derived markets directly under the base market without disturbing their configured order.
-    const orderedDerivedGroups = ids
+    // Keep X_UP directly after the base market, then preserve the rest of the configured order.
+    const orderedIds = [
+      X_UP_FEATURE_MARKET_ID,
+      ...ids.filter((id) => Number(id) !== Number(X_UP_FEATURE_MARKET_ID))
+    ]
+
+    const orderedDerivedGroups = orderedIds
       .map((id) => derivedGroups.find((group) => Number(group.marketID) === Number(id)))
       .filter(Boolean)
 

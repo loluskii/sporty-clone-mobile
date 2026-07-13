@@ -52,25 +52,21 @@
       <div class="es-dialog-body m-dialog-body">
         <div class="es-dialog-main m-dialog-main app-notification-main">
           <div class="app-notification-eyebrow">Notifications</div>
-          <h3>Latest updates</h3>
-          <div class="app-notification-list">
-            <article
-              v-for="(notification, index) in notificationItems"
-              :key="notification.id || notification.notificationId || index"
-              class="app-notification-item"
-            >
-              <span class="app-notification-dot"></span>
-              <div>
-                <h4>{{ notification.title || notification.subject || 'Notification' }}</h4>
-                <p>{{ notification.message || notification.body || notification.content || notification.text }}</p>
-              </div>
-            </article>
+          <h3>{{ notificationSummaryTitle }}</h3>
+          <p class="app-notification-summary">{{ notificationSummaryText }}</p>
+          <div v-if="notificationPreview" class="app-notification-preview">
+            <h4>{{ notificationPreview.title }}</h4>
+            <p>{{ notificationPreview.message }}</p>
           </div>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer">
-        <button type="button" @click.prevent="$emit('hide-dialogue')" class="es-dialog-btn app-error-ok">
-          OK
+        <button
+          type="button"
+          @click.prevent="openNotifications"
+          class="es-dialog-btn app-error-ok app-notification-action"
+        >
+          View messages
         </button>
       </div>
     </div>
@@ -146,6 +142,25 @@ const notificationItems = computed(() => {
   return []
 })
 
+const notificationPreview = computed(() => {
+  const first = notificationItems.value[0]
+  if (!first) return null
+  return {
+    title: first.title || first.subject || 'Notification',
+    message: first.message || first.body || first.content || first.text || 'You have a new message.'
+  }
+})
+
+const notificationSummaryTitle = computed(() => {
+  const count = notificationItems.value.length
+  if (!count) return 'You have a message'
+  return count === 1 ? 'You have 1 new message' : `You have ${count} new messages`
+})
+
+const notificationSummaryText = computed(() => {
+  return 'Open your messages center to read the latest updates.'
+})
+
 const dialogueType = () => {
   switch (props.dialogueType) {
     case 'error':
@@ -206,6 +221,11 @@ async function replaceBetslip() {
   } finally {
     isReplacingBetslip.value = false
   }
+}
+
+function openNotifications() {
+  emits('hide-dialogue')
+  router.push({ name: 'notifications' })
 }
 
 async function getReplacementBetslipData() {
@@ -509,43 +529,37 @@ onMounted(() => {
   font-weight: 900;
 }
 
-.app-notification-list {
-  display: grid;
-  gap: 0.75rem;
-  max-height: 45vh;
-  overflow-y: auto;
+.app-notification-summary {
+  color: #707781;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 0.9rem;
 }
 
-.app-notification-item {
-  display: grid;
-  grid-template-columns: 0.65rem 1fr;
-  gap: 0.75rem;
-  padding: 0.85rem;
+.app-notification-preview {
+  background: #f8fafc;
   border: 1px solid #e7ebf1;
   border-radius: 0.9rem;
-  background: #f8fafc;
+  padding: 0.9rem;
 }
 
-.app-notification-dot {
-  width: 0.55rem;
-  height: 0.55rem;
-  margin-top: 0.4rem;
-  border-radius: 50%;
-  background: var(--brand-primary, #0f9f45);
-}
-
-.app-notification-item h4 {
+.app-notification-preview h4 {
   margin: 0 0 0.25rem;
   color: #303642;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 800;
 }
 
-.app-notification-item p {
+.app-notification-preview p {
   margin: 0;
   color: #717988;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   line-height: 1.45;
+}
+
+.app-notification-action {
+  background: var(--brand-primary-button) !important;
+  color: #ffffff !important;
 }
 
 .es-dialog.es-ani-show {

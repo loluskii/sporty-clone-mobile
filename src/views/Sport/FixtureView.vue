@@ -213,6 +213,9 @@ watch(
     const { sport_id } = getSportbyName(route.params.sport)
     const { tournament_id } = route.params
     const { category_id } = route.params
+    page.value = 1
+    lastPage.value = null
+    isLastPage.value = false
     isLoading.value = true
     switch (routeName) {
       case 'fixtures-by-tournaments':
@@ -292,25 +295,30 @@ async function getCategoryFixtures(sid, cid) {
       category_id: cid,
       feature_market_id: getFeatureMarketIdParam()
     })
-    const { fixtures, markets, per_page, page: currentPage, total } = res.data
-    lastPage.value = Math.ceil(total / per_page)
-    if (fixtures.length) {
-      isPaginated.value = true
-      if (isDerivedRequest) {
-        derivedFixturesList.value = _.groupBy(fixtures, 'tournament')
-      } else {
-        baseFixturesList.value = _.groupBy(fixtures, 'tournament')
+    const { fixtures, markets } = res.data
+    if (!Array.isArray(fixtures) || fixtures.length === 0) {
+      if (page.value > 1) {
+        lastPage.value = Math.max(page.value - 1, 1)
+        isLastPage.value = true
+        isLoading.value = false
+        return
       }
-      isLastPage.value = lastPage.value === page.value
-      const filteredMarkets = sanitizeMarkets(markets || [])
-      marketsGroup.value = filteredMarkets
-      activeMarket.value =
-        filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
-        (filteredMarkets.length ? filteredMarkets[0] : {})
-      isLoading.value = false
-    } else {
       throw Error
     }
+    isPaginated.value = true
+    if (isDerivedRequest) {
+      derivedFixturesList.value = _.groupBy(fixtures, 'tournament')
+    } else {
+      baseFixturesList.value = _.groupBy(fixtures, 'tournament')
+    }
+    isLastPage.value = false
+    lastPage.value = Math.max(page.value, 1)
+    const filteredMarkets = sanitizeMarkets(markets || [])
+    marketsGroup.value = filteredMarkets
+    activeMarket.value =
+      filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
+      (filteredMarkets.length ? filteredMarkets[0] : {})
+    isLoading.value = false
   } catch (error) {
     isLoading.value = false
     loadingError.value = true
@@ -329,7 +337,9 @@ async function fetchFixturesByActiveSport(id, period = null) {
       per_page: 30,
       feature_market_id: getFeatureMarketIdParam()
     }
-    if (period) {
+    if (route.name === 'today-fixtures' || period === 'today') {
+      payload.today = 1
+    } else if (period) {
       if (period === 'tomorrow') {
         payload.tomorrow = 1
       } else if (period === 'today') {
@@ -345,23 +355,28 @@ async function fetchFixturesByActiveSport(id, period = null) {
       }
     }
     const res = await getSportHighlights(payload)
-    const { fixtures, markets, per_page, currentPage, total } = res.data
-    lastPage.value = Math.ceil(total / per_page)
-    if (fixtures.length) {
-      isPaginated.value = true
-      const targetFixtures = isDerivedRequest ? derivedFixturesList : baseFixturesList
-      targetFixtures.value = Array.isArray(targetFixtures.value) && targetFixtures.value.length
-        ? [...targetFixtures.value, ...fixtures]
-        : [...fixtures]
-      isLastPage.value = lastPage.value === page.value
-      const filteredMarkets = sanitizeMarkets(markets || [])
-      marketsGroup.value = filteredMarkets
-      activeMarket.value =
-        filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
-        (filteredMarkets.length ? filteredMarkets[0] : {})
-    } else {
+    const { fixtures, markets } = res.data
+    if (!Array.isArray(fixtures) || fixtures.length === 0) {
+      if (page.value > 1) {
+        lastPage.value = Math.max(page.value - 1, 1)
+        isLastPage.value = true
+        isLoading.value = false
+        return
+      }
       throw Error
     }
+    isPaginated.value = true
+    const targetFixtures = isDerivedRequest ? derivedFixturesList : baseFixturesList
+    targetFixtures.value = Array.isArray(targetFixtures.value) && targetFixtures.value.length
+      ? [...targetFixtures.value, ...fixtures]
+      : [...fixtures]
+    isLastPage.value = false
+    lastPage.value = Math.max(page.value, 1)
+    const filteredMarkets = sanitizeMarkets(markets || [])
+    marketsGroup.value = filteredMarkets
+    activeMarket.value =
+      filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
+      (filteredMarkets.length ? filteredMarkets[0] : {})
     isLoading.value = false
   } catch (error) {
     isLoading.value = false

@@ -34,6 +34,7 @@ const PlayView = () => import('@/views/Games/PlayView.vue')
 const CodeCentralView = () => import('@/views/CodeHubView.vue')
 const Promotions = () => import('@/views/Promotions.vue')
 const JackpotView = () => import('../views/Games/JackpotView.vue')
+const NotificationsView = () => import('@/views/NotificationsView.vue')
 
 // Add loading component
 const LoadingComponent = {
@@ -215,6 +216,12 @@ export const router = createRouter({
       name: 'account-bonus',
       component: BonusView
     },
+    {
+      path: '/Notifications',
+      name: 'notifications',
+      component: NotificationsView,
+      meta: { showMobileNavigation: true, showFooter: true }
+    },
 
     // Casino
     {
@@ -359,7 +366,8 @@ router.beforeEach((to, from, next) => {
     'bet-history',
     'bet-detail',
     'game-play',
-    'account-pending-withdrawals'
+    'account-pending-withdrawals',
+    'notifications'
   ]
   const authRequired = authPages.includes(to.name)
 

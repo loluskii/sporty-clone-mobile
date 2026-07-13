@@ -226,6 +226,7 @@ defineComponent({
   display: flex;
   height: 100%;
 }
+
 .m-nav-secondary .m-nav-right .m-icon-search {
   color: #121212;
   color: var(--brand-tertiary);
