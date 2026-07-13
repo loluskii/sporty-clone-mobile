@@ -199,12 +199,6 @@
   text-decoration: none;
 }
 
-.mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon svg {
-  fill: currentColor;
-  height: 1.2rem;
-  width: 1.2rem;
-}
-
 .mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon--deposit svg {
   height: 1.35rem;
   width: 1.35rem;
@@ -225,7 +219,6 @@
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
-  margin-left: 0.66666667rem;
   padding: 0.33333333rem 0.66666667rem;
   text-align: center;
 }
