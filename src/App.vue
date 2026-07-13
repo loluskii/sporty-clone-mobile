@@ -72,10 +72,13 @@ const isAuthenticated = computed(() => {
 })
 
 watch(
-  () => usersStore.currentUser?.id,
-  () => {
-    loadUserNotifications()
-  }
+  () => [isAuthenticated.value, usersStore.currentUser?.id],
+  ([authenticated, userId]) => {
+    if (authenticated && userId) {
+      loadUserNotifications()
+    }
+  },
+  { immediate: true }
 )
 
 async function toggleBetslip() {

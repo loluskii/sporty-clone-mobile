@@ -285,25 +285,6 @@ export const useCouponStore = defineStore({
     handleAbandonedBetslipActivity() {
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
       if (!selections.length) {
-        const storedSession = readAbandonedBetslipStorage()
-        if (storedSession?.snapshot?.selections?.length) {
-          if (abandonedBetslipTimer && storedSession.signature === abandonedBetslipLastActivitySignature) {
-            return
-          }
-
-          abandonedBetslipSessionId = storedSession.sessionId || ''
-          abandonedBetslipPendingEventId = storedSession.eventId || ''
-          abandonedBetslipLastActivitySignature = storedSession.signature || ''
-          this.scheduleAbandonedBetslipReport(storedSession.signature, {
-            eventId: storedSession.eventId,
-            lastActivityAt: Number(storedSession.lastActivityAt || Date.now()),
-            snapshot: storedSession.snapshot,
-            potentialPayout: parseCouponNumber(storedSession.potentialPayout),
-            totalLegs: Number(storedSession.totalLegs || storedSession.snapshot.selections.length)
-          })
-          return
-        }
-
         this.clearAbandonedBetslipTimer({ resetSession: true })
         return
       }
@@ -392,11 +373,9 @@ export const useCouponStore = defineStore({
 
       const usersStore = useUsersStore()
       const user = usersStore.currentUser || {}
-      const storedSession = readAbandonedBetslipStorage()
-      const storedSnapshot = storedSession?.signature === signature ? storedSession.snapshot : null
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
       const userId = user.id || user.userId || user.user_id
-      const totalLegs = selections.length || Number(storedSession?.totalLegs || storedSnapshot?.selections?.length || 0)
+      const totalLegs = selections.length
 
       if (!totalLegs) {
         this.clearAbandonedBetslipTimer({ resetSession: true })
@@ -409,13 +388,9 @@ export const useCouponStore = defineStore({
       }
 
       const potentialPayout = parseCouponNumber(
-        selections.length
-          ? this.coupon.maxWin || this.coupon.grossWin || this.coupon.potentialPayout || 0
-          : storedSession?.potentialPayout || storedSnapshot?.potentialPayout || 0
+        this.coupon.maxWin || this.coupon.grossWin || this.coupon.potentialPayout || 0
       )
-      const betslipSnapshot = selections.length
-        ? buildAbandonedBetslipSnapshot(this.coupon)
-        : storedSnapshot
+      const betslipSnapshot = buildAbandonedBetslipSnapshot(this.coupon)
 
       const payload = {
         userId: String(userId),
