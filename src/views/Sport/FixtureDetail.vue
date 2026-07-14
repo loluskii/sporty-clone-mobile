@@ -9,11 +9,15 @@
           </div>
           <div class="m-event-title-team-horizontal">
             <div class="watermark">
-              <div><img 
-                :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-                encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
-                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-                " draggable="false" class="home" style=""></div>
+              <div>
+                <img
+                  :src="getTeamLogoUrl(eventDetail.homeTeam)"
+                  @error="setTeamLogoFallback($event, 'home')"
+                  draggable="false"
+                  class="home"
+                  style=""
+                />
+              </div>
               <div class="switch-button-left"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
                   <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
@@ -21,10 +25,14 @@
                 </svg></div>
             </div>
             <div class="team">
-              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-                encodeURIComponent(eventDetail.homeTeam.toUpperCase()) +
-                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-                " draggable="false" style=""></div>
+              <div class="team-icon">
+                <img
+                  :src="getTeamLogoUrl(eventDetail.homeTeam)"
+                  @error="setTeamLogoFallback($event, 'home')"
+                  draggable="false"
+                  style=""
+                />
+              </div>
               <div class="team-name">{{ eventDetail.homeTeam }}</div>
             </div>
             <div class="date-time">
@@ -36,17 +44,26 @@
               </div>
             </div>
             <div class="team">
-              <div class="team-icon"><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-                encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
-                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-                " draggable="false" style=""></div>
+              <div class="team-icon">
+                <img
+                  :src="getTeamLogoUrl(eventDetail.awayTeam)"
+                  @error="setTeamLogoFallback($event, 'away')"
+                  draggable="false"
+                  style=""
+                />
+              </div>
               <div class="team-name">{{ eventDetail.awayTeam }}</div>
             </div>
             <div class="watermark">
-              <div><img :src="'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-                encodeURIComponent(eventDetail.awayTeam.toUpperCase()) +
-                '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-                " draggable="false" class="away" style=""></div>
+              <div>
+                <img
+                  :src="getTeamLogoUrl(eventDetail.awayTeam)"
+                  @error="setTeamLogoFallback($event, 'away')"
+                  draggable="false"
+                  class="away"
+                  style=""
+                />
+              </div>
               <div class="switch-button-right"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
                   height="10px" width="10px" class="svg-icon-base">
                   <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
@@ -327,7 +344,9 @@ import {
   getMarketsGrouping,
   formatDate,
   isSelected,
-  unslugify
+  unslugify,
+  getTeamLogoUrl,
+  setTeamLogoFallback
 } from '@/helpers'
 // import _ from 'lodash'
 import ErrorDialogue from '@/components/ErrorDialogue.vue'

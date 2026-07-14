@@ -26,9 +26,12 @@
                 alt="Home team logo"
                 @error="homeLogoVisible = false"
               />
-              <div v-else class="sim-start-logo sim-start-logo--fallback">
-                {{ homeLogoFallback }}
-              </div>
+              <img
+                v-else
+                class="sim-start-logo"
+                :src="homeLogoFallbackImage"
+                alt="Home team placeholder"
+              />
               <div class="sim-start-title">{{ goalTitle }}</div>
               <img
                 v-if="awayLogoUrl && awayLogoVisible"
@@ -37,9 +40,12 @@
                 alt="Away team logo"
                 @error="awayLogoVisible = false"
               />
-              <div v-else class="sim-start-logo sim-start-logo--fallback">
-                {{ awayLogoFallback }}
-              </div>
+              <img
+                v-else
+                class="sim-start-logo"
+                :src="awayLogoFallbackImage"
+                alt="Away team placeholder"
+              />
             </div>
           </template>
           <template v-else-if="isFulltimeOverlay">
@@ -51,9 +57,12 @@
                 alt="Home team logo"
                 @error="homeLogoVisible = false"
               />
-              <div v-else class="sim-start-logo sim-start-logo--fallback">
-                {{ homeLogoFallback }}
-              </div>
+              <img
+                v-else
+                class="sim-start-logo"
+                :src="homeLogoFallbackImage"
+                alt="Home team placeholder"
+              />
               <div class="sim-finish-score">{{ overlayScore }}</div>
               <img
                 v-if="awayLogoUrl && awayLogoVisible"
@@ -62,9 +71,12 @@
                 alt="Away team logo"
                 @error="awayLogoVisible = false"
               />
-              <div v-else class="sim-start-logo sim-start-logo--fallback">
-                {{ awayLogoFallback }}
-              </div>
+              <img
+                v-else
+                class="sim-start-logo"
+                :src="awayLogoFallbackImage"
+                alt="Away team placeholder"
+              />
             </div>
             <div v-if="goalSubtitle" class="sim-goal-team">{{ goalSubtitle }}</div>
           </template>
@@ -93,6 +105,7 @@ import awayGoalH1 from '@/assets/images/SIM/Away_Goal_H1.gif'
 import awayGoalH2 from '@/assets/images/SIM/Away_Goal_H2.gif'
 import awayNoGoalH1 from '@/assets/images/SIM/Away_NoGoal_H1.gif'
 import awayNoGoalH2 from '@/assets/images/SIM/Away_NoGoal_H2.gif'
+import { getTeamLogoFallbackUrl } from '@/helpers'
 
 const props = defineProps({
   selection: {
@@ -212,19 +225,8 @@ const awayLogoUrl = computed(() => {
   return `${logoBaseUrl}${encodeURIComponent(awayTeamName.value.toUpperCase())}.png?alt=media`
 })
 
-const getInitials = (name) => {
-  if (!name || typeof name !== 'string') return ''
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
-
-const homeLogoFallback = computed(() => getInitials(homeTeamName.value))
-const awayLogoFallback = computed(() => getInitials(awayTeamName.value))
+const homeLogoFallbackImage = computed(() => getTeamLogoFallbackUrl('home'))
+const awayLogoFallbackImage = computed(() => getTeamLogoFallbackUrl('away'))
 
 watch(homeLogoUrl, () => {
   homeLogoVisible.value = true

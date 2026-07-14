@@ -24,11 +24,8 @@
     <div class="mid" @click="goToMarket($event)">
       <div class="homeIcon">
         <img
-          :src="
-            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-            getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-          "
+          :src="getTeamLogoUrl(matchDetails.homeTeam)"
+          @error="setTeamLogoFallback($event, 'home')"
         />
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
@@ -41,11 +38,8 @@
       </div>
       <div class="awayIcon">
         <img
-          :src="
-            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-            getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-          "
+          :src="getTeamLogoUrl(matchDetails.awayTeam)"
+          @error="setTeamLogoFallback($event, 'away')"
         />
       </div>
       <div class="awayName">{{ matchDetails.awayTeam }}</div>
@@ -84,7 +78,9 @@ import {
   buildCouponSelectionPayload,
   formatDate,
   slugify,
-  isSelected
+  isSelected,
+  getTeamLogoUrl,
+  setTeamLogoFallback
 } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
@@ -132,10 +128,6 @@ const getMatchOdds = computed(() => {
   // Otherwise use the original unique odds
   return uniqueOutcomes
 })
-
-function getEncodedURI(name) {
-  return encodeURIComponent(name.toUpperCase())
-}
 
 function goToMarket() {
   return router.push({
