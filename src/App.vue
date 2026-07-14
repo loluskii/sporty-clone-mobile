@@ -30,6 +30,7 @@ import { checkVersion } from '@/utils/version'
 import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 import Cookies from 'js-cookie'
 import ImageDialog from './components/ImageDialog.vue'
+import BackToTopButton from './components/BackToTopButton.vue'
 
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
@@ -69,6 +70,18 @@ const winModalCurrency = ref('')
 
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
+})
+
+const backToTopBlocked = computed(() => {
+  return (
+    showBetslip.value ||
+    dialogueShown.value ||
+    bookBetModalShown.value ||
+    depositWithdrawalShown.value ||
+    customDatePickerShown.value ||
+    (route.name === 'home' && utilsStore.bonusModalShown === false && Boolean(casinoGameData.value)) ||
+    (route.name === 'home' && utilsStore.popupDialogShown === false && Boolean(popupData.value))
+  )
 })
 
 watch(
@@ -466,7 +479,7 @@ defineComponent({
             
         </div>
         <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
-        <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
+          <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
           :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
         <WinModal
             v-if="winModalShown"
@@ -474,6 +487,7 @@ defineComponent({
             :currency="winModalCurrency"
             @close="hideWinModal"
           />
+        <BackToTopButton :blocked="backToTopBlocked" />
       </div>
   
       <!-- <transition name="move">
