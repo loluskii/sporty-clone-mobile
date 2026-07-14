@@ -495,6 +495,24 @@ export const reportBetslipAbandoned = async (payload) => {
   )
 }
 
+export const reportBetslipActivity = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/activity?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
+}
+
+export const closeBetslipSession = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/session/close?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
+}
+
 export const validateBetslipSelections = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_FIXTURES_API}/odd/status`, payload))
 }

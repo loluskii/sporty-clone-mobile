@@ -27,7 +27,9 @@ import {
   previewAccaBonus,
   previewCutOne,
   previewFlex,
+  reportBetslipActivity,
   reportBetslipAbandoned,
+  closeBetslipSession,
   CLIENT_ID,
   validateBetslipSelections,
   formatNumber,
@@ -99,6 +101,97 @@ const buildAbandonedBetslipActivitySignature = (coupon = {}) => {
   })
 }
 
+const buildAbandonedBetslipSnapshot = (coupon = {}) => {
+  const selections = Array.isArray(coupon.selections) ? coupon.selections : []
+  const potentialPayout = parseCouponNumber(
+    coupon.maxWin || coupon.grossWin || coupon.potentialPayout || 0
+  )
+
+  return {
+    betslipType: coupon.betslip_type,
+    betType: coupon.bet_type,
+    stake: parseCouponNumber(coupon.stake),
+    totalStake: parseCouponNumber(coupon.totalStake),
+    totalOdds: parseCouponNumber(coupon.totalOdds),
+    potentialPayout,
+    useBonus: Boolean(coupon.useBonus),
+    useCashback: Boolean(coupon.useCashback),
+    useCutOne: Boolean(coupon.useCutOne),
+    useFlex: Boolean(coupon.useFlex),
+    flexAmount: parseCouponNumber(coupon.flexAmount),
+    useEarlyGoal: Boolean(coupon.useEarlyGoal),
+    selections: selections.map((selection = {}) => ({
+      fixtureId: String(selection.matchId || selection.match_id || selection.fixtureId || ''),
+      matchId: selection.matchId || selection.match_id || null,
+      eventId: selection.eventId || selection.event_id || null,
+      sportId: selection.sportId || selection.sportID || selection.fixture?.sportID || null,
+      producerId: selection.producerId || selection.producerID || selection.fixture?.producerID || 0,
+      marketId: Number(selection.marketId || selection.market_id || 0),
+      marketName: selection.marketName || selection.market_name || '',
+      outcomeId: String(selection.outcomeId || selection.outcomeID || selection.odd_id || ''),
+      outcomeName: selection.outcomeName || selection.outcome_name || selection.name || '',
+      specifier: String(selection.specifier || selection.specifiers || ''),
+      odds: parseCouponNumber(selection.odds),
+      eventName: selection.eventName || selection.fixture?.name || selection.matchName || '',
+      startTime: selection.startTime || selection.date || selection.fixture?.date || null,
+      type: selection.type || ''
+    }))
+  }
+}
+
+async function sendAbandonedBetslipActivity(coupon) {
+  const selections = Array.isArray(coupon?.selections) ? coupon.selections : []
+  if (!selections.length) return
+
+  if (!abandonedBetslipSessionId) {
+    abandonedBetslipSessionId = createAbandonedBetslipId('session')
+  }
+
+  const signature = buildAbandonedBetslipActivitySignature(coupon)
+  const payload = {
+    sessionId: abandonedBetslipSessionId,
+    totalLegs: selections.length,
+    potentialPayout: parseCouponNumber(coupon.maxWin || coupon.grossWin || 0),
+    betslipSnapshot: buildAbandonedBetslipSnapshot(coupon),
+    lastActivityAt: Date.now()
+  }
+
+  try {
+    await reportBetslipActivity(payload)
+  } catch (error) {
+    console.warn('Failed to report abandoned betslip activity:', error)
+  }
+
+  if (signature !== abandonedBetslipLastActivitySignature) {
+    return
+  }
+
+  writeAbandonedBetslipStorage({
+    sessionId: abandonedBetslipSessionId,
+    eventId: abandonedBetslipPendingEventId || createAbandonedBetslipId('abandon'),
+    signature,
+    lastActivityAt: Date.now(),
+    totalLegs: selections.length,
+    potentialPayout: parseCouponNumber(coupon.maxWin || coupon.grossWin || 0),
+    snapshot: buildAbandonedBetslipSnapshot(coupon)
+  })
+}
+
+async function closeAbandonedBetslipSession(status) {
+  if (!abandonedBetslipSessionId) return
+
+  const sessionId = abandonedBetslipSessionId
+  try {
+    await closeBetslipSession({ sessionId, status })
+  } catch (error) {
+    console.warn('Failed to close abandoned betslip session:', error)
+  } finally {
+    if (abandonedBetslipSessionId === sessionId) {
+      clearAbandonedBetslipTimer({ resetSession: true, clearStorage: true })
+    }
+  }
+}
+
 const createAbandonedBetslipId = (prefix = 'betslip') => {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
@@ -135,43 +228,6 @@ const clearAbandonedBetslipStorage = () => {
   }
 }
 
-const buildAbandonedSelectionSnapshot = (selection = {}) => ({
-  fixtureId: String(selection.matchId || selection.match_id || selection.fixtureId || ''),
-  matchId: selection.matchId || selection.match_id || null,
-  eventId: selection.eventId || selection.event_id || null,
-  sportId: selection.sportId || selection.sportID || selection.fixture?.sportID || null,
-  producerId: selection.producerId || selection.producerID || selection.fixture?.producerID || 0,
-  marketId: Number(selection.marketId || selection.market_id || 0),
-  marketName: selection.marketName || selection.market_name || '',
-  outcomeId: String(selection.outcomeId || selection.outcomeID || selection.odd_id || ''),
-  outcomeName: selection.outcomeName || selection.outcome_name || selection.name || '',
-  specifier: String(selection.specifier || selection.specifiers || ''),
-  odds: parseCouponNumber(selection.odds),
-  eventName: selection.eventName || selection.fixture?.name || selection.matchName || '',
-  startTime: selection.startTime || selection.date || selection.fixture?.date || null,
-  type: selection.type || ''
-})
-
-const buildAbandonedBetslipSnapshot = (coupon = {}) => {
-  const selections = Array.isArray(coupon.selections) ? coupon.selections : []
-  const potentialPayout = parseCouponNumber(coupon.maxWin || coupon.grossWin || coupon.potentialPayout || 0)
-
-  return {
-    betslipType: coupon.betslip_type,
-    betType: coupon.bet_type,
-    stake: parseCouponNumber(coupon.stake),
-    totalStake: parseCouponNumber(coupon.totalStake),
-    totalOdds: parseCouponNumber(coupon.totalOdds),
-    potentialPayout,
-    useBonus: Boolean(coupon.useBonus),
-    useCashback: Boolean(coupon.useCashback),
-    useCutOne: Boolean(coupon.useCutOne),
-    useFlex: Boolean(coupon.useFlex),
-    flexAmount: parseCouponNumber(coupon.flexAmount),
-    useEarlyGoal: Boolean(coupon.useEarlyGoal),
-    selections: selections.map(buildAbandonedSelectionSnapshot)
-  }
-}
 
 export const useCouponStore = defineStore({
   id: 'coupon',
@@ -312,6 +368,7 @@ export const useCouponStore = defineStore({
         return
       }
 
+      void sendAbandonedBetslipActivity(this.coupon)
       this.scheduleAbandonedBetslipReport(nextSignature)
     },
     refreshStoredAbandonedBetslipSnapshot(signature) {
@@ -3172,6 +3229,9 @@ export const useCouponStore = defineStore({
         try {
           const res = await placeBet2(payload)
           this.isBetslipLoading = false
+          if (this.mode !== 'sim') {
+            void closeAbandonedBetslipSession('placed')
+          }
           return res
         } catch (error) {
           emitter.emit('showErrorMessage', error)
@@ -3205,6 +3265,13 @@ export const useCouponStore = defineStore({
     },
     clearBetslip() {
       try {
+        const hadSelections = Array.isArray(this.coupon.selections) && this.coupon.selections.length > 0
+        if (hadSelections) {
+          void closeAbandonedBetslipSession('cleared')
+        } else {
+          this.clearAbandonedBetslipTimer({ resetSession: true, clearStorage: true })
+        }
+
         // Clean up all MQTT subscriptions using manageSubscription
         if (Array.isArray(this.coupon.selections)) {
           this.coupon.selections.forEach((selection) => {
