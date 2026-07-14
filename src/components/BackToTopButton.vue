@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
             stroke-linejoin="round"
           />
         </svg>
-        <span>Top</span>
+        <span>Back to Top</span>
       </button>
     </transition>
   </Teleport>
