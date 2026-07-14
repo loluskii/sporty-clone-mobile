@@ -119,7 +119,9 @@ export function getLiveScoreboard(fixture = {}, variant = 'detail') {
       }
     }
 
-    columns.push(totalColumn)
+    if (!showBreakdown || periodScores.length !== 1) {
+      columns.push(totalColumn)
+    }
   } else {
     if (showBreakdown) {
       periodScores.forEach((periodScore, index) => {
