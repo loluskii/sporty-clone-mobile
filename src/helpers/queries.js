@@ -1,5 +1,16 @@
-import { fetchWrapper } from './fetch-wrapper'
-import { BASE_API, CLIENT_ID, NEW_BASE_API, FEEDS_API, FEEDS_API_BASE } from './constants'
+import {
+  fetchWrapper
+} from './fetch-wrapper'
+import {
+  BASE_API,
+  BET_PROXY_API,
+  CASINO_CLIENT_API,
+  CASINO_PROVIDER_API,
+  CLIENT_ID,
+  NEW_BASE_API,
+  NEW_BET_API,
+  NEW_FIXTURES_API
+} from './constants'
 import moment from 'moment'
 
 function today() {
@@ -38,6 +49,118 @@ const parseData = async (response) => {
   return response instanceof Promise ? (await response)?.data : response.data
 }
 
+export const normalizeSportsbookFeatureConfig = (payload = {}) => {
+  const data = payload?.data ?? payload ?? {}
+
+  return {
+    accaBonus: data.accaBonus ?? null,
+    flex: data.flex ?? null,
+    cutOne: data.cutOne ?? null,
+    stakeLimits: data.stakeLimits ?? null
+  }
+}
+
+let casinoCatalogPromise = null
+
+const formatCasinoCategoryName = (value = '') => {
+  return String(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+const normalizeCasinoProvider = (provider = {}) => {
+  const id = String(provider.provider_id ?? provider.id ?? '')
+
+  return {
+    ...provider,
+    id,
+    provider_id: id,
+    active: String(provider.active ?? '0') === '1',
+    name: provider.name ?? ''
+  }
+}
+
+const normalizeCasinoCategory = (category = {}, index = 0, total = 0) => {
+  const id = String(category.category_id ?? category.id ?? '')
+  const slug = category.category ?? category.slug ?? ''
+
+  return {
+    ...category,
+    id,
+    category_id: id,
+    slug,
+    name: formatCasinoCategoryName(slug),
+    priority: total - index
+  }
+}
+
+const normalizeCasinoGame = (game = {}, index = 0, total = 0, providerMap = new Map(), categoryMap = new Map()) => {
+  const id = String(game.id ?? game.gameId ?? '')
+  const providerId = String(game.provider_id ?? game.providerId ?? '')
+  const categoryId = String(game.category_id ?? game.categoryId ?? '')
+  const providerName = providerMap.get(providerId)?.name ?? 'Casino'
+  const categoryName = categoryMap.get(categoryId)?.name ?? ''
+
+  return {
+    ...game,
+    id,
+    gameId: id,
+    providerId,
+    categoryId,
+    provider_id: providerId,
+    category_id: categoryId,
+    title: game.game_name ?? game.title ?? '',
+    image: game.game_image ?? game.image ?? '',
+    game_name: game.game_name ?? game.title ?? '',
+    game_image: game.game_image ?? game.image ?? '',
+    gameCode: game.game_code ?? game.gameCode ?? '',
+    game_code: game.game_code ?? game.gameCode ?? '',
+    type: providerName,
+    providerName,
+    categoryName,
+    priority: total - index
+  }
+}
+
+const normalizeCasinoListResponse = (payload = {}) => {
+  const data = payload?.data ?? {}
+  const providers = (data.providers ?? []).map(normalizeCasinoProvider)
+  const categories = (data.categories ?? []).map((category, index, list) =>
+    normalizeCasinoCategory(category, index, list.length)
+  )
+  const providerMap = new Map(providers.map((provider) => [provider.id, provider]))
+  const categoryMap = new Map(categories.map((category) => [category.id, category]))
+  const games = (data.games ?? []).map((game, index, list) =>
+    normalizeCasinoGame(game, index, list.length, providerMap, categoryMap)
+  )
+
+  return {
+    status_code: payload?.status_code,
+    status_description: payload?.status_description,
+    data: {
+      providers,
+      categories,
+      games,
+      meta: data.meta ?? {}
+    }
+  }
+}
+
+const getCasinoCatalog = async (forceRefresh = false) => {
+  if (!casinoCatalogPromise || forceRefresh) {
+    casinoCatalogPromise = parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list`))
+  }
+
+  return normalizeCasinoListResponse(await casinoCatalogPromise)
+}
+
+const getCasinoListTab = async (tab, params = {}) => {
+  const query = new URLSearchParams({ tab, ...params })
+  return normalizeCasinoListResponse(
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_list?${query.toString()}&game_type=casino`))
+  )
+}
+
 export const fetchGlobalVars = async () => {
   return fetchWrapper.get(`${NEW_BASE_API}/auth/globalvariables/${CLIENT_ID}`)
 }
@@ -52,6 +175,24 @@ export const fetchBanners = async () => {
 
 export const fetchBonusList = async () => {
   return fetchWrapper.get(`${NEW_BASE_API}/bonus/acca-bonus?section=onliners`)
+}
+
+export const fetchSportsbookFeatureConfig = async (category = 'online') => {
+  return normalizeSportsbookFeatureConfig(
+    await parseData(fetchWrapper.get(`${BET_PROXY_API}/${CLIENT_ID}/features/config?category=${category}`))
+  )
+}
+
+export const previewAccaBonus = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/acca-bonus/preview`, payload))
+}
+
+export const previewCutOne = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/cut-one/preview`, payload))
+}
+
+export const previewFlex = async (payload) => {
+  return parseData(fetchWrapper.post(`${BET_PROXY_API}/${CLIENT_ID}/flex/preview`, payload))
 }
 
 export const getSplitPropsData = async (payload) => {
@@ -110,15 +251,51 @@ export const getUserDetailsByToken = async () => {
 }
 
 export const getTopBets = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/${CLIENT_ID}/top-bets`))
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/top_tournament`))
 }
 
 export const getCodeHubItems = async (data) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/${CLIENT_ID}/codehub/tickets`, data))
+  const {
+    page = 1,
+    perPage,
+    limit,
+    sort = 'created|desc',
+    start,
+    end,
+    from,
+    to,
+    minOdd,
+    maxOdd,
+    minFold,
+    maxFold,
+    betType,
+    search
+  } = data || {}
+
+  const params = new URLSearchParams()
+  params.set('page', page)
+  params.set('perPage', perPage || limit || 20)
+  params.set('sort', sort)
+
+  const resolvedStart = start || from
+  const resolvedEnd = end || to
+
+  if (resolvedStart) params.set('start', resolvedStart)
+  if (resolvedEnd) params.set('end', resolvedEnd)
+  if (minOdd !== undefined && minOdd !== null && minOdd !== '') params.set('minOdd', minOdd)
+  if (maxOdd !== undefined && maxOdd !== null && maxOdd !== '') params.set('maxOdd', maxOdd)
+  if (minFold !== undefined && minFold !== null && minFold !== '') params.set('minFold', minFold)
+  if (maxFold !== undefined && maxFold !== null && maxFold !== '') params.set('maxFold', maxFold)
+
+  // Preserve legacy filters until all callers are migrated.
+  if (betType !== undefined && betType !== null && betType !== '') params.set('betType', betType)
+  if (search) params.set('search', search)
+
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub?${params.toString()}`))
 }
 
 export const getSportsMenu = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/menu?timeoffset=${sign}${offsetHours}`))
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/sports`))
 }
 
 export const getCategoriesBySport = async (sportID, period) => {
@@ -127,37 +304,25 @@ export const getCategoriesBySport = async (sportID, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
   // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+  const periodParam = isTodayPeriod ? 'start=' + todayDate + '&end=' + todayDate
+    : isTomorrowPeriod ? 'start=' + tomorrowDate + '&end=' + tomorrowDate :
+      `start=${period?.startDate}&end=${period?.endDate}`
   // Fetch and return the parsed data
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/categories/${sportID}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`
+      `${NEW_FIXTURES_API}/categories/${sportID}?${period ? periodParam : ''}&source=mobile`
     )
   )
 }
 
-export const getTournamentsByCategories = async (categoryId, period) => {
-  const todayDate = moment().startOf('day').format('YYYY-MM-DD')
-  const tomorrowDate = moment().add(1, 'day').startOf('day').format('YYYY-MM-DD')
-  const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
-  const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
-  // Determine the period type
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=24hour'
-      : period
-        ? `start=${period?.startDate}&end=${period?.endDate}`
-        : 'period=all'
+export const getTournamentsByCategories = async (sid, categoryId, period = null) => {
+  let periodFilter = null
+  if(period){
+    periodFilter = `&start=${period.startDate}&end=${period.endDate}`
+  }
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/tournaments/${categoryId}?timeoffset=${sign}${offsetHours}&${periodParam}&source=mobile`
+      `${NEW_FIXTURES_API}/tournaments/${sid}?category_id=${categoryId}${periodFilter ?? ''}&source=mobile`
     )
   )
 }
@@ -165,7 +330,7 @@ export const getTournamentsByCategories = async (categoryId, period) => {
 export const getFixturesByCategories = async (categoryId, sid) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`
+      `${NEW_FIXTURES_API}/sports/get-fixtures-by-categories/${categoryId}?timeoffset=${sign}${offsetHours}&sportID=${sid}&limit=50&source=mobile`
     )
   )
 }
@@ -188,7 +353,7 @@ export const searchFixtures = async (q) => {
 
 export const getLiveHighlights = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/highlight/live/0?source=mobile&markets=1`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/v1/fixtures/live/0?per_page=50&source=mobile`)
   )
 }
 
@@ -196,10 +361,19 @@ export const getLiveCountBySport = async (sid) => {
   return parseData(fetchWrapper.get(`${NEW_BASE_API}/sports/live/games/count/${sid}`))
 }
 
-export const getSportHighlights = async (sid, hours, page) => {
+export const getSportHighlights = async (payload) => {
+  const { sid = 1, page = 1, per_page = 60, tournament_id = 0, category_id = 0, hours = 0, today = 0, tomorrow = 0, upcoming = 0, start = '', end = '', order_type = 'priority|asc', feature_market_id = '' } = payload;
+  const params = new URLSearchParams()
+  Object.entries({ page, per_page, tournament_id, category_id, hours, today, tomorrow, upcoming, order_type, start, end, feature_market_id }).forEach(
+    ([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        params.set(key, value)
+      }
+    }
+  )
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/highlight/prematch/${sid}?upcoming=1&page=${page}&perPage=15&timeoffset=${sign}${offsetHours}`
+      `${NEW_FIXTURES_API}/v1/fixtures/highlights/${sid}?${params}`
     )
   )
 }
@@ -210,13 +384,13 @@ export const getSportUpcoming = async (sid, period) => {
   const isTodayPeriod = todayDate === period?.startDate && todayDate === period?.endDate
   const isTomorrowPeriod = tomorrowDate === period?.startDate && tomorrowDate === period?.endDate
 
-  const periodParam = isTodayPeriod
-    ? 'period=today'
-    : isTomorrowPeriod
-      ? 'period=tomorrow'
-      : period?.startDate !== undefined && period?.endDate !== undefined
-        ? `startDate=${period?.startDate}&endDate=${period?.endDate}`
-        : `period=${period}`
+  const periodParam = isTodayPeriod ?
+    'period=today' :
+    isTomorrowPeriod ?
+      'period=tomorrow' :
+      period?.startDate !== undefined && period?.endDate !== undefined ?
+        `startDate=${period?.startDate}&endDate=${period?.endDate}` :
+        `period=${period}`
 
   return parseData(
     fetchWrapper.get(
@@ -236,8 +410,7 @@ export const getHighlights2 = async (sid) => {
 export const getFixturesByTournamentId = async (id, sid, period = null) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${
-        period ? period : 'all'
+      `${NEW_FIXTURES_API}/sports/get-fixtures/${id}?sportID=${sid}&marketID=1&source=mobile&timeoffset=${sign}${offsetHours}&period=${period ? period : 'all'
       }&limit=50`
     )
   )
@@ -245,17 +418,40 @@ export const getFixturesByTournamentId = async (id, sid, period = null) => {
 
 export const getFixtureMarkets = async (id) => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/sports/match/${id}?timeoffset=${sign}${offsetHours}`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/game/${id}`)
+  )
+}
+
+export const getMarketsGrouping = async (sid) => {
+  return parseData(
+    fetchWrapper.get(`${NEW_FIXTURES_API}/markets/groups?sport_id=${sid}`)
   )
 }
 
 export const getBets = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
+  const { page = 1, perPage = 5, status, start, end } = payload
+  const params = new URLSearchParams({ page, perPage })
+
+  if (Array.isArray(status)) {
+    status
+      .filter((value) => value !== undefined && value !== null && value !== '')
+      .forEach((value) => params.append('status', value))
+  } else if (status !== undefined && status !== null && status !== '') {
+    params.set('status', status)
+  }
+  if (start) {
+    params.set('start', start)
+  }
+  if (end) {
+    params.set('end', end)
+  }
+
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/bet?${params.toString()}`))
 }
 
-export const getSettledBets = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
-}
+// export const getSettledBets = async (payload) => {
+//   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/history?page=1`, payload))
+// }
 
 export const getTransactionsData = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/user/wallet/transactions`, payload))
@@ -287,28 +483,72 @@ export const updatePassword = async (payload) => {
 }
 
 export const placeBet2 = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/place-bet/${CLIENT_ID}`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/bet`, payload))
+}
+
+export const reportBetslipAbandoned = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/abandoned?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
+}
+
+export const reportBetslipActivity = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/activity?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
+}
+
+export const closeBetslipSession = async (payload) => {
+  return parseData(
+    fetchWrapper.post(
+      `${NEW_BASE_API}/crm/betslip/session/close?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      payload
+    )
+  )
 }
 
 export const validateBetslipSelections = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/validate-selections`, payload))
+  return parseData(fetchWrapper.post(`${NEW_FIXTURES_API}/odd/status`, payload))
+}
+
+export const fetchCashoutForBet = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/cashout/build`, payload))
 }
 
 export const performCashout = async (payload) => {
-  return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/cashout/`, payload))
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/cashout/placement`, payload))
 }
 
 export const bookBet2 = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/bets/book-bet/${CLIENT_ID}`, payload))
 }
 
-export const loadBetslipByCode = async (betslipId) => {
+export const loadBetslipByCode = async (shareCode) => {
   return parseData(
-    fetchWrapper.post(`${NEW_BASE_API}/bets/find-bet`, {
-      betslipId: betslipId,
-      clientId: CLIENT_ID
-    })
+    fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub/${shareCode}`)
   )
+}
+
+export const fetchCustomCodes = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/custom-codes`))
+}
+
+export const createCustomCode = async (payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/custom-codes`, payload))
+}
+
+export const deleteCustomCode = async (code) => {
+  return parseData(fetchWrapper.delete(`${NEW_BET_API}/${CLIENT_ID}/custom-codes/${code}`))
+}
+
+export const assignCustomCode = async (code, payload) => {
+  return parseData(fetchWrapper.post(`${NEW_BET_API}/${CLIENT_ID}/custom-codes/${code}/assign`, payload))
 }
 
 export const getPromotions = async () => {
@@ -326,25 +566,93 @@ export const getCasinoBonusGames = async (userId) => {
 }
 
 export const getGamesBySearch = async (gameName) => {
-  return parseData(
-    fetchWrapper.get(
-      `${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/game-list?gameName=${gameName}`
-    )
+  const response = await getCasinoListTab('games', { search: gameName })
+  return {
+    ...response,
+    games: response.data.games,
+    data: response.data.games
+  }
+}
+
+export const getCasinoListGames = async () => {
+  const response = await getCasinoListTab('games')
+  return {
+    ...response,
+    data: response.data.games
+  }
+}
+
+export const getCasinoGameById = async (gameId) => {
+  const response = await getCasinoCatalog()
+  const normalizedGameId = String(gameId ?? '')
+
+  return response.data.games.find((game) => String(game.id) === normalizedGameId) || null
+}
+
+export const getCasinoGamesByProviderCategory = async (providerId, categoryId = '') => {
+  const params = new URLSearchParams()
+
+  if (providerId !== undefined && providerId !== null && providerId !== '') {
+    params.set('provider_id', String(providerId))
+  }
+
+  if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
+    params.set('category_id', String(categoryId))
+  }
+
+  const response = normalizeCasinoListResponse(
+    await parseData(fetchWrapper.get(`${CASINO_CLIENT_API}/casino_providers?${params.toString()}&game_type=casino`))
   )
+
+  const normalizedProviderId = providerId !== undefined && providerId !== null && providerId !== ''
+    ? String(providerId)
+    : ''
+  const normalizedCategoryId = categoryId !== undefined && categoryId !== null && categoryId !== ''
+    ? String(categoryId)
+    : ''
+
+  return {
+    ...response,
+    data: response.data.games.filter((game) => {
+      const matchesProvider = normalizedProviderId ? game.providerId === normalizedProviderId : true
+      const matchesCategory = normalizedCategoryId ? game.categoryId === normalizedCategoryId : true
+      return matchesProvider && matchesCategory
+    })
+  }
 }
 
 export const getGamesByProviders = async (providerId) => {
-  return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/games/${CLIENT_ID}/list?providerId=${providerId}`)
-  )
+  return getCasinoGamesByProviderCategory(providerId)
 }
 
 export const getProviders = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/provider`))
+  const response = await getCasinoListTab('providers')
+  return {
+    ...response,
+    data: response.data.providers
+  }
 }
 
 export const getCasinoStartUrl = async (payload) => {
   return parseData(fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/start`, payload))
+}
+
+export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
+  return parseData(
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/goldenrace/lobby`, payload, {
+      authToken,
+      skipAuthLogout: true
+    })
+  )
+}
+
+export const getQtechLaunchUrl = async (gameId, payload, authToken) => {
+  return parseData(
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
+      authToken,
+      skipAuthLogout: true
+    })
+  )
 }
 
 export const getSmatVirtualStartUrl = async (payload) => {
@@ -352,15 +660,22 @@ export const getSmatVirtualStartUrl = async (payload) => {
 }
 
 export const getTopGameCategories = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/games/categories`))
+  const response = await getCasinoListTab('categories')
+  return {
+    ...response,
+    data: response.data.categories
+  }
 }
 
 export const gamesByTopCategory = async (id) => {
-  return parseData(
-    fetchWrapper.get(
-      `${NEW_BASE_API}/games/${import.meta.env.VITE_CLIENT_ID}/list?categoryId=${id}`
-    )
-  )
+  const response = await getCasinoCatalog()
+
+  return {
+    ...response,
+    data: id
+      ? response.data.games.filter((game) => game.categoryId === String(id))
+      : response.data.games
+  }
 }
 
 export const getJackpots = async () => {
@@ -442,6 +757,10 @@ export const getUserCashbackBonus = async () => {
   return parseData(
     fetchWrapper.get(`${NEW_BASE_API}/bonus/user/check-cashback-bonus?clientId=${CLIENT_ID}`)
   )
+}
+
+export const fetchUserNotifications = async () => {
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/notification/user`))
 }
 
 export const checkFirstDeposit = async () => {

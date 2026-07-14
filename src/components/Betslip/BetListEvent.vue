@@ -1,45 +1,167 @@
 <template>
   <div class="m-bet-container" :class="selection.changed ? 'm-change-item animated' : ''">
-    <div data-op="betslip-multi-odds" class="m-outcomes-row">
-      <div class="m-outcomes-opt" @click="removeSelection">
-        <div class="m-outcomes-color"></div>
+    <div class="m-outcomes-color" :style="matchGroupStyle"></div>
+    <div class="m-outcome-right">
+      <div class="m-selection-header">
+        <button type="button" class="m-selection-event" @click="goToGame">
+          <span v-if="showSelectionBadges" class="selection-status-badges">
+            <span v-if="isLiveSelection" class="selection-status-badge selection-status-badge--live">
+              Live
+            </span>
+            <span
+              v-if="selectionStatusBadgeLabel"
+              class="selection-status-badge selection-status-badge--state"
+              :class="{
+                'selection-status-badge--suspended': props.selection.suspended,
+                'selection-status-badge--unavailable': props.selection.unavailable
+              }"
+            >
+              {{ selectionStatusBadgeLabel }}
+            </span>
+          </span>
+          <span>{{ selection.eventName }}</span>
+        </button>
+        <div class="m-selection-actions">
+          <button
+            v-if="showBanker"
+            type="button"
+            class="banker-badge"
+            :class="{ active: !!selection?.fixed }"
+            :aria-pressed="selection?.fixed ? 'true' : 'false'"
+            aria-label="Select as banker"
+            @click.stop.prevent="toggleBanker"
+          >
+            B
+          </button>
+          <button
+            type="button"
+            class="m-selection-remove"
+            aria-label="Remove selection"
+            @click.stop.prevent="removeSelection"
+          >
+            <span class="m-selection-remove-icon"></span>
+          </button>
+        </div>
       </div>
-      <div class="m-outcome-right">
-        <div class="m-outcomes-row m-team-row" @click="goToGame">
-          <div class="m-team-cell">
-            <div class="m-outcome-desc-wrapper">
-              <div class="m-outcome-desc" style="text-transform: capitalize">
-                {{ selection.outcomeName }}
-              </div>
-              <div
-                class="m-outcome-odds"
-                :class="{
-                  'm-outcome-up': oddUp && !selectionIsUnavailable,
-                  'm-outcome-down': oddDown && !selectionIsUnavailable
-                }"
-              >
-                <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
-                <div class="m-outcome-suspended" v-else>
-                  {{ getUnavailabilityReason }}
+
+      <div class="m-selection-body" @click="goToGame">
+        <div class="m-team-cell">
+          <div class="m-outcome-desc-wrapper">
+            <div class="m-outcome-desc" style="text-transform: capitalize">
+              {{ selection.outcomeName }}
+            </div>
+            <div
+              class="m-outcome-odds"
+              :class="{
+                'm-outcome-up': oddUp && !selectionIsUnavailable,
+                'm-outcome-down': oddDown && !selectionIsUnavailable
+              }"
+            >
+              <span v-if="!selectionIsUnavailable">{{ getSelectionOdds(selection.odds) }} </span>
+            </div>
+          </div>
+
+          <div class="m-market-desc-wrapper">
+            <div class="selection-market-meta">
+              <div class="selection-market-copy">
+                <div class="m-market-desc">
+                  <span>{{ displayMarketName }}</span>
+                  <span v-if="showUnsupportedEarlyWin" class="selection-earlywin-unsupported">
+                    - 1UP/2UP not supported
+                  </span>
+                  <span v-else-if="showUnsupportedEarlyGoal" class="selection-earlywin-unsupported">
+                    - Early goal not supported
+                  </span>
                 </div>
               </div>
+              <div v-if="showEarlyWinControls" class="selection-earlywin-controls" @click.stop>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlywin-pill--one"
+                  :class="{ active: selection.earlyWinMode === '1up' }"
+                  aria-label="1UP"
+                  :disabled="!canRequestMode('1up') || isLoadingUpMode"
+                  @click.stop.prevent="toggleSelectionMode('1up')"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <svg
+                      class="selection-earlywin-pill-logo selection-earlywin-pill-logo--one"
+                      viewBox="0 0 60 30"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3.2 6.3L11.8 1.5H17.2V27.4H10.2V10.2L6.1 12.5L3.2 6.3Z"
+                        :fill="getEarlyWinAccentFill('1up')"
+                      />
+                      <path
+                        d="M20.5 2.1H27.8V16.7C27.8 19.1 29 20.5 31.3 20.5C33.6 20.5 34.8 19.1 34.8 16.7V2.1H42.1V17C42.1 24.1 38 28 31.3 28C24.6 28 20.5 24.1 20.5 17V2.1Z"
+                        :fill="getEarlyWinNeutralFill('1up')"
+                      />
+                      <path
+                        d="M44.7 2.1H52.1C56.7 2.1 59.3 4.7 59.3 8.7C59.3 12.7 56.7 15.3 52.1 15.3H50.7V27.4H44.7V2.1ZM51.4 10.5C52.9 10.5 53.8 9.8 53.8 8.7C53.8 7.5 52.9 6.9 51.4 6.9H50.7V10.5H51.4Z"
+                        :fill="getEarlyWinNeutralFill('1up')"
+                      />
+                      <circle cx="53.1" cy="8.7" r="1.2" :fill="getEarlyWinDotFill('1up')" />
+                    </svg>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlywin-pill--two"
+                  :class="{ active: selection.earlyWinMode === '2up' }"
+                  aria-label="2UP"
+                  :disabled="!canRequestMode('2up') || isLoadingUpMode"
+                  @click.stop.prevent="toggleSelectionMode('2up')"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <svg
+                      class="selection-earlywin-pill-logo selection-earlywin-pill-logo--two"
+                      viewBox="0 0 64 30"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3.5 9.2C3.5 4.3 7.3 1.5 13.1 1.5C18.8 1.5 22.2 4.1 22.2 8.4C22.2 11.6 20.5 13.8 16.7 16.1L11.6 19.2H22.5V27.4H3.6V21.1L13.1 15.1C15 13.9 15.7 12.9 15.7 11.5C15.7 10.1 14.6 9.2 12.9 9.2C11 9.2 9.8 10.4 9.8 12.4H3.5V9.2Z"
+                        :fill="getEarlyWinAccentFill('2up')"
+                      />
+                      <path
+                        d="M25.2 2.1H32.5V16.7C32.5 19.1 33.7 20.5 36 20.5C38.3 20.5 39.5 19.1 39.5 16.7V2.1H46.8V17C46.8 24.1 42.7 28 36 28C29.3 28 25.2 24.1 25.2 17V2.1Z"
+                        :fill="getEarlyWinNeutralFill('2up')"
+                      />
+                      <path
+                        d="M49.4 2.1H56.8C61.4 2.1 64 4.7 64 8.7C64 12.7 61.4 15.3 56.8 15.3H55.4V27.4H49.4V2.1ZM56.1 10.5C57.6 10.5 58.5 9.8 58.5 8.7C58.5 7.5 57.6 6.9 56.1 6.9H55.4V10.5H56.1Z"
+                        :fill="getEarlyWinNeutralFill('2up')"
+                      />
+                      <circle cx="57.8" cy="8.7" r="1.2" :fill="getEarlyWinDotFill('2up')" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+              <div v-else-if="showEarlyGoalControl" class="selection-earlywin-controls" @click.stop>
+                <button
+                  type="button"
+                  class="selection-earlywin-pill selection-earlygoal-pill"
+                  :class="{ active: selection.earlyGoalMode === 'earlygoal' }"
+                  aria-label="Early Goals"
+                  :disabled="couponStore.isEarlyGoalLoading"
+                  @click.stop.prevent="toggleSelectionEarlyGoal"
+                >
+                  <span class="selection-earlywin-pill-surface">
+                    <span class="selection-earlygoal-pill-label">Early Goals</span>
+                  </span>
+                </button>
+              </div>
             </div>
-            <div class="m-vs-wrapper">
-              <i v-if="selection.type == 'live'" class="m-icon-live"><span>Live</span></i>
-              <div>{{ selection.eventName }}</div>
-            </div>
-            <div class="m-market-desc-wrapper">
-              <div class="m-market-desc">{{ selection.marketName }}</div>
 
-              <span
-                tabindex="0"
-                class="m-keybord-input"
-                @click="openKeyboard"
-                style="--fontsize: inherit"
-                v-html="selection.stake"
-                v-if="betSlipType === 'Single' && selectionsLength > 1"
-              ></span>
-            </div>
+            <span
+              tabindex="0"
+              class="m-keybord-input"
+              @click.stop="openKeyboard"
+              style="--fontsize: inherit"
+              v-html="selection.stake"
+              v-if="betSlipType === 'Single' && selectionsLength > 1"
+            ></span>
           </div>
         </div>
       </div>
@@ -55,124 +177,191 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits, computed, toRef, inject } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCouponStore, useUtilsStore } from '@/stores'
+import { useCouponStore } from '@/stores'
 import BetlistStakeKeyboard from './BetlistStakeKeyboard.vue'
-import emitter from '@/plugins/emitter'
+import { useOddsChangeIndicator } from '@/composables/useOddsChangeIndicator'
+import { useMatchGroupStyle } from '@/composables/useMatchGroupStyle'
+import { useSelectionStakeKeyboard } from '@/composables/useSelectionStakeKeyboard'
+import {
+  formatEarlyGoalMarketName,
+  formatEarlyWinMarketName,
+  getBaseMarketIdFromMarketId,
+  getDerivedMarketIdForMode,
+  stripEarlyGoalSuffix,
+  stripEarlyWinSuffix
+} from '@/helpers'
 
 const couponStore = useCouponStore()
-const utilsStore = useUtilsStore()
-const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection'])
+const emit = defineEmits(['toggle-betslip', 'on-selection-input', 'update-selection', 'toggle-banker'])
 const router = useRouter()
-
-const keyboardVisible = ref(false)
-const oddUp = ref(false)
-const oddDown = ref(false)
-const previousOdds = ref(null)
+const { isLoadingUpMode, isBulkEarlyWinEnabled, setSelectionUpMode } = inject('betslipUpMode', {
+  isLoadingUpMode: { value: false },
+  isBulkEarlyWinEnabled: { value: false },
+  setSelectionUpMode: () => {}
+})
 
 const props = defineProps({
   selection: Object,
   betSlipType: String,
   betType: String,
-  activeSelectionId: Number
+  activeSelectionId: Number,
+  showBanker: Boolean
 })
-
-// Add a timer reference to clear on component unmount
-let arrowTimer = null
-
-// Watch for changes to selection.odds
-watch(
-  () => props.selection.odds,
-  (newValue, oldValue) => {
-    if (previousOdds.value === null) {
-      previousOdds.value = newValue
-      return
-    }
-
-    // Only show arrows if there's an actual change in value
-    if (newValue !== previousOdds.value) {
-      if (parseFloat(newValue) > parseFloat(previousOdds.value)) {
-        oddUp.value = true
-        oddDown.value = false
-      } else if (parseFloat(newValue) < parseFloat(previousOdds.value)) {
-        oddUp.value = false
-        oddDown.value = true
-      }
-
-      // Reset arrows after 5 seconds
-      if (arrowTimer) {
-        clearTimeout(arrowTimer)
-      }
-
-      arrowTimer = setTimeout(() => {
-        oddUp.value = false
-        oddDown.value = false
-      }, 5000)
-
-      // Update previous odds
-      previousOdds.value = newValue
-    }
+const selectionRef = toRef(props, 'selection')
+const { oddUp, oddDown } = useOddsChangeIndicator(computed(() => selectionRef.value?.odds))
+const { matchGroupStyle } = useMatchGroupStyle(selectionRef)
+const { isKeyboardVisible, openKeyboard, hideKeyboard, onKeyClick } = useSelectionStakeKeyboard(
+  selectionRef,
+  {
+    onOpen: () => emit('on-selection-input', selectionRef.value?.matchId || 0),
+    onClose: () => emit('on-selection-input', 0)
   }
 )
-
-// Listen for acceptChanges event from BetListStake
-onMounted(() => {
-  // Initialize previousOdds
-  previousOdds.value = props.selection.odds
-})
-
-// Clean up timers when component is unmounted
-onBeforeUnmount(() => {
-  if (arrowTimer) {
-    clearTimeout(arrowTimer)
-  }
-})
-
-const scores = ref()
-
-const isKeyboardVisible = computed(() => {
-  return props.activeSelectionId === props.selection.matchId
-})
-
-const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
-}
 
 const selectionsLength = computed(() => {
   return couponStore.coupon.selections.length
 })
 
+const selectionSportId = computed(() => {
+  return Number(
+    props.selection?.sportId ||
+      props.selection?.sportID ||
+      props.selection?.sport_id ||
+      props.selection?.fixture?.sport_id ||
+      0
+  )
+})
+
+const isLiveSelection = computed(() => {
+  return props.selection?.type === 'live'
+})
+
 const selectionIsUnavailable = computed(() => {
-  // If explicitly marked as unavailable
-  if (props.selection.unavailable) {
-    return true
+  return Boolean(props.selection?.unavailable || props.selection?.suspended)
+})
+
+const isEarlyWinModeActive = (mode) => props.selection?.earlyWinMode === mode
+
+const getEarlyWinAccentFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#9ca3af'
+}
+
+const getEarlyWinNeutralFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#9ca3af'
+}
+
+const getEarlyWinDotFill = (mode) => {
+  return isEarlyWinModeActive(mode) ? '#111827' : '#d1d5db'
+}
+
+const supportsMode = (mode) => {
+  return Array.isArray(props.selection?.supportedEarlyWinModes)
+    ? props.selection.supportedEarlyWinModes.includes(mode)
+    : false
+}
+
+const currentSelectionBaseMarketId = computed(() => {
+  const marketId = Number(props.selection?.marketId || props.selection?.market_id || 0)
+  return Number(props.selection?.baseMarketId || getBaseMarketIdFromMarketId(marketId) || marketId || 0)
+})
+
+const canRequestMode = (mode) => {
+  if (supportsMode(mode)) return true
+  if (currentSelectionBaseMarketId.value !== 1) return false
+
+  const currentMode = props.selection?.earlyWinMode || 'base'
+  const hasDerivedContext =
+    props.selection?.hasExplicitDerivedMarkets ||
+    currentMode === '1up' ||
+    currentMode === '2up'
+  if (!hasDerivedContext) return false
+
+  return Boolean(
+    getDerivedMarketIdForMode(
+      currentSelectionBaseMarketId.value,
+      mode,
+      props.selection?.supportedDerivedMarketIds
+    )
+  )
+}
+
+const displayMarketName = computed(() => {
+  const marketName = String(props.selection?.marketName || '').trim()
+  const baseMarketName = String(props.selection?.baseMarketName || marketName).trim()
+
+  if (currentSelectionBaseMarketId.value === 18) {
+    const normalizedBaseMarketName = stripEarlyGoalSuffix(baseMarketName) || stripEarlyGoalSuffix(marketName) || baseMarketName
+    return props.selection?.earlyGoalMode === 'earlygoal'
+      ? formatEarlyGoalMarketName(normalizedBaseMarketName, 'earlygoal')
+      : normalizedBaseMarketName
   }
 
-  // If suspended
-  if (props.selection.suspended) {
-    return true
+  if (currentSelectionBaseMarketId.value === 1) {
+    const normalizedBaseMarketName = stripEarlyWinSuffix(baseMarketName) || stripEarlyWinSuffix(marketName) || baseMarketName
+    const mode = props.selection?.earlyWinMode || 'base'
+    return mode === 'base'
+      ? normalizedBaseMarketName
+      : formatEarlyWinMarketName(normalizedBaseMarketName, mode)
   }
 
-  // // Check if expired based on time
-  // const parsedDate = new Date(props.selection.eventDate);
-  // const currentDate = new Date();
-  // const difference = currentDate - parsedDate;
-  // const hoursDifference = difference / (1000 * 60 * 60);
+  return marketName || baseMarketName
+})
 
-  // return hoursDifference >= 5;
+const showEarlyWinControls = computed(() => {
+  return (
+    currentSelectionBaseMarketId.value === 1 &&
+    Array.isArray(props.selection?.supportedEarlyWinModes) &&
+    props.selection.supportedEarlyWinModes.length > 0
+  )
+})
+
+const showEarlyGoalControl = computed(() => {
+  return (
+    currentSelectionBaseMarketId.value === 18 &&
+    (props.selection?.supportsEarlyGoal || props.selection?.earlyGoalMode === 'earlygoal')
+  )
+})
+
+const toggleSelectionMode = async (mode) => {
+  if (!canRequestMode(mode) || isLoadingUpMode.value) return
+  await setSelectionUpMode(props.selection, mode)
+}
+
+const toggleSelectionEarlyGoal = async () => {
+  if (!showEarlyGoalControl.value || couponStore.isEarlyGoalLoading) return
+  await couponStore.setSelectionEarlyGoalMode(props.selection, 'earlygoal')
+}
+
+const showUnsupportedEarlyWin = computed(() => {
+  return (
+    isBulkEarlyWinEnabled.value &&
+    selectionSportId.value === 1 &&
+    !props.selection?.supportsEarlyWin &&
+    currentSelectionBaseMarketId.value === 1 &&
+    (props.selection?.earlyWinMode || 'base') === 'base'
+  )
+})
+
+const showUnsupportedEarlyGoal = computed(() => {
+  if (!couponStore.coupon.useEarlyGoal) return false
+  if (selectionSportId.value !== 1) return false
+  if (currentSelectionBaseMarketId.value !== 18) return false
+  if (props.selection?.supportsEarlyGoal) return false
+  return true
 })
 
 // Add a computed property to get the specific unavailability reason
 const getUnavailabilityReason = computed(() => {
   // If explicitly marked as unavailable
   if (props.selection.unavailable) {
-    return 'unavailable'
+    return 'Unavailable'
   }
 
   // If suspended
   if (props.selection.suspended) {
-    return 'suspended'
+    return 'Suspended'
   }
 
   // Check if expired based on time
@@ -186,6 +375,22 @@ const getUnavailabilityReason = computed(() => {
   // }
 
   // return "unavailable";
+})
+
+const selectionStatusBadgeLabel = computed(() => {
+  if (props.selection?.unavailable) {
+    return 'Unavailable'
+  }
+
+  if (props.selection?.suspended) {
+    return 'Suspended'
+  }
+
+  return ''
+})
+
+const showSelectionBadges = computed(() => {
+  return isLiveSelection.value || Boolean(selectionStatusBadgeLabel.value)
 })
 
 const getImageSrc = (sportId, sport) => {
@@ -206,65 +411,6 @@ async function removeSelection() {
   await couponStore.removeSelection(props.selection.selectionId || props.selection.id)
 }
 
-function handleStakeChange(stake) {
-  return couponStore.updateWinnings({
-    stake: stake,
-    id: props.selection.selectionId
-  })
-}
-
-function openKeyboard() {
-  emit('on-selection-input', props.selection.matchId)
-}
-
-function hideKeyboard() {
-  emit('on-selection-input', 0)
-}
-
-function onKeyClick(type, value) {
-  let stake = props.selection.stake.toString()
-  let finalStake
-  switch (type) {
-    case 'number':
-      if (stake.length < 7) {
-        if (typeof value === 'number') {
-          if (stake === '') {
-            finalStake = value
-          } else {
-            finalStake = parseFloat(stake) + value
-          }
-        } else {
-          finalStake = stake + value
-        }
-        handleStakeChange(finalStake)
-      }
-      break
-    case 'dot':
-      if (stake.length < 6 && !stake.includes('.')) {
-        stake += '.'
-        handleStakeChange(stake)
-      }
-      break
-    case 'double-zero':
-      if (stake.length < 6) {
-        stake += '00'
-        handleStakeChange(stake)
-      }
-      break
-    case 'clear':
-      stake = ''
-      handleStakeChange(stake)
-      break
-    case 'delete':
-      stake = stake.toString().slice(0, -1)
-      handleStakeChange(stake)
-      break
-    case 'done':
-      hideKeyboard()
-      break
-  }
-}
-
 function goToGame() {
   emit('toggle-betslip')
   let route_name = 'fixtures-detail'
@@ -281,6 +427,10 @@ function goToGame() {
     }
   })
 }
+
+function toggleBanker() {
+  emit('toggle-banker', props.selection)
+}
 </script>
 
 <style>
@@ -289,9 +439,12 @@ function goToGame() {
   box-sizing: border-box;
   position: relative;
   background-color: #fff;
-  /* margin: 8px; */
-  border-bottom: .5px solid #eaecef
-  /* border-radius: 9px; */
+  border: 1px solid #eaecef;
+  border-color: var(--brand-border-type1);
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.05);
+  margin: 0.55rem 0.667rem;
+  overflow: hidden;
 }
 .m-bet-container.m-change-item,
 .m-bet-container.m-item-error,
@@ -299,11 +452,12 @@ function goToGame() {
   background-color: #ffe3e5;
 }
 .m-bet-container .m-outcomes-color {
-  height: 100%;
+  border-radius: 999px;
+  height: calc(100% - 1rem);
   left: 0;
   position: absolute;
-  top: 0;
-  width: 3px;
+  top: 0.5rem;
+  width: 4px;
 }
 .m-bet-container.is-single {
   padding-bottom: 0.5rem;
@@ -351,8 +505,8 @@ function goToGame() {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   text-align: center;
-  width: 3rem;
-  padding-top: 0.41667rem;
+  width: 2rem;
+  padding-top: 0.7rem;
 }
 .m-bet-container .m-outcomes-row .m-outcomes-opt::before {
   content: '\e69a';
@@ -365,7 +519,7 @@ function goToGame() {
 .m-bet-container .m-outcomes-row .m-outcomes-opt:before {
   color: #000000;
   color: var(--c-betslip-item-cross-icon);
-  font-size: 1.33333333rem;
+  font-size: 1.13333333rem;
 }
 .m-bet-container .m-outcomes-row .m-outcome-right {
   -webkit-box-flex: 1;
@@ -373,7 +527,7 @@ function goToGame() {
   -ms-flex: 1 0 0%;
   flex: 1 0 0%;
   overflow: hidden;
-  /* padding-left: 20px; */
+  border-bottom: 0;
 }
 .m-bet-container .m-outcomes-row .m-team-row {
   -webkit-align-content: center;
@@ -395,9 +549,28 @@ function goToGame() {
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
   justify-content: space-between;
-  padding: 0.41666667rem 0.83333333rem 0.41666667rem 0.4rem;
-  padding-right: 0.83333333rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.9rem 0.75rem 0.5rem;
   position: relative;
+}
+
+.banker-badge {
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid #0d9737;
+  border-radius: 50%;
+  color: #0d9737;
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  height: 26px;
+  justify-content: center;
+  margin-left: 0.5rem;
+  width: 26px;
+}
+.banker-badge.active {
+  background: #0d9737;
+  color: #ffffff;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell {
   -webkit-box-sizing: border-box;
@@ -434,6 +607,12 @@ function goToGame() {
   overflow: hidden;
   width: 100%;
 }
+
+.m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-market-desc-wrapper {
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+}
 .m-bet-container
   .m-outcomes-row
   .m-team-row
@@ -453,7 +632,8 @@ function goToGame() {
   padding-right: 1rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper {
-  font-size: 1.33333333rem;
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-outcome-desc-wrapper .m-outcome-desc {
   -webkit-box-flex: 1;
@@ -601,7 +781,9 @@ function goToGame() {
   line-height: 1.066rem;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper {
-  font-size: 1.066rem;
+  color: #6b7280;
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 .m-bet-container .m-outcomes-row .m-team-row .m-team-cell .m-vs-wrapper .m-icon-live {
   background-color: var(--brand-secondary);
@@ -715,6 +897,159 @@ function goToGame() {
   border: 0px;
 }
 
+.selection-market-meta {
+  align-items: flex-end;
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.selection-market-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.selection-market-copy .m-market-desc {
+  color: #67707c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.selection-earlywin-controls {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.selection-earlywin-pill {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.18s ease;
+}
+
+.selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #d1d5db, #9ca3af);
+  align-items: center;
+  background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  height: 2.1rem;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 0.3rem;
+  position: relative;
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.selection-earlywin-pill--one .selection-earlywin-pill-surface {
+  min-width: 3.5rem;
+}
+
+.selection-earlywin-pill--two .selection-earlywin-pill-surface {
+  min-width: 3.5rem;
+}
+
+.selection-earlygoal-pill .selection-earlywin-pill-surface {
+  min-width: 5.8rem;
+  padding: 0 0.75rem;
+}
+
+.selection-earlywin-pill-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 2px;
+  background: var(--badge-border);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.selection-earlywin-pill-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.selection-earlywin-pill-logo {
+  display: block;
+  height: auto;
+  position: relative;
+  z-index: 3;
+}
+
+.selection-earlywin-pill-logo--one {
+  width: 2.2rem;
+}
+
+.selection-earlywin-pill-logo--two {
+  width: 2.2rem;
+}
+
+.selection-earlygoal-pill-label {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  position: relative;
+  text-transform: uppercase;
+  z-index: 3;
+}
+
+.selection-earlywin-pill.active .selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
+}
+
+.selection-earlywin-pill--one.active .selection-earlywin-pill-surface {
+  --badge-border: linear-gradient(to bottom right, #cbd5e1, #6b7280);
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 45%, #edf2f7 100%);
+}
+
+.selection-earlygoal-pill.active .selection-earlygoal-pill-label {
+  color: #111827;
+}
+
+.selection-earlywin-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.selection-earlywin-unsupported {
+  color: #8d929b;
+  display: inline;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-left: 0.2rem;
+  white-space: nowrap;
+}
+
 .m-keybord-input {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -733,5 +1068,188 @@ function goToGame() {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   text-align: right;
   width: 7.5rem;
+}
+
+.m-bet-container .m-outcome-right {
+  padding-left: 0.9rem;
+}
+
+.m-selection-header {
+  align-items: center;
+  border-bottom: 1px solid #e7ebf0;
+  border-bottom-color: var(--brand-border-type1);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.8rem 0.95rem 0.75rem 0;
+}
+
+.m-selection-event {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.selection-status-badges {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.selection-status-badge {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  min-height: 1.35rem;
+  padding: 0.2rem 0.5rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.selection-status-badge--live {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e03131 100%);
+  color: #ffffff;
+}
+
+.selection-status-badge--state {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.selection-status-badge--suspended {
+  background: linear-gradient(135deg, #fff4db 0%, #ffe8b3 100%);
+  color: #9a6700;
+}
+
+.selection-status-badge--unavailable {
+  background: linear-gradient(135deg, #f1f3f5 0%, #e5e7eb 100%);
+  color: #6b7280;
+}
+
+.m-selection-event > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-selection-actions {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.m-selection-remove {
+  align-items: center;
+  background: #eff2f5;
+  border: 0;
+  border-radius: 999px;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.9rem;
+  justify-content: center;
+  padding: 0;
+  width: 1.9rem;
+}
+
+.m-selection-remove-icon::before {
+  content: '\e69a';
+  font-family: 'iconfont' !important;
+  font-size: 0.9rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+}
+
+.m-selection-body {
+  cursor: pointer;
+  padding: 0.95rem 0.95rem 0.95rem 0;
+}
+
+.m-selection-body .m-team-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.m-selection-body .m-outcome-desc-wrapper,
+.m-selection-body .m-market-desc-wrapper {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  max-width: 100%;
+  width: 100%;
+}
+
+.m-selection-body .m-market-desc-wrapper {
+  align-items: flex-end;
+}
+
+.m-selection-body .m-outcome-desc-wrapper {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.m-selection-body .m-outcome-desc {
+  flex: 1 1 0%;
+  min-width: 0;
+  padding-right: 0.83333333rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-selection-body .m-outcome-odds {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.m-selection-body .selection-market-meta {
+  align-items: flex-start;
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.m-selection-body .selection-market-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.m-selection-body .selection-market-copy .m-market-desc {
+  color: #67707c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.m-selection-body .selection-earlywin-unsupported {
+  margin-left: 0;
 }
 </style>

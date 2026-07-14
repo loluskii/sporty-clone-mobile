@@ -5,13 +5,13 @@
       <div class="m-country-list">
         <div v-for="(country, index) in countriesData" :key="index" class="m-league">
           <div
-            v-if="country.categoryName"
+            v-if="country.country_name"
             class="m-league-title hide"
             @click="showChild(index, country)"
           >
             <span class="icon-triangle"></span>
-            <span class="text"> {{ country.categoryName }} </span>
-            <span class="m-event-size"> {{ country.total }} </span>
+            <span class="text"> {{ country.country_name }} </span>
+            <span class="m-event-size"> {{ country.games }} </span>
           </div>
           <div :id="'child_' + index" class="m-league-conent d-none">
             <div class="m-tournament-list">
@@ -28,17 +28,17 @@
                         $router.push({
                           name: 'fixtures-by-tournaments',
                           params: {
-                            sport: getActiveSport.sportName,
-                            categories: 'sr:category:' + activeCategory.categoryID,
-                            tournaments: 'sr:tournament:' + tournament.tournamentID
+                            sport: getActiveSport.sport_name,
+                            categories: 'sr:category:' + activeCategory.category_id,
+                            tournaments: 'sr:tournament:' + tournament.tournament_id
                           }
                         })
                       "
                     >
                       <div class="m-item-left">
-                        {{ tournament.tournamentName }}
+                        {{ tournament.name }}
                       </div>
-                      <div class="m-item-right">{{ tournament.total }}</div>
+                      <div class="m-item-right">{{ tournament.games }}</div>
                     </a>
                   </li>
                 </template>
@@ -63,7 +63,7 @@ const activeCategory = ref(null)
 
 const getActiveSport = computed(() => {
   const active = props.activeSportID
-  return utilsStore.sportsMenu.find((x) => x.sportID == active)
+  return utilsStore.sportsMenu.find((x) => x.sport_id == active)
 })
 
 async function showChild(index, country) {
@@ -72,8 +72,8 @@ async function showChild(index, country) {
   const childElement = document.getElementById(childId)
   activeCategory.value = country
   if (!country.isOpen) {
-    const res = await getTournamentsByCategories(country.categoryID)
-    country.tournamentsData = res.sports
+    const res = await getTournamentsByCategories(props.activeSportID, country.category_id)
+    country.tournamentsData = res.data.filter((x) => x.games > 0)
     country.isOpen = true
     if (childElement) {
       childElement.classList.remove('d-none')
@@ -107,7 +107,7 @@ defineComponent({
 
 .m-sports .m-countries-panel .m-countries-block-title {
   background: #f2f3f5;
-  color: #353a45;
+  color: #353a45 !important;
   font-size: 1rem;
   font-weight: normal;
   height: 2rem;
@@ -189,7 +189,7 @@ defineComponent({
   margin-top: 1.66666667rem;
 }
 .m-countries-block-title {
-  color: #fafafa;
+  /* color: #fafafa; */
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 0.75rem;

@@ -52,19 +52,27 @@ function generateApiKey() {
 }
 
 function request(method) {
-  return (url, body, { credentials } = {}) => {
+  return (url, body, { credentials, headers: customHeaders = {}, authToken, skipAuthLogout = false } = {}) => {
     const requestOptions = {
       method: method,
-      headers: authHeader()
+      headers: authHeader(authToken)
     }
     if (body) {
       requestOptions.headers['Content-Type'] = 'application/json'
       requestOptions.body = JSON.stringify(body)
     }
+    if (customHeaders && typeof customHeaders === 'object') {
+      requestOptions.headers = {
+        ...requestOptions.headers,
+        ...customHeaders
+      }
+    }
     if (credentials) {
       requestOptions.credentials = credentials
     }
-    return fetch(url, requestOptions).then(handleResponse)
+    return fetch(url, requestOptions).then((response) =>
+      handleResponse(response, { skipAuthLogout })
+    )
   }
 }
 
@@ -82,11 +90,14 @@ function publicRequest(method) {
   }
 }
 
-function authHeader() {
+function authHeader(authTokenOverride) {
   const headers = {
     'SBE-Client-ID': CLIENT_ID,
     'SBE-API-KEY': generateApiKey(),
     'SBE-API-SIGNATURE': aesEncrypt()
+  }
+  if (authTokenOverride !== undefined) {
+    return authTokenOverride ? { ...headers, Authorization: `Bearer ${authTokenOverride}` } : headers
   }
   // return auth header with jwt if user is logged in and request is to the api url
   const { isAuthenticated } = useAuthStore()
@@ -99,14 +110,14 @@ function authHeader() {
   }
 }
 
-async function handleResponse(response) {
+async function handleResponse(response, { skipAuthLogout = false } = {}) {
   const isJson = response.headers?.get('content-type')?.includes('application/json')
   const data = isJson ? await response.json() : null
 
   // check for error response
   if (!response.ok) {
     const authStore = useAuthStore()
-    if ([401, 403].includes(response.status) && authStore.isAuthenticated) {
+    if ([401, 403].includes(response.status) && authStore.isAuthenticated && !skipAuthLogout) {
       // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
       await authStore.logout()
       return

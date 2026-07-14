@@ -45,9 +45,14 @@ const props = defineProps({
   }
 })
 
+const betSummary = computed(() => {
+  const base = props.simulationResults?.data || props.simulationResults || {}
+  return base?.bets?.[0] || base || {}
+})
+
 const formattedWinAmount = computed(() => {
-  const amount = props.simulationResults.possibleWin
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`
+  const amount = Number(betSummary.value?.possibleWin || betSummary.value?.amountWon || 0)
+  return `${SportsbookGlobalVariable.Currency ?? 'NGN'}${amount.toLocaleString('en')}`
 })
 
 const simulationHeaderStyles = computed(() => ({
@@ -67,7 +72,8 @@ const simulationHeaderStyles = computed(() => ({
   })
 }))
 
-const shouldShowCelebration = computed(
-  () => props.timerEnded && props.simulationResults.statusCode === 2
-)
+const shouldShowCelebration = computed(() => {
+  const statusCode = Number(betSummary.value?.statusCode)
+  return props.timerEnded && (statusCode === 2 || (statusCode === 1 && betSummary.value?.amountWon))
+})
 </script>

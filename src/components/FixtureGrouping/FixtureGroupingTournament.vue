@@ -7,7 +7,7 @@
     </div>
     <div class="m-league-conent" :id="'m-league-child_' + index">
       <div
-        v-for="(fixture, f) in _.groupBy(group, (fixture) => fixture.date.split(' ')[0])"
+        v-for="(fixture, f) in _.groupBy(group, (fixture) => fixture.date.split('T')[0])"
         :key="f"
         class="x-table m-sports-table football"
       >

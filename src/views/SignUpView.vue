@@ -159,18 +159,18 @@ const registerUser = async () => {
     phoneNumber: internationalNumber
   }
 
-  // await doRegistration()
+  await doRegistration()
 
-  const res = await sendOTP(payload);
-  isLoading.value = false;
+  // const res = await sendOTP(payload);
+  // isLoading.value = false;
 
-  if (res.data.status) {
-    activeStep.value = 2;
-    startTimer();
-  } else {
-    registerError.value = true;
-    registerErrorMessage.value = res.data.message;
-  }
+  // if (res.data.status) {
+  //   activeStep.value = 2;
+  //   startTimer();
+  // } else {
+  //   registerError.value = true;
+  //   registerErrorMessage.value = res.data.message;
+  // }
 }
 
 const resendOtp = async () => {
