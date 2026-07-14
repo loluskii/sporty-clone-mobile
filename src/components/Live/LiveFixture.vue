@@ -24,9 +24,23 @@
         <div class="team">{{ gameData.homeTeam }}</div>
         <div class="team">{{ gameData.awayTeam }}</div>
       </div>
-      <div class="x-table-cell score">
-        <div class="set-score">{{ scores.homeScore }}</div>
-        <div class="set-score">{{ scores.awayScore }}</div>
+      <div class="x-table-cell score" :class="{ 'score--breakdown': liveScoreboard.hasBreakdown }">
+        <template v-if="liveScoreboard.hasBreakdown">
+          <div class="score-strip">
+            <div v-for="column in liveScoreboard.columns" :key="`${column.key}-home`" class="score-cell">
+              {{ column.home }}
+            </div>
+          </div>
+          <div class="score-strip">
+            <div v-for="column in liveScoreboard.columns" :key="`${column.key}-away`" class="score-cell">
+              {{ column.away }}
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="set-score">{{ scores.homeScore }}</div>
+          <div class="set-score">{{ scores.awayScore }}</div>
+        </template>
       </div>
 
       <div class="x-table-cell m-market-cell">
@@ -89,6 +103,7 @@ import EmptyOdds from '@/components/EmptyOdds.vue'
 import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
+  getLiveScoreboard,
   isSelected,
   slugify
 } from '@/helpers'
@@ -106,6 +121,7 @@ const props = defineProps({
 })
 
 const matchStatus = ref(props.gameData.matchStatus)
+const periodScores = ref(props.gameData?.eventInfo?.period_scores || [])
 const scores = ref({
   homeScore:
     props.gameData?.eventInfo?.score?.home ??
@@ -123,6 +139,26 @@ const matchStatusLabel = computed(() => {
   if (matchStatus.value === '2nd half') return 'H2'
   return matchStatus.value
 })
+const liveFixtureData = computed(() => ({
+  ...props.gameData,
+  homeScore: scores.value.homeScore,
+  awayScore: scores.value.awayScore,
+  eventInfo: {
+    ...(props.gameData?.eventInfo || {}),
+    period_scores: periodScores.value,
+    score: {
+      ...(props.gameData?.eventInfo?.score || {}),
+      home: scores.value.homeScore,
+      away: scores.value.awayScore
+    },
+    scores: {
+      ...(props.gameData?.eventInfo?.scores || {}),
+      home: scores.value.homeScore,
+      away: scores.value.awayScore
+    }
+  }
+}))
+const liveScoreboard = computed(() => getLiveScoreboard(liveFixtureData.value, 'list'))
 
 const { displayTime, setDisplayTimeFromApi, setDisplayTimeFromMqtt, stopTimer } = useLiveTimer(
   props.gameData.eventTime || '00:00'
@@ -142,6 +178,9 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
     if (messageType === 'markets' && data.sport_event_status) {
       scores.value.homeScore = data.sport_event_status.home_score
       scores.value.awayScore = data.sport_event_status.away_score
+      if (Array.isArray(data.sport_event_status.period_scores)) {
+        periodScores.value = data.sport_event_status.period_scores
+      }
     }
     if (messageType === 'match_status') {
       const matchStatusText = String(data?.match_status || '').toLowerCase()
@@ -159,6 +198,9 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
       if (data.event_time) {
         setDisplayTimeFromMqtt(data.event_time)
       }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
+      }
       matchStatus.value = data.match_status
       return
     }
@@ -169,6 +211,9 @@ const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatc
       }
       if (data.event_time) {
         setDisplayTimeFromMqtt(data.event_time)
+      }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
       }
     }
   }
@@ -258,6 +303,16 @@ watch(
   { deep: true }
 )
 
+watch(
+  () => props.gameData.eventInfo?.period_scores,
+  (nextPeriodScores) => {
+    if (Array.isArray(nextPeriodScores)) {
+      periodScores.value = nextPeriodScores
+    }
+  },
+  { deep: true }
+)
+
 defineComponent({
   name: 'LiveFixture',
   components: { LiveOdds, EmptyOdds }
@@ -291,6 +346,22 @@ defineComponent({
 
 .m-event-specifiers-order {
   padding: 0;
+  text-align: center;
+}
+
+.score--breakdown {
+  width: auto;
+  min-width: 4.5rem;
+}
+
+.score-strip {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.16666667rem;
+}
+
+.score-cell {
+  min-width: 1.25rem;
   text-align: center;
 }
 </style>

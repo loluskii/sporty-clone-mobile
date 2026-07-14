@@ -22,7 +22,50 @@
                   <span>{{ matchHasEnded ? '' : eventTime }} {{ eventDetail.matchStatus }}</span>
                 </div>
               </div>
-              <div class="m-event-team-wrap">
+              <div v-if="liveScoreboard.hasBreakdown" class="m-event-team-wrap m-event-team-breakdown">
+                <div
+                  class="score-breakdown-header"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team-spacer"></span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-label`"
+                    class="score-header-cell"
+                  >
+                    {{ column.label }}
+                  </span>
+                </div>
+                <div
+                  class="score-breakdown-row"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team">{{ eventDetail.homeTeam }}</span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-home`"
+                    class="score-breakdown-cell"
+                    :class="{ total: column.kind === 'total' }"
+                  >
+                    {{ column.home }}
+                  </span>
+                </div>
+                <div
+                  class="score-breakdown-row"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team">{{ eventDetail.awayTeam }}</span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-away`"
+                    class="score-breakdown-cell"
+                    :class="{ total: column.kind === 'total' }"
+                  >
+                    {{ column.away }}
+                  </span>
+                </div>
+              </div>
+              <div v-else class="m-event-team-wrap">
                 <div class="home-team-name">
                   <span class="team">{{ eventDetail.homeTeam }}</span>
                   <span class="score"
@@ -316,6 +359,7 @@ import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
   getFixtureMarkets,
+  getLiveScoreboard,
   getMarketsGrouping,
   isSelected
 } from '@/helpers'
@@ -330,6 +374,7 @@ import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
 const { sportsMenu } = useUtilsStore()
 const eventMarkets = ref()
 const eventDetail = ref()
+const periodScores = ref([])
 const scores = reactive({
   homeScore: 0,
   awayScore: 0
@@ -366,6 +411,30 @@ const {
 const matchHasEnded = computed(() => {
   return eventDetail.value.matchStatus === 'Ended'
 })
+const liveScoreboard = computed(() =>
+  getLiveScoreboard(
+    {
+      ...(eventDetail.value || {}),
+      homeScore: scores.homeScore,
+      awayScore: scores.awayScore,
+      eventInfo: {
+        ...(eventDetail.value?.eventInfo || {}),
+        period_scores: periodScores.value,
+        score: {
+          ...(eventDetail.value?.eventInfo?.score || {}),
+          home: scores.homeScore,
+          away: scores.awayScore
+        },
+        scores: {
+          ...(eventDetail.value?.eventInfo?.scores || {}),
+          home: scores.homeScore,
+          away: scores.awayScore
+        }
+      }
+    },
+    'detail'
+  )
+)
 
 const noMarkets = computed(() => {
   return eventMarkets.value?.length === 0
@@ -423,6 +492,9 @@ function handleFixtureStatus(data) {
     }
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
+    }
+    if (Array.isArray(data.period_scores)) {
+      periodScores.value = data.period_scores
     }
   })
 }
@@ -558,6 +630,9 @@ function setupMqttSubscriptions(matchId, sport_id) {
       if (data.event_time) {
         hasMqttTime.value = true
         eventTime.value = data.event_time
+      }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
       }
     })
   ]
@@ -697,6 +772,7 @@ async function getEventDetail(id) {
       awayTeam.value = res[0].data.awayTeam
       scores.homeScore =res[0].data.homeScore
       scores.awayScore = res[0].data.awayScore
+      periodScores.value = res[0].data?.eventInfo?.period_scores || []
 
       if (!hasMqttTime.value) {
         eventTime.value = res[0].data.eventTime
@@ -1284,6 +1360,56 @@ defineComponent({
   overflow: hidden;
   padding: 0.25rem 0 0.25rem 0.41666667rem;
   width: 50%;
+}
+
+.m-event-team-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.33333333rem;
+}
+
+.score-breakdown-header,
+.score-breakdown-row {
+  display: grid;
+  gap: 0.16666667rem;
+  align-items: center;
+}
+
+.score-breakdown-header .team-spacer {
+  min-width: 0;
+}
+
+.score-breakdown-header .score-header-cell {
+  color: #9ca0ab;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.score-breakdown-row .team {
+  background: rgba(234, 236, 239, 0.15);
+  box-sizing: border-box;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  padding: 0.25rem 0.41666667rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-breakdown-cell {
+  align-items: center;
+  background-color: rgba(234, 236, 239, 0.15);
+  color: #fff;
+  display: flex;
+  font-size: 1.066rem;
+  font-weight: 700;
+  height: 1.83333333rem;
+  justify-content: center;
+}
+
+.score-breakdown-cell.total {
+  background-color: var(--brand-secondary);
 }
 
 .event-detail {
