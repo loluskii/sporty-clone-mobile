@@ -1,5 +1,5 @@
 <template lang="">
-  <div style="min-height: 102px; width: 100%">
+  <div class="prematch-fixture-shell" style="min-height: 102px; width: 100%">
     <div data-op="label-prematch" class="m-event-sport m-sports-row">
       <div class="m-event-meta">
         <div>
@@ -187,6 +187,11 @@ defineComponent({
   border-bottom: .5px solid #dedede;
   display: block;
   padding: 0.66666667rem 0;
+}
+
+.prematch-fixture-shell {
+  background-color: #fafafa;
+  background-color: var(--background-general-primary);
 }
 
 .m-event-sport:hover,
