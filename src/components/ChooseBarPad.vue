@@ -73,19 +73,18 @@
                   <ul class="m-category" v-if="categoryList">
                     <template v-for="(league, index) in categoryList" :key="index">
                       <li
-                        v-show="league.categoryName !== undefined"
                         class="tournament"
                         :class="{
-                          checked: activeCategory && activeCategory.categoryID == league.categoryID
+                          checked: activeCategory && activeCategory.category_id == league.category_id
                         }"
                         @click="setActiveCategory(league)"
                       >
-                        <span class="category-name">{{ league.categoryName }} </span
+                        <span class="category-name">{{ league.country_name }} </span
                         ><span class="select-tournamet-size">
                           <em v-if="getSelectedTournamentCountByCategory(league) > 0">{{
                             getSelectedTournamentCountByCategory(league)
                           }}</em> </span
-                        ><span class="event-size">{{ league.total }}</span>
+                        ><span class="event-size">{{ league.games }}</span>
                       </li>
                     </template>
                   </ul>
@@ -112,8 +111,8 @@
                             </span>
                           </label>
                         </div>
-                        <span class="tournament-name">{{ t.tournamentName }}</span
-                        ><span class="event-size">{{ t.total }}</span>
+                        <span class="tournament-name">{{ t.name }}</span
+                        ><span class="event-size">{{ t.games }}</span>
                       </li>
                     </template>
                   </ul>
@@ -205,7 +204,7 @@ const isLeagueActive = computed(() => {
 })
 
 const getSportbyName = (name) => {
-  return utilsStore.sportsMenu.find((x) => x.sportName == name)
+  return utilsStore.sportsMenu.find((x) => x.sport_name == name)
 }
 
 const getActiveSport = computed(() => {
@@ -238,13 +237,13 @@ function toggleFilter(name) {
     ) {
       isCategoriesLoading.value = true
       let dates = getDateRange(activePeriodFilter.value?.key)
-      getCategoriesBySport(getActiveSport.value.sportID, dates).then((res) => {
+      getCategoriesBySport(getActiveSport.value.sport_id, dates).then((res) => {
         isCategoriesLoading.value = false
-        categoryList.value = res.sports
+        categoryList.value = res.data
         if (route.name === 'fixtures-by-tournaments') {
           const cids = extractIdsFromURL(route.params.categories, 'category')
           const tids = extractIdsFromURL(route.params.tournaments, 'tournament')
-          activeCategory.value = categoryList.value.find((x) => x.categoryID == cids[0].categoryID)
+          activeCategory.value = categoryList.value.find((x) => x.category_id == cids[0].category_id)
           if (!activeCategory.value) {
             activeCategory.value = categoryList.value[0]
           }
@@ -264,14 +263,14 @@ function selectTournament(tournament) {
   }
 
   const index = selectedTournaments.value.findIndex(
-    (x) => x.tournamentID === tournament.tournamentID
+    (x) => x.tournament_id === tournament.tournament_id
   )
   if (index !== -1) {
     selectedTournaments.value.splice(index, 1)
   } else {
     let t = {
       ...tournament,
-      categoryID: activeCategory.value.categoryID,
+      category_id: activeCategory.value.category_id,
       categoryName: activeCategory.value.categoryName
     }
     selectedTournaments.value.push(t)
@@ -279,20 +278,21 @@ function selectTournament(tournament) {
 }
 
 function getSelectedTournamentCountByCategory(category) {
-  return selectedTournaments.value.filter((x) => x.categoryID === category.categoryID).length
+  console.log(selectedTournaments.value)
+  return selectedTournaments.value.filter((x) => x.category_id === category.category_id).length
 }
 
 function tournamentIsSelected(tournament) {
-  return selectedTournaments.value.find((x) => x.tournamentID == tournament.tournamentID)
+  return selectedTournaments.value.find((x) => x.tournament_id == tournament.tournament_id)
 }
 
 const setActiveCategory = async (category) => {
   isTournamentsLoading.value = true
   activeCategory.value = category
   let dates = getDateRange(activePeriodFilter.value?.key)
-  const res = await getTournamentsByCategories(category.categoryID, dates)
+  const res = await getTournamentsByCategories(props.activeSport.sport_id, category.category_id, dates)
   isTournamentsLoading.value = false
-  tournamentsList.value = res.sports
+  tournamentsList.value = res.data
 }
 
 function resetSelection() {
@@ -303,19 +303,19 @@ function resetSelection() {
 
 function viewFixturesByTournaments() {
   toggleFilter('league')
-  let selected = selectedTournaments.value.filter((x) => x.categoryID !== undefined)
-  const categoryIDs = [...new Set(selected.map((item) => item.categoryID))]
-  const tournamentIDs = selected.map((item) => item.tournamentID)
+  let selected = selectedTournaments.value.filter((x) => x.category_id !== undefined)
+  const category_ids = [...new Set(selected.map((item) => item.category_id))]
+  const tournament_ids = selected.map((item) => item.tournament_id)
 
-  const categories = categoryIDs.map((id) => `sr:category:${id}`).join('_')
-  const tournaments = tournamentIDs.map((id) => `sr:tournament:${id}`).join('_')
+  const categories = category_ids.map((id) => `sr:category:${id}`).join('_')
+  const tournaments = tournament_ids.map((id) => `sr:tournament:${id}`).join('_')
 
   let periodValue = route.name === 'today-fixtures' ? 'today' : route.query.period
   if (periodValue) {
     return router.push({
       name: 'fixtures-by-tournaments',
       params: {
-        sport: props.activeSport.sportName,
+        sport: props.activeSport.sport_name,
         categories: categories,
         tournaments: tournaments
         // sort: 'sort:league'
@@ -327,7 +327,7 @@ function viewFixturesByTournaments() {
     return router.push({
       name: 'fixtures-by-tournaments',
       params: {
-        sport: props.activeSport.sportName,
+        sport: props.activeSport.sport_name,
         categories: categories,
         tournaments: tournaments
         // sort: 'sort:league'
@@ -345,7 +345,7 @@ const getCustomRangeData = (data) => {
   emitter.emit('showCustomDatePicker')
   return router.push({
     name: 'fixtures-by-sports',
-    params: { sport: slugify(props.activeSport.sportName) },
+    params: { sport: slugify(props.activeSport.sport_name) },
     query: { period: 'custom', startDate: data.start, endDate: data.end }
   })
 }
@@ -504,7 +504,7 @@ onUnmounted(() => {})
 }
 .m-list {
   background-color: var(--background-type1-secondary);
-  color: #fafafa;
+  /* color: #fafafa; */
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   left: 0px;

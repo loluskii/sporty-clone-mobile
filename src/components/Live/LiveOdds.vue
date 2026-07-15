@@ -4,11 +4,11 @@
     class="m-outcome m-event-outcome-default"
     :class="[
       selectionClass,
-      !odds?.odds || odds.odds <= 1 ? 'm-outcome--disabled' : 'x',
+      isLocked ? 'm-outcome--disabled' : 'x',
       oddUp ? 'm-outcome--up' : oddDown ? 'm-outcome--down' : ''
     ]"
   >
-    <span v-if="!odds?.odds || odds.odds <= 1" class="m-outcome-odds m-icon-lock"></span>
+    <span v-if="isLocked" class="m-outcome-odds m-icon-lock"></span>
     <span v-else data-op="label-odds-amount" class="m-outcome-odds">
       {{ odds.odds ? odds.odds.toFixed(2) : '-' }}
     </span>
@@ -16,7 +16,7 @@
 </template>
 <script setup>
 // import { formatOdd } from '@/helpers'
-import { defineComponent, watch, ref } from 'vue'
+import { defineComponent, watch, ref, computed } from 'vue'
 
 const oddUp = ref(false)
 const oddDown = ref(false)
@@ -26,10 +26,16 @@ const props = defineProps({
   selectionClass: String
 })
 
+const isLocked = computed(() => {
+  // Locked if inactive or odds missing/invalid.
+  return props.odds?.active === 0 || props.odds?.odds <= 1 || !props.odds?.odds
+})
+
 watch(
   () => props.odds?.odds,
   (newValue, oldValue) => {
-    if (typeof newValue === 'number' && typeof oldValue === 'number') {
+    // Only show arrows for actual odds changes.
+    if (newValue && oldValue) {
       const nVal = newValue.toFixed(2)
       const oVal = oldValue.toFixed(2)
 

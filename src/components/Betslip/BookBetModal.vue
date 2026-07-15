@@ -5,7 +5,7 @@
       <div>
         <div class="booking-code-share-code">
           <input type="text" id="j_betCode" class="invisible-element" />
-          {{ betDetails.data.betslipId }}
+          {{ bookingShareCode }}
           <svg
             viewBox="5 2 15 20"
             fill="none"
@@ -58,11 +58,23 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   betDetails: Object
 })
 
 const emit = defineEmits(['hide-modal'])
+const bookingShareCode = computed(() => {
+  return (
+    props.betDetails?.bets?.[0]?.share_code ||
+    props.betDetails?.data?.bets?.[0]?.share_code ||
+    props.betDetails?.share_code ||
+    props.betDetails?.shareCode ||
+    props.betDetails?.code ||
+    ''
+  )
+})
 
 function hideModal(e) {
   if (e && e.target.classList.contains('booking-code')) {
@@ -71,7 +83,7 @@ function hideModal(e) {
 }
 
 function copyBookingCode() {
-  const textToCopy = props.betDetails.data.betslipId
+  const textToCopy = bookingShareCode.value
   const textarea = document.createElement('textarea')
   textarea.value = textToCopy
   document.body.appendChild(textarea)
@@ -87,7 +99,7 @@ function copyBookingCode() {
 }
 
 function copyToClipboard() {
-  const textToCopy = `${window.location.origin}?shareCode=${props.betDetails.data.betslipId}`
+  const textToCopy = `${window.location.origin}?shareCode=${bookingShareCode.value}`
   const textarea = document.createElement('textarea')
   textarea.value = textToCopy
   document.body.appendChild(textarea)

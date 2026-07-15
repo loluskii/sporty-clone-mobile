@@ -2,13 +2,7 @@
   <div data-op="label-event-live" class="m-event-live x-live-row">
     <div class="m-event-meta">
       <span class="m-event-time">{{ displayTime }}</span>
-      <span class="match-status">{{
-        gameData.matchStatus == '1st half'
-          ? 'H1'
-          : gameData.matchStatus == '2nd half'
-            ? 'H2'
-            : gameData.matchStatus
-      }}</span>
+      <span class="match-status">{{ matchStatusLabel }}</span>
       <span class="m-league-name">{{ gameData.categoryName }} - {{ gameData.tournament }}</span>
       <div class="live-marker" data-cms-key="live">Live</div>
     </div>
@@ -30,9 +24,23 @@
         <div class="team">{{ gameData.homeTeam }}</div>
         <div class="team">{{ gameData.awayTeam }}</div>
       </div>
-      <div class="x-table-cell score">
-        <div class="set-score">{{ scores.homeScore }}</div>
-        <div class="set-score">{{ scores.awayScore }}</div>
+      <div class="x-table-cell score" :class="{ 'score--breakdown': liveScoreboard.hasBreakdown }">
+        <template v-if="liveScoreboard.hasBreakdown">
+          <div class="score-strip">
+            <div v-for="column in liveScoreboard.columns" :key="`${column.key}-home`" class="score-cell">
+              {{ column.home }}
+            </div>
+          </div>
+          <div class="score-strip">
+            <div v-for="column in liveScoreboard.columns" :key="`${column.key}-away`" class="score-cell">
+              {{ column.away }}
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="set-score">{{ scores.homeScore }}</div>
+          <div class="set-score">{{ scores.awayScore }}</div>
+        </template>
       </div>
 
       <div class="x-table-cell m-market-cell">
@@ -61,27 +69,17 @@
               <span
                 class="af-select-item"
                 :class="{ 'af-select-item-active': activeSpecifier === item.value }"
-                @click="setActiveSpecifier(item)"
+                @click="setActiveSpecifierAndClose(item)"
                 v-for="(item, i) in getSpecifiers"
                 :key="i"
                 >{{ item.value }}</span
               >
             </div>
             <LiveOdds
-              v-for="(odd, index) in uniqueOutcomes(outcomes)"
+              v-for="(odd, index) in outcomes"
               @click="addToBetslip(gameData, odd)"
               :selectionClass="
-                isSelected(
-                  createID(
-                    gameData.matchID,
-                    activeMarket.marketID,
-                    odd.outcomeID,
-                    activeMarket.specifier,
-                    activeMarket.marketName,
-                    odd.outcomeName
-                  ),
-                  couponStore.coupon
-                )
+                isSelected(getSelectionElementId(gameData, activeMarket, odd), couponStore.coupon)
                   ? 'm-outcome--checked'
                   : ''
               "
@@ -100,316 +98,153 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
 import LiveOdds from './LiveOdds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
-import { sortArr, createID, isSelected, slugify } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  getLiveScoreboard,
+  isSelected,
+  slugify
+} from '@/helpers'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
 import { SIM_ALLOWED_MARKETS } from '@/helpers'
-import { useMqttService } from '@/composables/useMqtt'
+import { useMatchOdds } from '@/composables/useMatchOdds'
+import { useLiveTimer } from '@/composables/useLiveTimer'
 
 const couponStore = useCouponStore()
-const updatePending = ref(false)
-
-// Extract the subscribe function at the top level
-const { subscribe } = useMqttService()
 
 const props = defineProps({
   gameData: Object,
-  activeMarket: Object
+  activeMarket: Object,
+  activeSportID: Number
 })
 
-const activeSpecifier = ref()
-const specifierOpen = ref(false)
-const timer = ref(null)
-const isClockStopped = ref(false)
-
-// Get scores from eventInfo.scores if available
-const getInitialScores = () => {
-  const eventInfo = props.gameData?.eventInfo
-  if (eventInfo?.scores) {
-    return {
-      homeScore: eventInfo.scores.home ?? 0,
-      awayScore: eventInfo.scores.away ?? 0
+const matchStatus = ref(props.gameData.matchStatus)
+const periodScores = ref(props.gameData?.eventInfo?.period_scores || [])
+const scores = ref({
+  homeScore:
+    props.gameData?.eventInfo?.score?.home ??
+    props.gameData?.eventInfo?.scores?.home ??
+    props.gameData?.homeScore ??
+    0,
+  awayScore:
+    props.gameData?.eventInfo?.score?.away ??
+    props.gameData?.eventInfo?.scores?.away ??
+    props.gameData?.awayScore ??
+    0
+})
+const matchStatusLabel = computed(() => {
+  if (matchStatus.value === '1st half') return 'H1'
+  if (matchStatus.value === '2nd half') return 'H2'
+  return matchStatus.value
+})
+const liveFixtureData = computed(() => ({
+  ...props.gameData,
+  homeScore: scores.value.homeScore,
+  awayScore: scores.value.awayScore,
+  eventInfo: {
+    ...(props.gameData?.eventInfo || {}),
+    period_scores: periodScores.value,
+    score: {
+      ...(props.gameData?.eventInfo?.score || {}),
+      home: scores.value.homeScore,
+      away: scores.value.awayScore
+    },
+    scores: {
+      ...(props.gameData?.eventInfo?.scores || {}),
+      home: scores.value.homeScore,
+      away: scores.value.awayScore
     }
   }
-  // Fallback to top-level homeScore/awayScore if they exist
-  return {
-    homeScore: props.gameData?.homeScore ?? 0,
-    awayScore: props.gameData?.awayScore ?? 0
-  }
-}
+}))
+const liveScoreboard = computed(() => getLiveScoreboard(liveFixtureData.value, 'list'))
 
-const scores = ref(getInitialScores())
+const { displayTime, setDisplayTimeFromApi, setDisplayTimeFromMqtt, stopTimer } = useLiveTimer(
+  props.gameData.eventTime || '00:00'
+)
 
-const outcomes = ref([])
+const specifierOpen = ref(false)
 
-// Keep track of updated odds
-const updatedOutcomes = ref({})
-
-// Keep track of the last update timestamp for each match
-const lastUpdateTimestamp = ref({})
-
+const matchId = computed(() => props.gameData.matchID)
+const baseOutcomes = computed(() => props.gameData.outcomes || [])
+const sportId = computed(() => props.gameData?.sportID || props.activeSportID || 1)
 
 const parseTimeToSeconds = (timeStr) => {
   if (timeStr === '--:--') return null
-  const [minutes, seconds] = timeStr.split(':').map(Number)
-  return minutes * 60 + seconds
+  const parts = timeStr.split(':').map(Number)
+  if (parts.length !== 2 || parts.some((value) => Number.isNaN(value))) return null
+  return parts[0] * 60 + parts[1]
 }
 
-const formatSecondsToTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-}
-
-// Sports that have a running clock (sportID)
-// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
-const TIMED_SPORTS = [1, 4, 29]
-
-// Check if sport has a running clock
-const isTimedSport = () => {
-  const sportId = props.gameData.sportID
-  return TIMED_SPORTS.includes(sportId)
-}
-
-// Latency compensation for MQTT event_time (in seconds)
-const MQTT_LATENCY_COMPENSATION = 2
-
-// Adjust time received from MQTT to compensate for backend latency
-const adjustTimeForLatency = (timeStr) => {
-  if (!timeStr || timeStr === '--:--') return timeStr
-
-  // Only adjust for timed sports
-  if (!isTimedSport()) return timeStr
-
-  const totalSeconds = parseTimeToSeconds(timeStr)
-  if (totalSeconds === null) return timeStr
-
-  let adjustedSeconds = totalSeconds + MQTT_LATENCY_COMPENSATION
-
-  // Cap at halftime/fulltime boundaries
-  const status = (props.gameData.matchStatus || '').toLowerCase()
-  if (status.includes('2nd') || status.includes('second')) {
-    // Second half: cap at 90 minutes
-    if (adjustedSeconds > 90 * 60) adjustedSeconds = 90 * 60
-  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
-    // First half: cap at 45 minutes
-    if (adjustedSeconds > 45 * 60) adjustedSeconds = 45 * 60
-  }
-
-  return formatSecondsToTime(adjustedSeconds)
-}
-
-// Calculate elapsed match time from kick-off (only for timed sports)
-const calculateElapsedTime = (kickOffDateStr) => {
-  if (!kickOffDateStr) return null
-
-  // Only calculate for timed sports like Soccer
-  if (!isTimedSport()) return null
-
-  const kickOffTime = new Date(kickOffDateStr).getTime()
-  const now = Date.now()
-  const elapsedMs = now - kickOffTime
-
-  // If kick-off hasn't started yet or invalid date
-  if (elapsedMs < 0) return null
-
-  const elapsedSeconds = Math.floor(elapsedMs / 1000)
-  const status = props.gameData.matchStatus?.toLowerCase() || ''
-
-  if (status.includes('2nd') || status.includes('second')) {
-    // Second half: cap at 90 minutes
-    return Math.min(elapsedSeconds, 90 * 60)
-  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
-    // Halftime: cap at 45:00
-    return 45 * 60
-  } else {
-    // First half or unknown: cap at 45 mins
-    return Math.min(elapsedSeconds, 45 * 60)
-  }
-}
-
-// Get initial display time - use eventTime directly from API response
-const getInitialDisplayTime = () => {
-  // Temporarily disabled: time calculation from kick-off
-  // Use eventTime directly from API response
-  return props.gameData.eventTime || '--:--'
-}
-
-const displayTime = ref(getInitialDisplayTime())
-
-const stopTimer = () => {
-  if (timer.value) {
-    clearInterval(timer.value)
-    timer.value = null
-  }
-}
-
-const startTimer = () => {
-  stopTimer()
-
-  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
-  if (!isTimedSport()) return
-
-  const initialTime = parseTimeToSeconds(displayTime.value)
-  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
-
-  let currentSeconds = initialTime
-  displayTime.value = formatSecondsToTime(currentSeconds)
-
-  timer.value = setInterval(() => {
-    currentSeconds++
-
-    // Stop at key match times
-    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
+const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatchOdds({
+  matchId,
+  activeMarket: computed(() => props.activeMarket),
+  baseOutcomes,
+  sportId: props.activeSportID || 1,
+  // Use bet_stop to end matches only after full time.
+  onBetStop: () => {
+    const currentTime = parseTimeToSeconds(displayTime.value)
+    if (currentTime !== null && currentTime >= 90 * 60) {
       stopTimer()
+      emitter.emit('match-ended', matchId.value)
+    }
+  },
+  onMessage: (messageType, data) => {
+    // console.log(messageType, data)
+    if (messageType === 'match_status') {
+      const matchStatusText = String(data?.match_status || '').toLowerCase()
+      if (matchStatusText === 'ended') {
+        stopTimer()
+        return
+      }
+      if (data.home_score !== undefined) {
+        scores.value.homeScore = data.home_score
+      }
+      if (data.away_score !== undefined) {
+        scores.value.awayScore = data.away_score
+      }
+      if (data.event_time) {
+        setDisplayTimeFromMqtt(data.event_time)
+      }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
+      }
+      matchStatus.value = data.match_status
       return
     }
-
-    displayTime.value = formatSecondsToTime(currentSeconds)
-  }, 1000)
-}
-
-// Function to handle fixture status updates
-function handleFixtureStatus(data) {
-  requestAnimationFrame(() => {
-    // Check if match has ended
-    if (data.status_code === 100) {
-      // Emit event to parent to remove this fixture
-      emitter.emit('match-ended', props.gameData.matchID)
-      return
-    }
-
-    // Update scores
-    scores.value.homeScore = data.home_score
-    scores.value.awayScore = data.away_score
-
-    // Update time and status (with latency compensation)
-    displayTime.value = adjustTimeForLatency(data.event_time)
-    props.gameData.matchStatus = data.match_status
-
-    // Restart timer with new time
-    startTimer()
-  })
-}
-
-const getOdds = () => {
-  if (props.activeMarket && props.gameData.activeMarkets > 0) {
-    if (props.gameData.outcomes) {
-      // Find and return the odds based on marketID and outcomeID
-      const odds = props.gameData.outcomes
-      let filtered = odds.filter((item) => item.marketID == props.activeMarket.marketID)
-      let uniqueFiltered = uniqueOutcomes(filtered)
-
-      // Apply any updates we've received from MQTT
-      const updatedOutcomesList = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
-        if (updatedOutcomes.value[key]) {
-          return {
-            ...outcome,
-            odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active
-          }
-        }
-        return outcome
-      })
-
-      if (props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-        let defaultSpecifier = updatedOutcomesList[0]?.specifier
-        if (defaultSpecifier) {
-          const filteredBySpecifier = updatedOutcomesList.filter(
-            (item) => item.specifier === defaultSpecifier
-          )
-
-          // Only update activeSpecifier if it's different to avoid recursive updates
-          if (activeSpecifier.value !== defaultSpecifier.split('=')[1]) {
-            activeSpecifier.value = defaultSpecifier.split('=')[1]
-          }
-
-          // Compare before updating to avoid unnecessary reactivity
-          if (JSON.stringify(filteredBySpecifier) !== JSON.stringify(outcomes.value)) {
-            outcomes.value = sortArr([...filteredBySpecifier], 'outcomeID')
-          }
-        }
-      } else if (updatedOutcomesList.length) {
-        // Compare before updating to avoid unnecessary reactivity
-        const sortedOutcomes = sortArr([...updatedOutcomesList], 'outcomeID')
-        if (JSON.stringify(sortedOutcomes) !== JSON.stringify(outcomes.value)) {
-          outcomes.value = sortedOutcomes
-        }
-      } else if (outcomes.value.length > 0) {
-        outcomes.value = []
+    if (messageType === 'scores') {
+      if (data.home_score !== undefined && data.away_score !== undefined) {
+        scores.value.homeScore = data.home_score
+        scores.value.awayScore = data.away_score
+      }
+      if (data.event_time) {
+        setDisplayTimeFromMqtt(data.event_time)
+      }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
       }
     }
   }
-}
-
-const getSpecifiers = computed(() => {
-  if (props.activeMarket && props.activeMarket.specifier && props.activeMarket.specifier !== '') {
-    const result = []
-
-    const outcomes = props.gameData.outcomes
-    if (outcomes.length > 0) {
-      const filtered = outcomes.filter(
-        (item) => item.marketID === parseInt(props.activeMarket.marketID)
-      )
-
-      let uniqueFiltered = uniqueOutcomes(filtered)
-
-      uniqueFiltered.forEach((outcome) => {
-        let specifier = outcome.specifier
-        let found = result.find((item) => item.specifier === specifier)
-        if (!found)
-          // check if specifier has been listed
-          result.push({ specifier, value: specifier.split('=')[1] }) //push value to array
-      })
-    }
-    return result.sort((a, b) => a.value - b.value)
-  } else {
-    return []
-  }
 })
-
-// set active specifier value
-const setActiveSpecifier = (spec) => {
-  if (props.gameData.outcomes) {
-    // console.log(spec)
-    const odds = props.gameData.outcomes
-    let filtered = odds.filter((item) => item.marketID === parseInt(props.activeMarket.marketID))
-    if (filtered) {
-      let uniqueFiltered = uniqueOutcomes(filtered)
-      uniqueFiltered = uniqueFiltered.filter((item) => item.specifier === spec.specifier)
-
-      // Apply any updates we've received from MQTT
-      uniqueFiltered = uniqueFiltered.map((outcome) => {
-        const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier}`
-        if (updatedOutcomes.value[key]) {
-          return {
-            ...outcome,
-            odds: updatedOutcomes.value[key].odds,
-            active: updatedOutcomes.value[key].active
-          }
-        }
-        return outcome
-      })
-
-      outcomes.value = uniqueFiltered
-      activeSpecifier.value = spec.value
-      toggleList()
-    }
-  }
-}
 
 const toggleList = () => {
   specifierOpen.value = !specifierOpen.value
 }
 
+const setActiveSpecifierAndClose = (spec) => {
+  setActiveSpecifier(spec)
+  toggleList()
+}
+
+const getSelectionElementId = (fixture, market, outcome) =>
+  buildCouponSelectionElementId({ fixture, market, outcome })
+
 function addToBetslip(event, odd) {
-  if (odd.odds <= 1) return
-  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,props.activeMarket.marketName,odd.outcomeName)
-  let marketId = parseInt(odd.marketID)
+  if (odd.active === 0 || odd.odds <= 1) return
+  const marketId = parseInt(odd.marketID)
   if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
     emitter.emit(
       'showErrorMessage',
@@ -417,173 +252,84 @@ function addToBetslip(event, odd) {
     )
     return
   }
-  const data = {
+  const data = buildCouponSelectionPayload({
     fixture: event,
-    market_name: props.activeMarket.marketName,
-    market_id: odd.marketID,
-    ele_id: id,
+    market: props.activeMarket,
     outcome: odd,
-    odds: odd.odds,
-    odd_id: odd.oddID,
-    odd_name: odd.outcomeName,
-    type: 'live',
-    event_id: event.gameID,
-    specifier: props.activeMarket.specifier
-  }
-
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
-}
-
-function handleOddsChange(data) {
-  if (!data || !data.markets) return
-
-  const matchId = props.gameData.matchID
-  if (String(data.event_id) !== String(matchId)) return
-
-  if (data.sport_event_status?.clock?.stopped !== undefined) {
-    isClockStopped.value = data.sport_event_status.clock.stopped
-    if (isClockStopped.value) {
-      stopTimer()
-    } else {
-      startTimer()
-    }
-  }
-  // Use requestAnimationFrame for smooth UI updates
-  requestAnimationFrame(() => {
-    // Update scores
-    scores.value.homeScore = data.sport_event_status.home_score
-    scores.value.awayScore = data.sport_event_status.away_score
-
-    // Batch odds updates
-    if (data.markets?.length > 0) {
-      const updatedOutcomesCopy = { ...updatedOutcomes.value }
-
-      data.markets.forEach((market) => {
-        market.outcomes?.forEach((outcome) => {
-          const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
-          updatedOutcomesCopy[key] = {
-            odds: outcome.odds,
-            active: outcome.active ? 1 : 0
-          }
-        })
-      })
-
-      updatedOutcomes.value = updatedOutcomesCopy
-      getOdds()
-    }
+    type: 'live'
   })
-}
 
-function handleBetStop(data) {
-  const matchId = props.gameData.matchID
-  const dataMatchId = data.event_id || data.match_id
-
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    // console.log(`📊 MQTT: Ignoring bet stop for match ID ${dataMatchId}, our match ID is ${matchId}`);
-    return
-  }
-
-  // console.log(`📊 MQTT: Processing bet stop for match ID ${matchId}`);
-
-  setTimeout(() => {
-    const newOutcomes = outcomes.value.map((outcome) => ({
-      ...outcome,
-      odds: 0,
-      active: 0
-    }))
-
-    const updatedOutcomesCopy = { ...updatedOutcomes.value }
-
-    newOutcomes.forEach((outcome) => {
-      const key = `${outcome.marketID}-${outcome.outcomeID}-${outcome.specifier || ''}`
-      updatedOutcomesCopy[key] = {
-        odds: 0,
-        active: 0,
-        timestamp: Date.now()
-      }
-    })
-
-    updatedOutcomes.value = updatedOutcomesCopy
-
-    if (JSON.stringify(newOutcomes) !== JSON.stringify(outcomes.value)) {
-      outcomes.value = newOutcomes
-    }
-  }, 0)
-}
-
-const uniqueOutcomes = (outcomes) => {
-  let x = outcomes.filter(
-    (outcome, index, self) =>
-      index ===
-      self.findIndex((o) => o.outcomeID == outcome.outcomeID && o.specifier == outcome.specifier)
-  )
-  return x
+  return couponStore.toggleCouponSelection(data)
 }
 
 watch(
-  () => displayTime.value,
-  (newTime) => {
-    if (newTime) {
-      startTimer()
-    }
-  },
-  { immediate: true }
-)
-
-watch(
-  [() => props.activeMarket, () => props.gameData.outcomes],
+  () => props.activeMarket,
   () => {
-    // Use setTimeout to break potential update cycles
-    setTimeout(() => {
-      getOdds()
-    }, 0)
-  },
-  { immediate: true }
+    specifierOpen.value = false
+  }
 )
 
-onMounted(() => {
-  // console.log(`🏗️ Component: Setting up MQTT subscriptions for match ID: ${props.gameData.matchID}`);
-
-  // Initialize scores from eventInfo.scores or top-level
-  scores.value = getInitialScores()
-
-  outcomes.value = props.gameData.outcomes || []
-  getOdds()
-
-  const matchId = props.gameData.matchID
-
-  if (matchId) {
-    const componentId = `live-highlights-fixture-${matchId}-${Date.now()}`
-
-    const topics = {
-      oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
-      betStop: `sbe/feeds/live/bet_stop/${matchId}`,
-      fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
+watch(
+  () => props.gameData.matchStatus,
+  (nextStatus) => {
+    if (nextStatus !== undefined) {
+      matchStatus.value = nextStatus
     }
-
-    const handlers = {
-      oddsChange: handleOddsChange,
-      betStop: handleBetStop,
-      fixtureStatus: handleFixtureStatus
-    }
-
-    const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-      // console.log(`📊 Subscribing to ${key} on topic: ${topic}`);
-      return subscribe(topic, (data) => {
-        // console.log(`📊 MQTT: Received message on topic ${topic} for component ${componentId}`, data);
-        handlers[key](data)
-      })
-    })
-
-    onBeforeUnmount(() => {
-      // console.log(`🧹 Component: Cleaning up MQTT subscriptions for match ID: ${matchId}`);
-      unsubscribers.forEach((unsubscribe) => unsubscribe())
-      stopTimer()
-    })
   }
+)
+
+watch(
+  () => props.gameData.eventTime,
+  (nextTime) => {
+    if (nextTime) {
+      setDisplayTimeFromApi(nextTime)
+    }
+  }
+)
+
+watch(
+  () => props.gameData.eventInfo?.score || props.gameData.eventInfo?.scores,
+  (nextScores) => {
+    if (nextScores && typeof nextScores === 'object') {
+      if (nextScores.home !== undefined) {
+        scores.value.homeScore = nextScores.home
+      }
+      if (nextScores.away !== undefined) {
+        scores.value.awayScore = nextScores.away
+      }
+    }
+  },
+  { deep: true }
+)
+
+watch(
+  () => props.gameData.eventInfo?.period_scores,
+  (nextPeriodScores) => {
+    if (Array.isArray(nextPeriodScores)) {
+      periodScores.value = nextPeriodScores
+    }
+  },
+  { deep: true }
+)
+
+watch(
+  () => [props.gameData.homeScore, props.gameData.awayScore],
+  ([homeScore, awayScore]) => {
+    if (homeScore !== undefined) {
+      scores.value.homeScore = homeScore
+    }
+    if (awayScore !== undefined) {
+      scores.value.awayScore = awayScore
+    }
+  }
+)
+
+defineComponent({
+  name: 'LiveHighlightsFixture',
+  components: { LiveOdds, EmptyOdds }
 })
 </script>
+
 
 <style scoped>
 .m-table {
@@ -623,5 +369,21 @@ onMounted(() => {
 
 .af-select-item-active {
   color: var(--brand-live-odds-text);
+}
+
+.score--breakdown {
+  width: auto;
+  min-width: 4.5rem;
+}
+
+.score-strip {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.16666667rem;
+}
+
+.score-cell {
+  min-width: 1.25rem;
+  text-align: center;
 }
 </style>

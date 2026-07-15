@@ -62,14 +62,9 @@ async function loadBet() {
   try {
     const res = await loadBetslipByCode(bookingCode.value)
     isLoading.value = false
-    if (res.success) {
-      if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections
-        couponStore.coupon.totalOdds = res.data.totalOdd
-        couponStore.coupon.totalStake = res.data.stake
-        couponStore.coupon.stake = res.data.stake
-        couponStore.coupon.maxWin = res.data.possibleWin
-        couponStore.coupon.source = 'mobile'
+    if (res.status_code === 200 || res.success) {
+      const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(res.data)
+      if (loadedSelections) {
         emitter.emit('openBetslip')
         return router.push({ name: 'home' })
       } else {

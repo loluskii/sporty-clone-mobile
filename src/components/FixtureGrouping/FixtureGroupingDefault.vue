@@ -2,7 +2,7 @@
   <div class="m-league event-league">
     <div class="m-league-conent" :id="'m-league-child_'">
       <div
-        v-for="(fixture, f) in _.groupBy(fixturesList, (fixture) => fixture.date.split(' ')[0])"
+        v-for="(fixture, f) in _.groupBy(fixturesList, (fixture) => fixture.date.split('T')[0])"
         :key="f"
         class="x-table m-sports-table football"
       >

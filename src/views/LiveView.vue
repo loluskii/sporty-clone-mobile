@@ -11,8 +11,8 @@
           <ul class="m-snap-nav flex">
             <li
               v-for="(sport, s) in sportsListData"
-              :key="s"
               :class="{ active: sport.sportID == activeSportID }"
+              :key="s"
               class="m-sport-type-item m-snap-nav-item"
               @click="setActiveSport(sport.sportID)"
               :id="'live_' + sport.sportID"
@@ -33,7 +33,7 @@
       </div>
 
       <!-- Markets Navigation -->
-      <div v-if="Object.keys(filteredLiveData).length" class="m-sanp-nav-container">
+      <div v-if="Object.keys(groupedFixtures).length" class="m-sanp-nav-container">
         <div class="m-snap-nav-wrap m-mkt-type" style="overflow: auto">
           <ul class="m-snap-nav flex">
             <li
@@ -46,13 +46,33 @@
               {{ market.marketName }}
             </li>
           </ul>
+          <div v-if="showUpToggle" class="up-mode-bar">
+            <button
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === 'none' }"
+              @click="setUpMode('none')"
+            >
+              {{ baseLabel }}
+            </button>
+            <button
+              v-for="option in modeOptions"
+              :key="option.key"
+              class="up-mode-tab"
+              type="button"
+              :class="{ active: upMode === option.key }"
+              @click="setUpMode(option.key)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Fixtures List -->
-      <div v-if="Object.keys(filteredLiveData).length" class="m-bet-content">
+      <div v-if="Object.keys(groupedFixtures).length" class="m-bet-content">
         <div
-          v-for="(fixtures, tournamentKey) in filteredLiveData"
+          v-for="(fixtures, tournamentKey) in groupedFixtures"
           :key="tournamentKey"
           class="m-league event-league"
         >
@@ -71,9 +91,9 @@
                   <span class="live-indicator">LIVE</span>
                 </div>
                 <div class="x-table-cell market-title">
-                  <template v-for="(outcome, o) in _.sortBy(activeMarket?.outcomes || [], 'outcomeID')" :key="o">
+                  <template v-for="(outcome, o) in _.sortBy(effectiveMarket?.outcomes || [], 'outcomeID')" :key="o">
                     <div class="outcome-name">
-                      <span>{{ getOutcomeDisplayName(activeMarket?.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
+                      <span>{{ getOutcomeDisplayName(effectiveMarket?.marketName, outcome.outcomeID, outcome.outcomeName) }}</span>
                     </div>
                   </template>
                 </div>
@@ -84,7 +104,7 @@
                 v-for="(fixture, index) in fixtures"
                 :key="fixture.matchID"
                 :gameData="fixture"
-                :activeMarket="activeMarket"
+                :activeMarket="effectiveMarket"
               />
             </div>
           </div>
@@ -107,16 +127,22 @@ import LiveFixture from '@/components/Live/LiveFixture.vue'
 import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getFeedsLiveFixtures } from '@/helpers'
-import { EXCLUDED_LIVE_SPORT_IDS, sportsList } from '@/helpers/constants'
-import { ref, computed, watch } from 'vue'
+import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
+import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount, toRef } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
+import emitter from '@/plugins/emitter'
+import { useUpMode } from '@/composables/useUpMode'
+import { EXCLUDED_LIVE_SPORT_IDS } from '@/helpers/constants'
 
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
+const accumulatedFixtures = ref([])
+const accumulatedMarkets = ref([])
 const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
+// Keep a writable ref to the active market for up-mode state changes.
+const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
 
 // Map outcome IDs to standard display names for common markets
 const outcomeNameMap = {
@@ -127,166 +153,6 @@ const outcomeNameMap = {
   'Odd/Even': { 70: 'Odd', 72: 'Even' },
   'GG/NG': { 74: 'GG', 76: 'NG' }
 }
-
-//Fallback Markets
-const fallbackMarketsBySport =[
-  {
-    "marketID": 1,
-    "marketName": "1x2",
-    "specifier": "",
-    "outcomes": [
-        {
-            "outcomeName": "1",
-            "outcomeID": "1"
-        },
-        {
-            "outcomeName": "X",
-            "outcomeID": "2"
-        },
-        {
-            "outcomeName": "2",
-            "outcomeID": "3"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 10,
-    "marketName": "DC",
-    "specifier": "",
-    "outcomes": [
-        {
-            "outcomeName": "12",
-            "outcomeID": "10"
-        },
-        {
-            "outcomeName": "X2",
-            "outcomeID": "11"
-        },
-        {
-            "outcomeName": "1X",
-            "outcomeID": "9"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 11,
-    "marketName": "draw no bet",
-    "specifier": "",
-    "outcomes": [
-        {
-            "outcomeName": "1",
-            "outcomeID": "4"
-        },
-        {
-            "outcomeName": "2",
-            "outcomeID": "5"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 18,
-    "marketName": "Over/Under",
-    "specifier": "total",
-    "outcomes": [
-        {
-            "outcomeName": "Over",
-            "outcomeID": "12"
-        },
-        {
-            "outcomeName": "Under",
-            "outcomeID": "13"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 14,
-    "marketName": "handicap",
-    "specifier": "handicap",
-    "outcomes": [
-        {
-            "outcomeName": "1",
-            "outcomeID": "1711"
-        },
-        {
-            "outcomeName": "X",
-            "outcomeID": "1712"
-        },
-        {
-            "outcomeName": "2",
-            "outcomeID": "1713"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 29,
-    "marketName": "GG/NG",
-    "specifier": "",
-    "outcomes": [
-        {
-            "outcomeName": "GG",
-            "outcomeID": "74"
-        },
-        {
-            "outcomeName": "NG",
-            "outcomeID": "76"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 19,
-    "marketName": "Home Over/Under",
-    "specifier": "total",
-    "outcomes": [
-        {
-            "outcomeName": "Over",
-            "outcomeID": "12"
-        },
-        {
-            "outcomeName": "Under",
-            "outcomeID": "13"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 26,
-    "marketName": "odd/even",
-    "specifier": "",
-    "outcomes": [
-        {
-            "outcomeName": "Odd",
-            "outcomeID": "70"
-        },
-        {
-            "outcomeName": "Even",
-            "outcomeID": "72"
-        }
-    ],
-    "sportID": 1
-  },
-  {
-    "marketID": 18,
-    "marketName": "Over/Under",
-    "specifier": "total",
-    "outcomes": [
-        {
-            "outcomeName": "Over",
-            "outcomeID": "12"
-        },
-        {
-            "outcomeName": "Under",
-            "outcomeID": "13"
-        }
-    ],
-    "sportID": 2
-  }
-]
 
 const getOutcomeDisplayName = (marketName, outcomeID, originalName) => {
   const marketMap = outcomeNameMap[marketName]
@@ -303,145 +169,137 @@ const getImageSrc = (sportId) => {
 
 const {
   data: completeLiveData,
-  isLoading
-} = useQuery(
-  ['liveViewData'],
-  () => getFeedsLiveFixtures(0, 0, 0, 'priority'), // sport_id=0 fetches all sports
-  {
-    // Prevent automatic refetching which can cause recursive updates
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    // Use a longer stale time to prevent unnecessary refetches
-    staleTime: 60000, // 1 minute
-    // Add cacheTime to control how long data stays in cache
-    cacheTime: 300000, // 5 minutes
-    // Update refetch interval to 10 minutes
-    refetchInterval: 60000 * 10, // 10 minutes
-    // Add retry logic with exponential backoff
-    retry: (failureCount, error) => {
-      // Don't retry on 4xx errors
-      if (error.response && error.response.status >= 400 && error.response.status < 500) {
-        return false
-      }
-      return failureCount < 3 // retry up to 3 times
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    onError: (err) => {
-      console.error('Error fetching live data:', err)
-    },
-    onSuccess: (response) => {
-      const allowedFixtures = (response?.data?.fixtures || []).filter((fixture) =>
-        isAllowedLiveSport(fixture.sportID)
-      )
-
-      if (allowedFixtures.length > 0) {
-        isEmptyResponse.value = false
-      } else {
-        isEmptyResponse.value = true
-      }
+  isLoading,
+  refetch
+} = useQuery('liveData', getLiveHighlights, {
+  enabled: FEED_TOGGLE,
+  refetchOnWindowFocus: false,
+  refetchOnMount: true,
+  refetchOnReconnect: false,
+  staleTime: 60000,
+  cacheTime: 300000,
+  refetchInterval: 60000 * 10,
+  retry: (failureCount, error) => {
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false
     }
+    return failureCount < 3
+  },
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  onError: (err) => {
+    console.error('Error fetching live data:', err)
+    isEmptyResponse.value = true
+  },
+  onSuccess: (response) => {
+    applyLiveData(response)
   }
-)
-
-const allowedLiveFixtures = computed(() => {
-  if (!completeLiveData.value?.data?.fixtures) {
-    return []
-  }
-
-  return completeLiveData.value.data.fixtures.filter((fixture) => isAllowedLiveSport(fixture.sportID))
 })
 
-// Derive sports list from response data with fixture counts per sport
+function applyLiveData(response) {
+  if (!FEED_TOGGLE) return
+  const fixtures = (response?.fixtures || response?.data?.fixtures || []).filter((fixture) =>
+    isAllowedLiveSport(fixture.sportID)
+  )
+  const markets = (response?.markets || response?.data?.markets || []).filter((market) =>
+    isAllowedLiveSport(market.sportID)
+  )
+
+  if (fixtures.length > 0) {
+    accumulatedFixtures.value = fixtures
+    accumulatedMarkets.value = markets
+    isEmptyResponse.value = false
+  } else {
+    accumulatedFixtures.value = []
+    accumulatedMarkets.value = []
+    isEmptyResponse.value = true
+  }
+}
+
 const sportsListData = computed(() => {
-  if (!allowedLiveFixtures.value.length) {
+  if (isEmptyResponse.value) {
     return []
   }
+  const sportCountMap = new Map()
 
-  // Group fixtures by sport and count
-  const sportCounts = new Map()
-  allowedLiveFixtures.value.forEach(fixture => {
-    if (!sportCounts.has(fixture.sportID)) {
-      sportCounts.set(fixture.sportID, {
+  accumulatedFixtures.value.forEach((fixture) => {
+    const key = fixture.sportID
+    if (sportCountMap.has(key)) {
+      const sportData = sportCountMap.get(key)
+      sportData.count += 1
+    } else {
+      sportCountMap.set(key, {
         sportID: fixture.sportID,
-        sportName: fixture.sportName || sportsList.find(s => s.sport_id === fixture.sportID)?.name || `Sport ${fixture.sportID}`,
-        count: 0
+        sportName: fixture.sportName,
+        count: 1
       })
     }
-    sportCounts.get(fixture.sportID).count++
   })
-  return Array.from(sportCounts.values()).sort((a, b) => a.sportID - b.sportID)
+
+  return Array.from(sportCountMap.values()).sort((a, b) => a.sportID - b.sportID)
 })
 
-const filteredLiveData = computed(() => {
-  if (!allowedLiveFixtures.value.length || isEmptyResponse.value) {
-    return {}
-  }
-
-  // Filter by selected sport, sort and group by category
-  const fixtures = allowedLiveFixtures.value
-    .filter(fixture => fixture.sportID === activeSportID.value)
-    .sort((a, b) => {
-      // First sort by tournamentID
-      if (a.tournamentID !== b.tournamentID) {
-        return a.tournamentID - b.tournamentID
-      }
-      // If same tournament, maintain original order
-      return 0
-    })
-
-  return _.groupBy(fixtures, 'categoryName')
+// Base fixtures list for the active sport before applying up-mode filtering.
+const sportFixtures = computed(() => {
+  return accumulatedFixtures.value.length && !isEmptyResponse.value
+    ? accumulatedFixtures.value
+        .filter((s) => s.sportID == activeSportID.value)
+        .sort((a, b) => {
+          if (a.tournamentID !== b.tournamentID) {
+            return a.tournamentID - b.tournamentID
+          }
+          return 0
+        })
+    : []
 })
 
 const marketsGroup = computed(() => {
-  if (!completeLiveData.value?.data.markets || isEmptyResponse.value) {
-    return []
-  }
-  return completeLiveData.value.data.markets.filter((market) => isAllowedLiveSport(market.sportID))
+  return accumulatedFixtures.value.length && !isEmptyResponse.value
+    ? accumulatedMarkets.value
+    : []
 })
 
-// Filter markets by active sport
+const {
+  upMode,
+  setUpMode,
+  resetUpMode,
+  showUpToggle,
+  modeOptions,
+  baseLabel,
+  effectiveMarket,
+  filteredFixtures,
+  sanitizeMarkets
+} = useUpMode({
+  fixtures: sportFixtures,
+  activeMarket,
+  marketsGroup,
+  enabledSportId: 1
+})
+
+// Group fixtures after up-mode filtering to keep tournament sections intact.
+const groupedFixtures = computed(() => {
+  return _.groupBy(filteredFixtures.value || [], 'tournament')
+})
+
 const activeSportMarkets = computed(() => {
-  const hasActiveSportFixtures = sportsListData.value.some((sport) => sport.sportID === activeSportID.value)
-
-  if (!hasActiveSportFixtures) {
-    return []
-  }
-
-  const markets = marketsGroup.value.filter(m => m.sportID === activeSportID.value)
-  if(markets.length){
-    return _.sortBy(markets, 'marketID')
-  }
-
-  return fallbackMarketsBySport.filter((m) => m.sportID === activeSportID.value);
-})
-
-const activeMarket = computed(() => {
-  return utilsStore.activeLiveMarkets
+  // Strip derived markets from tabs to keep the base list clean.
+  const activeMarkets = sanitizeMarkets(marketsGroup.value)
+    .filter((s) => s.sportID == activeSportID.value)
+  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
 })
 
 watch(activeSportMarkets, (newValue) => {
-  // Update activeMarket when activeSportMarkets changes
   if (newValue.length) {
-    utilsStore.activeLiveMarkets = newValue[0]
+    // Keep store in sync with the active market selection.
+    activeMarket.value = newValue[0]
   } else {
-    utilsStore.activeLiveMarkets = []
-  }
-})
-
-// Auto-select first sport when data loads if current sport has no fixtures
-watch(sportsListData, (newValue) => {
-  if (newValue.length > 0) {
-    // Check if current activeSportID exists in the list
-    const currentSportExists = newValue.some(s => s.sportID === activeSportID.value)
-    if (!currentSportExists) {
-      activeSportID.value = newValue[0].sportID
-    }
+    activeMarket.value = []
   }
 })
 
 function setActiveSport(sid) {
   activeSportID.value = parseInt(sid)
+  // Reset up-mode when the active sport changes.
+  resetUpMode()
   document.getElementById('live_' + sid)?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
@@ -450,12 +308,87 @@ function setActiveSport(sid) {
 }
 
 function selectMarket(market) {
-  utilsStore.activeLiveMarkets = market
+  // Use the shared active market ref so up-mode stays consistent.
+  activeMarket.value = market
 }
 
-// Update store when activeSportID changes
+function toggleTournament(e, tournamentKey) {
+  const childId = 'league-content-' + tournamentKey
+  const childElement = document.getElementById(childId)
+  const element = e.currentTarget
+  const isHidden = element.classList.contains('hide')
+
+  if (isHidden) {
+    childElement?.classList.remove('d-none')
+    element.classList.remove('hide')
+  } else {
+    childElement?.classList.add('d-none')
+    element.classList.add('hide')
+  }
+}
+
+const handleMatchEnded = (matchId) => {
+  if (!accumulatedFixtures.value.length) return
+
+  accumulatedFixtures.value = accumulatedFixtures.value.filter(
+    (fixture) => String(fixture.matchID) !== String(matchId)
+  )
+}
+
+onMounted(async () => {
+  if (!FEED_TOGGLE) {
+    accumulatedFixtures.value = []
+    accumulatedMarkets.value = []
+    isEmptyResponse.value = true
+    return
+  }
+  if (accumulatedFixtures.value.length) {
+    activeSportID.value = accumulatedFixtures.value[0].sportID
+  }
+  emitter.on('match-ended', handleMatchEnded)
+})
+
+onBeforeUnmount(() => {
+  emitter.off('match-ended', handleMatchEnded)
+})
+
 watch(activeSportID, (newValue) => {
   utilsStore.activeLiveSportID = newValue
+})
+
+watch(
+  sportsListData,
+  (newSportsList) => {
+    if (newSportsList.length > 0) {
+      if (
+        !activeSportID.value ||
+        !newSportsList.some((sport) => sport.sportID === activeSportID.value)
+      ) {
+        activeSportID.value = newSportsList[0].sportID
+        // Reset up-mode when the auto-selected sport changes.
+        resetUpMode()
+      }
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => completeLiveData.value,
+  (response) => {
+    if (response) {
+      applyLiveData(response)
+    }
+  },
+  { immediate: true }
+)
+
+defineComponent({
+  methods: {
+    handleManualRefetch() {
+      refetch()
+    }
+  }
 })
 </script>
 
@@ -536,6 +469,31 @@ watch(activeSportID, (newValue) => {
   position: sticky;
   top: 4.5rem;
   z-index: 100;
+}
+
+.up-mode-bar {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.up-mode-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #9ca0ab;
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.62rem 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.up-mode-tab.active {
+  border-bottom-color: var(--brand-secondary);
+  color: #ffffff;
 }
 
 .m-mkt-type .m-sport-type-item {

@@ -18,7 +18,7 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a @click.prevent="$router.push({ name: 'casino' })"
+        <a @click.prevent="$router.push({ name: 'casino-games' })"
           ><div class="sport-icon">
             <img src="@/assets/images/games.png" loading="eager" width="20" height="20" />
           </div>
@@ -78,9 +78,11 @@
 import { useUtilsStore, useUsersStore } from '@/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { slugify } from '@/helpers'
+import { slugify, getGoldenRaceLobbyUrl} from '@/helpers'
 import MD5 from 'crypto-js/md5'
 import emitter from '@/plugins/emitter'
+import Cookies from 'js-cookie'
+
 
 // const { sports, sport_id } = useUtilsStore()
 const utilsStore = useUtilsStore()
@@ -116,14 +118,14 @@ const activeSportID = computed(() => {
 })
 
 const getActiveSport = computed(() => {
-  return sportsList.value.find((x) => x.sportID == activeSportID.value)
+  return sportsList.value.find((x) => x.sport_id == activeSportID.value)
 })
 
 function setActiveSport(id) {
   utilsStore.sportID = id
   router.push({
     name: 'sports',
-    query: { sport: slugify(getActiveSport.value.sportName) }
+    query: { sport: slugify(getActiveSport.value.sport_name) }
   })
 }
 
@@ -151,12 +153,22 @@ const goToStatistics = () => {
   return window.open(`https://s5.sir.sportradar.com/bematrics`, 'stats', 'width=1078,height=768')
 }
 
-function openVirtual() {
-  window.location.href = `${import.meta.env.VITE_XPRESS_LAUNCH_URL}?token=${
-    token.value
-  }&game=10100&backurl=${import.meta.env.VITE_SITE_URL}&mode=${
-    mode.value
-  }&group=${group.value}&clientPlatform=mobile&h=${hashStr.value}`
+async function openVirtual() {
+  const bearerToken = Cookies.get('SBE-TOKEN') || undefined
+  const res = await getGoldenRaceLobbyUrl(
+    {
+      client_id: import.meta.env.VITE_CLIENT_ID,
+      provider_id: "3",
+      mode: "1",
+      language: "en",
+      group: "master",
+      game: "10100",
+      category_id: "3",
+      currency: "NGN"
+    },
+    bearerToken
+  )
+  window.location.href = res.launchUrl
 }
 
 async function playAviator() {
@@ -276,7 +288,6 @@ onMounted(() => {
 }
 .home .m-sports-choose .m-sports-choose-item .sport-text {
   display: block;
-  font-size: 0.83333333rem;
   line-height: 1;
   margin: 0 auto;
   white-space: normal;

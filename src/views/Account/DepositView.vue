@@ -161,7 +161,15 @@ function setActiveTab(method) {
 async function getPayments() {
   isLoading.value = true
   const res = await getPaymentMethods()
-  depositMethods.value = res.data
+  const preferredProvider = 'paystack'
+  depositMethods.value = Array.isArray(res.data)
+    ? [...res.data].sort((a, b) => {
+        if (a.provider === preferredProvider) return -1
+        if (b.provider === preferredProvider) return 1
+        return 0
+      })
+    : []
+  activeTab.value = depositMethods.value[0]?.provider || preferredProvider
   isLoading.value = false
 }
 

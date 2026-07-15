@@ -30,10 +30,10 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: rgb(222, 226 ,230);
+  background-color: var(--brand-primary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #1c2485;
+  color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -49,7 +49,9 @@ defineProps({
   justify-content: space-between;
   padding: 0 1.33333333rem 0 1.66666667rem;
   width: 100%;
+  z-index: 9999;
 }
+
 .m-nav-secondary .m-nav-left {
   -webkit-box-align: end;
   -webkit-align-items: flex-end;

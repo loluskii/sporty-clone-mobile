@@ -15,5 +15,24 @@ export default ({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    server: {
+      proxy: {
+        '/bet': {
+          target: 'https://bet-prod.sportsbookengine.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/bet/, '/v1')
+        },
+        '/casino-client/providers': {
+          target: 'https://clientapi.sportsbookengine.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/casino-client/, '')
+        },
+        '/casino-client': {
+          target: 'https://clientapi.sportsbookengine.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/casino-client/, '/client')
+        }
+      }
+    }
   })
 }
