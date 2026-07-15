@@ -24,9 +24,10 @@ export const useAuthStore = defineStore({
       this.authError = ''
       try {
         const res = await login(payload)
-        if (res.data && res.data.token) {
+        const token = res?.token ?? res?.data?.token
+        if (token) {
           this.isAuthenticated = true
-          Cookies.set('SBE-TOKEN', res.data.token, {
+          Cookies.set('SBE-TOKEN', token, {
             expires: 7, // 7 days
             // secure: true, // Only send over HTTPS
             sameSite: 'strict' // CSRF protection
@@ -60,7 +61,7 @@ export const useAuthStore = defineStore({
           this.loading = false
           return router.push(this.returnUrl || '/')
         } else {
-          throw new Error(res.error || 'Login failed')
+          throw new Error(res?.error || res?.message || 'Login failed')
         }
       } catch (error) {
         this.loading = false
