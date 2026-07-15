@@ -1,3 +1,11 @@
+## [1.4.6](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.5...v1.4.6) (2026-07-15)
+
+
+### Bug Fixes
+
+* casino proxy 502, stale auth state, and PWA meta tag ([d1facdf](https://github.com/zoroplay/sporty-clone-mobile/commit/d1facdf6e89c5fa9c40b42a804c386167dd71045))
+* token not attached after login causing 401 on post-login requests ([747389d](https://github.com/zoroplay/sporty-clone-mobile/commit/747389d0a441c66ba1b8980bf287dce8243c67c6))
+
 ## [1.4.5](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.4...v1.4.5) (2026-07-15)
 
 
