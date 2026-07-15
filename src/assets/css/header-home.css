@@ -261,8 +261,6 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  flex: none;
-  gap: 8px;
   height: 100%;
   overflow: hidden;
 }
@@ -282,12 +280,12 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login {
-  border: 1px solid #ffffff;
-  color: #ffffff !important;
+  border: 1px solid var(--brand-primary);
+  color: var(--brand-primary) !important;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login a {
-  color: #ffffff !important;
+  color: var(--brand-primary) !important;
 }
 
 
@@ -298,19 +296,19 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
-  background-color: #ffffff;
+  background-color: var(--brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
-  color: var(--brand-primary);
+  color: #fff;
   text-decoration: none;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login {
-  margin-left: 0;
+  margin-left: 8px;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {
