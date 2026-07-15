@@ -9,6 +9,10 @@ function normalizeSportName(value = '') {
     .toLowerCase()
 }
 
+function normalizeSportId(value) {
+  return String(value ?? '').trim()
+}
+
 function formatScoreValue(value, fallback = '') {
   if (value === 0 || value === '0') return '0'
   const text = String(value ?? '').trim()
@@ -64,14 +68,47 @@ function getBreakdownTotalLabel(fixture) {
   return 'FT'
 }
 
-export function supportsLiveScoreBreakdown(fixture = {}) {
-  const sportId = String(fixture?.sportID ?? '').trim()
+function getPhaseLabel(periodScores, matchStatus) {
+  const describedPeriod = [...periodScores]
+    .reverse()
+    .find((periodScore) => String(periodScore?.description ?? '').trim())
+
+  const description = String(describedPeriod?.description ?? '').trim()
+  if (description) {
+    const lower = description.toLowerCase()
+    const number = String(describedPeriod?.number ?? '').trim()
+
+    if (lower.includes('set')) return `Set ${number || ''}`.trim()
+    if (lower.includes('half')) return `H${number || ''}`.trim()
+    if (lower.includes('quarter')) return `Q${number || ''}`.trim()
+    if (lower.includes('period')) return `P${number || ''}`.trim()
+    return description.replace(/\b\w/g, (char) => char.toUpperCase())
+  }
+
+  return String(matchStatus ?? '').trim()
+}
+
+function isFootballSport(fixture = {}) {
+  const sportId = normalizeSportId(fixture?.sportID)
   const sportName = normalizeSportName(fixture?.sportName)
+
+  return sportId === '1' || sportName === 'football' || sportName === 'soccer'
+}
+
+export function supportsLiveScoreBreakdown(fixture = {}) {
+  if (isFootballSport(fixture)) return false
+
+  const sportId = normalizeSportId(fixture?.sportID)
+  const sportName = normalizeSportName(fixture?.sportName)
+  const periodScores = Array.isArray(fixture?.eventInfo?.period_scores)
+    ? fixture.eventInfo.period_scores
+    : []
 
   if (SCORE_BREAKDOWN_SPORT_IDS.has(sportId)) return true
   if (SET_BREAKDOWN_SPORTS.has(sportName)) return true
   if (QUARTER_BREAKDOWN_SPORTS.has(sportName)) return true
   if (PERIOD_BREAKDOWN_SPORTS.has(sportName)) return true
+  if (periodScores.length > 0) return true
 
   return false
 }
@@ -95,6 +132,7 @@ export function getLiveScoreboard(fixture = {}, variant = 'detail') {
   )
   const periodScores = normalizePeriodScores(fixture?.eventInfo?.period_scores)
   const showBreakdown = supportsLiveScoreBreakdown(fixture)
+  const phaseLabel = getPhaseLabel(periodScores, fixture?.matchStatus)
   const totalColumn = {
     key: 'total',
     kind: 'total',
@@ -140,6 +178,7 @@ export function getLiveScoreboard(fixture = {}, variant = 'detail') {
 
   return {
     columns,
+    phaseLabel,
     hasBreakdown: columns.length > 1
   }
 }

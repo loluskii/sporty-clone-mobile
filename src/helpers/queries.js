@@ -799,7 +799,7 @@ export const getCMS = async (page) => {
 export const getFeedsLiveFixtures = async (sportId = 0, tournamentId = 0, categoryId = 0, orderType = 'priority') => {
   return parseData(
     fetchWrapper.get(
-      `${FEEDS_API}/fixtures/live/${sportId}?tournament_id=${tournamentId}&category_id=${categoryId}&order_type=${orderType}`
+      `${NEW_FIXTURES_API}/fixtures/live/${sportId}?tournament_id=${tournamentId}&category_id=${categoryId}&order_type=${orderType}`
     )
   )
 }
@@ -812,6 +812,6 @@ export const getFeedsLiveFixtures = async (sportId = 0, tournamentId = 0, catego
  */
 export const getFeedsGameDetail = async (gameId, groupId = 0) => {
   return parseData(
-    fetchWrapper.get(`${FEEDS_API_BASE}/game/${gameId}?group_id=${groupId}`)
+    fetchWrapper.get(`${NEW_FIXTURES_API}/game/${gameId}?group_id=${groupId}`)
   )
 }
