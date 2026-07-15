@@ -137,7 +137,8 @@ import {
   sendOTP,
   verifyUsername,
   register,
-  verifyOTP
+  verifyOTP,
+  SMS_BYPASS
 } from '../helpers'
 import { useAuthStore, useUtilsStore } from '../stores'
 import Cookies from 'js-cookie'
@@ -198,18 +199,21 @@ const registerUser = async () => {
     phoneNumber: internationalNumber
   }
 
-  await doRegistration()
+  if(SMS_BYPASS){
+    await doRegistration()
+    return;
+  }
 
-  // const res = await sendOTP(payload);
-  // isLoading.value = false;
+  const res = await sendOTP(payload);
+  isLoading.value = false;
 
-  // if (res.data.status) {
-  //   activeStep.value = 2;
-  //   startTimer();
-  // } else {
-  //   registerError.value = true;
-  //   registerErrorMessage.value = res.data.message;
-  // }
+  if (res.data.status) {
+    activeStep.value = 2;
+    startTimer();
+  } else {
+    registerError.value = true;
+    registerErrorMessage.value = res.data.message;
+  }
 }
 
 const resendOtp = async () => {
