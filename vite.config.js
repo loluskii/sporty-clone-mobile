@@ -21,37 +21,19 @@ export default ({ mode }) => {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined
 
-            if (
-              /node_modules\/(?:@vue|vue|vue-router|vue-query|pinia|pinia-plugin-persistedstate)\//.test(
-                id
-              )
-            ) {
-              return 'framework'
-            }
-
-            if (
-              /node_modules\/(?:mqtt|@mqttjs|readable-stream|buffer|process|ws)\//.test(id)
-            ) {
+            if (/node_modules\/(?:mqtt|@mqttjs|readable-stream|buffer|process|ws)\//.test(id)) {
               return 'realtime'
             }
 
-            if (/node_modules\/(?:@vuepic|date-fns|moment)\//.test(id)) {
+            if (/node_modules\/(?:date-fns|moment)\//.test(id)) {
               return 'date-tools'
-            }
-
-            if (
-              /node_modules\/(?:@vueuse|lucide-vue-next|vue3-|vue-toggles|bootstrap-icons)\//.test(
-                id
-              )
-            ) {
-              return 'ui-vendor'
             }
 
             if (/node_modules\/(?:lodash|jquery|crypto-js|js-cookie|mitt)\//.test(id)) {
               return 'utilities'
             }
 
-            return 'vendor'
+            return undefined
           }
         }
       }

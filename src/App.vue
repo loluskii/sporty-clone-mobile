@@ -631,7 +631,7 @@ body {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 13px;
   }
 }
 
