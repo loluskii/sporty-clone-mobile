@@ -248,7 +248,7 @@ export const processAccountVerification = async (payload) => {
 
 
 export const getUserDetailsByToken = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/auth/details/${CLIENT_ID}`))
+  return parseData(fetchWrapper.get(`${NEW_BASE_API}/auth/details/${CLIENT_ID}`, undefined, { skipAuthLogout: true }))
 }
 
 export const getTopBets = async () => {
@@ -750,18 +750,18 @@ export const getUserBonus = async () => {
 
 export const getUserActiveBonus = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/bonus/get-active-bonus?client_id=${CLIENT_ID}`)
+    fetchWrapper.get(`${NEW_BASE_API}/bonus/get-active-bonus?client_id=${CLIENT_ID}`, undefined, { skipAuthLogout: true })
   )
 }
 
 export const getUserCashbackBonus = async () => {
   return parseData(
-    fetchWrapper.get(`${NEW_BASE_API}/bonus/user/check-cashback-bonus?clientId=${CLIENT_ID}`)
+    fetchWrapper.get(`${NEW_BASE_API}/bonus/user/check-cashback-bonus?clientId=${CLIENT_ID}`, undefined, { skipAuthLogout: true })
   )
 }
 
 export const fetchUserNotifications = async () => {
-  return parseData(fetchWrapper.get(`${NEW_NOTIFICATION_API}/notification/user`))
+  return parseData(fetchWrapper.get(`${NEW_NOTIFICATION_API}/notification/user`, undefined, { skipAuthLogout: true }))
 }
 
 export const checkFirstDeposit = async () => {
