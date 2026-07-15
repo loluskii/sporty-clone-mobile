@@ -14,8 +14,8 @@
               <div class="m-event-league">
                 <div class="m-event-title-time">
                   <p class="category-league">
-                    <span v-if="eventDetail?.country !== ''">{{ eventDetail.country }}</span>
-                    - {{ eventDetail.tournament }}
+                    <span v-if="eventDetail?.country !== ''">{{ eventDetail?.country }}</span>
+                    - {{ eventDetail?.tournament }}
                   </p>
                 </div>
                 <div class="event-time">
@@ -358,7 +358,7 @@ import { useRoute } from 'vue-router'
 import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
-  getFixtureMarkets,
+  getFeedsGameDetail,
   getLiveScoreboard,
   getMarketsGrouping,
   isSelected
@@ -409,7 +409,10 @@ const {
 
 // Other computed properties
 const matchHasEnded = computed(() => {
-  return eventDetail.value.matchStatus === 'Ended'
+  return (
+    eventDetail.value?.matchStatus === 'Ended' ||
+    Number(eventDetail.value?.statusCode || 0) === 3
+  )
 })
 const liveScoreboard = computed(() =>
   getLiveScoreboard(
@@ -760,25 +763,45 @@ async function getEventDetail(id) {
   resetMqttSubscriptions()
   const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
   try {
-    const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
+    const [detailResponse, groupsResponse] = await Promise.all([
+      getFeedsGameDetail(id),
+      getMarketsGrouping(sport_id)
+    ])
     isLoading.value = false
-    if (res[0].data) {
-      eventDetail.value = res[0].data
-      eventMarkets.value = res[0].data?.market?.filter(
-        (market) => !['Suspended', 'HandedOver', 'Settled'].includes(market.statusName)
-      )
-      marketGroups.value = res[1].data
-      homeTeam.value = res[0].data.homeTeam
-      awayTeam.value = res[0].data.awayTeam
-      scores.homeScore =res[0].data.homeScore
-      scores.awayScore = res[0].data.awayScore
-      periodScores.value = res[0].data?.eventInfo?.period_scores || []
+    const {data} = detailResponse
+    if (data) {
+      const mappedData = {
+        ...data,
+        categoryName: data.country || data.categoryName || '',
+        competitor1: data.homeTeam || data.competitor1 || '',
+        competitor2: data.awayTeam || data.competitor2 || '',
+        matchStatus: data.matchStatus || (Number(data.producerStatus) === 1 ? 'Live' : 'Ended'),
+        statusCode: Number(data.producerStatus) === 1 ? 1 : 3
+      }
+
+      eventDetail.value = mappedData
+      eventMarkets.value = Array.isArray(mappedData.market)
+        ? mappedData.market.filter(
+            (market) =>
+              !['Suspended', 'Deactivated', 'HandedOver', 'Settled'].includes(
+                String(market.statusName || '')
+              )
+          )
+        : []
+      marketGroups.value = groupsResponse.data || []
+      homeTeam.value = mappedData.competitor1
+      awayTeam.value = mappedData.competitor2
+      scores.homeScore = data.homeScore ?? data.eventInfo?.scores?.home ?? 0
+      scores.awayScore = data.awayScore ?? data.eventInfo?.scores?.away ?? 0
+      periodScores.value = data?.eventInfo?.period_scores || data?.period_scores || []
 
       if (!hasMqttTime.value) {
-        eventTime.value = res[0].data.eventTime
+        eventTime.value = data.eventTime || '00:00'
       }
       startTimer()
-      setupMqttSubscriptions(res[0].data.matchID, sport_id)
+      if (mappedData.matchID) {
+        setupMqttSubscriptions(mappedData.matchID, sport_id)
+      }
     }
   } catch (error) {
     console.log(error)
