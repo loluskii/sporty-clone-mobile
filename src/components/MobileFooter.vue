@@ -291,6 +291,7 @@ const settlingTimer = ref(null)
 const popTimer = ref(null)
 const DRAG_THRESHOLD = 4
 const VIEWPORT_PADDING = 4
+const MOBILE_APP_MAX_WIDTH = 480
 
 const betslipCount = computed(() => {
   return couponStore.coupon.selections.length
@@ -343,11 +344,14 @@ function handleBetslipClick(event) {
 }
 
 function clampBetslipPosition(left, top, width, height) {
-  const maxLeft = Math.max(VIEWPORT_PADDING, window.innerWidth - width - VIEWPORT_PADDING)
+  const appWidth = Math.min(window.innerWidth, MOBILE_APP_MAX_WIDTH)
+  const appLeft = Math.max(0, (window.innerWidth - appWidth) / 2)
+  const minLeft = appLeft + VIEWPORT_PADDING
+  const maxLeft = Math.max(minLeft, appLeft + appWidth - width - VIEWPORT_PADDING)
   const maxTop = Math.max(VIEWPORT_PADDING, window.innerHeight - height - VIEWPORT_PADDING)
 
   return {
-    left: Math.min(maxLeft, Math.max(VIEWPORT_PADDING, left)),
+    left: Math.min(maxLeft, Math.max(minLeft, left)),
     top: Math.min(maxTop, Math.max(VIEWPORT_PADDING, top))
   }
 }

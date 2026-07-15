@@ -459,7 +459,7 @@ defineComponent({
 </script>
 
 <template>
-  <div>
+  <div class="mobile-app-shell">
     <div v-if="isLoading">
       <transition name="move">
         <div class="loading-overlay">
@@ -545,9 +545,94 @@ defineComponent({
 <style>
 @import url('./assets/css/loading.css');
 
+:root {
+  --mobile-app-max-width: 480px;
+  --mobile-app-width: min(100vw, var(--mobile-app-max-width));
+  --mobile-app-gutter: max(0px, calc((100vw - var(--mobile-app-max-width)) / 2));
+}
+
 html,
 body {
   width: 100%;
+}
+
+html {
+  background: #111820;
+}
+
+body {
+  background: #111820;
+  margin: 0 auto;
+}
+
+#app {
+  background: var(--brand-background-primary);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.28);
+  margin: 0 auto;
+  max-width: var(--mobile-app-max-width);
+  min-height: 100dvh;
+  overflow-x: clip;
+  position: relative;
+  width: 100%;
+}
+
+.mobile-app-shell,
+.page-content,
+.x-layout-main {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.x-layout-main {
+  position: relative;
+}
+
+/* Keep viewport-bound chrome on the same centered mobile rail as the app. */
+.mobile-navbar-wrap,
+.m-nav-secondary[style*='position: fixed'],
+.fixed-wrap,
+.m-bottom-nav .m-bottom-fixed,
+.m-bottom-nav .m-fast-betslip-wrap,
+.m-sports .m-sports-title.fixed,
+.m-sports .m-overlay,
+.m-sports .m-filter-pop.m-filter,
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav,
+.m-sports .nav-fixed .market-wrapper,
+.x-layout-main .x-main-left,
+.x-layout-main .x-main-right {
+  left: 50% !important;
+  max-width: var(--mobile-app-max-width);
+  right: auto !important;
+  transform: translateX(-50%);
+  width: var(--mobile-app-width) !important;
+}
+
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav::before {
+  width: var(--mobile-app-width) !important;
+}
+
+/* This swipeable row owns its transform inline, so center it with its left edge. */
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav {
+  left: var(--mobile-app-gutter) !important;
+}
+
+.m-sports .m-pre-opts.m-tabs .m-tabs-tab {
+  width: calc(var(--mobile-app-width) / 3) !important;
+}
+
+.m-bottom-nav .betslip-float-wrapper:not([style*='left']) {
+  right: calc(var(--mobile-app-gutter) + 4px) !important;
+}
+
+@media screen and (min-width: 481px) {
+  html,
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 .no-scroll {
@@ -557,8 +642,9 @@ body {
 .loading-overlay {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  max-width: var(--mobile-app-max-width);
+  width: var(--mobile-app-width);
   height: 100%;
   background-color: #fafafa;
   /* semi-transparent white */
@@ -566,6 +652,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  transform: translateX(-50%);
   /* ensure overlay is on top */
 }
 
