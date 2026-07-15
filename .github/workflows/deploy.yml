@@ -154,19 +154,11 @@ jobs:
         run: npx semantic-release
 
   deploy:
-    needs: [version]
+    needs: [version, build]
     runs-on: [self-hosted, linux, x64]
     environment: GCP CI
     if: github.ref == 'refs/heads/west-bet24'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create version file from output
-        run: |
-          echo "${{ needs.version.outputs.version }}" > .VERSION
-          echo "Version from previous job: ${{ needs.version.outputs.version }}"
-
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -174,36 +166,18 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.BET24_SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Prepare deployment files
+      - name: Deploy to server
         run: |
-          NEXT_VERSION=$(cat .VERSION | tr -d "[:space:]\"'" | xargs)
-          echo "Deploying version: $NEXT_VERSION"
-
-          # Copy repository .env file
-          cp .env .env.backup 2>/dev/null || echo "No existing .env file to backup"
-
-          # Note: Building locally, no need to update image version
-
-      - name: Deploy to GCP server
-        run: |
-          # Create directory on server
-          ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
-
-          # Copy all source files to server for local build
-          echo "${{ secrets.ENV_FILE }}" > .env
-          tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
-          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }}:~/west-bet24-mobile/
-          ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'cd ~/west-bet24-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
-
-          # Login to GitHub Container Registry on server and execute deployment
           ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} '
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            cd ~/west-bet24-mobile/
-            echo "Current directory: $(pwd)"
-            echo "Files in directory:"
-            ls -la
-            echo "Checking for Dockerfile:"
-            ls -la Dockerfile || echo "Dockerfile not found"
-            chmod +x deploy.sh
-            bash deploy.sh
+            docker network create sbenet 2>/dev/null || true
+            docker pull ghcr.io/${{ github.repository_owner }}/west-bet24-mobile:latest
+            docker stop west-bet24-mobile-bet24-mobile-1 2>/dev/null || true
+            docker rm west-bet24-mobile-bet24-mobile-1 2>/dev/null || true
+            docker run -d \
+              --name west-bet24-mobile-bet24-mobile-1 \
+              --network sbenet \
+              --restart unless-stopped \
+              -p 3007:3007 \
+              ghcr.io/${{ github.repository_owner }}/west-bet24-mobile:latest
           '

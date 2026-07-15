@@ -69,7 +69,7 @@ const winModalAmount = ref(0)
 const winModalCurrency = ref('')
 
 const isAuthenticated = computed(() => {
-  return authStore.isAuthenticated
+  return authStore.isAuthenticated && authStore.isTokenValid
 })
 
 const backToTopBlocked = computed(() => {
@@ -343,6 +343,12 @@ const safeLoad = (promise) =>
   )
 
 onMounted(async () => {
+  // Clear stale auth state if cookie has expired
+  if (authStore.isAuthenticated && !authStore.isTokenValid) {
+    authStore.isAuthenticated = null
+    authStore.mobile_number = null
+  }
+
   if (route.path !== '/') {
     isLoading.value = false
   }

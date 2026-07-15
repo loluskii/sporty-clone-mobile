@@ -16,7 +16,7 @@ export const useAuthStore = defineStore({
     authError: null
   }),
   getters: {
-    // isAuthenticated: () => Cookies.get('SBE-TOKEN') !== null || Cookies.get('SBE-TOKEN')
+    isTokenValid: () => Boolean(Cookies.get('SBE-TOKEN'))
   },
   actions: {
     async doLogin(payload) {
