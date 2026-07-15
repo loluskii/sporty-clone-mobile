@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.1...v1.4.2) (2026-07-15)
+
+
+### Bug Fixes
+
+* update deploy.sh to use correct west-bet24-mobile directory and container names ([fdafa08](https://github.com/zoroplay/sporty-clone-mobile/commit/fdafa08f4c712fd05fac117189a3d9fd221f13df))
+
 ## [1.4.1](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.0...v1.4.1) (2026-07-15)
 
 
