@@ -122,7 +122,8 @@ import {
   getTopGameCategories,
   gamesByTopCategory,
   getNext7Days,
-  FEED_TOGGLE
+  FEED_TOGGLE,
+  normalizeFixtureMarkets
 } from '@/helpers'
 import { useQuery } from 'vue-query'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -219,12 +220,13 @@ function assignTournaments(tournament, games, tournamentID) {
 
   // Take only first 5 fixtures
   const gamesList = games.fixtures.slice(0, 5)
+  const normalizedMarkets = normalizeFixtureMarkets(games.markets || [])
 
   // Create tournament games object
   const tournamentGames = {
     tournamentID,
     fixtures: gamesList,
-    markets: games.markets
+    markets: normalizedMarkets
   }
 
   // Add to featured games
