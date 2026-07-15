@@ -616,10 +616,6 @@ body {
   left: var(--mobile-app-gutter) !important;
 }
 
-.m-sports .m-pre-opts.m-tabs .m-tabs-tab {
-  width: calc(var(--mobile-app-width) / 3) !important;
-}
-
 .m-bottom-nav .betslip-float-wrapper:not([style*='left']) {
   right: calc(var(--mobile-app-gutter) + 4px) !important;
 }
