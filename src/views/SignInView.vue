@@ -183,7 +183,7 @@ onMounted(() => {
 }
 #loginStep .change-region-wrap .close {
   float: right;
-
+  color: white;
 }
 #loginStep .change-region-wrap .close::before {
   content: '\e69a';

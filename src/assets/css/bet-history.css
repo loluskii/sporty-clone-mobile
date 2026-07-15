@@ -2,6 +2,143 @@
   height: 100vh;
 }
 
+.m-sportBets .m-list-nav-type {
+  background: #353a45;
+  padding: 0 2.08333333rem;
+}
+
+.m-sportBets .m-list-nav-type .m-list-nav-type-item {
+  background-color: #50545f;
+  border-top-left-radius: 0.33333333rem;
+  border-top-right-radius: 0.33333333rem;
+  color: #ffffff;
+  -webkit-box-flex: 1 !important;
+  -webkit-flex: 1 !important;
+  -ms-flex: 1 !important;
+  flex: 1 !important;
+  font-size: 1rem;
+  font-weight: bold;
+  height: 3rem;
+  line-height: 3rem;
+  margin-right: 0.25rem;
+}
+
+.m-sportBets .m-list-nav-type .m-list-nav-type-item:last-child {
+  margin: 0;
+}
+
+.m-sportBets .m-list-nav-type .m-list-nav-type-item.active {
+  background-color: #ffffff;
+  color: #353a45;
+}
+
+.m-sportBets .m-list-nav-type .m-list-nav-type-item.m-snap-nav-item--disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-main {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin-top: 0.66666667rem;
+  padding: 0 1.66666667rem;
+  text-align: center;
+  width: 100%;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-main > img {
+  height: 3.33333333rem;
+  width: 3.33333333rem;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-main .m-txt-main {
+  color: #353a45;
+  font-size: 1.83333333rem;
+  font-weight: bold;
+  line-height: 1.66666667rem;
+  margin-top: 1.83333333rem;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-main .m-txt-min {
+  color: #353a45;
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-top: 1.066rem;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-main .m-txt-desc {
+  color: #9ca0ab;
+  font-size: 1rem;
+  line-height: 1;
+  margin-top: 0.66666667rem;
+}
+
+.m-openBet--suc.es-dialog .es-dialog-btn {
+  background: #0d9737;
+  color: #ffffff;
+  height: 4rem;
+  line-height: 4rem;
+  width: 100%;
+}
+
+.m-uc-nav {
+  height: 4rem;
+  background: #ffffff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.m-uc-nav .m-nav-item {
+  font-size: 1rem;
+  line-height: 4rem;
+  width: 33.4%;
+  text-align: center;
+  text-transform: capitalize;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.m-uc-nav .m-nav-item--active {
+  font-weight: bold;
+  border-bottom: 0.25rem solid #0d9737;
+}
+
+.m-sportsBet--bets .m-tips {
+  -webkit-box-align: space-between;
+  -webkit-align-items: space-between;
+  -ms-flex-align: space-between;
+  align-items: space-between;
+  background: #ffffff;
+  border-radius: 2px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  height: 6.25rem;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  margin-bottom: 0.83333333rem;
+  padding: 1.25rem 1rem 1.25rem 1.33333333rem;
+  width: 100%;
+}
+
 .m-sportBets .f-flex {
   display: -webkit-box;
   display: -webkit-flex;
@@ -915,8 +1052,9 @@
 }
 
 .m-cashout-pop .m-btn-wrapper .af-button--primary {
-  background-color: var(--brand-primary);
+  background-color: var(--brand-primary-button);
   color: #ffffff !important;
+  border-radius: .5rem;
 }
 
 .m-cashout-pop .m-btn-wrapper .m-create-btn {
@@ -1256,4 +1394,448 @@
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
+}
+
+.m-sportBets .m-t-mv5 {
+  margin: 0.41666667rem;
+}
+
+.m-sportBets .m-r-5 {
+  margin-right: 0.41666667rem;
+}
+
+.m-sportBets .m-r-20 {
+  margin-right: 1.66666667rem;
+}
+
+.m-sportBets .m-t-ml2 {
+  margin-left: 0.16666667rem;
+}
+
+.m-sportBets .m-b-5 {
+  margin-bottom: 0.41666667rem;
+}
+
+.m-sportBets .m-t-12 {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.m-sportBets .m-t-14 {
+  font-size: 1rem;
+}
+
+.m-sportBets .m-t-16 {
+  font-size: 1.33333333rem;
+  line-height: 1;
+}
+
+.m-sportBets .m-t-19 {
+  font-size: 1.58333333rem;
+  line-height: 1;
+}
+
+.m-sportBets .m-t-20 {
+  font-size: 1.66666667rem;
+  line-height: 1;
+}
+
+.m-sportBets .m-l-23 {
+  line-height: 1.91666667rem;
+}
+
+.m-sportBets .m-t-l14 {
+  line-height: 1.066rem;
+}
+
+.m-sportBets .m-t-l16 {
+  line-height: 1.33333333rem;
+}
+
+.m-sportBets .m-t-l20 {
+  line-height: 1.66666667rem;
+}
+
+.m-sportBets .m-t-white {
+  color: #ffffff;
+}
+
+.m-sportBets .m-t-gray {
+  color: #9ca0ab;
+}
+
+.m-sportBets .m-t-green {
+  color: #0d9737;
+}
+
+.m-sportBets .m-t-dgreen {
+  color: #096b27;
+}
+
+.m-sportBets .m-t-lblue {
+  color: #3656a3;
+}
+
+.m-sportBets .m-t-red {
+  color: #e41827;
+}
+
+.m-sportBets .m-t-center {
+  text-align: center;
+}
+
+.m-sportBets .m-t-right {
+  text-align: right;
+}
+
+.m-sportBets .m-t-bold {
+  font-weight: 600;
+}
+
+.m-sportBets .m-t-b5 {
+  font-weight: 500;
+}
+
+.m-sportBets .m-t-mt4 {
+  margin-top: 0.33333333rem;
+}
+
+.m-sportBets .m-t-ml6 {
+  margin-left: 0.5rem;
+}
+
+.m-sportBets .m-t-mt18 {
+  margin-top: 1.5rem;
+}
+
+.m-sportBets .m-t-mv3 {
+  margin: 0.16666667rem;
+}
+
+
+.m-sportBets .capitalize {
+  text-transform: capitalize;
+}
+
+.m-sportBets .m-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-sportBets .nowrap {
+  white-space: nowrap;
+}
+
+.m-sportsBet--bets .f-flex .m-l-left,
+.m-sportsBet--bets .f-flex .m-l-right {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: end;
+  -ms-flex-pack: justify;
+  justify-content: end;
+}
+
+.m-bet-sel .f-flex {
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  border-bottom: 1px solid #eaecef;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 1.066rem 0;
+}
+
+.m-bet-sel .f-flex:last-of-type {
+  border-bottom: none;
+}
+
+.m-bet-sel .m-l-left,
+.m-bet-sel .m-l-right {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.m-bet-sel .m-l-left {
+  width: 5.33333333rem;
+}
+
+.m-bet-sel .m-l-left.m-i-suc {
+  color: #0d9737;
+}
+
+.m-bet-sel .m-l-left.m-i-suc:before {
+  content: '\e60b';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 1.66666667rem;
+  line-height: 1;
+}
+
+.m-sportsBet--bets .m-tips > div {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.m-sportsBet--bets .m-tips .m-l-right {
+  text-align: right;
+}
+
+.m-sportsBet--bets .m-tips .m-i-close {
+  color: #353a45;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.m-sportsBet--bets .m-tips .m-i-close:before {
+  content: '\e602';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.m-sportsBet--bets .m-tips .m-i-close:before {
+  font-size: 1.66666667rem;
+  line-height: 1;
+}
+
+
+
+.m-sportsBet--bets.live .m-bet-list {
+  padding-bottom: 1.66666667rem;
+  padding-top: 0;
+}
+
+
+
+
+
+
+
+.m-openbet-header {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background: #353a45;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1rem;
+  height: 3.66666667rem;
+  -webkit-box-pack: end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+  padding: 0 1.33333333rem;
+  width: 100%;
+}
+
+.m-openbet-header .no-login {
+  color: #ffffff;
+}
+
+.m-openbet-header .no-login > span {
+  padding: 0 0.66666667rem;
+}
+
+.m-openbet-header .no-login span:last-of-type:before {
+  border-left: 1px solid #ffffff;
+  content: '';
+  height: 100%;
+  left: -0.75rem;
+  opacity: 0.5;
+  position: relative;
+  top: -0.16666667rem;
+}
+
+.m-openbet-header .is-login {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #fafd00;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.m-openbet-header .is-login .usr-img {
+  border: 0.08333333rem solid #ffffff;
+  border-radius: 50%;
+  height: 1.66666667rem;
+  margin-right: 0.66666667rem;
+  width: 1.66666667rem;
+}
+
+.m-openbet-header .is-login .balance {
+  display: inline;
+  vertical-align: bottom;
+}
+
+.m-openbet-header .is-login .hidden {
+  font-size: 1rem;
+  letter-spacing: 0.16666667rem;
+}
+
+.m-bet-sel .m-market {
+  margin-top: 0.5rem;
+}
+
+.m-bet-sel .m-aginst {
+  padding-top: 0.41666667rem;
+  text-decoration: underline;
+}
+
+.m-bet-sel .m-icon-banker {
+  background: #353a45;
+  border-radius: 50%;
+  display: inline-block;
+  height: 0.91666667rem;
+  line-height: 0.91666667rem;
+  margin-left: 0.41666667rem;
+  text-align: center;
+  width: 0.91666667rem;
+}
+
+.m-bet-sel .m-icon-banker:before {
+  color: #ffffff;
+  content: 'B';
+  font-size: 0.83333333rem;
+  line-height: 1;
+}
+
+.m-bet-sel .delayed-icon {
+  padding-top: 0.66666667rem;
+  width: 1rem;
+}
+
+.m-bet-sel .m-live-odds {
+  line-height: 2;
+}
+
+.m-bet-sel .m-live-odds .m-icon-live {
+  background-color: #d6ebdc;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #2c3343;
+  font-size: 1rem;
+  height: 1.066rem;
+  line-height: 1.33333333rem;
+  padding: 0.25rem 0.25rem;
+  text-align: center;
+}
+
+.m-bet-sel .m-live-odds .m-odds {
+  color: #353a45;
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
+.m-bet-sel .m-live-odds .m-odds-desc {
+  background: #eaecef;
+  color: #9ca0ab;
+  display: inline-block;
+  font-size: 0.83333333rem;
+  font-weight: bold;
+  line-height: 1.066rem;
+  padding: 0 0.33333333rem;
+  text-transform: capitalize;
+}
+
+.m-bet-sel .m-live-odds .m-odds--up {
+  color: #0d9737;
+  line-height: 1;
+  margin-left: 0.33333333rem;
+}
+
+.m-bet-sel .m-live-odds .m-odds--up :before {
+  content: '\e609';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.m-bet-sel .m-live-odds .m-odds--down {
+  color: #e41827;
+  line-height: 1;
+  margin-left: 0.33333333rem;
+}
+
+.m-bet-sel .m-live-odds .m-odds--down :before {
+  content: '\e605';
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.m-bet-sel .m-score {
+  margin-top: 0.41666667rem;
+}
+
+.m-opt {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-top: 1px solid #eaecef;
+  -webkit-box-sizing: b order-box;
+  box-sizing: border-box;
+  grid-template-columns: 6rem 1fr;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 0.83333333rem 0 1.066rem 0;
+}
+
+.m-opt .m-l-right,
+.m-opt .m-btn--text {
+  display: table-cell;
+  vertical-align: middle;
+
+}
+
+.m-sportsBet--detail .m-error-wrap per {
+  padding-bottom: 10%;
+}
+
+.m-sportsBet--detail .m-error-wrapper .m-btn {
+  height: 2.5rem;
+  line-height: 2.5rem;
 }

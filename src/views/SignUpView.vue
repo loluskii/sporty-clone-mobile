@@ -200,15 +200,15 @@ const registerUser = async () => {
 
   await doRegistration()
 
-  // const res = await sendOTP(payload)
-  // isLoading.value = false
+  // const res = await sendOTP(payload);
+  // isLoading.value = false;
 
   // if (res.data.status) {
-  //   activeStep.value = 2
-  //   startTimer()
+  //   activeStep.value = 2;
+  //   startTimer();
   // } else {
-  //   registerError.value = true
-  //   registerErrorMessage.value = res.data.message
+  //   registerError.value = true;
+  //   registerErrorMessage.value = res.data.message;
   // }
 }
 

@@ -15,12 +15,12 @@
                   <div class="tab-pane-left">
                     <div
                       class="right-panel-item"
-                      :class="sport.sportID === activeSport.sportID ? 'active' : ''"
+                      :class="sport.sport_id === activeSport.sportID ? 'active' : ''"
                       v-for="(sport, index) in sportsMenu"
                       :key="index"
                       @click="setActiveSport(sport)"
                     >
-                      <span>{{ sport.sportName }}</span>
+                      <span>{{ sport.sport_name }}</span>
                     </div>
                   </div>
                   <div class="tab-pane-right">
@@ -29,11 +29,10 @@
                       <template v-for="(category, i) in countriesList" :key="i">
                         <div
                           class="right-panel-item"
-                          v-if="category.categoryID && category.categoryID !== 0"
                           @click="redirectToFixturesView(category)"
                         >
-                          <span>{{ category.categoryName }}</span>
-                          <span>{{ category.total }}</span>
+                          <span>{{ category.country_name }}</span>
+                          <span>{{ category.games }}</span>
                         </div>
                         <!-- <p class="right-panel-item" v-else>No Data Available</p> -->
                       </template>
@@ -83,25 +82,25 @@ const activeSport = reactive({
 async function getCountriesList() {
 if(!FEED_TOGGLE)return
   isLoading.value = true
-  const sports = await getCategoriesBySport(activeSport.sportID)
+  const sports = (await getCategoriesBySport(activeSport.sportID)).data.filter((x) => x.games > 0) || []
   const existingIndex = utilsStore.categoriesList.findIndex(
     (sport) => sport.id === activeSport.sportID
   )
   const updatedCategories = {
     id: activeSport.sportID,
     name: activeSport.sportName,
-    categories: sports.sports
+    categories: sports
   }
   existingIndex === -1
     ? utilsStore.categoriesList.push(updatedCategories)
     : (utilsStore.categoriesList[existingIndex] = updatedCategories)
-  countriesList.value = sports.sports
+  countriesList.value = sports
   isLoading.value = false
 }
 
 async function setActiveSport(sport) {
-  activeSport.sportName = sport.sportName
-  activeSport.sportID = sport.sportID
+  activeSport.sportName = sport.sport_name
+  activeSport.sportID = sport.sport_id
   await getCountriesList()
 }
 
@@ -311,7 +310,7 @@ onMounted(async () => {
   font-size: 2.5rem;
 }
 .m-azmenu .top {
-  background: var(--brand-secondary);
+  background: var(--brand-primary);
   border-top: 1px solid transparent;
   padding: 0;
 }

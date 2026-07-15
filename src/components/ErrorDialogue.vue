@@ -5,45 +5,69 @@
       @click="$emit('hide-dialogue')"
       style="z-index: 1000; position: fixed"
     ></div>
-    <div v-if="dialogIsError" class="es-dialog m-dialog">
+    <div v-if="dialogIsError" class="es-dialog m-dialog app-error-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto">
-          <div>{{ errorMessage }}</div>
+        <div class="es-dialog-main m-dialog-main app-error-main">
+          <h3>{{ errorDialogTitle }}</h3>
+          <p>{{ errorMessage }}</p>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer">
-        <a
-          href="javascript:void(0);"
+        <button
+          type="button"
           @click.prevent="nextAction"
-          class="es-dialog-btn es-dialog-focus-btn"
+          class="es-dialog-btn app-error-ok"
         >
-          <span>OK</span>
-        </a>
+          OK
+        </button>
       </div>
     </div>
-    <div v-if="dialogIsBetslip" class="es-dialog m-dialog">
+    <div v-if="dialogIsBetslip" class="es-dialog m-dialog betslip-replace-dialog">
       <div class="es-dialog-body m-dialog-body">
-        <div class="es-dialog-main m-dialog-main" style="height: auto">
-          <div>
-            You have items in Betslip. Are you sure to replace Betslip with this new selections?
+        <div class="es-dialog-main m-dialog-main betslip-replace-main">
+          <h3>{{ betslipDialogTitle }}</h3>
+          <p>{{ betslipDialogMessage }}</p>
+        </div>
+      </div>
+      <div class="m-dialog-footer es-dialog-footer">
+        <button
+          type="button"
+          class="es-dialog-btn betslip-dialog-cancel"
+          :disabled="isReplacingBetslip"
+          @click.prevent="$emit('hide-dialogue')"
+        >
+          {{ betslipCancelText }}
+        </button>
+        <button
+          type="button"
+          class="es-dialog-btn es-dialog-focus-btn betslip-dialog-confirm"
+          :disabled="isReplacingBetslip"
+          @click.prevent="replaceBetslip"
+        >
+          {{ isReplacingBetslip ? betslipPendingText : betslipConfirmText }}
+        </button>
+      </div>
+    </div>
+    <div v-if="dialogIsNotification" class="es-dialog m-dialog app-notification-dialog">
+      <div class="es-dialog-body m-dialog-body">
+        <div class="es-dialog-main m-dialog-main app-notification-main">
+          <div class="app-notification-eyebrow">Notifications</div>
+          <h3>{{ notificationSummaryTitle }}</h3>
+          <p class="app-notification-summary">{{ notificationSummaryText }}</p>
+          <div v-if="notificationPreview" class="app-notification-preview">
+            <h4>{{ notificationPreview.title }}</h4>
+            <p>{{ notificationPreview.message }}</p>
           </div>
         </div>
       </div>
       <div class="m-dialog-footer es-dialog-footer">
-        <a
-          href="javascript:void(0);"
-          @click.prevent="$emit('hide-dialogue')"
-          class="es-dialog-btn es-dialog-focus-btn"
+        <button
+          type="button"
+          @click.prevent="openNotifications"
+          class="es-dialog-btn app-error-ok app-notification-action"
         >
-          <span>Cancel</span>
-        </a>
-        <a
-          href="javascript:void(0);"
-          @click.prevent="replaceBetslip"
-          class="es-dialog-btn es-dialog-focus-btn"
-        >
-          <span>OK</span>
-        </a>
+          View messages
+        </button>
       </div>
     </div>
     <WithdrawalModal
@@ -66,16 +90,17 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, ref } from 'vue'
+import { computed, defineProps, onMounted, ref } from 'vue'
 import WithdrawalModal from '@/components/WithdrawalModal.vue'
 import { useRouter } from 'vue-router'
 import { useCouponStore } from '../stores'
+import { loadBetslipByCode } from '@/helpers'
 import emitter from '@/plugins/emitter'
 
 const emits = defineEmits(['hide-dialogue'])
 const props = defineProps({
   errorMessage: String,
-  dialogueMessage: Object,
+  dialogueMessage: [Object, String],
   dialogueType: String,
   nextRoute: String
 })
@@ -84,8 +109,57 @@ const dialogIsError = ref(false)
 const dialogIsWithdrawal = ref(false)
 const dialogIsToast = ref(false)
 const dialogIsBetslip = ref(false)
+const dialogIsNotification = ref(false)
+const isReplacingBetslip = ref(false)
 const router = useRouter()
 const couponStore = useCouponStore()
+
+const dialogueData = computed(() => {
+  return typeof props.dialogueMessage === 'object' && props.dialogueMessage !== null
+    ? props.dialogueMessage
+    : {}
+})
+
+const betslipDialogTitle = computed(() => dialogueData.value.title || 'Replace Betslip?')
+const betslipDialogMessage = computed(
+  () =>
+    dialogueData.value.message ||
+    'You already have selections in your betslip. Replacing them will remove the current selections.'
+)
+const betslipCancelText = computed(() => dialogueData.value.cancelText || 'Keep Current')
+const betslipConfirmText = computed(() => dialogueData.value.confirmText || 'Replace')
+const betslipPendingText = computed(() => dialogueData.value.pendingText || 'Replacing...')
+const errorDialogTitle = computed(() => dialogueData.value.title || 'Notice')
+const notificationItems = computed(() => {
+  const data =
+    dialogueData.value.notifications ||
+    dialogueData.value.data?.notifications ||
+    dialogueData.value.data ||
+    []
+
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.items)) return data.items
+  return []
+})
+
+const notificationPreview = computed(() => {
+  const first = notificationItems.value[0]
+  if (!first) return null
+  return {
+    title: first.title || first.subject || 'Notification',
+    message: first.message || first.body || first.content || first.text || 'You have a new message.'
+  }
+})
+
+const notificationSummaryTitle = computed(() => {
+  const count = notificationItems.value.length
+  if (!count) return 'You have a message'
+  return count === 1 ? 'You have 1 new message' : `You have ${count} new messages`
+})
+
+const notificationSummaryText = computed(() => {
+  return 'Open your messages center to read the latest updates.'
+})
 
 const dialogueType = () => {
   switch (props.dialogueType) {
@@ -101,6 +175,9 @@ const dialogueType = () => {
     case 'betslip':
       dialogIsBetslip.value = true
       break
+    case 'notification':
+      dialogIsNotification.value = notificationItems.value.length > 0
+      break
 
     default:
       break
@@ -114,25 +191,61 @@ function nextAction() {
   }
 }
 
-function replaceBetslip() {
+async function replaceBetslip() {
+  if (isReplacingBetslip.value) return
+  isReplacingBetslip.value = true
   try {
-    emits('hide-dialogue')
-    couponStore.clearBetslip()
-    couponStore.coupon.selections = props.dialogueMessage.selections
-    couponStore.coupon.totalOdds = parseFloat(props.dialogueMessage.totalOdd)
-    couponStore.coupon.totalStake = parseFloat(props.dialogueMessage.stake)
-    couponStore.coupon.stake = parseFloat(props.dialogueMessage.stake)
-    couponStore.coupon.maxWin = parseFloat(props.dialogueMessage.possibleWin)
-    couponStore.coupon.source = props.dialogueMessage.source
-    if (props.dialogueMessage.selections.length === 1) {
-      couponStore.coupon.bet_type = 'Single'
-      couponStore.coupon.betslip_type = 'Single'
-    } else {
-      couponStore.coupon.bet_type = 'Multiple'
-      couponStore.coupon.betslip_type = 'Multiple'
+    if (dialogueData.value.action === 'clearBetslip') {
+      couponStore.clearBetslip()
+      emits('hide-dialogue')
+      return
     }
+
+    const loadedData = await getReplacementBetslipData()
+    if (dialogueData.value.switchModeTo) {
+      couponStore.setBetslipMode(dialogueData.value.switchModeTo)
+      couponStore.isSimulating = false
+    }
+    const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(loadedData)
+    if (!loadedSelections) {
+      emitter.emit('showDialogueToaster', 'All selections have expired')
+      return
+    }
+    emits('hide-dialogue')
     emitter.emit('openBetslip')
-  } catch (error) {}
+    if (dialogueData.value.redirectToHome) {
+      router.push({ name: 'home' })
+    }
+  } catch (error) {
+    emitter.emit('showDialogueToaster', 'Invalid booking code. ')
+  } finally {
+    isReplacingBetslip.value = false
+  }
+}
+
+function openNotifications() {
+  emits('hide-dialogue')
+  router.push({ name: 'notifications' })
+}
+
+async function getReplacementBetslipData() {
+  if (Array.isArray(dialogueData.value.selections)) {
+    return dialogueData.value.selections
+  }
+
+  const shareCode =
+    dialogueData.value.shareCode ||
+    dialogueData.value.betslipId ||
+    dialogueData.value.data?.shareCode ||
+    dialogueData.value.data?.betslipId
+
+  if (!shareCode) return []
+
+  const res = await loadBetslipByCode(shareCode)
+  if (res?.status_code === 200 || res?.success) {
+    return res.data
+  }
+  throw new Error('Invalid booking code')
 }
 
 onMounted(() => {
@@ -187,7 +300,10 @@ onMounted(() => {
   transform: scale(0.9, 0.9);
 }
 .es-dialog-wrap {
+  inset: 0;
+  position: fixed;
   visibility: hidden;
+  z-index: 30000;
 }
 .es-dialog-wrap .layout {
   background: #353a45;
@@ -281,6 +397,171 @@ onMounted(() => {
   vertical-align: middle;
   width: 30%;
 }
+
+.app-error-dialog {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  width: min(21rem, calc(100vw - 2rem));
+}
+
+.app-error-main {
+  text-align: left;
+}
+
+.app-error-main h3 {
+  color: #1b1e25;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.app-error-main p {
+  color: #62676f;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.app-error-dialog .es-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1.25rem 0 0;
+}
+
+.app-error-dialog .es-dialog-footer .es-dialog-btn {
+  border: 0;
+  border-radius: 0.41666667rem;
+  font-size: 0.95rem;
+  height: 2.75rem;
+  line-height: 1;
+  padding: 0 1.35rem;
+  text-align: center;
+  width: auto;
+}
+
+.app-error-ok {
+  background: #edf0f4;
+  color: #353a45 !important;
+}
+
+.betslip-replace-dialog {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  width: min(22rem, calc(100vw - 2rem));
+}
+
+.betslip-replace-main {
+  text-align: left;
+}
+
+.betslip-replace-main h3 {
+  color: #1b1e25;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.betslip-replace-main p {
+  color: #62676f;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.betslip-replace-dialog .es-dialog-footer {
+  display: flex;
+  gap: 0.66666667rem;
+  padding: 1.25rem 0 0;
+}
+
+.betslip-replace-dialog .es-dialog-footer .es-dialog-btn {
+  border: 0;
+  border-radius: 0.41666667rem;
+  flex: 1;
+  font-size: 0.95rem;
+  height: 2.75rem;
+  line-height: 1;
+  padding: 0 0.75rem;
+  text-align: center;
+  width: auto;
+}
+
+.betslip-dialog-cancel {
+  background: #edf0f4;
+  color: #353a45 !important;
+}
+
+.betslip-dialog-confirm {
+  background: var(--brand-primary-button);
+  color: #ffffff !important;
+}
+
+.betslip-replace-dialog .es-dialog-footer .es-dialog-btn:disabled {
+  opacity: 0.65;
+}
+
+.app-notification-dialog {
+  max-width: 24rem;
+  overflow: hidden;
+  border-radius: 1.25rem;
+}
+
+.app-notification-main {
+  min-height: auto !important;
+  padding: 1.5rem 1.25rem 0.25rem !important;
+  text-align: left !important;
+}
+
+.app-notification-eyebrow {
+  color: var(--brand-primary, #0f9f45);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-notification-main h3 {
+  margin: 0.4rem 0 1rem;
+  color: #2f3542;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.app-notification-summary {
+  color: #707781;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 0.9rem;
+}
+
+.app-notification-preview {
+  background: #f8fafc;
+  border: 1px solid #e7ebf1;
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+}
+
+.app-notification-preview h4 {
+  margin: 0 0 0.25rem;
+  color: #303642;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.app-notification-preview p {
+  margin: 0;
+  color: #717988;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.app-notification-action {
+  background: var(--brand-primary-button) !important;
+  color: #ffffff !important;
+}
+
 .es-dialog.es-ani-show {
   -webkit-transition:
     width,

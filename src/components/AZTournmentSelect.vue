@@ -3,7 +3,7 @@
     <div class="tournament-pop--header undefined" style="top: 0rem; z-index: 1000; position: fixed">
       <div>
         <span class="back" @click="$emit('close-select')"></span>
-        <span class="tournament-pop--header__title">{{ props.category.categoryName }}</span>
+        <span class="tournament-pop--header__title">{{ props.category.country_name }}</span>
       </div>
       <span class="home-icon"></span>
     </div>
@@ -18,8 +18,8 @@
           :key="t"
         >
           <span class="checkbox"></span>
-          <span class="name">{{ tournament.tournamentName }}</span>
-          <span>{{ tournament.total }}</span>
+          <span class="name">{{ tournament.name }}</span>
+          <span>{{ tournament.games }}</span>
         </div>
       </div>
       <div class="tournament-pop--footer">
@@ -53,12 +53,12 @@ const selectedTournaments = ref([])
 const isLoading = ref(false)
 
 const selected = (id) => {
-  return selectedTournaments.value.find((tournament) => tournament.tournamentID === id.tournamentID)
+  return selectedTournaments.value.find((tournament) => tournament.tournament_id === id.tournament_id)
 }
 
 const selectTournament = (tournament) => {
   const index = selectedTournaments.value.findIndex(
-    (cat) => cat.tournamentID === tournament.tournamentID
+    (cat) => cat.tournament_id === tournament.tournament_id
   )
   if (index === -1) {
     selectedTournaments.value.push(tournament) // Add the tournament if it's not already selected
@@ -69,7 +69,7 @@ const selectTournament = (tournament) => {
 
 const submit = () => {
   let selected = selectedTournaments.value
-  const tournamentIDs = selected.map((item) => item.tournamentID)
+  const tournamentIDs = selected.map((item) => item.tournament_id)
 
   const tournaments = tournamentIDs.map((id) => `sr:tournament:${id}`).join('_')
 
@@ -77,7 +77,7 @@ const submit = () => {
     name: 'fixtures-by-tournaments',
     params: {
       sport: props.sport.sportName,
-      categories: `sr:category:${props.category.categoryID}`,
+      categories: `sr:category:${props.category.category_id}`,
       tournaments: tournaments
     }
   })
@@ -85,8 +85,8 @@ const submit = () => {
 
 onMounted(async () => {
   isLoading.value = true
-  const res = await getTournamentsByCategories(props.category.categoryID)
-  categoryTournaments.value = res.sports
+  const res = await getTournamentsByCategories(props.sport.sportID, props.category.category_id)
+  categoryTournaments.value = res.data.filter((x) => x.games > 0)
   isLoading.value = false
 })
 defineComponent({

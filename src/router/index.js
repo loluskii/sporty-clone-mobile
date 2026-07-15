@@ -7,7 +7,7 @@ const FixtureView = () => import('@/views/Sport/FixtureView.vue')
 const SignInView = () => import('@/views/SignInView.vue')
 const SignUpView = () => import('@/views/SignUpView.vue')
 const BetHistoryView = () => import('@/views/Account/BetHistoryView.vue')
-const OpenBetsView = () => import('@/views/Account/OpenBetsView.vue')
+const BetsView = () => import('@/views/Account/BetsView.vue')
 const BetDetailView = () => import('@/views/Account/BetDetailView.vue')
 const MeView = () => import('@/views/Account/MeView.vue')
 const ProfileView = () => import('@/views/Account/ProfileView.vue')
@@ -26,6 +26,7 @@ const CMSPage = () => import('@/views/CMS.vue')
 // import SupportView from '@/views/Account/SupportView.vue'
 const SearchView = () => import('@/views/SearchView.vue')
 const GroupView = () => import('@/views/Games/GroupView.vue')
+const GamesView = () => import('@/views/Games/GamesView.vue')
 const Search = () => import('../views/Games/SearchView.vue')
 
 const CasinoView = () => import('@/views/CasinoView.vue')
@@ -33,6 +34,7 @@ const PlayView = () => import('@/views/Games/PlayView.vue')
 const CodeCentralView = () => import('@/views/CodeHubView.vue')
 const Promotions = () => import('@/views/Promotions.vue')
 const JackpotView = () => import('../views/Games/JackpotView.vue')
+const NotificationsView = () => import('@/views/NotificationsView.vue')
 
 // Add loading component
 const LoadingComponent = {
@@ -145,14 +147,15 @@ export const router = createRouter({
     {
       path: '/Sports',
       name: 'sports',
-      component: SportsView
+      component: SportsView,
+      meta: { showFooter: true, showBetslipCount: false }
     },
 
     // Bet History
     {
-      path: '/Bets/OpenBets',
-      name: 'open-bets',
-      component: OpenBetsView,
+      path: '/Bets',
+      name: 'bets-view',
+      component: BetsView,
       meta: { showMobileNavigation: true }
     },
     {
@@ -213,12 +216,24 @@ export const router = createRouter({
       name: 'account-bonus',
       component: BonusView
     },
+    {
+      path: '/Notifications',
+      name: 'notifications',
+      component: NotificationsView,
+      meta: { showMobileNavigation: true, showFooter: true }
+    },
 
     // Casino
     {
       path: '/Casino',
       name: 'casino',
       component: CasinoView,
+      meta: { showMobileNavigation: true }
+    },
+    {
+      path: '/Games',
+      name: 'casino-games',
+      component: GamesView,
       meta: { showMobileNavigation: true }
     },
     {
@@ -351,7 +366,8 @@ router.beforeEach((to, from, next) => {
     'bet-history',
     'bet-detail',
     'game-play',
-    'account-pending-withdrawals'
+    'account-pending-withdrawals',
+    'notifications'
   ]
   const authRequired = authPages.includes(to.name)
 
