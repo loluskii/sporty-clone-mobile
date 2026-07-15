@@ -1,3 +1,18 @@
+# [1.4.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.2...v1.4.0) (2026-07-15)
+
+
+### Bug Fixes
+
+* fix ([5177c12](https://github.com/zoroplay/sporty-clone-mobile/commit/5177c1205d286fa762decb3ec09ed246ac68a5d1))
+* implemented sorting for payment method to put Opay first ([a57db74](https://github.com/zoroplay/sporty-clone-mobile/commit/a57db7410c9e7f62a3aca1f84c830bccd7f4054c))
+* new system ([fd7564a](https://github.com/zoroplay/sporty-clone-mobile/commit/fd7564aadd4bceb01f327158b2b0d171f9d5cb45))
+* updates ([d578ce1](https://github.com/zoroplay/sporty-clone-mobile/commit/d578ce15f101878759c32185fecf85d20479f40b))
+
+
+### Features
+
+* refactor MQTT subscriptions and redesign LiveView page ([24df207](https://github.com/zoroplay/sporty-clone-mobile/commit/24df2070069119eb22c07299caa7c7f97fc4f159))
+
 # [1.3.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.2.5...v1.3.0) (2026-06-16)
 
 
