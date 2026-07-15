@@ -470,9 +470,7 @@ onDeactivated(() => {
   background-color: var(--background-type1-secondary);
   margin-bottom: 10px;
 }
-.featured-widget.with-nav {
-  height: 18.91666667rem;
-}
+
 .featured-widget .featured-nav-list {
   -webkit-box-align: stretch;
   -webkit-align-items: stretch;
