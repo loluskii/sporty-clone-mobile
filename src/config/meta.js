@@ -45,11 +45,6 @@ export const defaultMeta = {
   ],
   link: [
     {
-      rel: 'icon',
-      type: 'image/png',
-      href: '/favicon.png'
-    },
-    {
       rel: 'canonical',
       href: window.location.href
     }

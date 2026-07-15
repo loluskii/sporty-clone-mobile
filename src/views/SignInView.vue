@@ -183,7 +183,7 @@ onMounted(() => {
 }
 #loginStep .change-region-wrap .close {
   float: right;
-
+  color: white;
 }
 #loginStep .change-region-wrap .close::before {
   content: '\e69a';
@@ -192,6 +192,7 @@ onMounted(() => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
+  color: white;
 }
 #loginStep .change-region-wrap .close:before {
   font-size: 1.25rem;

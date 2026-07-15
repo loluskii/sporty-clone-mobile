@@ -29,7 +29,7 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -159,6 +159,7 @@ defineProps({
   display: flex;
   height: 100%;
 }
+
 .m-nav-secondary .home-link {
   -webkit-box-align: center;
   -webkit-align-items: center;

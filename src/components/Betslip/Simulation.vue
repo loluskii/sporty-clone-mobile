@@ -1,10 +1,13 @@
 <template>
   <div id="Simulate">
-    <SimulationHeader
+    <!-- Shared Pitch (first event only when multiple selections) -->
+    <SimulationPitch
+      v-if="showSharedPitch && firstSelection"
+      :selection="firstSelection"
+      :simulation-data="simulationData[firstSelection.matchId || firstSelection.match_id]"
+      :current-time="currentTime"
       :timer-ended="timerEnded"
-      :timer-display="timerDisplay"
-      :is-winner="isWinner"
-      :simulation-results="simulationResults"
+      @pause="handlePause"
     />
 
     <!-- Simulation Events -->
@@ -13,11 +16,15 @@
         <div class="events-container">
           <SimulationEvent
             v-for="selection in couponStore.coupon.selections"
-            :key="selection.matchId"
+            :key="selection.matchId || selection.match_id"
             :selection="selection"
-            :simulation-data="simulationData[selection.matchId]"
+            :simulation-data="simulationData[selection.matchId || selection.match_id]"
+            :selection-result="selectionResultsMap[selectionKey(selection)]"
             :current-time="currentTime"
             :timer-ended="timerEnded"
+            :score-phase="scorePhase"
+            :show-pitch="!showSharedPitch"
+            @pause="handlePause"
           />
         </div>
       </div>
@@ -32,11 +39,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useCouponStore, useUtilsStore } from '@/stores'
-import SimulationHeader from './SimulationHeader.vue'
 import SimulationEvent from './SimulationEvent.vue'
 import SimulationControls from './SimulationControls.vue'
+import SimulationPitch from './SimulationPitch.vue'
+import emitter from '@/plugins/emitter'
 
 // Store and Props
 const couponStore = useCouponStore()
@@ -49,45 +57,69 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['exit'])
-// Constants
-const SIMULATION_DURATION = 9 // seconds
-const UPDATE_INTERVAL = 250 // milliseconds
-const INITIAL_DELAY = 1000 // milliseconds
+// Constants: match duration equals GIF timeline.
+const KICKOFF_DURATION = 3 // seconds
+const CLIP_DURATION = 4 // seconds per team clip
+const GOAL_BANNER_DURATION = 1 // seconds after each clip
+const HALFTIME_DURATION = 2 // seconds
+const SIMULATION_DURATION =
+  KICKOFF_DURATION +
+  (CLIP_DURATION + GOAL_BANNER_DURATION) * 4 +
+  HALFTIME_DURATION
+const UPDATE_INTERVAL = 100 // milliseconds
 
 // Reactive State
 const currentTime = ref(0)
 const intervalId = ref(0)
+const isPaused = ref(false)
+// Ensure the win modal fires only once per simulation run.
+const winModalTriggered = ref(false)
 
 // Computed Properties
+const normalizedResults = computed(() => {
+  return props.simulationResults?.data || props.simulationResults || {}
+})
+
 const simulationData = computed(() => {
   try {
-    const events = JSON.parse(props.simulationResults.events)
-    return events.reduce((acc, ev) => {
-      const matchId = Number(ev.reference)
-      const playout = ev.playout
+    const rawEvents = normalizedResults.value?.events
+    const events = Array.isArray(rawEvents)
+      ? rawEvents
+      : typeof rawEvents === 'string'
+        ? JSON.parse(rawEvents)
+        : []
 
-      const goalEvents = [
-        ...(playout.homeCompetitorGoals?.map((time) => ({
-          time: time / 10,
-          team: 'home'
-        })) || []),
-        ...(playout.awayCompetitorGoals?.map((time) => ({
-          time: time / 10,
-          team: 'away'
-        })) || [])
-      ].sort((a, b) => a.time - b.time)
+    return events.reduce((acc, ev) => {
+      if (!ev) return acc
+
+      // New payload shape.
+      const matchId = Number(ev.match_id || ev.matchId)
+      const timeline = Array.isArray(ev.timeline) ? ev.timeline : []
+      const goalEvents = timeline
+        .filter((item) => item?.type === 'goal')
+        .map((item) => ({
+          time: Number(item.minute || 0),
+          team: item.team === 'away' ? 'away' : 'home'
+        }))
+        .sort((a, b) => a.time - b.time)
+
+      let finalScore = { home: Number(ev.home_goals || 0), away: Number(ev.away_goals || 0) }
+      if (typeof ev.final_score === 'string' && ev.final_score.includes('-')) {
+        const [home, away] = ev.final_score.split('-').map((value) => Number(value))
+        if (Number.isFinite(home) && Number.isFinite(away)) {
+          finalScore = { home, away }
+        }
+      }
 
       acc[matchId] = {
         goalEvents,
-        finalScore: {
-          home: playout.homeCompetitorScore,
-          away: playout.awayCompetitorScore
-        },
-        halfTime: {
-          home: playout.homeCompetitorHalfTimeScore,
-          away: playout.awayCompetitorHalfTimeScore
-        },
-        status: ev.status
+        timeline,
+        homeGoals: finalScore.home,
+        awayGoals: finalScore.away,
+        finalScoreText: `${finalScore.home}-${finalScore.away}`,
+        finalScore,
+        halfTime: null,
+        status: ev.status ?? ev.statusCode ?? null
       }
       return acc
     }, {})
@@ -97,18 +129,68 @@ const simulationData = computed(() => {
   }
 })
 
-const timerStarted = computed(() => currentTime.value > 0)
-const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
-const isWinner = computed(() => props.simulationResults.statusCode === 2)
-
-const timerDisplay = computed(() => {
-  if (!timerStarted.value) return 'Starting Game...'
-  return `${currentTime.value * 10}'`
+const selectionResults = computed(() => {
+  const results =
+    normalizedResults.value?.selections ||
+    normalizedResults.value?.selectionStatus ||
+    normalizedResults.value?.selectionResults ||
+    []
+  if (Array.isArray(results)) return results
+  const candidate = Object.values(normalizedResults.value || {}).find(
+    (value) =>
+      Array.isArray(value) &&
+      value.some(
+        (item) =>
+          item &&
+          typeof item === 'object' &&
+          'won' in item &&
+          ('gameID' in item || 'matchID' in item || 'matchId' in item)
+      )
+  )
+  return Array.isArray(candidate) ? candidate : []
 })
 
-const formattedWinAmount = computed(() => {
-  const amount = props.simulationResults.possibleWin
-  return `${SportsbookGlobalVariable.Currency}${amount.toLocaleString('en')}`
+const selectionResultsMap = computed(() => {
+  return selectionResults.value.reduce((acc, item) => {
+    if (!item) return acc
+    const matchId = item.gameID ?? item.matchID ?? item.matchId
+    const marketId = item.marketID ?? item.marketId
+    const outcomeId = item.outcomeID ?? item.outcomeId
+    if (matchId == null || marketId == null || outcomeId == null) return acc
+    acc[`${matchId}:${marketId}:${outcomeId}`] = item
+    return acc
+  }, {})
+})
+
+const timerStarted = computed(() => currentTime.value > 0)
+const timerEnded = computed(() => currentTime.value >= SIMULATION_DURATION)
+const selections = computed(() => couponStore.coupon.selections || [])
+const firstSelection = computed(() => selections.value[0])
+const showSharedPitch = computed(() => selections.value.length > 1)
+// Cache the primary bet summary for the win modal.
+const betSummary = computed(() => {
+  return normalizedResults.value?.bets?.[0] || normalizedResults.value || {}
+})
+
+const selectionKey = (selection) => {
+  if (!selection) return ''
+  const matchId = selection.matchId || selection.match_id || ''
+  const marketId = selection.marketId || selection.market_id || ''
+  const outcomeId = selection.outcomeId || selection.outcomeID || ''
+  return `${matchId}:${marketId}:${outcomeId}`
+}
+
+const scorePhase = computed(() => {
+  const h1HomeBanner = KICKOFF_DURATION + CLIP_DURATION
+  const h1AwayBanner = h1HomeBanner + GOAL_BANNER_DURATION + CLIP_DURATION
+  const h2HomeBanner = h1AwayBanner + GOAL_BANNER_DURATION + HALFTIME_DURATION + CLIP_DURATION
+  const h2AwayBanner = h2HomeBanner + GOAL_BANNER_DURATION + CLIP_DURATION
+
+  if (currentTime.value < h1HomeBanner) return 0
+  if (currentTime.value < h1AwayBanner) return 1
+  if (currentTime.value < h2HomeBanner) return 2
+  if (currentTime.value < h2AwayBanner) return 3
+  return 4
 })
 
 // Methods
@@ -124,20 +206,46 @@ const handleSimulationExit = (action) => {
   }
 }
 
+const handlePause = (value) => {
+  isPaused.value = value
+}
+
 // Lifecycle Hooks
 onMounted(() => {
   currentTime.value = 0
+  intervalId.value = setInterval(() => {
+    if (isPaused.value) {
+      return
+    }
+    if (currentTime.value >= SIMULATION_DURATION) {
+      currentTime.value = SIMULATION_DURATION
+      clearInterval(intervalId.value)
+      return
+    }
+    const nextValue = currentTime.value + UPDATE_INTERVAL / 1000
+    currentTime.value = +nextValue.toFixed(1)
+  }, UPDATE_INTERVAL)
+})
 
-  setTimeout(() => {
-    intervalId.value = setInterval(() => {
-      if (currentTime.value >= SIMULATION_DURATION) {
-        currentTime.value = SIMULATION_DURATION
-        clearInterval(intervalId.value)
-        return
-      }
-      currentTime.value = +(currentTime.value + 0.1).toFixed(1)
-    }, UPDATE_INTERVAL)
-  }, INITIAL_DELAY)
+watch(timerEnded, (ended) => {
+  if (!ended || winModalTriggered.value) return
+  winModalTriggered.value = true
+  const amountWon = Number(betSummary.value?.amountWon || 0)
+  if (Number.isFinite(amountWon) && amountWon > 0) {
+    emitter.emit('showWinModal', {
+      amount: amountWon,
+      currency: SportsbookGlobalVariable?.Currency || ''
+    })
+    // Modal renders globally from App.vue at z-index 2000, overlaying
+    // the simulation + betslip. User dismisses the modal, then exits the
+    // simulation themselves via the controls — same flow as a loss.
+  }
+})
+
+watch(currentTime, (value) => {
+  if (value <= 0.1) {
+    winModalTriggered.value = false
+  }
 })
 
 onUnmounted(() => {
@@ -194,5 +302,10 @@ onUnmounted(() => {
 #Simulate .flex-center {
   align-items: center;
   display: flex;
+}
+
+
+.events-container{
+  padding: 13px;
 }
 </style>

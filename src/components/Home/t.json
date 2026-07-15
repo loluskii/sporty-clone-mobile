@@ -1,0 +1,66 @@
+[
+  {
+    "marketID": "186",
+    "marketName": "Winner",
+    "specifier": "",
+    "outcomes": [
+      {
+        "outcomeID": 4,
+        "outcomeName": "1"
+      },
+      {
+        "outcomeID": 5,
+        "outcomeName": "2"
+      }
+    ],
+    "sportID": 5
+  },
+  {
+    "marketID": "187",
+    "marketName": "Game Handicap",
+    "specifier": "hcp",
+    "outcomes": [
+      {
+        "outcomeID": 1714,
+        "outcomeName": "Kajin, Karlo (-2.5)"
+      },
+      {
+        "outcomeID": 1715,
+        "outcomeName": "Guna, Robert (+1.5)"
+      }
+    ],
+    "sportID": 5
+  },
+  {
+    "marketID": "189",
+    "marketName": "Games O/U",
+    "specifier": "total",
+    "outcomes": [
+      {
+        "outcomeID": 12,
+        "outcomeName": "Over"
+      },
+      {
+        "outcomeID": 13,
+        "outcomeName": "Under"
+      }
+    ],
+    "sportID": 5
+  },
+  {
+    "marketID": "188",
+    "marketName": "Set Handicap",
+    "specifier": "hcp",
+    "outcomes": [
+      {
+        "outcomeID": 1714,
+        "outcomeName": "1H"
+      },
+      {
+        "outcomeID": 1715,
+        "outcomeName": "2H"
+      }
+    ],
+    "sportID": 5
+  }
+]

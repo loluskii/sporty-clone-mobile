@@ -34,7 +34,7 @@
               params: {
                 sport: 'Soccer',
                 categories: `sr:category:${match.categoryID}`,
-                tournaments: `sr:tournament:${match.tournamentID}`
+                tournaments: `sr:tournament:${match.tournament_id}`
               }
             })
           "
@@ -47,7 +47,7 @@
               srcset=""
             />
           </div> -->
-          <div class="text">{{ match.tournamentName }}</div>
+          <div class="text">{{ match.tournament_name }}</div>
         </div>
       </template>
     </div>
@@ -78,13 +78,13 @@
                   >
                     <div
                       class="featuredMatchCategory"
-                      :class="activeFeaturedTournament == top.tournamentID ? 'active' : ''"
+                      :class="activeFeaturedTournament == top.tournament_id ? 'active' : ''"
                     >
                       <div class="wrapper">
                         <div class="img">
-                          <img :src="getImageURL(top.tournamentName)" />
+                          <img :src="getImageURL(top.tournament_name)" />
                         </div>
-                        <div class="name">{{ top.tournamentName }}</div>
+                        <div class="name">{{ top.tournament_name }}</div>
                       </div>
                     </div>
                   </li>
@@ -107,7 +107,6 @@
           </template>
           <LoadingSpinner v-else></LoadingSpinner>
         </div>
-        <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
     </div>
   </div>
@@ -122,7 +121,6 @@ import {
   slugify,
   getTopGameCategories,
   gamesByTopCategory,
-  getCodeHubItems,
   getNext7Days,
   FEED_TOGGLE
 } from '@/helpers'
@@ -179,7 +177,7 @@ function getImageURL(name) {
 }
 
 const setActiveTournament = (tournament) => {
-  utilsStore.setActiveFeaturedTournament(tournament.tournamentID)
+  utilsStore.setActiveFeaturedTournament(tournament.tournament_id)
   scrollGamesIntoView()
 }
 
@@ -201,23 +199,12 @@ const setActiveCategory = async (category) => {
 }
 
 async function getCasinoGames() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const res = await getTopGameCategories()
   featuredCasino.value = res.data
   activeCasinoCategory.value = res.data[0].id
   const games = await gamesByTopCategory(activeCasinoCategory.value)
   featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
-}
-
-async function getCodes() {
-  if(!FEED_TOGGLE) return;
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0
-  }
-  const res = await getCodeHubItems(payload)
-  codes.value = res.data.data
 }
 
 function assignTournaments(tournament, games, tournamentID) {
@@ -251,77 +238,55 @@ function assignTournaments(tournament, games, tournamentID) {
   }
 }
 
-function setupMqttSubscriptions(matchIds) {
-  // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchIds.join(',')}`
-  if (unsubscribeFunctions.value[subscriptionKey]) {
-    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
-  }
+// function setupMqttSubscriptions(matchIds) {
+//   // Only clear our own component's subscriptions
+//   const subscriptionKey = `${componentId}-${matchIds.join(',')}`
+//   if (unsubscribeFunctions.value[subscriptionKey]) {
+//     unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
+//   }
 
-  // Create subscriptions for each match ID
-  const subscriptions = matchIds.map((matchId) => {
-    // Subscribe to odds changes
-    const oddsChangeTopic = `sbe/feeds/prematch/odds_change/${matchId}`
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      utilsStore.handleOddsChange(data)
-    })
+//   // Create subscriptions for each match ID
+//   const subscriptions = matchIds.map((matchId) => {
+//     // Subscribe to odds changes
+//     const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+//     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+//       utilsStore.handleOddsChange(data)
+//     })
 
-    // Subscribe to bet stop
-    const betStopTopic = `sbe/feeds/prematch/bet_stop/${matchId}`
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      utilsStore.handleBetStop(data)
-    })
+//     // Subscribe to bet stop
+//     const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+//     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+//       utilsStore.handleBetStop(data)
+//     })
 
-    return [unsubscribeOddsChange, unsubscribeBetStop]
-  })
+//     return [unsubscribeOddsChange, unsubscribeBetStop]
+//   })
 
-  // Flatten the array of subscription pairs
-  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
-}
+//   // Flatten the array of subscription pairs
+//   unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
+// }
 
 onBeforeUnmount(() => {
   // Clean up all MQTT subscriptions
-  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
-    subscriptions.forEach((unsubscribe) => unsubscribe())
-  })
-  unsubscribeFunctions.value = {}
+  // Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+  //   subscriptions.forEach((unsubscribe) => unsubscribe())
+  // })
+  // unsubscribeFunctions.value = {}
 })
 
 // Update onMounted
 onMounted(async () => {
   // Only fetch if we don't have data or it's stale
-  if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames().then(() => {
-      if(featuredTournaments.value.length){
-        setActiveTournament(featuredTournaments.value[0])
-      }
-    })
-  }
+  // if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
+  //   await utilsStore.fetchFeaturedGames().then(() => {
+  //     setActiveTournament(featuredTournaments.value[0])
+  //   })
+  // }
 })
 
 const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
   'casinoGames',
   getTopGameCategories,
-  {
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 60000,
-    cacheTime: 300000,
-    enabled: FEED_TOGGLE
-  }
-)
-
-const { data: codesData, isLoading: isCodesLoading } = useQuery(
-  'codes',
-  () => {
-    const payload = {
-      from: getNext7Days()[0],
-      to: getNext7Days()[7],
-      betType: 0
-    }
-    return getCodeHubItems(payload)
-  },
   {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
@@ -351,20 +316,9 @@ watch(
   { immediate: true }
 )
 
-// Watch for codes data changes
-watch(
-  codesData,
-  (newData) => {
-    if (newData?.data?.data) {
-      codes.value = newData.data.data
-    }
-  },
-  { immediate: true }
-)
-
 // Update the getFeaturedGames function
 async function getFeaturedGames() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   if (!topBetsData.value) return
 
   // Use Set for faster unique tournament filtering
@@ -892,7 +846,6 @@ onDeactivated(() => {
 }
 
 .topTournamentCard {
-  background-color: #ffffff;
   padding: 5px;
   border-top: 3px solid orangered;
   display: flex;
@@ -901,7 +854,6 @@ onDeactivated(() => {
   -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   margin-right: 15px;
-  color: #121212;
 }
 
 .topTournamentCard:last-of-type {
@@ -910,7 +862,6 @@ onDeactivated(() => {
 
 .topTournamentCard .text {
   font-weight: bolder;
-  font-size: 14px;
   text-transform: uppercase;
   white-space: nowrap;
 }

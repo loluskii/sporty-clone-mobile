@@ -222,14 +222,12 @@ onMounted(() => {
 }
 
 .m-tabs-tab {
-  /* border: 1px solid var(--c-sports-prematch-market-title-text); */
   line-height: 3rem !important;
   margin-right: 10px !important;
-  border-radius: 30px;
 }
 
 .m-tab-active {
-  background-color: var(--brand-secondary);
+  border-bottom: 3px solid var(--brand-active-tab-bg);
   color: #ffffff !important;
 }
 </style>

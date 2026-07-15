@@ -269,6 +269,15 @@ del {
   text-decoration: line-through;
 }
 
+hr {
+    height: 1px;
+    color: #e6e6e6;
+    background: #e6e6e6;
+    font-size: 0;
+    border: 0;
+    margin: .5rem 0;
+}
+
 address,
 b,
 caption,
@@ -388,7 +397,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 @media screen and (min-width: 450px) {
@@ -398,7 +407,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 17px;
+    font-size: 15px;
   }
 }
 @media screen and (min-width: 480px) {
@@ -408,7 +417,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 @media screen and (min-width: 540px) {
@@ -418,7 +427,7 @@ object {
   input,
   select,
   textarea {
-    font-size: 20.25px;
+    font-size: 18.25px;
   }
 }
 @media screen and (min-width: 600px) {
@@ -548,7 +557,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
@@ -559,7 +568,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
@@ -570,7 +579,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 13.0625px;
+    font-size: 12px;
   }
 }
 
@@ -581,7 +590,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 13px;
   }
 }
 
@@ -592,7 +601,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 17px;
+    font-size: 14px;
   }
 }
 
@@ -603,7 +612,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 18px;
+    font-size: 15px;
   }
 }
 
@@ -614,7 +623,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 20.25px;
+    font-size: 18px;
   }
 }
 
@@ -625,7 +634,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 22px;
+    font-size: 20px;
   }
 }
 
@@ -636,7 +645,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 24px;
+    font-size: 22px;
   }
 }
 
@@ -647,7 +656,7 @@ ins {
   input,
   select,
   textarea {
-    font-size: 28.125px;
+    font-size: 26px;
   }
 }
 
@@ -3778,7 +3787,7 @@ ins {
 }
 
 .m-icon-football::before,
-.m-icon-Soccer::before {
+.m-icon-soccer::before {
   content: '\e67d';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -3983,7 +3992,8 @@ ins {
   font-style: normal;
 }
 
-.m-icon-eFootball::before {
+.m-icon-efootball::before,
+.m-icon-esoccer::before {
   content: '\e6cd';
   font-family: 'iconfont' !important;
   font-size: 16px;
@@ -3992,7 +4002,7 @@ ins {
   font-style: normal;
 }
 
-.m-icon-eBasketball::before {
+.m-icon-ebasketball::before {
   content: '\e6cf';
   font-family: 'iconfont' !important;
   font-size: 16px;

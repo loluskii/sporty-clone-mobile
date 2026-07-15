@@ -1,17 +1,26 @@
-// let baseApi = import.meta.env.VITE_BASE_API;
-export const BASE_API = 'https://www.frapapa.com'
-export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API
-export const FEEDS_API = import.meta.env.VITE_FEEDS_API
-export const FEEDS_API_BASE = import.meta.env.VITE_FEEDS_API?.replace('/v1', '') || ''
+export const BASE_API = import.meta.env.VITE_BASE_URL || 'https://prod.sportsbookengine.com'
+export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API || 'https://prod.sportsbookengine.com/api/v2'
+export const NEW_FIXTURES_API =
+  import.meta.env.VITE_NEW_FIXTURES_API || 'https://fixture-prod.sportsbookengine.com'
+export const NEW_NOTIFICATION_API =
+  import.meta.env.VITE_NEW_NOTIFICATION_API || 'https://notification-prod.sportsbookengine.com/api/v2'
+export const NEW_BET_API =
+  import.meta.env.VITE_NEW_BET_API || 'https://bet-prod.sportsbookengine.com/v1'
+export const BET_PROXY_API = import.meta.env.VITE_BET_PROXY_API || '/bet'
+export const CASINO_CLIENT_API = import.meta.env.VITE_CASINO_CLIENT_API || '/casino-client'
+export const CASINO_PROVIDER_API = import.meta.env.VITE_CASINO_PROVIDER_API || CASINO_CLIENT_API
+export const CASINO_PROVIDER_PUBLIC_API =
+  import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API || 'https://clientapi.sportsbookengine.com'
+export const CLIENT_ID = 4
 
-export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
+// export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
 export const WTH_PERC = 0
-export const APP_KEY = import.meta.env.VITE_APP_KEY
+export const APP_KEY = 'SBE'
 export const SIM_ALLOWED_MARKETS = [
-  1, 10, 18, 19, 20, 21, 26, 29, 35, 37, 45, 47, 60, 63, 75, 81, 98, 548,
+  1, 10,11,16, 18,26, 29,45,60, 68,74, 75, 80, 83, 90, 94,95, 1601, 60100, 60200
 ];
-export const SIM_ENABLED = false;
+export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true
 export const EXCLUDED_LIVE_SPORT_IDS = [2, 5]
