@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.3...v1.4.4) (2026-07-15)
+
+
+### Bug Fixes
+
+* new system ([9456146](https://github.com/zoroplay/sporty-clone-mobile/commit/9456146f4bd5026369281115164f02913fcbf840))
+
 ## [1.4.3](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.2...v1.4.3) (2026-07-15)
 
 
