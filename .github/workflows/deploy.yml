@@ -88,6 +88,9 @@ jobs:
             type=raw,value=${{ needs.version.outputs.version }}
             type=raw,value=latest
 
+      - name: Write .env file from secret
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -97,6 +100,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secret-files: |
+            envfile=.env
 
   release:
     needs: [version, build]
@@ -185,6 +190,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
 
           # Copy all source files to server for local build
+          echo "${{ secrets.ENV_FILE }}" > .env
           tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
           scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }}:~/west-bet24-mobile/
           ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'cd ~/west-bet24-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
