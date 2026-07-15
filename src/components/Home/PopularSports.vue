@@ -864,6 +864,7 @@ onDeactivated(() => {
   font-weight: bolder;
   text-transform: uppercase;
   white-space: nowrap;
+  color: #1b1e25;
 }
 
 /* Additional Colors */

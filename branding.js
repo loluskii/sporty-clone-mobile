@@ -25,8 +25,8 @@ export const brandDetails = {
 
     liveContainerBackgroundColor: '#150B38',
 
-    activeTabColor: '#EE3430',
-    highlightTextColor: 'rgb(217, 37, 29)'
+    activeTabColor: 'rgb(222, 226 ,230)',
+    highlightTextColor: '#5b4a99'
   },
   fonts: {
     primaryFont: 'Avenir',

@@ -14,7 +14,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-secondary);
   color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
@@ -286,14 +286,13 @@
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
   background-color: #ffffff;
-  color: var(--brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
-  color: var(--brand-primary);
+  color: #000;
   text-decoration: none;
 }
 
@@ -346,8 +345,4 @@
 
 #sportybet .mobile-navbar {
   display: none !important;
-}
-
-.page-content--ng .mobile-navbar .navbar-wraper {
-  background-color: var(--brand-primary);
 }

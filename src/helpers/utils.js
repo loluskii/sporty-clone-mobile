@@ -1,8 +1,8 @@
 import moment from 'moment'
 // import _ from 'lodash'
 // Split props are computed locally since the API endpoint is deprecated.
-// import { brandDetails } from '/branding'
-import { brandDetails as defBrandDetails } from '/branding-template'
+import { brandDetails } from '/branding'
+// import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
 import { calculateAccaBonusPreview } from './acca-bonus'
 import {
@@ -18,11 +18,11 @@ import {
 export const applyBranding = async () => {
   try {
     let defConfig
-    // if (brandDetails) {
-    //   defConfig = brandDetails
-    // } else {
+    if (brandDetails) {
+      defConfig = brandDetails
+    } else {
     defConfig = defBrandDetails
-    // }
+    }
     const config = defConfig
     const utilsStore = useUtilsStore()
     const loadFont = (url) => {
