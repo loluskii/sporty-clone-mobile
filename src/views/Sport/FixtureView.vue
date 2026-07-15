@@ -635,7 +635,8 @@ defineComponent({
 
 <style>
 .m-event-list {
-  background-color: inherit;
+  background-color: #fafafa;
+  background-color: var(--background-general-primary);
   color: #353a45;
   -webkit-overflow-scrolling: none;
   overscroll-behavior: none;
@@ -878,11 +879,11 @@ defineComponent({
   border-radius: 999px;
   color: #53565f;
   display: inline-flex;
-  font-size: 1.066rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 500;
   justify-content: center;
   line-height: 1;
-  min-height: 2.45rem;
+  min-height: 2.15rem;
   padding: 0 1.2rem;
   text-transform: capitalize;
   transition:
@@ -892,9 +893,10 @@ defineComponent({
 }
 
 .m-event-list .m-sport-type .m-sport-type-item.active {
-  background: var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
-  color: #ffffff;
+  background-color: white;
+  border: 1px solid var(--brand-active-tab-bg);
+  color: var(--brand-highlight-text) !important;
+  font-weight: 700;
 }
 
 .m-event-list .m-sport-type .m-sport-type-item:last-child {
@@ -927,6 +929,11 @@ defineComponent({
 
 .m-event-list .m-sport-type.m-sport-type-fixed.choose-open {
   z-index: -1;
+}
+
+.m-event-list .m-bet-content {
+  background-color: #fafafa;
+  background-color: var(--background-general-primary);
 }
 
 .m-event-list .m-outright-bar {
