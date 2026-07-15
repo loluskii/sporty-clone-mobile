@@ -105,7 +105,7 @@ const eventTimeLabel = computed(() => {
   if (!rawDate) return ''
   const date = new Date(rawDate)
   if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
 })
 
 const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatchOdds({

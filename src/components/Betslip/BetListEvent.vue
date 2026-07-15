@@ -1093,7 +1093,7 @@ function toggleBanker() {
   display: flex;
   flex: 1;
   font-size: 0.9rem;
-  font-weight: 700;
+  /* font-weight: 700; */
   gap: 0.45rem;
   min-width: 0;
   padding: 0;
