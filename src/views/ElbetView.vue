@@ -314,7 +314,7 @@ onMounted(() => {
   height: 100%;
   border-bottom: 1px solid rgb(var(--stb-unique-color-1));
   background-color: rgb(var(--stb-green-1000));
-  background-image: url(/assets/static/general/ornament-title.svg);
+  background-image: url('/ornament-title.svg');
   background-repeat: repeat-x;
   background-position: center;
   background-size: 40px 70px;

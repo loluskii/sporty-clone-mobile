@@ -551,6 +551,13 @@ watch(
       // Reset up-mode when the auto-selected sport changes.
       resetUpMode()
     }
+})
+
+// Keep the "View All" count scoped to the active sport.
+watch(
+  [activeSportID, accumulatedFixtures],
+  ([sportID, fixtures]) => {
+    totalFixtures.value = fixtures.filter((fixture) => fixture.sportID === sportID).length
   },
   { immediate: true }
 )
