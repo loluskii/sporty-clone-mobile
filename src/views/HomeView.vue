@@ -279,7 +279,7 @@ onMounted(async () => {})
   font-size: 1.066rem;
   line-height: 3.66666667rem;
   padding: 0 1.33333333rem;
-  /* width: calc(100vw / 3); */
+  width: calc(100vw / 3);
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab.m-tabs-tab-active {
