@@ -8,29 +8,38 @@ export const brandDetails = {
     tertiaryColor: 'rgb(222, 226 ,230)',
 
     primaryBackground: '#FFFFFF',
-    secondaryBackground: '#ECF2FE',
+    secondaryBackground: '#e6e7eb',
 
-    primaryTextColor: '#EE3430',
+    primaryTextColor: '#353a45',
     secondaryTextColor: '#2A166F',
 
-    prematchOddBackgroundColor: '#ECF2FE',
-    prematchOddTextColor: '#0D0D0D',
-    activePrematchOddBackground: '#EE3430',
+    primaryButtonColor: '#2A166F',
+    secondaryButtonColor: '#e41827',
+
+    primaryButtonBackgroundColor: '#0D9737',
+    secondaryButtonBackgroundColor: '#0D9737',
+
+    headerBackgroundColor: '#2A166F',
+
+    prematchOddBackgroundColor: '#e6e7eb',
+    prematchOddTextColor: '#353a45',
+    activePrematchOddBackground: '#f05a56',
     activePrematchOddTextColor: '#fff',
 
     liveOddBackgroundColor: '#2a2a2a',
     liveOddTextColor: '#fff',
-    activeLiveOddBackground: '#ECF2FE',
-    activeLiveOddTextColor: '#EE3430',
+    activeLiveOddBackground: '#f05a56',
+    activeLiveOddTextColor: '#fff',
 
-    liveContainerBackgroundColor: '#150B38',
+    liveContainerBackgroundColor: '#1B1E25',
 
-    activeTabColor: 'rgb(222, 226 ,230)',
-    highlightTextColor: '#5b4a99'
+    activeTabColor: '#ef403c',
+    activeTabColor2: '#ef403c',
+    highlightTextColor: '#ef403c'
   },
   fonts: {
-    primaryFont: 'Avenir',
-    primaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
+    primaryFont: "'Open Sans'",
+    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap',
     secondaryFont: 'Montserrat',
     secondaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
   },
