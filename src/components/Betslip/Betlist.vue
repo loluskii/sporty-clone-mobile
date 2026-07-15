@@ -409,10 +409,8 @@ onMounted(() => {})
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
 .m-betslip-header {
-  color: #000;
-  background-color: #fff;
-  border-top-left-radius: 25px;
-  border-top-right-radius: 25px;
+  color: #fff;
+  background-color: var(--background-type2-secondary);
   padding: 1.33333333rem 1.33333333rem 1.3rem 1.3rem;
 }
 
