@@ -91,7 +91,7 @@
           </router-link>
         </div>
         <div class="m-btn-button">
-          <router-link :to="{ name: 'casino-games' }">
+          <router-link :to="{ name: 'casino' }">
             <svg
               width="25"
               height="25"
