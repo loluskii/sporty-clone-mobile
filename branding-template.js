@@ -40,8 +40,9 @@ export const brandDetails = {
   fonts: {
     primaryFont: 'Avenir',
     primaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
-    secondaryFont: 'Montserrat',
-    secondaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
+    secondaryFont: 'Open Sans',
+    secondaryFontURL:
+      'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap'
   },
   images: {
     logo: '/assets/logos/default-logo.png'
