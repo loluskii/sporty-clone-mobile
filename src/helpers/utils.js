@@ -61,6 +61,16 @@ export const applyBranding = async () => {
     )
 
     document.documentElement.style.setProperty(
+      '--brand-active-tab-bg-2',
+      config.colors.activeTabColor2
+    )
+
+    document.documentElement.style.setProperty(
+      '--brand-header-bg',
+      config.colors.headerBackgroundColor
+    )
+
+    document.documentElement.style.setProperty(
       '--brand-background-live',
       config.colors.liveContainerBackgroundColor
     )

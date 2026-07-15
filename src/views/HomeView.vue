@@ -64,7 +64,7 @@ onMounted(async () => {})
   display: -ms-flexbox;
   display: flex;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
@@ -102,7 +102,8 @@ onMounted(async () => {})
 
 .m-sports .m-sports-title .m-sport-type .m-sport-type-item.active {
   padding: 3px 10px;
-  color: var(--brand-text-secondary)
+  color: var(--brand-highlight-text);
+  font-weight: 600;
 }
 .m-sports .m-sports-title .filter-control {
   -webkit-box-align: center;
@@ -282,7 +283,7 @@ onMounted(async () => {})
 }
 
 .m-sports .m-pre-opts.m-tabs .m-tabs-tab.m-tabs-tab-active {
-  color: #1b1e25;
+  /* color: #1b1e25; */
   color: var(--brand-highlight-text);
   border-bottom: 0.23333333rem solid var(--brand-active-tab-bg);
   font-weight: bold;
