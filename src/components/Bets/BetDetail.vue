@@ -211,13 +211,11 @@
             <div class="ellips">{{ selection.eventName }}</div>
             <div class="pick-info">
               <p class="not-seperate">
-                  <span class="gray colon">FT Score</span>
-                  <p>
-                    <span>
-                      <em>{{ selection.score ? selection.score : '-- : --' }}</em></span
-                    >
-                  </p>
-                </p>
+                <span class="gray colon">FT Score</span>
+                <span>
+                  <em>{{ selection.score ? selection.score : '-- : --' }}</em>
+                </span>
+              </p>
               <p class="not-seperate">
                 <span class="gray colon">Pick</span>
                 <span>
