@@ -932,7 +932,7 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-league.link {
-  color: #0D9737;
+  color: var(--brand-highlight-text);
   text-decoration: underline;
 }
 
@@ -1357,8 +1357,7 @@ onMounted(() => {
 
 .m-group .m-sport-group-item.active {
   border-bottom: 4px solid #0D9737;
-  border-color: #0D9737;
-  border-color: var(--brand-secondary);
+  border-color: var(--brand-active-tab-bg);
 }
 
 .m-market-section-tabs {

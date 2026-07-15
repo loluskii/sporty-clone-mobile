@@ -590,12 +590,12 @@ a {
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon,
 .m-bottom-nav .m-bottom-fixed .m-btn-button.active svg.icon  {
-  fill: var(--brand-active-tab-bg);
+  fill: var(--brand-active-tab-bg-2);
 }
 
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.providers,
 .m-bottom-nav .m-bottom-fixed .m-btn-button a.x-active svg.icon.category {
-  stroke: var(--brand-active-tab-bg);
+  stroke: var(--brand-active-tab-bg-2);
   fill: none;
 }
 

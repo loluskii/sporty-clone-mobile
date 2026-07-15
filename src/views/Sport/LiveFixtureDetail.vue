@@ -1127,7 +1127,7 @@ defineComponent({
 }
 
 .m-event-detail-wrap .m-event-title .m-event-league {
-  color: var(--brand-secondary);
+  color: var(--brand-highlight-text);
   line-height: 1.2;
   overflow: hidden;
   padding: 0.66666667rem 0;
@@ -1193,7 +1193,7 @@ defineComponent({
   .m-table-row
   .m-outcome {
   background: rgba(214, 235, 220, 0.13);
-  color: var(--brand-secondary);
+  color: var(--brand-live-odds-text);
 }
 
 .m-event-detail-wrap
@@ -1203,8 +1203,8 @@ defineComponent({
   .market-content
   .m-table-row
   .m-outcome--checked {
-  background-color: var(--brand-secondary);
-  color: #ffffff;
+  background-color: var(--brand-active-live-odds-bg);
+  color: var(--brand-active-live-odds-text);;
 }
 
 .m-event-detail-wrap
@@ -1476,8 +1476,7 @@ defineComponent({
 
 .event-detail .m-group .m-sport-group-item.active {
   border-bottom: 4px solid #0d9737;
-  border-color: #0d9737;
-  border-color: var(--brand-secondary);
+  border-color: var(--brand-active-tab-bg);
 }
 
 .event-detail .m-sport-market-no-data {

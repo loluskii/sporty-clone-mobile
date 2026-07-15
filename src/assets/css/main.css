@@ -1094,7 +1094,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: #b6bcc6;
+  color: var(--brand-highlight-text);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1108,7 +1108,7 @@
 }
 
 .m-event-live .m-event-meta > span {
-  font-weight: bold;
+  font-weight: 500;
   margin-right: 0.66666667rem;
 }
 
@@ -1336,7 +1336,7 @@
   border-color: #eaecef;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: var(--brand-highlight-text);
+  /* color: var(--brand-highlight-text); */
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1516,6 +1516,7 @@
   margin-right: 0.41666667rem;
   position: relative;
   text-align: center;
+  font-weight: bold;
 }
 
 .market-content .m-outcome:last-child {
@@ -1609,6 +1610,7 @@
 .market-content .m-outcome-odds-des > em:first-of-type {
   text-align: left;
   word-break: break-word;
+  font-weight: normal;
 }
 
 .market-content .m-outcome-odds-des > em:last-of-type {

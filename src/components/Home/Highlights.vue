@@ -285,7 +285,7 @@ onBeforeUnmount(() => {
   -ms-flex: initial;
   flex: initial;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 500;
   line-height: 1;
   margin: 0;
   min-height: 2.15rem;
@@ -362,6 +362,7 @@ onBeforeUnmount(() => {
   background-color: white;
   border: 1px solid var(--brand-active-tab-bg);
   color: var(--brand-highlight-text) !important;
+  font-weight: 700;
 }
 
 .m-tabs-tab {

@@ -14,7 +14,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-header-bg);
   color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
@@ -96,7 +96,7 @@
 }
 
 .mobile-navbar .x-icon-search:before {
-  color: #ffffff;
+  color: #fff;
   font-size: 1.5rem;
 }
 
@@ -266,7 +266,6 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > div {
-  border: 1px solid #ffffff;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -274,9 +273,21 @@
   font-size: 1rem;
   font-weight: 500;
   height: 2.33333333rem;
-  line-height: 2.33333333rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0 8px;
 }
+
+.mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login {
+  border: 1px solid var(--brand-primary);
+  color: var(--brand-primary) !important;
+}
+
+.mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login a {
+  color: var(--brand-primary) !important;
+}
+
 
 @media screen and (max-width: 320px) {
   .mobile-navbar .mobile-navbar-right .x-login-not > div {
@@ -285,15 +296,14 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
-  background-color: #ffffff;
-  color: var(--brand-primary);
+  background-color: var(--brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
-  color: var(--brand-primary);
+  color: #fff;
   text-decoration: none;
 }
 
