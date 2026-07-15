@@ -6,7 +6,7 @@
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  font-family: var(--brand-primary-font-family), sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 
 @font-face {
@@ -289,7 +289,6 @@ i,
 th,
 var {
   font-style: normal;
-  font-weight: bold;
 }
 
 ol,

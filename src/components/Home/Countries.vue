@@ -164,7 +164,7 @@ defineComponent({
   font-style: normal;
 }
 .m-league .m-league-title .icon-triangle::before {
-  color: var(--brand-secondary);
+  color: var(--brand-highlight-text);
   display: inline-block;
   font-size: 0.83333333rem;
   height: 1.066rem;

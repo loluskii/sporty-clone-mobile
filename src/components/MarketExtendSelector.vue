@@ -245,7 +245,7 @@ const UpIcon = defineComponent({
   display: inline-flex;
   flex: 1 1 0;
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
   gap: 0.28rem;
   height: 2.15rem;
   line-height: 1;

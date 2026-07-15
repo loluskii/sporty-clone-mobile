@@ -11,12 +11,12 @@ export const CASINO_CLIENT_API = import.meta.env.VITE_CASINO_CLIENT_API || '/cas
 export const CASINO_PROVIDER_API = import.meta.env.VITE_CASINO_PROVIDER_API || CASINO_CLIENT_API
 export const CASINO_PROVIDER_PUBLIC_API =
   import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API || 'https://clientapi.sportsbookengine.com'
-export const CLIENT_ID = 4
+export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 
 // export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
 export const WTH_PERC = 0
-export const APP_KEY = 'SBE'
+export const APP_KEY = import.meta.env.VITE_APP_KEY
 export const SIM_ALLOWED_MARKETS = [
   1, 10,11,16, 18,26, 29,45,60, 68,74, 75, 80, 83, 90, 94,95, 1601, 60100, 60200
 ];

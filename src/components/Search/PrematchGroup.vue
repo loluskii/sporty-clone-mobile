@@ -211,7 +211,7 @@ onMounted(() => {
   display: -ms-flexbox;
   display: flex;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;

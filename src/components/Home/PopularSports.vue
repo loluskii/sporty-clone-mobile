@@ -468,6 +468,7 @@ onDeactivated(() => {
   font-family: 'roboto', sans-serif;
   background-color: #ffffff;
   background-color: var(--background-type1-secondary);
+  margin-bottom: 10px;
 }
 .featured-widget.with-nav {
   height: 18.91666667rem;

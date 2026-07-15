@@ -90,7 +90,7 @@ const toggleCollapsed = () => {
 
 .trending-title {
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #1b1e25;
 }
 
