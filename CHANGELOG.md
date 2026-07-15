@@ -1,3 +1,10 @@
+## [1.4.5](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.4...v1.4.5) (2026-07-15)
+
+
+### Bug Fixes
+
+* pass ENV_FILE secret to docker build and fix nginx proxy host ([decb24d](https://github.com/zoroplay/sporty-clone-mobile/commit/decb24dacb9b6f81ab6d91bd7b28c71a84a89d7a))
+
 ## [1.4.4](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.3...v1.4.4) (2026-07-15)
 
 
