@@ -9,7 +9,8 @@ import {
   CLIENT_ID,
   NEW_BASE_API,
   NEW_BET_API,
-  NEW_FIXTURES_API
+  NEW_FIXTURES_API,
+  NEW_NOTIFICATION_API
 } from './constants'
 import moment from 'moment'
 
@@ -220,11 +221,11 @@ export const register = async (payload) => {
 }
 
 export const sendOTP = async (payload) => {
-  return fetchWrapper.post(`${NEW_BASE_API}/notification/send-otp`, payload)
+  return fetchWrapper.post(`${NEW_NOTIFICATION_API}/notification/send-otp`, payload)
 }
 
 export const verifyOTP = async (payload) => {
-  return fetchWrapper.post(`${NEW_BASE_API}/notification/verify-otp`, payload)
+  return fetchWrapper.post(`${NEW_NOTIFICATION_API}/notification/verify-otp`, payload)
 }
 
 export const verifyUsername = async (payload) => {
@@ -760,7 +761,7 @@ export const getUserCashbackBonus = async () => {
 }
 
 export const fetchUserNotifications = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/notification/user`))
+  return parseData(fetchWrapper.get(`${NEW_NOTIFICATION_API}/notification/user`))
 }
 
 export const checkFirstDeposit = async () => {

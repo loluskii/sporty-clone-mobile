@@ -18,7 +18,7 @@ export default ({ mode }) => {
     server: {
       proxy: {
         '/bet': {
-          target: 'https://bet.staging.sportsbookengine.com',
+          target: 'https://bet-prod.sportsbookengine.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/bet/, '/v1')
         },
