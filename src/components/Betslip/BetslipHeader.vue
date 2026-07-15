@@ -10,9 +10,9 @@
                 :style="
                   betslipMode
                     ? 'background-color: #ffd600; color: #000'
-                    : 'background-color: var(--brand-secondary); color: #fff'
+                    : 'background-color: var(--brand-active-tab-bg); color: #fff'
                 "
-                style="font-size: 13px; height: 30px; width: 30px; border-radius: 50%"
+                style="font-size: 12px; height: 25px; width: 25px; border-radius: 50%"
               >
                 {{ selectionsCount }}
               </span>

@@ -1,5 +1,10 @@
 import { computed, ref, watch } from 'vue'
-import { chunks, X_UP_FEATURE_MARKET_ID, getFixtureDerivedMarketIds } from '@/helpers'
+import {
+  chunks,
+  X_UP_FEATURE_MARKET_ID,
+  getFixtureDerivedMarketIds,
+  normalizeFixtureMarkets
+} from '@/helpers'
 
 const DEFAULT_DERIVED_MARKET_IDS = [1601, 60180]
 
@@ -16,12 +21,13 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   // Shared active market-group tab state for both prematch and live detail pages.
   const selectedGroupId = ref(null)
   const activeSectionByGroup = ref({})
+  const normalizedEventMarkets = computed(() => normalizeFixtureMarkets(eventMarkets.value || []))
 
   const derivedMarketIds = computed(() => {
     const directDerivedIds = getFixtureDerivedMarketIds(fixtureDetail?.value || {})
-    const marketExtendIds = Array.isArray(eventMarkets.value)
+    const marketExtendIds = Array.isArray(normalizedEventMarkets.value)
       ? [...new Set(
-          eventMarkets.value
+          normalizedEventMarkets.value
             .flatMap((market = {}) =>
               Array.isArray(market.marketExtendVOS) ? market.marketExtendVOS : []
             )
@@ -35,7 +41,7 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   })
 
   const groupedMarketsByTab = computed(() => {
-    if (!eventMarkets.value || !marketGroups.value) {
+    if (!normalizedEventMarkets.value || !marketGroups.value) {
       return {}
     }
 
@@ -47,7 +53,7 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
       }
     })
 
-    eventMarkets.value.forEach((market) => {
+    normalizedEventMarkets.value.forEach((market) => {
       marketGroups.value.forEach((group) => {
         if (group.marketIDs.includes(market.marketID)) {
           if (!grouped[group.id]) {
@@ -65,12 +71,12 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   })
 
   const filteredMarkets = computed(() => {
-    if (!eventMarkets.value) {
+    if (!normalizedEventMarkets.value) {
       return []
     }
 
     if (selectedGroupId.value === null) {
-      return eventMarkets.value
+      return normalizedEventMarkets.value
     }
 
     const group = groupedMarketsByTab.value[selectedGroupId.value]

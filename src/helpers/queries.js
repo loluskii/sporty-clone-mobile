@@ -221,11 +221,11 @@ export const register = async (payload) => {
 }
 
 export const sendOTP = async (payload) => {
-  return fetchWrapper.post(`${NEW_NOTIFICATION_API}/notification/send-otp`, payload)
+  return fetchWrapper.post(`${NEW_BASE_API}/notification/send-otp`, payload)
 }
 
 export const verifyOTP = async (payload) => {
-  return fetchWrapper.post(`${NEW_NOTIFICATION_API}/notification/verify-otp`, payload)
+  return fetchWrapper.post(`${NEW_BASE_API}/notification/verify-otp`, payload)
 }
 
 export const verifyUsername = async (payload) => {

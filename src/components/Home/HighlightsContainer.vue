@@ -94,7 +94,14 @@ import Countries from '@/components/Home/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getFeatureMarketIdForMode, getSportHighlights, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
+import {
+  getFeatureMarketIdForMode,
+  getSportHighlights,
+  getToday2,
+  getCategoriesBySport,
+  FEED_TOGGLE,
+  normalizeFixtureMarkets
+} from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
@@ -272,7 +279,7 @@ async function getHighlightGames({ force = false, preserveContent = false } = {}
 
         // Hard reset the active market to avoid stale specifier state when swapping tabs.
         activeMarket.value = {}
-        const filteredMarkets = sanitizeMarkets(response.data.markets || [])
+        const filteredMarkets = sanitizeMarkets(normalizeFixtureMarkets(response.data.markets || []))
         marketsGroup.value = filteredMarkets.length ? filteredMarkets : []
         const cachedMarketId = activeMarketByTab.value[tabView.value]
         const nextMarket =

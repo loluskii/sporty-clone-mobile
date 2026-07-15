@@ -72,7 +72,7 @@ const toggleMode = () => {
 
 .mode-thumb {
   align-items: center;
-  background: var(--brand-secondary);
+  background: var(--brand-active-tab-bg);
   border-radius: 999px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   color: #ffffff;

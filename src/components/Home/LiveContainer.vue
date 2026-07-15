@@ -115,7 +115,7 @@ import { useUtilsStore } from '@/stores/utils.store'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
+import { getLiveHighlights, FEED_TOGGLE, normalizeFixtureMarkets } from '@/helpers'
 import _ from 'lodash'
 import { defineComponent, onMounted, onBeforeUnmount, ref, computed, toRef, watch } from 'vue'
 import emitter from '@/plugins/emitter'
@@ -413,8 +413,8 @@ const { isLoading, refetch: refetchLiveData } = useQuery('liveData', getLiveHigh
     const fixtures = (response?.data?.fixtures || []).filter((fixture) =>
       isAllowedLiveSport(fixture.sportID)
     )
-    const markets = (response?.data?.markets || []).filter((market) =>
-      isAllowedLiveSport(market.sportID)
+    const markets = normalizeFixtureMarkets(
+      (response?.data?.markets || []).filter((market) => isAllowedLiveSport(market.sportID))
     )
 
     if (fixtures.length > 0) {
