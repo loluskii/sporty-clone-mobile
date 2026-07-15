@@ -1006,7 +1006,7 @@ defineComponent({
   display: -ms-flexbox;
   display: flex;
   font-size: 1rem;
-  margin: 0 0.83333333rem 1.41666667rem 0.83333333rem;
+  margin: 0 0.83333333rem 0rem 0.83333333rem;
 }
 
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper {
@@ -1293,12 +1293,12 @@ defineComponent({
   margin: 0 0.83333333rem;
 }
 
-.m-event-team-wrap > div {
+.m-event-team-wrap > div:not(.score-breakdown-row) {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-}
+} 
 
 .m-event-team-wrap > div > span {
   display: block;
@@ -1395,7 +1395,7 @@ defineComponent({
 
 .score-breakdown-header,
 .score-breakdown-row {
-  display: grid;
+  display: grid !important;
   gap: 0.16666667rem;
   align-items: center;
 }
@@ -1430,7 +1430,7 @@ defineComponent({
   font-size: 1.066rem;
   font-weight: 700;
   height: 1.83333333rem;
-  justify-content: center;
+  text-align: center;
 }
 
 .score-breakdown-cell.total {
@@ -1462,8 +1462,8 @@ defineComponent({
 .event-detail .m-group .m-sport-group-item {
   cursor: pointer;
   font-weight: 700;
-  height: 4rem;
-  line-height: 4rem;
+  height: 3rem;
+  line-height: 3rem;
   margin-bottom: -1px;
   padding: 0 0.91666667rem;
 }
@@ -1485,7 +1485,7 @@ defineComponent({
   justify-content: center;
   align-items: center;
   color: #9ca0ab;
-  /* padding: 5rem 2.33333333rem 10rem; */
+  padding: 5rem 2.33333333rem 10rem;
   padding-left: 2.3rem;
   padding-right: 2.3rem;
   text-align: center;

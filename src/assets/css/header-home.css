@@ -261,6 +261,8 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
+  flex: none;
+  gap: 8px;
   height: 100%;
   overflow: hidden;
 }
@@ -280,12 +282,12 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login {
-  border: 1px solid var(--brand-primary);
-  color: var(--brand-primary) !important;
+  border: 1px solid #ffffff;
+  color: #ffffff !important;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login a {
-  color: var(--brand-primary) !important;
+  color: #ffffff !important;
 }
 
 
@@ -296,19 +298,19 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
-  background-color: var(--brand-primary);
+  background-color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
-  color: #fff;
+  color: var(--brand-primary);
   text-decoration: none;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {

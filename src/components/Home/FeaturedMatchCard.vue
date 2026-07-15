@@ -187,8 +187,8 @@ function addToBetslip(event, odd) {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  height: 35vw;
-  min-height: 120px;
+  height: calc(var(--mobile-app-width, 100vw) * 0.35);
+  min-height: 136px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
