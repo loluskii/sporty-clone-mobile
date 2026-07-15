@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  sportsbook-web:
+  bet24-mobile:
     build:
       context: .
       dockerfile: Dockerfile

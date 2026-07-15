@@ -167,7 +167,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.BET24_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Prepare deployment files
         run: |
@@ -182,15 +182,15 @@ jobs:
       - name: Deploy to GCP server
         run: |
           # Create directory on server
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'mkdir -p ~/west-bet24-mobile/'
 
           # Copy all source files to server for local build
           tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
-          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }}:~/west-bet24-mobile/
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} 'cd ~/west-bet24-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
+          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }}:~/west-bet24-mobile/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} 'cd ~/west-bet24-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
 
           # Login to GitHub Container Registry on server and execute deployment
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.BET24_SERVER_USER }}@${{ secrets.BET24_SERVER_IP }} '
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             cd ~/west-bet24-mobile/
             echo "Current directory: $(pwd)"
