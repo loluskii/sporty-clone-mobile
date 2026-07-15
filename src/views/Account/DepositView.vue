@@ -139,7 +139,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import emitter from '@/plugins/emitter'
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from '@/helpers'
 
-const activeTab = ref('opay')
+const activeTab = ref('paystack')
 const depositMethods = ref([])
 const usersStore = useUsersStore()
 const utilsStore = useUtilsStore()
@@ -161,12 +161,15 @@ function setActiveTab(method) {
 async function getPayments() {
   isLoading.value = true
   const res = await getPaymentMethods()
-  // Sort payment methods to put Opay first
-  depositMethods.value = res.data.sort((a, b) => {
-    if (a.provider === 'opay') return -1
-    if (b.provider === 'opay') return 1
-    return 0
-  })
+  const preferredProvider = 'paystack'
+  depositMethods.value = Array.isArray(res.data)
+    ? [...res.data].sort((a, b) => {
+        if (a.provider === preferredProvider) return -1
+        if (b.provider === preferredProvider) return 1
+        return 0
+      })
+    : []
+  activeTab.value = depositMethods.value[0]?.provider || preferredProvider
   isLoading.value = false
 }
 

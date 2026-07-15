@@ -64,8 +64,8 @@
               </div>
             </div>
 
-            <SystemBet 
-              v-if="betSlipType === 'Combo'" 
+            <SystemBet
+              v-if="betSlipType === 'Combo'"
               :betSlipType="betSlipType"
             />
 
@@ -409,9 +409,10 @@ onMounted(() => {})
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
 .m-betslip-header {
-  background: var(--background-type2-secondary);
-  color: #ffffff;
-  color: var(--text-type2-primary);
+  color: #000;
+  background-color: #fff;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
   padding: 1.33333333rem 1.33333333rem 1.3rem 1.3rem;
 }
 
@@ -597,6 +598,8 @@ onMounted(() => {})
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
   width: 100%;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
 }
 
 #betslip-container .m-betslips .m-loading-wrap {

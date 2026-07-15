@@ -133,12 +133,14 @@ import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
+import { EXCLUDED_LIVE_SPORT_IDS } from '@/helpers/constants'
 
 const isEmptyResponse = ref(false)
 const utilsStore = useUtilsStore()
 const activeSportID = ref(utilsStore.activeLiveSportID || 1)
 const accumulatedFixtures = ref([])
 const accumulatedMarkets = ref([])
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 // Keep a writable ref to the active market for up-mode state changes.
 const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
 
@@ -195,8 +197,12 @@ const {
 
 function applyLiveData(response) {
   if (!FEED_TOGGLE) return
-  const fixtures = response?.fixtures || response?.data?.fixtures || []
-  const markets = response?.markets || response?.data?.markets || []
+  const fixtures = (response?.fixtures || response?.data?.fixtures || []).filter((fixture) =>
+    isAllowedLiveSport(fixture.sportID)
+  )
+  const markets = (response?.markets || response?.data?.markets || []).filter((market) =>
+    isAllowedLiveSport(market.sportID)
+  )
 
   if (fixtures.length > 0) {
     accumulatedFixtures.value = fixtures
@@ -216,7 +222,7 @@ const sportsListData = computed(() => {
   const sportCountMap = new Map()
 
   accumulatedFixtures.value.forEach((fixture) => {
-    const key = fixture.sportName
+    const key = fixture.sportID
     if (sportCountMap.has(key)) {
       const sportData = sportCountMap.get(key)
       sportData.count += 1

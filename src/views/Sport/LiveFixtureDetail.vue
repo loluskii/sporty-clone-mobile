@@ -761,11 +761,13 @@ function getSpecifierDisplayValue(specifier) {
 async function getEventDetail(id) {
   isLoading.value = true
   resetMqttSubscriptions()
-  const { sport_id } = sportsMenu.find((x) => x.sport_name == route.params.sport)
+  const sportId = Number(
+    sportsMenu.find((sport) => sport.sport_name === route.params.sport)?.sport_id || 1
+  )
   try {
     const [detailResponse, groupsResponse] = await Promise.all([
       getFeedsGameDetail(id),
-      getMarketsGrouping(sport_id)
+      getMarketsGrouping(sportId)
     ])
     isLoading.value = false
     const {data} = detailResponse
@@ -800,7 +802,7 @@ async function getEventDetail(id) {
       }
       startTimer()
       if (mappedData.matchID) {
-        setupMqttSubscriptions(mappedData.matchID, sport_id)
+        setupMqttSubscriptions(mappedData.matchID, Number(mappedData.sportID || sportId))
       }
     }
   } catch (error) {

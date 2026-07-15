@@ -118,6 +118,7 @@ import _ from 'lodash'
 import { defineComponent, onMounted, onBeforeUnmount, ref, computed, toRef, watch } from 'vue'
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
+import { EXCLUDED_LIVE_SPORT_IDS } from '@/helpers/constants'
 
 const fallbackMarketsBySport = {
   1: [
@@ -381,6 +382,7 @@ const activeMarket = toRef(utilsStore, 'activeLiveMarkets')
 const totalFixtures = ref(1)
 const accumulatedFixtures = ref([])
 const accumulatedMarkets = ref([])
+const isAllowedLiveSport = (sportID) => !EXCLUDED_LIVE_SPORT_IDS.includes(Number(sportID))
 
 const { isLoading, refetch: refetchLiveData } = useQuery('liveData', getLiveHighlights, {
   enabled: FEED_TOGGLE,
@@ -406,14 +408,20 @@ const { isLoading, refetch: refetchLiveData } = useQuery('liveData', getLiveHigh
   },
   onSuccess: (response) => {
     loadingError.value = false
+    const fixtures = (response?.data?.fixtures || []).filter((fixture) =>
+      isAllowedLiveSport(fixture.sportID)
+    )
+    const markets = (response?.data?.markets || []).filter((market) =>
+      isAllowedLiveSport(market.sportID)
+    )
 
-    if (response.data.fixtures && response.data.fixtures.length > 0) {
+    if (fixtures.length > 0) {
       // Trust the API - replace fixtures entirely
       // API is the source of truth: if a match isn't returned, it shouldn't be shown
-      accumulatedFixtures.value = response.data.fixtures
-      accumulatedMarkets.value = response.data.markets || []
+      accumulatedFixtures.value = fixtures
+      accumulatedMarkets.value = markets
 
-      totalFixtures.value = response.data.fixtures.length
+      totalFixtures.value = fixtures.length
       isEmptyResponse.value = false
     } else {
       // No fixtures from API - clear everything

@@ -352,44 +352,57 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  await Promise.allSettled([fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList(), fetchSportsbookFeatureConfig()
-  ]).then((results) => {
-    couponStore.sportsbookBonusList = []
+  const [globalVarsResult, sportsResult, , banksResult, featureConfigResult, bannersResult] =
+    await Promise.allSettled([
+      fetchGlobalVars(),
+      getSportsMenu(),
+      validateSelections(),
+      getBanksList(),
+      fetchSportsbookFeatureConfig(),
+      fetchBanners()
+    ])
 
-    couponStore.SportsbookGlobalVariable =
-      results[0].status === "fulfilled" ? results[0].value.data.data : { ...utilsStore.SportsbookGlobalVariable }
+  couponStore.sportsbookBonusList = []
+  couponStore.SportsbookGlobalVariable =
+    globalVarsResult.status === 'fulfilled'
+      ? globalVarsResult.value?.data?.data || { ...utilsStore.SportsbookGlobalVariable }
+      : { ...utilsStore.SportsbookGlobalVariable }
 
-    couponStore.SportsbookGlobalVariable.Currency =
-      couponStore.SportsbookGlobalVariable.Currency || '₦'
-    couponStore.SportsbookGlobalVariable.CurrencyCode =
-      couponStore.SportsbookGlobalVariable.CurrencyCode || 'NGN'
-    couponStore.SportsbookGlobalVariable.DialCode =
-      couponStore.SportsbookGlobalVariable.DialCode || '+234'
+  couponStore.SportsbookGlobalVariable.Currency =
+    couponStore.SportsbookGlobalVariable.Currency || '₦'
+  couponStore.SportsbookGlobalVariable.CurrencyCode =
+    couponStore.SportsbookGlobalVariable.CurrencyCode || 'NGN'
+  couponStore.SportsbookGlobalVariable.DialCode =
+    couponStore.SportsbookGlobalVariable.DialCode || '+234'
 
-    couponStore.sportsbookFeatureConfig =
-      results[4].status === "fulfilled" ? results[4].value : { ...utilsStore.SportsbookFeatureConfig }
+  couponStore.sportsbookFeatureConfig =
+    featureConfigResult.status === 'fulfilled'
+      ? featureConfigResult.value
+      : { ...utilsStore.SportsbookFeatureConfig }
 
-    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
-    utilsStore.SportsbookFeatureConfig = couponStore.sportsbookFeatureConfig
+  utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
+  utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+  utilsStore.SportsbookFeatureConfig = couponStore.sportsbookFeatureConfig
 
-    utilsStore.sportsMenu =
-      results[1].status === "fulfilled" ? results[1].value.data.filter((x) => x.games > 0) : []
+  utilsStore.sportsMenu =
+    sportsResult.status === 'fulfilled' && Array.isArray(sportsResult.value?.data)
+      ? sportsResult.value.data.filter((sport) => sport.games > 0)
+      : []
 
-    utilsStore.banksList =
-      results[3].status === "fulfilled" ? results[3].value.data : []
+  utilsStore.banksList =
+    banksResult.status === 'fulfilled' && Array.isArray(banksResult.value?.data)
+      ? banksResult.value.data
+      : []
 
-    isLoading.value = false
-  })
-
-  
-
-  const res = await fetchBanners()
-  if (res.data && Object.keys(res.data).length > 0) {
-    utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile')
+  if (bannersResult.status === 'fulfilled' && bannersResult.value?.data) {
+    utilsStore.banners = Object.values(bannersResult.value.data).filter(
+      (banner) => banner.target === 'mobile'
+    )
   } else {
     utilsStore.banners = []
   }
+
+  isLoading.value = false
 
   if (isAuthenticated.value) {
     const [, activeBonus, cashbackData] = await Promise.all([
@@ -476,7 +489,7 @@ defineComponent({
           " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
           <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
             :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
-            
+
         </div>
         <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
           <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
