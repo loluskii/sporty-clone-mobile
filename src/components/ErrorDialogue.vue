@@ -52,7 +52,6 @@
       <div class="es-dialog-body m-dialog-body">
         <div class="es-dialog-main m-dialog-main app-notification-main">
           <div class="app-notification-envelope" aria-hidden="true">
-            <span class="app-notification-badge">{{ notificationCount }}</span>
             <img :src="notificationArt" alt="" />
           </div>
           <div class="app-notification-copy">
