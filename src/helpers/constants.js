@@ -1,11 +1,11 @@
-export const BASE_API = import.meta.env.VITE_BASE_URL || 'https://prod.sportsbookengine.com'
-export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API || 'https://prod.sportsbookengine.com/api/v2'
+export const BASE_API = import.meta.env.VITE_BASE_URL || 'https://stag.sportsbookengine.com'
+export const NEW_BASE_API = import.meta.env.VITE_NEW_BASE_API || 'https://stag.sportsbookengine.com/api/v2'
 export const NEW_FIXTURES_API =
-  import.meta.env.VITE_NEW_FIXTURES_API || 'https://fixture-prod.sportsbookengine.com'
+  import.meta.env.VITE_NEW_FIXTURES_API || 'https://fixture.sportsbookengine.com'
 export const NEW_NOTIFICATION_API =
   import.meta.env.VITE_NEW_NOTIFICATION_API || 'https://notification-prod.sportsbookengine.com/api/v2'
 export const NEW_BET_API =
-  import.meta.env.VITE_NEW_BET_API || 'https://bet-prod.sportsbookengine.com/v1'
+  import.meta.env.VITE_NEW_BET_API || 'https://bet.staging.sportsbookengine.com/v1'
 export const BET_PROXY_API = import.meta.env.VITE_BET_PROXY_API || '/bet'
 export const CASINO_CLIENT_API = import.meta.env.VITE_CASINO_CLIENT_API || '/casino-client'
 export const CASINO_PROVIDER_API = import.meta.env.VITE_CASINO_PROVIDER_API || CASINO_CLIENT_API
@@ -24,7 +24,7 @@ export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true
 export const SMS_BYPASS = true
-export const EXCLUDED_LIVE_SPORT_IDS = [2, 5]
+export const EXCLUDED_LIVE_SPORT_IDS = []
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage

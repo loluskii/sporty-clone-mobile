@@ -133,7 +133,11 @@ export const useUpMode = ({
   const effectiveMarket = computed(() => {
     if (upMode.value === 'none') return activeMarket?.value
     const baseMarket = activeMarket?.value || {}
-    const derivedMarketId = modeIdMap.value.get(upMode.value)
+    const derivedMarketId = Number(activeConfig.value?.featureMarketId || 0) || modeIdMap.value.get(upMode.value)
+    const derivedSpecifier =
+      Number(activeConfig.value?.featureMarketId || 0) === 1601
+        ? `xup=${upMode.value === '1up' ? 1 : upMode.value === '2up' ? 2 : upMode.value === '3up' ? 3 : 0}`
+        : String(baseMarket.specifier || '')
     const marketName =
       upMode.value === 'earlygoal'
         ? formatEarlyGoalMarketName(baseMarket.marketName, upMode.value)
@@ -141,6 +145,7 @@ export const useUpMode = ({
     return {
       ...baseMarket,
       marketID: derivedMarketId,
+      specifier: derivedSpecifier,
       marketName,
       outcomes: Array.isArray(baseMarket.outcomes) ? baseMarket.outcomes : []
     }

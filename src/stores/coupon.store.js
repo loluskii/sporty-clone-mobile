@@ -54,6 +54,7 @@ let abandonedBetslipSessionId = ''
 let abandonedBetslipPendingEventId = ''
 let abandonedBetslipLastActivitySignature = ''
 let abandonedBetslipLastReportedSignature = ''
+let abandonedBetslipLastActivityAt = ''
 
 // Shared payload shape for all preview endpoints — server derives odds/eligibility
 // from these identifiers, so clients only need to send selection coordinates.
@@ -140,26 +141,24 @@ const buildAbandonedBetslipSnapshot = (coupon = {}) => {
 }
 
 const getAbandonedBetslipUserContext = async () => {
-  const usersStore = useUsersStore()
   const authStore = useAuthStore()
+  const usersStore = useUsersStore()
+  if (!authStore.isAuthenticated || !authStore.isTokenValid) {
+    return { userId: '', username: '' }
+  }
 
-  if (!usersStore.currentUser && authStore.isTokenValid) {
+  if (!usersStore.currentUser) {
     try {
       await usersStore.loadCurrentUser()
     } catch (error) {
-      console.warn('Failed to hydrate user for abandoned betslip reporting:', error)
+      console.warn('Failed to load user context for abandoned betslip:', error)
     }
   }
 
   const user = usersStore.currentUser || {}
   const userId = user.id || user.userId || user.user_id || ''
   const username =
-    user.username ||
-    user.mobileNumber ||
-    user.mobile_number ||
-    user.phone ||
-    authStore.mobile_number ||
-    ''
+    user.username || user.mobileNumber || user.mobile_number || user.phone || authStore.mobile_number || ''
 
   return {
     userId: userId ? String(userId) : '',
@@ -168,9 +167,12 @@ const getAbandonedBetslipUserContext = async () => {
 }
 
 async function sendAbandonedBetslipActivity(coupon) {
+  const authStore = useAuthStore()
+  if (!authStore.isAuthenticated || !authStore.isTokenValid) return
   const selections = Array.isArray(coupon?.selections) ? coupon.selections : []
   if (!selections.length) return
   const { userId, username } = await getAbandonedBetslipUserContext()
+  if (!userId) return
 
   if (!abandonedBetslipSessionId) {
     abandonedBetslipSessionId = createAbandonedBetslipId('session')
@@ -184,7 +186,7 @@ async function sendAbandonedBetslipActivity(coupon) {
     totalLegs: selections.length,
     potentialPayout: parseCouponNumber(coupon.maxWin || coupon.grossWin || 0),
     betslipSnapshot: buildAbandonedBetslipSnapshot(coupon),
-    lastActivityAt: Date.now()
+    lastActivityAt: new Date().toISOString()
   }
 
   try {
@@ -367,9 +369,16 @@ export const useCouponStore = defineStore({
         abandonedBetslipSessionId = ''
         abandonedBetslipLastActivitySignature = ''
         abandonedBetslipLastReportedSignature = ''
+        abandonedBetslipLastActivityAt = ''
       }
     },
     handleAbandonedBetslipActivity() {
+      const authStore = useAuthStore()
+      if (!authStore.isAuthenticated || !authStore.isTokenValid) {
+        this.clearAbandonedBetslipTimer({ resetSession: true })
+        return
+      }
+
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
       if (!selections.length) {
         this.clearAbandonedBetslipTimer({ resetSession: true })
@@ -392,6 +401,7 @@ export const useCouponStore = defineStore({
       if (storedSession?.signature === nextSignature && Number(storedSession?.lastActivityAt || 0) > 0) {
         abandonedBetslipSessionId = storedSession.sessionId || ''
         abandonedBetslipPendingEventId = storedSession.eventId || ''
+        abandonedBetslipLastActivityAt = new Date(Number(storedSession.lastActivityAt)).toISOString()
         this.scheduleAbandonedBetslipReport(nextSignature, {
           eventId: storedSession.eventId,
           lastActivityAt: Number(storedSession.lastActivityAt)
@@ -417,6 +427,8 @@ export const useCouponStore = defineStore({
       })
     },
     recordAbandonedBetslipInteraction() {
+      const authStore = useAuthStore()
+      if (!authStore.isAuthenticated || !authStore.isTokenValid) return
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
       if (!selections.length) return
 
@@ -425,12 +437,15 @@ export const useCouponStore = defineStore({
       this.scheduleAbandonedBetslipReport(nextSignature)
     },
     scheduleAbandonedBetslipReport(signature, options = {}) {
+      const authStore = useAuthStore()
+      if (!authStore.isAuthenticated || !authStore.isTokenValid) return
       if (!abandonedBetslipSessionId) {
         abandonedBetslipSessionId = createAbandonedBetslipId('session')
       }
 
       abandonedBetslipPendingEventId = options.eventId || createAbandonedBetslipId('abandon')
       const lastActivityAt = Number(options.lastActivityAt || Date.now())
+      abandonedBetslipLastActivityAt = new Date(lastActivityAt).toISOString()
       const elapsedMs = Date.now() - lastActivityAt
       const delayMs = Math.max(0, ABANDONED_BETSLIP_TIMEOUT_MS - elapsedMs)
       const snapshot = options.snapshot || buildAbandonedBetslipSnapshot(this.coupon)
@@ -458,6 +473,11 @@ export const useCouponStore = defineStore({
     async reportAbandonedBetslip(signature, eventId) {
       if (signature !== abandonedBetslipLastActivitySignature) return
       if (signature === abandonedBetslipLastReportedSignature) return
+      const authStore = useAuthStore()
+      if (!authStore.isAuthenticated || !authStore.isTokenValid) {
+        this.clearAbandonedBetslipTimer({ resetSession: true })
+        return
+      }
 
       const { userId, username } = await getAbandonedBetslipUserContext()
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
@@ -485,7 +505,8 @@ export const useCouponStore = defineStore({
         potentialPayout,
         sessionId: abandonedBetslipSessionId,
         eventId,
-        betslipSnapshot
+        betslipSnapshot,
+        lastActivityAt: abandonedBetslipLastActivityAt || new Date().toISOString()
       }
 
       let didReport = false
@@ -1345,7 +1366,8 @@ export const useCouponStore = defineStore({
         derivedMarketIds:
           selection.supportedDerivedMarketIds ||
           selection.derived_market_ids ||
-          selection.derived_market_id
+          selection.derived_market_id,
+        specifier: selection.specifier || selection.baseSpecifier || selection.selectionKeySpecifier || ''
       })
       const earlyGoalState = buildEarlyGoalSelectionState({
         sportId: selection.sportId || selection.sportID || selection.sport_id,
@@ -1370,6 +1392,12 @@ export const useCouponStore = defineStore({
         selection.selectionKeySpecifier ??
         selection.baseSpecifier ??
         ''
+      if (
+        Number(selection.baseMarketId || selectionBaseState.baseMarketId || 0) === 1 &&
+        Number(selection.marketId || 0) === 1601
+      ) {
+        selection.baseSelectionKeySpecifier = ''
+      }
       selection.selectionKeySpecifier =
         selection.selectionKeySpecifier ?? selection.baseSelectionKeySpecifier
       selection.baseOutcomeId = selection.baseOutcomeId || selection.outcomeId
@@ -1387,7 +1415,7 @@ export const useCouponStore = defineStore({
         selection.earlyGoalLocalQuotes && typeof selection.earlyGoalLocalQuotes === 'object'
           ? selection.earlyGoalLocalQuotes
           : {}
-      const localSupportedModes = ['1up', '2up'].filter((mode) =>
+      const localSupportedModes = ['1up', '2up', '3up'].filter((mode) =>
         Boolean(selection.earlyWinLocalQuotes?.[mode])
       )
       const isDerivedEarlyWinSelection =
@@ -1454,13 +1482,18 @@ export const useCouponStore = defineStore({
     async fetchEarlyWinQuoteForSelection(selection, mode, targetMarketId) {
       if (!selection || !targetMarketId) return null
 
+      const targetSpecifier =
+        Number(targetMarketId) === 1601
+          ? `xup=${mode === '1up' ? 1 : mode === '2up' ? 2 : mode === '3up' ? 3 : 0}`
+          : selection.baseSpecifier ?? selection.specifier ?? ''
+
       const response = await validateBetslipSelections([
         {
           match_id: parseInt(selection.matchId),
           market_id: parseInt(targetMarketId),
           outcome_id: String(selection.baseOutcomeId || selection.outcomeId),
           producer_id: selection.producerId || 0,
-          specifier: selection.baseSpecifier ?? selection.specifier ?? ''
+          specifier: targetSpecifier
         }
       ])
 
@@ -2374,7 +2407,7 @@ export const useCouponStore = defineStore({
       const sportId = selection.sportId || selection.sportID || selection.sport_id
       const producerId = selection.producerId || selection.producerID || selection.producer_id
       const specifier = selection.specifier || ''
-      const inferredDerivedMarketIds = [1601, 60100, 60200, EARLY_GOAL_DERIVED_MARKET_ID].includes(marketId)
+      const inferredDerivedMarketIds = [1601, EARLY_GOAL_DERIVED_MARKET_ID].includes(marketId)
         ? [marketId]
         : []
       const loadedOutcome = {

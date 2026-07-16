@@ -29,7 +29,9 @@
           <div class="m-market m-event-market-default market-id-1" style="position: relative">
             <template v-if="eventData.outcomes">
               <template v-if="outcomes.length">
-                <div v-if="activeMarket.specifier !== ''" class="m-outcome m-event-outcome-default specifiers-select"
+                <div
+                  v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
+                  class="m-outcome m-event-outcome-default specifiers-select"
                   @click="toggleList">
                   <div tabindex="0" class="grid-specifier-select">
                     <div class="grid-specifier-select-label">
@@ -55,7 +57,8 @@
                   "></Odds>
               </template>
               <template v-else>
-                <div v-if="activeMarket.specifier !== ''"
+                <div
+                  v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
                   class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock">
                   <span data-op="prematch-lock" class="m-icon-lock"></span>
                 </div>

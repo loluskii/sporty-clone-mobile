@@ -195,11 +195,34 @@ onBeforeUnmount(() => {
   border-radius: 0.33333333rem;
   box-shadow: 0 0.33333333rem 0.75rem rgba(27, 30, 37, 0.22);
   flex: 0 0 7.33333333rem;
-  height: 4.33333333rem;
+  height: 6.33333333rem;
   overflow: hidden;
   padding: 0;
   position: relative;
   text-align: left;
+  border-radius: 0.33333333rem;
+  -webkit-box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.2), 4px 1px 6px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.2), 4px 1px 6px 0px rgba(0, 0, 0, 0.1);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: end;
+  -webkit-justify-content: end;
+  -ms-flex-pack: end;
+  justify-content: end;
+  overflow: hidden;
+  padding: 4px 6px;
+  position: relative;
+  text-align: left;
+  width: 5.3rem;
 }
 
 .status-card::after {
@@ -228,8 +251,8 @@ onBeforeUnmount(() => {
   bottom: 0.58333333rem;
   color: #ffffff;
   display: -webkit-box;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.8667rem;
+  font-weight: 500;
   left: 0.58333333rem;
   line-height: 0.98;
   overflow: hidden;

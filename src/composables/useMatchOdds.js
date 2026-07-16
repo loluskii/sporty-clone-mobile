@@ -1,7 +1,11 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sortArr } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
-import { isSupportedDerivedOutcome } from '@/helpers'
+import {
+  isSupportedDerivedOutcome,
+  getBaseMarketIdFromMarketId,
+  X_UP_FEATURE_MARKET_ID
+} from '@/helpers'
 
 export function useMatchOdds({
   matchId,
@@ -22,6 +26,35 @@ export function useMatchOdds({
 
   const { subscribe } = useMqttService()
 
+  const resolveActiveMarketId = () => {
+    const rawMarketId = Number(activeMarket.value?.marketID || 0)
+    if (rawMarketId === X_UP_FEATURE_MARKET_ID) return 1
+    if (rawMarketId === 60180) return 18
+    return getBaseMarketIdFromMarketId(rawMarketId)
+  }
+
+  const getPrimaryMarketId = () => {
+    const rawMarketId = Number(activeMarket.value?.marketID || 0)
+    const resolvedMarketId = resolveActiveMarketId()
+    const items = baseOutcomes.value || []
+
+    if (
+      rawMarketId > 0 &&
+      items.some((item) => Number(item.marketID) === rawMarketId)
+    ) {
+      return rawMarketId
+    }
+
+    if (
+      resolvedMarketId > 0 &&
+      items.some((item) => Number(item.marketID) === resolvedMarketId)
+    ) {
+      return resolvedMarketId
+    }
+
+    return rawMarketId > 0 ? rawMarketId : resolvedMarketId
+  }
+
   const getDisplaySpecifierValue = (specifier = '') => {
     const rawSpecifier = String(specifier || '').trim()
     if (!rawSpecifier) return ''
@@ -34,6 +67,12 @@ export function useMatchOdds({
     const totalSegment = segments.find((segment) => segment.startsWith('total='))
     if (totalSegment) {
       return totalSegment.split('=')[1] || ''
+    }
+
+    const xupSegment = segments.find((segment) => segment.startsWith('xup='))
+    if (xupSegment) {
+      const value = xupSegment.split('=')[1] || ''
+      return value ? `${String(value).toUpperCase()}UP` : ''
     }
 
     const hcpSegment = segments.find((segment) => segment.startsWith('hcp='))
@@ -68,15 +107,11 @@ export function useMatchOdds({
       const oddsValue = cached?.odds ?? outcome.odds
       // MQTT overrides odds/active; bet_stop forces inactive regardless of API odds.
       const activeValue = betStopped.value ? 0 : cached?.active ?? outcome.active
-      const activeMarketId = Number(activeMarket.value?.marketID || 0)
-      const baseMarketId = activeMarketId === 1601 || activeMarketId === 60100 || activeMarketId === 60200
-        ? 1
-        : activeMarketId === 60180
-          ? 18
-          : activeMarketId
+      const activeMarketId = resolveActiveMarketId()
+      const activeBaseMarketId = getBaseMarketIdFromMarketId(activeMarketId)
       const isSupported = isSupportedDerivedOutcome({
         marketId: activeMarketId,
-        baseMarketId,
+        baseMarketId: activeBaseMarketId,
         outcomeId: outcome.outcomeID,
         outcomeName: outcome.outcomeName,
         displayName: outcome.displayName,
@@ -134,10 +169,10 @@ export function useMatchOdds({
 
   const getSpecifiers = computed(() => {
     if (!activeMarket.value || !activeMarket.value.specifier) return []
+    if (Number(activeMarket.value.marketID || 0) === X_UP_FEATURE_MARKET_ID) return []
     const items = baseOutcomes.value || []
-    const filtered = items.filter(
-      (item) => String(item.marketID) === String(activeMarket.value.marketID)
-    )
+    const marketId = getPrimaryMarketId()
+    const filtered = items.filter((item) => Number(item.marketID) === Number(marketId))
     const uniqueFiltered = uniqueOutcomes(filtered)
     const specifiers = uniqueFiltered
       .map((item) => {
@@ -164,11 +199,11 @@ export function useMatchOdds({
       return
     }
     const items = baseOutcomes.value || []
+    const marketId = getPrimaryMarketId()
+    const preferredSpecifier = String(market.specifier || '').trim()
     // Keep MQTT overrides only for outcomes still present in API.
     pruneUpdatedOutcomes(items)
-    const filtered = items.filter(
-      (item) => String(item.marketID) === String(market.marketID)
-    )
+    const filtered = items.filter((item) => Number(item.marketID) === Number(marketId))
     let uniqueFiltered = uniqueOutcomes(filtered)
     uniqueFiltered = applyUpdates(uniqueFiltered)
 
@@ -176,6 +211,14 @@ export function useMatchOdds({
       const availableSpecifiers = uniqueFiltered.map((item) => item.specifier || '')
       // If the previous specifier doesn't exist in the new market, fall back to the first one.
       let specifierKey = activeSpecifierKey.value
+      if (!specifierKey || !availableSpecifiers.includes(specifierKey)) {
+        specifierKey = availableSpecifiers.includes(preferredSpecifier)
+          ? preferredSpecifier
+          : uniqueFiltered[0]?.specifier || ''
+      }
+      if (preferredSpecifier && availableSpecifiers.includes(preferredSpecifier)) {
+        specifierKey = preferredSpecifier
+      }
       if (!specifierKey || !availableSpecifiers.includes(specifierKey)) {
         specifierKey = uniqueFiltered[0]?.specifier || ''
       }

@@ -43,7 +43,7 @@
               </div>
               <div class="x-table-cell market-title">
                 <div
-                  v-if="displayMarket.specifier !== ''"
+                  v-if="displayMarket.specifier !== '' && Number(displayMarket.marketID || 0) !== 1601"
                   style="text-transform: capitalize"
                   class="each-module is-multiline"
                 >

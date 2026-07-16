@@ -14,7 +14,6 @@ import {
   loadBetslipByCode,
   getBets,
   getUserActiveBonus,
-  CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
   getUserCashbackBonus,
@@ -175,9 +174,6 @@ function getNotificationItems(payload) {
 async function loadUserNotifications() {
   if (!isAuthenticated.value || !usersStore.currentUser?.id || notificationRequestInFlight) return
 
-  const sessionKey = `sbe:notification-modal:${CLIENT_ID}:${usersStore.currentUser.id}`
-  if (window.sessionStorage.getItem(sessionKey)) return
-
   notificationRequestInFlight = true
   try {
     const response = await fetchUserNotifications()
@@ -188,7 +184,6 @@ async function loadUserNotifications() {
     dialogueMessage.value = { notifications }
     dialogueType.value = 'notification'
     dialogueShown.value = true
-    window.sessionStorage.setItem(sessionKey, '1')
   } catch (error) {
     console.warn('Failed to load user notifications:', error)
   } finally {
@@ -437,7 +432,6 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await loadUserNotifications()
   couponStore.startAbandonedBetslipTracker()
 
   emitter.on('openBetslip', toggleBetslip)
@@ -560,15 +554,13 @@ defineComponent({
 html,
 body {
   width: 100%;
-}
-
-html {
-  background: #111820;
+  min-height: 100%;
+  background: var(--brand-background-primary);
 }
 
 body {
-  background: #111820;
-  margin: 0 auto;
+  margin: 0;
+  overflow-x: hidden;
 }
 
 #app {
@@ -580,6 +572,13 @@ body {
   overflow-x: clip;
   position: relative;
   width: 100%;
+}
+
+html,
+body,
+#app,
+.mobile-app-shell {
+  background-color: var(--brand-background-primary);
 }
 
 .mobile-app-shell,

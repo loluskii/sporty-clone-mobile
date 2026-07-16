@@ -12,6 +12,7 @@ import {
   NEW_FIXTURES_API,
   NEW_NOTIFICATION_API
 } from './constants'
+import Cookies from 'js-cookie'
 import moment from 'moment'
 
 function today() {
@@ -48,6 +49,83 @@ const offsetHours = Math.abs(offset / 60)
 
 const parseData = async (response) => {
   return response instanceof Promise ? (await response)?.data : response.data
+}
+
+const requestCache = new Map()
+const inflightRequests = new Map()
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000
+const DEFAULT_RETRY_DELAYS_MS = [2000, 4000, 8000]
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const getCacheScope = (scope = 'global') => {
+  if (scope === 'auth') {
+    return Cookies.get('SBE-TOKEN') || 'anonymous'
+  }
+
+  return String(scope || 'global')
+}
+
+const getCachedValue = (key) => {
+  const entry = requestCache.get(key)
+  if (!entry) return null
+  if (entry.expiresAt > Date.now()) return entry.value
+  requestCache.delete(key)
+  return null
+}
+
+const setCachedValue = (key, value, ttlMs) => {
+  requestCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlMs
+  })
+}
+
+const retryWithBackoff = async (fetcher, delays = DEFAULT_RETRY_DELAYS_MS) => {
+  let lastError = null
+
+  for (let attempt = 0; attempt <= delays.length; attempt += 1) {
+    try {
+      return await fetcher()
+    } catch (error) {
+      lastError = error
+      if (attempt >= delays.length) break
+      await sleep(delays[attempt])
+    }
+  }
+
+  throw lastError
+}
+
+const cachedRequest = async (
+  cacheKey,
+  fetcher,
+  { ttlMs = DEFAULT_CACHE_TTL_MS, scope = 'global', skipCache = false } = {}
+) => {
+  const normalizedKey = `${getCacheScope(scope)}:${cacheKey}`
+
+  if (!skipCache) {
+    const cachedValue = getCachedValue(normalizedKey)
+    if (cachedValue !== null) return cachedValue
+  }
+
+  if (inflightRequests.has(normalizedKey)) {
+    return inflightRequests.get(normalizedKey)
+  }
+
+  const requestPromise = retryWithBackoff(fetcher)
+    .then((value) => {
+      if (!skipCache) {
+        setCachedValue(normalizedKey, value, ttlMs)
+      }
+      return value
+    })
+    .finally(() => {
+      inflightRequests.delete(normalizedKey)
+    })
+
+  inflightRequests.set(normalizedKey, requestPromise)
+  return requestPromise
 }
 
 export const normalizeSportsbookFeatureConfig = (payload = {}) => {
@@ -292,11 +370,19 @@ export const getCodeHubItems = async (data) => {
   if (betType !== undefined && betType !== null && betType !== '') params.set('betType', betType)
   if (search) params.set('search', search)
 
-  return parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub?${params.toString()}`))
+  return cachedRequest(
+    `codehub:${params.toString()}`,
+    () => parseData(fetchWrapper.get(`${NEW_BET_API}/${CLIENT_ID}/codehub?${params.toString()}`)),
+    { ttlMs: 2 * 60 * 1000 }
+  )
 }
 
 export const getSportsMenu = async () => {
-  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/sports`))
+  return cachedRequest(
+    'sports-menu',
+    () => parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/sports`)),
+    { ttlMs: 15 * 60 * 1000 }
+  )
 }
 
 export const getCategoriesBySport = async (sportID, period) => {
@@ -704,7 +790,11 @@ export const getPaymentMethods = async () => {
 }
 
 export const getBanksList = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/user/wallet/${CLIENT_ID}/banks`))
+  return cachedRequest(
+    'banks-list',
+    () => parseData(fetchWrapper.get(`${NEW_BASE_API}/user/wallet/${CLIENT_ID}/banks`)),
+    { ttlMs: 60 * 60 * 1000 }
+  )
 }
 
 export const verifyAccount = async (payload) => {
@@ -761,7 +851,16 @@ export const getUserCashbackBonus = async () => {
 }
 
 export const fetchUserNotifications = async () => {
-  return parseData(fetchWrapper.get(`${NEW_BASE_API}/notification/user`, undefined, { skipAuthLogout: true }))
+  return cachedRequest(
+    'user-notifications',
+    () =>
+      parseData(
+        fetchWrapper.get(`${NEW_BASE_API}/notification/user`, undefined, {
+          skipAuthLogout: true
+        })
+      ),
+    { ttlMs: 60 * 1000, scope: 'auth' }
+  )
 }
 
 export const checkFirstDeposit = async () => {

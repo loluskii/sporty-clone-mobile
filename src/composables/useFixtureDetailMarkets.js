@@ -3,7 +3,9 @@ import {
   chunks,
   X_UP_FEATURE_MARKET_ID,
   getFixtureDerivedMarketIds,
-  normalizeFixtureMarkets
+  getBaseMarketIdFromMarketId,
+  normalizeFixtureMarkets,
+  stripEarlyWinSuffix
 } from '@/helpers'
 
 const DEFAULT_DERIVED_MARKET_IDS = [1601, 60180]
@@ -157,6 +159,10 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
 
   function getSpecifierDisplayValue(specifier) {
     if (!specifier) return ''
+    const xupMatch = specifier.match(/xup\s*=\s*(\d+)/i)
+    if (xupMatch) {
+      return `${xupMatch[1]}UP`
+    }
     const totalMatch = specifier.match(/total=([\d.]+)/)
     if (totalMatch) return totalMatch[1]
     const hcpMatch = specifier.match(/hcp=([+-]?[\d.]+)/)
@@ -189,6 +195,11 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   }
 
   function cleanMarketName(name, specifier) {
+    const xupName = String(name || '')
+      .replace(/\s*[-–]?\s*(?:xup\s*=\s*)?(1|2|3)\s*up\s*$/i, ' - XUP')
+      .trim()
+    if (xupName !== String(name || '').trim()) return xupName
+
     if (!name.includes('=') || name.indexOf('=') > 20) return name
 
     const specMap = {}
@@ -235,11 +246,14 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
   }
 
   function getGroupIdentity(marketGroup) {
-    const cleanedName = cleanMarketName(marketGroup.marketName, marketGroup.specifier)
-    if (isXupMarketGroup(marketGroup)) {
-      return `${marketGroup.marketID}|${cleanedName}|${marketGroup.specifier || ''}`
-    }
-    return `${marketGroup.marketID}|${cleanedName}`
+    const isXupGroup = isXupMarketGroup(marketGroup)
+    const cleanedName = isXupGroup
+      ? stripEarlyWinSuffix(cleanMarketName(marketGroup.marketName, marketGroup.specifier))
+      : cleanMarketName(marketGroup.marketName, marketGroup.specifier)
+    const normalizedMarketId = isXupGroup
+      ? getBaseMarketIdFromMarketId(marketGroup.marketID)
+      : marketGroup.marketID
+    return `${normalizedMarketId}|${cleanedName}`
   }
 
   function createCell(market, outcome) {
@@ -259,10 +273,10 @@ export function useFixtureDetailMarkets(eventMarkets, marketGroups, fixtureDetai
 
   function buildFlatLayout(marketGroup) {
     const sections =
-      marketGroup.markets.length > 1 && marketGroup.specifier !== ''
+      marketGroup.markets.length > 1
         ? marketGroup.markets.map((market) => ({
             key: market.specifier || `${market.marketID}`,
-            label: getSpecifierDisplayValue(market.specifier),
+            label: getSpecifierDisplayValue(market.specifier) || normalizeRowLabel(market.marketName),
             rows: buildFlatRows(market.outcomes, market)
           }))
         : [
