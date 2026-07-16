@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
   color: #ffffff;
   display: -webkit-box;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 700;
   left: 0.58333333rem;
   line-height: 0.98;
   overflow: hidden;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 // import _ from 'lodash'
-import { useUsersStore } from '@/stores'
+import { useAuthStore, useUsersStore } from '@/stores'
 import emitter from '../plugins/emitter'
 import CouponCalculation from '@/helpers/coupon-calculation.js'
 import {
@@ -139,11 +139,27 @@ const buildAbandonedBetslipSnapshot = (coupon = {}) => {
   }
 }
 
-const getAbandonedBetslipUserContext = () => {
+const getAbandonedBetslipUserContext = async () => {
   const usersStore = useUsersStore()
+  const authStore = useAuthStore()
+
+  if (!usersStore.currentUser && authStore.isTokenValid) {
+    try {
+      await usersStore.loadCurrentUser()
+    } catch (error) {
+      console.warn('Failed to hydrate user for abandoned betslip reporting:', error)
+    }
+  }
+
   const user = usersStore.currentUser || {}
   const userId = user.id || user.userId || user.user_id || ''
-  const username = user.username || user.mobileNumber || user.mobile_number || user.phone || ''
+  const username =
+    user.username ||
+    user.mobileNumber ||
+    user.mobile_number ||
+    user.phone ||
+    authStore.mobile_number ||
+    ''
 
   return {
     userId: userId ? String(userId) : '',
@@ -154,7 +170,7 @@ const getAbandonedBetslipUserContext = () => {
 async function sendAbandonedBetslipActivity(coupon) {
   const selections = Array.isArray(coupon?.selections) ? coupon.selections : []
   if (!selections.length) return
-  const { userId, username } = getAbandonedBetslipUserContext()
+  const { userId, username } = await getAbandonedBetslipUserContext()
 
   if (!abandonedBetslipSessionId) {
     abandonedBetslipSessionId = createAbandonedBetslipId('session')
@@ -443,7 +459,7 @@ export const useCouponStore = defineStore({
       if (signature !== abandonedBetslipLastActivitySignature) return
       if (signature === abandonedBetslipLastReportedSignature) return
 
-      const { userId, username } = getAbandonedBetslipUserContext()
+      const { userId, username } = await getAbandonedBetslipUserContext()
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
       const totalLegs = selections.length
 
