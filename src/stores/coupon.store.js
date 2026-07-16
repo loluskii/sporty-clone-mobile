@@ -139,9 +139,22 @@ const buildAbandonedBetslipSnapshot = (coupon = {}) => {
   }
 }
 
+const getAbandonedBetslipUserContext = () => {
+  const usersStore = useUsersStore()
+  const user = usersStore.currentUser || {}
+  const userId = user.id || user.userId || user.user_id || ''
+  const username = user.username || user.mobileNumber || user.mobile_number || user.phone || ''
+
+  return {
+    userId: userId ? String(userId) : '',
+    username: String(username || '')
+  }
+}
+
 async function sendAbandonedBetslipActivity(coupon) {
   const selections = Array.isArray(coupon?.selections) ? coupon.selections : []
   if (!selections.length) return
+  const { userId, username } = getAbandonedBetslipUserContext()
 
   if (!abandonedBetslipSessionId) {
     abandonedBetslipSessionId = createAbandonedBetslipId('session')
@@ -149,6 +162,8 @@ async function sendAbandonedBetslipActivity(coupon) {
 
   const signature = buildAbandonedBetslipActivitySignature(coupon)
   const payload = {
+    userId,
+    username,
     sessionId: abandonedBetslipSessionId,
     totalLegs: selections.length,
     potentialPayout: parseCouponNumber(coupon.maxWin || coupon.grossWin || 0),
@@ -428,10 +443,8 @@ export const useCouponStore = defineStore({
       if (signature !== abandonedBetslipLastActivitySignature) return
       if (signature === abandonedBetslipLastReportedSignature) return
 
-      const usersStore = useUsersStore()
-      const user = usersStore.currentUser || {}
+      const { userId, username } = getAbandonedBetslipUserContext()
       const selections = Array.isArray(this.coupon?.selections) ? this.coupon.selections : []
-      const userId = user.id || user.userId || user.user_id
       const totalLegs = selections.length
 
       if (!totalLegs) {
@@ -450,8 +463,8 @@ export const useCouponStore = defineStore({
       const betslipSnapshot = buildAbandonedBetslipSnapshot(this.coupon)
 
       const payload = {
-        userId: String(userId),
-        username: String(user.username || user.mobileNumber || user.mobile_number || user.phone || ''),
+        userId,
+        username,
         totalLegs,
         potentialPayout,
         sessionId: abandonedBetslipSessionId,
@@ -3423,14 +3436,14 @@ export const useCouponStore = defineStore({
       }
     },
   },
-  // persist: {
-  //   storage: localStorage,
-  //   afterRestore: (ctx) => {
-  //     // Resubscribe to MQTT topics for all selections in the betslip
-  //     if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
-  //       // console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
-  //       ctx.store.resubscribeToAllSelections()
-  //     }
-  //   }
-  // }
+  persist: {
+    storage: localStorage,
+    afterRestore: (ctx) => {
+      // Resubscribe to MQTT topics for all selections in the betslip
+      if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
+        // console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')
+        ctx.store.resubscribeToAllSelections()
+      }
+    }
+  }
 })
