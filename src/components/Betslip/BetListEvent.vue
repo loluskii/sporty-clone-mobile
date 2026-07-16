@@ -275,7 +275,8 @@ const canRequestMode = (mode) => {
   const hasDerivedContext =
     props.selection?.hasExplicitDerivedMarkets ||
     currentMode === '1up' ||
-    currentMode === '2up'
+    currentMode === '2up' ||
+    currentMode === '3up'
   if (!hasDerivedContext) return false
 
   return Boolean(

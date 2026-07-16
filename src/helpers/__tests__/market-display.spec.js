@@ -101,14 +101,26 @@ const basketballMarkets = [
 ]
 
 describe('market display normalization', () => {
-  it('dedupes repeated market IDs and normalizes placeholder labels', () => {
+  it('preserves distinct market specifiers and normalizes placeholder labels', () => {
     const normalized = normalizeFixtureMarkets(basketballMarkets)
 
-    expect(normalized).toHaveLength(5)
-    expect(normalized.map((market) => market.marketID)).toEqual([219, 223, 225, 227, 228])
+    expect(normalized).toHaveLength(6)
+    expect(normalized.map((market) => market.marketID)).toEqual([219, 223, 225, 225, 227, 228])
     expect(normalized.find((market) => market.marketID === 219)?.outcomes.map((outcome) => outcome.outcomeName)).toEqual(['1', '2'])
     expect(normalized.find((market) => market.marketID === 223)?.outcomes.map((outcome) => outcome.outcomeName)).toEqual(['1', '2'])
-    expect(normalized.find((market) => market.marketID === 225)?.outcomes.map((outcome) => outcome.outcomeName)).toEqual(['over', 'under'])
+    expect(
+      normalized
+        .filter((market) => market.marketID === 225)
+        .map((market) => market.specifier)
+    ).toEqual(['', 'total'])
+    expect(
+      normalized
+        .filter((market) => market.marketID === 225)
+        .map((market) => market.outcomes.map((outcome) => outcome.outcomeName))
+    ).toEqual([
+      ['over', 'under'],
+      ['over', 'under']
+    ])
   })
 
   it('cleans generic home/away placeholders without sport-specific rules', () => {

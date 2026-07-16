@@ -64,6 +64,7 @@ const normalizeMarketName = (name = '') => {
   return cleanWhitespace(
     text
       .replace(/\b(home|away)\s+team\b/gi, (_, side) => side)
+      .replace(/\s*[-–]?\s*(?:xup\s*=\s*)?(1|2|3)\s*up\s*$/i, ' - XUP')
       .replace(/\s*\(\s*incl\.\s*overtime\s*\)\s*$/i, ' (incl. overtime)')
       .replace(/\s*\(\s*incl\.\s*extra\s*time\s*\)\s*$/i, ' (incl. extra time)')
   )
@@ -92,21 +93,25 @@ export const normalizeFixtureMarket = (market = {}) => {
 }
 
 export const normalizeFixtureMarkets = (markets = []) => {
-  const seenMarketIds = new Set()
+  const seenMarketKeys = new Set()
   const normalizedMarkets = []
 
   ;(Array.isArray(markets) ? markets : []).forEach((market, index) => {
     const marketId = Number(market?.marketID ?? market?.marketId ?? market?.market_id ?? 0)
     if (!Number.isFinite(marketId) || marketId <= 0) return
+    const marketSpecifier = String(market?.specifier ?? market?.specifiers ?? '')
+    const marketKey = `${marketId}|${marketSpecifier}`
 
     const normalizedMarket = {
       ...normalizeFixtureMarket(market),
       __orderIndex: index
     }
 
-    if (seenMarketIds.has(marketId)) {
+    if (seenMarketKeys.has(marketKey)) {
       const existing = normalizedMarkets.find(
-        (item) => Number(item.marketID ?? item.marketId ?? item.market_id ?? 0) === marketId
+        (item) =>
+          Number(item.marketID ?? item.marketId ?? item.market_id ?? 0) === marketId &&
+          String(item.specifier ?? item.specifiers ?? '') === marketSpecifier
       )
 
       if (existing) {
@@ -136,7 +141,7 @@ export const normalizeFixtureMarkets = (markets = []) => {
       return
     }
 
-    seenMarketIds.add(marketId)
+    seenMarketKeys.add(marketKey)
     normalizedMarkets.push(normalizedMarket)
   })
 
