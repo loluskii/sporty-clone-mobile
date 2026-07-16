@@ -9,8 +9,7 @@ import {
   CLIENT_ID,
   NEW_BASE_API,
   NEW_BET_API,
-  NEW_FIXTURES_API,
-  NEW_NOTIFICATION_API
+  NEW_FIXTURES_API
 } from './constants'
 import moment from 'moment'
 
