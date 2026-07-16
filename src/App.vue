@@ -384,7 +384,6 @@ onMounted(async () => {
       ? sportsResult.value.data.filter((sport) => sport.games > 0)
       : []
 
-  const banksResult = { status: 'fulfilled', value: { data: [] } }
   utilsStore.banksList =
     banksResult.status === 'fulfilled' && Array.isArray(banksResult.value?.data)
       ? banksResult.value.data
