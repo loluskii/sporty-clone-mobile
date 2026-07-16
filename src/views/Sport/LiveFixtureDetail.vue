@@ -911,6 +911,11 @@ function toOrdinal(n) {
 }
 
 function cleanMarketName(name, specifier) {
+  const xupName = String(name || '')
+    .replace(/\s*[-–]?\s*(?:xup\s*=\s*)?(1|2|3)\s*up\s*$/i, ' - XUP')
+    .trim()
+  if (xupName !== String(name || '').trim()) return xupName
+
   if (!name.includes('=') || name.indexOf('=') > 20) return name
 
   // Parse specifier into key-value map

@@ -68,8 +68,8 @@ const emit = defineEmits(['set-mode', 'show-info'])
 
 const orderedOptions = computed(() => {
   const priority = {
-    '2up': 1,
-    '1up': 2,
+    '1up': 1,
+    '2up': 2,
     earlygoal: 3
   }
   const allowedModes = new Set(['1up', '2up', 'earlygoal'])
