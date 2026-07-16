@@ -7,7 +7,7 @@ export const brandDetails = {
     secondaryColor: '#2A166F',
     tertiaryColor: 'rgb(222, 226 ,230)',
 
-    primaryBackground: '#FFFFFF',
+    primaryBackground: '#fafafa',
     secondaryBackground: '#e6e7eb',
 
     primaryTextColor: '#353a45',
@@ -16,7 +16,7 @@ export const brandDetails = {
     primaryButtonColor: '#ef403c',
     secondaryButtonColor: '#e41827',
 
-    primaryButtonBackgroundColor: '#0D9737',
+    primaryButtonBackgroundColor: '#ef403c',
     secondaryButtonBackgroundColor: '#0D9737',
 
     headerBackgroundColor: '#2A166F',
