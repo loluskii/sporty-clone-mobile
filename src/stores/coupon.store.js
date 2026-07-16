@@ -2532,6 +2532,7 @@ export const useCouponStore = defineStore({
       return this.coupon.selections.length
     },
     async removeSelection(id) {
+      const hadSelectionsBeforeRemove = Array.isArray(this.coupon.selections) && this.coupon.selections.length > 0
       const res = this.coupon.selections ? [...this.coupon.selections] : []
       const data = res.find((item) => item.selectionId === id || item.id === id)
       // Call manageSubscription after updating selections array
@@ -2639,6 +2640,9 @@ export const useCouponStore = defineStore({
           }
         }
       } else {
+        if (hadSelectionsBeforeRemove) {
+          void closeAbandonedBetslipSession('cleared')
+        }
         const coupon = {
           acceptChanges: true,
           selections: [],

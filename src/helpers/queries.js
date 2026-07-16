@@ -128,6 +128,12 @@ const cachedRequest = async (
   return requestPromise
 }
 
+export const invalidateCachedRequest = (cacheKey, scope = 'global') => {
+  const normalizedKey = `${getCacheScope(scope)}:${cacheKey}`
+  requestCache.delete(normalizedKey)
+  inflightRequests.delete(normalizedKey)
+}
+
 export const normalizeSportsbookFeatureConfig = (payload = {}) => {
   const data = payload?.data ?? payload ?? {}
 
@@ -861,6 +867,14 @@ export const fetchUserNotifications = async () => {
       ),
     { ttlMs: 60 * 1000, scope: 'auth' }
   )
+}
+
+export const markUserNotificationRead = async (id) => {
+  return parseData(fetchWrapper.patch(`${NEW_BASE_API}/notification/user/${id}/read`, undefined, { skipAuthLogout: true }))
+}
+
+export const deleteUserNotification = async (id) => {
+  return parseData(fetchWrapper.delete(`${NEW_BASE_API}/notification/user/${id}`, undefined, { skipAuthLogout: true }))
 }
 
 export const checkFirstDeposit = async () => {

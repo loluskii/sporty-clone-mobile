@@ -96,7 +96,7 @@ function redirectToPlatform(platform) {
   position: absolute;
   text-align: center;
   width: 100%;
-  z-index: 900;
+  z-index: 700;
 }
 .booking-code .invisiable-item {
   left: 300vw;

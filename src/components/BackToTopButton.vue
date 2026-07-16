@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
   inset: auto;
   left: 50%;
   bottom: calc(env(safe-area-inset-bottom) + 5.75rem);
-  z-index: 900;
+  z-index: 700;
   display: inline-flex;
   width: auto;
   height: auto;

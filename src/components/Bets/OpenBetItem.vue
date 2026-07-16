@@ -438,7 +438,7 @@ function showChild(e, index) {
 }
 
 .m-btn-wrapper .m-btn--cashout {
-    background: var(--brand-secondary);
+    background: var(--brand-button-primary);
     border: none;
     border-radius: .5rem;
     color: #ffffff;
@@ -718,8 +718,7 @@ function showChild(e, index) {
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
-    background: #0D9737;
-    border-color: #0D9737;
+    background: var(--brand-button-primary);
     border-radius: 0.5rem;
     display: -webkit-box;
     display: -webkit-flex;
