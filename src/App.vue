@@ -347,12 +347,12 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  const [globalVarsResult, sportsResult, _, featureConfigResult, bannersResult] =
+  const [globalVarsResult, sportsResult, , banksResult, featureConfigResult, bannersResult] =
     await Promise.allSettled([
       fetchGlobalVars(),
       getSportsMenu(),
       validateSelections(),
-      // getBanksList(),
+      getBanksList(),
       fetchSportsbookFeatureConfig(),
       fetchBanners()
     ])
