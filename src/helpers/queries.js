@@ -490,7 +490,7 @@ export const placeBet2 = async (payload) => {
 export const reportBetslipAbandoned = async (payload) => {
   return parseData(
     fetchWrapper.post(
-      `${NEW_BASE_API}/crm/betslip/abandoned?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      `${NEW_BASE_API}/crm/betslip/abandoned?clientId=${CLIENT_ID}`,
       payload
     )
   )
@@ -499,7 +499,7 @@ export const reportBetslipAbandoned = async (payload) => {
 export const reportBetslipActivity = async (payload) => {
   return parseData(
     fetchWrapper.post(
-      `${NEW_BASE_API}/crm/betslip/activity?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      `${NEW_BASE_API}/crm/betslip/activity?clientId=${CLIENT_ID}`,
       payload
     )
   )
@@ -508,7 +508,7 @@ export const reportBetslipActivity = async (payload) => {
 export const closeBetslipSession = async (payload) => {
   return parseData(
     fetchWrapper.post(
-      `${NEW_BASE_API}/crm/betslip/session/close?clientId=${CLIENT_ID}&client_id=${CLIENT_ID}`,
+      `${NEW_BASE_API}/crm/betslip/session/close?clientId=${CLIENT_ID}`,
       payload
     )
   )
