@@ -24,7 +24,7 @@ export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true
 export const SMS_BYPASS = true
-export const EXCLUDED_LIVE_SPORT_IDS = [2, 5]
+export const EXCLUDED_LIVE_SPORT_IDS = []
 
 export const PINIA_PERSIST_OPTIONS = {
   storage: localStorage
