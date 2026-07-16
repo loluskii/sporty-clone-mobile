@@ -1314,11 +1314,7 @@ export const useCouponStore = defineStore({
       return this.applyEarlyGoalToSelections([String(selection.selectionId)], nextEnabled)
     },
     isTaxEnabled() {
-      return (
-        this.getExciseTaxRate() > 0 ||
-        this.getWithholdingTaxRate() > 0 ||
-        this.getGlobalVariableFlag('taxEnabled', false)
-      )
+      return this.getGlobalVariableFlag('taxEnabled', false)
     },
     getSelectionKey(selection) {
       if (!selection) return ''
