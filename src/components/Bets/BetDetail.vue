@@ -739,7 +739,7 @@ function copyCode() {
   color: #ffffff;
   color: var(--text-type2-primary);
   display: inline-block;
-  font-weight: 900;
+  font-weight: 700;
   height: 1.066rem;
   line-height: 1.066rem;
   text-align: center;

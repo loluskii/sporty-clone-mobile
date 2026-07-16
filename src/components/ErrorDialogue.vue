@@ -51,12 +51,15 @@
     <div v-if="dialogIsNotification" class="es-dialog m-dialog app-notification-dialog">
       <div class="es-dialog-body m-dialog-body">
         <div class="es-dialog-main m-dialog-main app-notification-main">
-          <div class="app-notification-eyebrow">Notifications</div>
-          <h3>{{ notificationSummaryTitle }}</h3>
-          <p class="app-notification-summary">{{ notificationSummaryText }}</p>
-          <div v-if="notificationPreview" class="app-notification-preview">
-            <h4>{{ notificationPreview.title }}</h4>
-            <p>{{ notificationPreview.message }}</p>
+          <div class="app-notification-envelope" aria-hidden="true">
+            <span class="app-notification-badge">{{ notificationCount }}</span>
+            <img :src="notificationArt" alt="" />
+          </div>
+          <div class="app-notification-copy">
+            <h3>{{ notificationSummaryTitle }}</h3>
+            <div class="app-notification-chip">
+              <span>Click here to see your messages</span>
+            </div>
           </div>
         </div>
       </div>
@@ -64,9 +67,13 @@
         <button
           type="button"
           @click.prevent="openNotifications"
-          class="es-dialog-btn app-error-ok app-notification-action"
+          class="es-dialog-btn app-notification-action"
         >
-          View messages
+          Go 
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#d0021b" fill="none" stroke="#d0021b" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M10.5 8C10.5 8 13.5 10.946 13.5 12C13.5 13.0541 10.5 16 10.5 16" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
         </button>
       </div>
     </div>
@@ -96,6 +103,7 @@ import { useRouter } from 'vue-router'
 import { useCouponStore } from '../stores'
 import { loadBetslipByCode } from '@/helpers'
 import emitter from '@/plugins/emitter'
+import notificationArt from '@/assets/images/text.png'
 
 const emits = defineEmits(['hide-dialogue'])
 const props = defineProps({
@@ -142,23 +150,16 @@ const notificationItems = computed(() => {
   return []
 })
 
-const notificationPreview = computed(() => {
-  const first = notificationItems.value[0]
-  if (!first) return null
-  return {
-    title: first.title || first.subject || 'Notification',
-    message: first.message || first.body || first.content || first.text || 'You have a new message.'
-  }
+const notificationCount = computed(() => {
+  const explicitCount = Number(dialogueData.value.notificationCount || dialogueData.value.count || 0)
+  if (Number.isFinite(explicitCount) && explicitCount > 0) return explicitCount
+  return notificationItems.value.length
 })
 
 const notificationSummaryTitle = computed(() => {
-  const count = notificationItems.value.length
+  const count = notificationCount.value
   if (!count) return 'You have a message'
   return count === 1 ? 'You have 1 new message' : `You have ${count} new messages`
-})
-
-const notificationSummaryText = computed(() => {
-  return 'Open your messages center to read the latest updates.'
 })
 
 const dialogueType = () => {
@@ -176,7 +177,7 @@ const dialogueType = () => {
       dialogIsBetslip.value = true
       break
     case 'notification':
-      dialogIsNotification.value = notificationItems.value.length > 0
+      dialogIsNotification.value = notificationCount.value > 0
       break
 
     default:
@@ -503,63 +504,95 @@ onMounted(() => {
 }
 
 .app-notification-dialog {
-  max-width: 24rem;
-  overflow: hidden;
   border-radius: 1.25rem;
+  overflow: hidden;
+  padding: 1.25rem;
+  width: min(21.5rem, calc(100vw - 2rem));
 }
 
 .app-notification-main {
   min-height: auto !important;
-  padding: 1.5rem 1.25rem 0.25rem !important;
-  text-align: left !important;
+  padding: 0.25rem 0 0.1rem !important;
+  text-align: center !important;
 }
 
-.app-notification-eyebrow {
-  color: var(--brand-primary, #0f9f45);
-  font-size: 0.75rem;
-  font-weight: 800;
+.app-notification-envelope {
+  display: inline-flex;
+  position: relative;
+  width: 6.4rem;
+  justify-content: center;
+}
+
+.app-notification-envelope img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.app-notification-copy {
+  min-width: 0;
+}
+
+.app-notification-title,
+.app-notification-main h3 {
+  color: #202532;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.app-notification-title {
+  color: #2a2f3a;
+  font-size: 1.02rem;
   letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
   text-transform: uppercase;
 }
 
 .app-notification-main h3 {
-  margin: 0.4rem 0 1rem;
-  color: #2f3542;
   font-size: 1.45rem;
-  font-weight: 900;
 }
 
-.app-notification-summary {
-  color: #707781;
-  font-size: 0.92rem;
-  line-height: 1.5;
-  margin: 0 0 0.9rem;
+.app-notification-chip {
+  align-items: center;
+  color: #2f3542;
+  display: inline-flex;
+  gap: 0.4rem;
+  margin: 0 auto;
+  padding: 0.45rem 0.85rem;
 }
 
-.app-notification-preview {
-  background: #f8fafc;
-  border: 1px solid #e7ebf1;
-  border-radius: 0.9rem;
-  padding: 0.9rem;
+.app-notification-chip strong {
+  color: #0f9f45;
+  font-size: 1rem;
 }
 
-.app-notification-preview h4 {
-  margin: 0 0 0.25rem;
-  color: #303642;
-  font-size: 0.98rem;
-  font-weight: 800;
+.app-notification-dialog .es-dialog-footer {
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem 0 0;
 }
 
-.app-notification-preview p {
-  margin: 0;
-  color: #717988;
-  font-size: 0.95rem;
-  line-height: 1.45;
+.app-notification-dialog .es-dialog-footer .es-dialog-btn {
+  border: 0;
+  border-radius: 0.3rem;
+  font-size: 1rem;
+  font-weight: 500;
+  height: 2.9rem;
+  line-height: 1;
+  margin: 0 auto;
+  padding: 0 1.9rem;
+  text-align: center;
+  width: 70%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 5px;
 }
 
 .app-notification-action {
-  background: var(--brand-primary-button) !important;
-  color: #ffffff !important;
+  color: var(--brand-highlight-text) !important;
+  background-color: transparent !important;
 }
 
 .es-dialog.es-ani-show {

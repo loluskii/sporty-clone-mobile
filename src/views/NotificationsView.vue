@@ -15,14 +15,15 @@
           v-for="notification in notifications"
           :key="notification.id || notification.notificationId || notification.createdAt || notification.title"
           class="notification-card"
+          :class="{ 'notification-card--unread': isUnread(notification) }"
         >
           <div class="notification-card-head">
-            <div>
+            <div class="notification-card-copy">
               <div class="notification-card-title">
-                {{ notification.title || notification.subject || 'Notification' }}
+                {{ notification.title }}
               </div>
               <div class="notification-card-meta">
-                {{ formatNotificationDate(notification) }}
+                {{ new Date(notification.createdAt).toLocaleDateString() }}
               </div>
             </div>
             <span
@@ -32,9 +33,35 @@
               New
             </span>
           </div>
+
           <p class="notification-card-body">
-            {{ notification.message || notification.body || notification.content || notification.text }}
+            {{ notification.description }}
           </p>
+
+          <div class="notification-card-actions">
+            <button
+              type="button"
+              class="notification-card-action notification-card-action--ghost"
+              :disabled="busyId === getNotificationId(notification)"
+              @click="toggleRead(notification)"
+            >
+              {{
+                isUnread(notification)
+                  ? busyId === getNotificationId(notification) && busyAction === 'read'
+                    ? 'Marking...'
+                    : 'Mark read'
+                  : 'Read'
+              }}
+            </button>
+            <button
+              type="button"
+              class="notification-card-action notification-card-action--danger"
+              :disabled="busyId === getNotificationId(notification)"
+              @click="deleteItem(notification)"
+            >
+              {{ busyId === getNotificationId(notification) && busyAction === 'delete' ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
         </article>
       </div>
     </div>
@@ -45,21 +72,32 @@
 import { computed, onMounted, ref } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
-import { fetchUserNotifications, formatDate } from '@/helpers'
+import {
+  deleteUserNotification,
+  fetchUserNotifications,
+  formatDate,
+  invalidateCachedRequest,
+  markUserNotificationRead
+} from '@/helpers'
 
 const isLoading = ref(false)
 const rawNotifications = ref([])
+const busyId = ref('')
+const busyAction = ref('')
 
 const notifications = computed(() => rawNotifications.value || [])
 
-const isUnread = (notification) => {
-  return notification?.read === false || notification?.isRead === false || notification?.status === 'unread'
+const getNotificationId = (notification) => {
+  return notification?.id || notification?.notificationId || notification?.notification_id || ''
 }
 
-const formatNotificationDate = (notification) => {
-  const createdAt = notification?.createdAt || notification?.created_at || notification?.date
-  if (!createdAt) return ''
-  return formatDate(createdAt, 'DD MMM, YYYY hh:mma')
+const isUnread = (notification) => {
+  return (
+    notification?.read === false ||
+    notification?.isRead === false ||
+    notification?.status === 0 ||
+    notification?.status === 'unread'
+  )
 }
 
 async function loadNotifications() {
@@ -67,19 +105,54 @@ async function loadNotifications() {
   try {
     const response = await fetchUserNotifications()
     const payload = response?.data ?? response
-    const items =
-      payload?.notifications ||
-      payload?.data?.notifications ||
-      payload?.items ||
-      payload?.data ||
-      []
 
-    rawNotifications.value = Array.isArray(items) ? items : []
+    rawNotifications.value = Array.isArray(payload) ? payload : []
   } catch (error) {
     console.warn('Failed to load notifications:', error)
     rawNotifications.value = []
   } finally {
     isLoading.value = false
+  }
+}
+
+async function refreshNotifications() {
+  invalidateCachedRequest('user-notifications', 'auth')
+  await loadNotifications()
+}
+
+async function toggleRead(notification) {
+  const id = getNotificationId(notification)
+  if (!id || busyId.value) return
+
+  if (!isUnread(notification)) return
+
+  busyId.value = id
+  busyAction.value = 'read'
+  try {
+    await markUserNotificationRead(id)
+    await refreshNotifications()
+  } catch (error) {
+    console.warn('Failed to mark notification as read:', error)
+  } finally {
+    busyId.value = ''
+    busyAction.value = ''
+  }
+}
+
+async function deleteItem(notification) {
+  const id = getNotificationId(notification)
+  if (!id || busyId.value) return
+
+  busyId.value = id
+  busyAction.value = 'delete'
+  try {
+    await deleteUserNotification(id)
+    await refreshNotifications()
+  } catch (error) {
+    console.warn('Failed to delete notification:', error)
+  } finally {
+    busyId.value = ''
+    busyAction.value = ''
   }
 }
 
@@ -90,7 +163,7 @@ onMounted(() => {
 
 <style scoped>
 .notifications-view {
-  min-height: 100%;
+  min-height: 80vh;
   background: #f5f7fa;
 }
 
@@ -100,7 +173,7 @@ onMounted(() => {
 
 .notifications-list {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .notification-card {
@@ -111,11 +184,20 @@ onMounted(() => {
   padding: 1rem;
 }
 
+.notification-card--unread {
+  border-color: rgba(13, 151, 55, 0.18);
+  box-shadow: 0 10px 24px rgba(13, 151, 55, 0.06);
+}
+
 .notification-card-head {
   align-items: flex-start;
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.notification-card-copy {
+  min-width: 0;
 }
 
 .notification-card-title {
@@ -134,8 +216,50 @@ onMounted(() => {
 .notification-card-body {
   color: #4a5160;
   font-size: 0.92rem;
-  line-height: 1.5;
-  margin: 0.75rem 0 0;
+  line-height: 1.55;
+  margin: 0.8rem 0 0;
+}
+
+.notification-card-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.notification-card-action {
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 2.6rem;
+  padding: 0.5rem 0.8rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.notification-card-action:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.notification-card-action--ghost {
+  background: #f4f7fb;
+  border-color: #dfe6ef;
+  color: #2f3542;
+}
+
+.notification-card-action--danger {
+  background: rgba(236, 72, 153, 0.1);
+  border-color: rgba(236, 72, 153, 0.16);
+  color: #d9466f;
 }
 
 .notification-card-pill {

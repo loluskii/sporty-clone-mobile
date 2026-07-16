@@ -464,7 +464,7 @@ async function shareCustomCode() {
 .success-kicker {
   color: var(--brand-highlight-text, #16a34a);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.08em;
   margin: 0 0 0.35rem;
   text-transform: uppercase;
@@ -473,7 +473,7 @@ async function shareCustomCode() {
 .success-wrap .success-dialog .title {
   color: #1f2430;
   font-size: 1.8rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 2rem;
   margin: 0;
   padding-bottom: 1.45rem;
@@ -545,7 +545,7 @@ async function shareCustomCode() {
   color: #252a36;
   flex: 1 0 0%;
   font-size: 1.08rem;
-  font-weight: 900;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -574,7 +574,7 @@ async function shareCustomCode() {
   color: #ffffff;
   display: inline-flex;
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 700;
   height: 1.25rem;
   justify-content: center;
   width: 1.25rem;
@@ -614,7 +614,7 @@ async function shareCustomCode() {
 .booking-code-text {
   color: #252a36 !important;
   flex: 0 0 auto !important;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
   letter-spacing: 0.04em;
   text-align: right;
 }
@@ -646,7 +646,7 @@ async function shareCustomCode() {
   cursor: pointer;
   flex: 0 0 auto;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   min-height: 2rem;
   min-width: auto;
   padding: 0 0.78rem;
@@ -690,7 +690,7 @@ async function shareCustomCode() {
   cursor: pointer;
   display: inline-flex;
   font-size: 1.05rem;
-  font-weight: 900;
+  font-weight: 700;
   gap: 0.35rem;
   justify-content: center;
   min-height: 2.8rem;
@@ -854,7 +854,7 @@ async function shareCustomCode() {
   color: var(--brand-highlight-text, #099640);
   display: inline-flex;
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.08em;
   margin-bottom: 0.4rem;
   text-transform: uppercase;
@@ -863,7 +863,7 @@ async function shareCustomCode() {
 .custom-code-title {
   color: #252a36;
   font-size: 1.42rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.65rem;
   margin: 0;
 }
@@ -900,7 +900,7 @@ async function shareCustomCode() {
   color: var(--brand-highlight-text, #099640);
   flex: 0 0 auto;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 700;
   padding-right: 0.25rem;
 }
 
@@ -910,7 +910,7 @@ async function shareCustomCode() {
   color: #252a36;
   flex: 1 1 auto;
   font-size: 1.12rem;
-  font-weight: 900;
+  font-weight: 700;
   height: 100% !important;
   line-height: 1 !important;
   min-width: 0;
@@ -932,7 +932,7 @@ async function shareCustomCode() {
   cursor: pointer;
   display: inline-flex !important;
   font-size: 0.98rem;
-  font-weight: 900;
+  font-weight: 700;
   height: 3.05rem !important;
   justify-content: center;
   min-height: 0 !important;
@@ -974,7 +974,7 @@ async function shareCustomCode() {
 .custom-code-existing-name {
   color: #252a36 !important;
   font-size: 0.98rem;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
 }
 
 .custom-code-existing strong {
@@ -997,7 +997,7 @@ async function shareCustomCode() {
   color: var(--brand-highlight-text, #099640);
   cursor: pointer;
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
   margin-top: 1rem;
   min-height: 3rem;
   width: 100%;
@@ -1025,7 +1025,7 @@ async function shareCustomCode() {
 .custom-code-live-top span {
   color: #8f96a3;
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1035,7 +1035,7 @@ async function shareCustomCode() {
   border-radius: 999px;
   color: #252a36;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.04em;
   padding: 0.38rem 0.65rem;
 }
@@ -1052,7 +1052,7 @@ async function shareCustomCode() {
   color: rgba(255, 255, 255, 0.72);
   display: block;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.08em;
   margin-bottom: 0.35rem;
   text-transform: uppercase;
@@ -1061,7 +1061,7 @@ async function shareCustomCode() {
 .custom-code-live-main strong {
   display: block;
   font-size: 1.82rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.03em;
   line-height: 2rem;
   overflow-wrap: anywhere;
@@ -1089,7 +1089,7 @@ async function shareCustomCode() {
   cursor: pointer;
   display: inline-flex;
   font-size: 0.98rem;
-  font-weight: 900;
+  font-weight: 700;
   gap: 0.45rem;
   justify-content: center;
   min-height: 3.25rem;
