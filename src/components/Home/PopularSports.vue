@@ -291,11 +291,11 @@ const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
   getTopGameCategories,
   {
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     staleTime: 60000,
     cacheTime: 300000,
-    enabled: FEED_TOGGLE
+    enabled: false
   }
 )
 

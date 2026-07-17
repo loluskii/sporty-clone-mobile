@@ -12,7 +12,8 @@ import {
   buildEarlyWinLocalQuoteMap,
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
-  getFixtureDerivedMarketIds
+  getFixtureDerivedMarketIds,
+  X_UP_FEATURE_MARKET_ID
 } from './early-win'
 
 export const applyBranding = async () => {
@@ -183,7 +184,8 @@ export const getDataFromPayload = (couponPayload) => {
     sportId: couponPayload.fixture.sportID,
     marketId: couponPayload.market_id,
     marketName: couponPayload.market_name,
-    derivedMarketIds
+    derivedMarketIds,
+    specifier: couponPayload.specifier || couponPayload.outcome?.specifier || ''
   })
   const earlyGoalState = buildEarlyGoalSelectionState({
     sportId: couponPayload.fixture.sportID,
@@ -216,9 +218,10 @@ export const getDataFromPayload = (couponPayload) => {
     displayName: couponPayload.outcome.displayName,
     derivedMarketIds
   })
-  const supportedEarlyWinModes = ['1up', '2up'].filter((mode) =>
+  const supportedEarlyWinModes = ['1up', '2up', '3up'].filter((mode) =>
     Boolean(earlyWinLocalQuotes?.[mode])
   )
+  const xupSelection = Number(couponPayload.market_id || 0) === X_UP_FEATURE_MARKET_ID
   const supportedDerivedMarketIds = [
     ...new Set([
       ...earlyWinState.supportedDerivedMarketIds,
@@ -235,10 +238,6 @@ export const getDataFromPayload = (couponPayload) => {
   ]
   const isEarlyGoalMarketCandidate = earlyGoalState.isEarlyGoalMarketCandidate
   const selectionBaseState = isEarlyGoalMarketCandidate ? earlyGoalState : earlyWinState
-  const currentMarketName =
-    earlyGoalState.earlyGoalMode === 'earlygoal'
-      ? earlyGoalState.currentMarketName
-      : earlyWinState.currentMarketName || selectionBaseState.currentMarketName
   const currentQuote =
     earlyGoalState.earlyGoalMode === 'earlygoal'
       ? earlyGoalLocalQuotes?.earlygoal || null
@@ -246,24 +245,30 @@ export const getDataFromPayload = (couponPayload) => {
   const baseQuote = isEarlyGoalMarketCandidate
     ? earlyGoalLocalQuotes?.base || null
     : earlyWinLocalQuotes?.base || null
+  const sourceSelectionKeySpecifier =
+    couponPayload.selection_key_specifier ?? couponPayload.outcome?.specifier ?? couponPayload.specifier ?? ''
+  const baseSelectionKeySpecifier = baseQuote?.idSpecifier ?? sourceSelectionKeySpecifier
+  const currentSelectionKeySpecifier = currentQuote?.idSpecifier ?? sourceSelectionKeySpecifier
+  const selectionKeySpecifierForStableId = xupSelection ? '' : baseSelectionKeySpecifier
+  const currentSelectionKeySpecifierForCurrentId = currentSelectionKeySpecifier
+  const currentMarketName =
+    earlyGoalState.earlyGoalMode === 'earlygoal'
+      ? earlyGoalState.currentMarketName
+      : earlyWinState.currentMarketName || selectionBaseState.currentMarketName
   const baseOutcomeId = baseQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
   const baseOutcomeName = baseQuote?.outcomeName || couponPayload.outcome.outcomeName
   const baseDisplayName = baseQuote?.displayName || couponPayload.outcome.displayName
   const baseOdds = Number(baseQuote?.odds ?? couponPayload.outcome.odds)
   const baseStatusName = baseQuote?.statusName || 'Active'
-  const sourceSelectionKeySpecifier =
-    couponPayload.selection_key_specifier ?? couponPayload.outcome?.specifier ?? couponPayload.specifier ?? ''
-  const baseSelectionKeySpecifier = baseQuote?.idSpecifier ?? sourceSelectionKeySpecifier
   const currentOutcomeId = currentQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
   const currentOutcomeName = currentQuote?.outcomeName || couponPayload.outcome.outcomeName
   const currentDisplayName = currentQuote?.displayName || couponPayload.outcome.displayName
   const currentSpecifier = currentQuote?.specifier ?? couponPayload.specifier ?? ''
-  const currentSelectionKeySpecifier = currentQuote?.idSpecifier ?? sourceSelectionKeySpecifier
   const stableSelectionId = createID(
     couponPayload.fixture.matchID,
     selectionBaseState.baseMarketId,
     baseOutcomeId,
-    baseSelectionKeySpecifier,
+    selectionKeySpecifierForStableId,
     selectionBaseState.baseMarketName,
     baseOutcomeName
   )
@@ -271,7 +276,7 @@ export const getDataFromPayload = (couponPayload) => {
     couponPayload.fixture.matchID,
     couponPayload.market_id,
     currentOutcomeId,
-    currentSelectionKeySpecifier,
+    currentSelectionKeySpecifierForCurrentId,
     currentMarketName,
     currentOutcomeName
   )

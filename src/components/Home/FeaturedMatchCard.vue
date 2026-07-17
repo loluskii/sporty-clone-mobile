@@ -34,7 +34,7 @@
         <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
       </div>
       <div class="market">
-        <span>{{ props.markets[0].marketName }}</span>
+        <span>{{ selectedMarket?.marketName }}</span>
       </div>
       <div class="awayIcon">
         <img
@@ -96,12 +96,27 @@ const props = defineProps({
   markets: Object
 })
 
+const selectedMarket = computed(() => {
+  const markets = Array.isArray(props.markets) ? props.markets : []
+  return (
+    markets.find((market) => Number(market.marketID) === 1) ||
+    markets.find((market) => Number(market.marketID) === 1601) ||
+    markets[0] ||
+    {}
+  )
+})
+
 const getMatchOdds = computed(() => {
-  // Get unique outcomes by outcomeID first
-  const uniqueOutcomes = props.matchDetails?.outcomes
-    .filter((x) => x.marketID == props.markets[0].marketID)
-    .filter((outcome, index, self) => 
-      index === self.findIndex(o => o.outcomeID === outcome.outcomeID)
+  const uniqueOutcomes = (props.matchDetails?.outcomes || [])
+    .filter((x) => Number(x.marketID) === Number(selectedMarket.value.marketID))
+    .filter(
+      (outcome, index, self) =>
+        index ===
+        self.findIndex(
+          (item) =>
+            String(item.outcomeID) === String(outcome.outcomeID) &&
+            String(item.specifier || '') === String(outcome.specifier || '')
+        )
     )
 
   // Get the latest odds from the coupon store if available
@@ -113,7 +128,9 @@ const getMatchOdds = computed(() => {
     // If we have selections in the betslip, use their updated odds
     return uniqueOutcomes.map((outcome) => {
       const selection = matchSelections.find(
-        (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
+        (sel) =>
+          String(sel.outcomeId) === String(outcome.outcomeID) &&
+          String(sel.specifier || sel.selectionKeySpecifier || '') === String(outcome.specifier || '')
       )
       return selection
         ? {
@@ -158,10 +175,16 @@ function addToBetslip(event, odd) {
     )
     return
   }
+  const fixtureWithMarkets = {
+    ...event,
+    market: Array.isArray(props.markets) ? props.markets : event.market,
+    markets: Array.isArray(props.markets) ? props.markets : event.markets
+  }
   const data = buildCouponSelectionPayload({
-    fixture: event,
+    fixture: fixtureWithMarkets,
+    market: selectedMarket.value,
     outcome: odd,
-    marketName: '1X2',
+    marketName: selectedMarket.value?.marketName || '1X2',
     type: 'prematch'
   })
 

@@ -45,7 +45,10 @@ const { data: codesData } = useQuery(
     return getCodeHubItems(payload)
   },
   {
-    refetchOnMount: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 5 * 60 * 1000,
     enabled: FEED_TOGGLE
   }
 )

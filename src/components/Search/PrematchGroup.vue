@@ -72,7 +72,7 @@
                       <div class="x-table-cell m-date">{{ index }}</div>
                       <div class="x-table-cell market-title">
                         <div
-                          v-if="activeMarket.specifier !== ''"
+                          v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
                           style="text-transform: capitalize"
                           class="each-module is-multiline"
                         >

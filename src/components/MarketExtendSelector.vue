@@ -68,8 +68,8 @@ const emit = defineEmits(['set-mode', 'show-info'])
 
 const orderedOptions = computed(() => {
   const priority = {
-    '2up': 1,
-    '1up': 2,
+    '1up': 1,
+    '2up': 2,
     earlygoal: 3
   }
   const allowedModes = new Set(['1up', '2up', 'earlygoal'])
@@ -309,7 +309,7 @@ const UpIcon = defineComponent({
   display: inline-flex;
   flex: 0 0 1.65rem;
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
   height: 1.65rem;
   justify-content: center;
   line-height: 1;

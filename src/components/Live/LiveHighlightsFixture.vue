@@ -47,7 +47,7 @@
         <div class="m-market m-event-market-default" style="position: relative">
           <template v-if="outcomes && outcomes.length">
             <div
-              v-if="activeMarket.specifier !== ''"
+              v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
               @click="toggleList"
               class="m-outcome m-event-outcome-default specifiers-select"
             >

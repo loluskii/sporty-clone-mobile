@@ -14,7 +14,6 @@ import {
   loadBetslipByCode,
   getBets,
   getUserActiveBonus,
-  CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
   getUserCashbackBonus,
@@ -58,6 +57,7 @@ const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
 let notificationRequestInFlight = false
+const lastNotificationLoadKey = ref('')
 // Centralized handler to close betslip from child features (e.g., simulation end).
 const closeBetslip = async () => {
   if (!showBetslip.value) return
@@ -67,6 +67,32 @@ const closeBetslip = async () => {
 const winModalShown = ref(false)
 const winModalAmount = ref(0)
 const winModalCurrency = ref('')
+const DEFAULT_GLOBAL_VARIABLES = {
+  AllowRegistration: 'Yes',
+  Currency: '₦',
+  CurrencyCode: 'NGN',
+  DialCode: '+234',
+  MinDeposit: '100',
+  MinWithdrawal: '1000',
+  LiveTicketMax: '40',
+  singleMinStake: '100',
+  singleMaxStake: '50000',
+  MinBetStake: '20',
+  comboMinStake: '20',
+  comboMaxStake: '1000000',
+  MaxNoOfSelection: '50',
+  SingleMaxWinning: '500000',
+  MinBonusOdd: '1.18',
+  enableCashout: '1',
+  EnableSystemBet: '1',
+  EnableSplitBet: '0',
+  taxEnabled: '0',
+  exciseTax: '13.04',
+  wthTax: '20'
+}
+
+const isEmptyPlainObject = (value) =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value) && !Object.keys(value).length
 
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
@@ -87,9 +113,16 @@ const backToTopBlocked = computed(() => {
 watch(
   () => [isAuthenticated.value, usersStore.currentUser?.id],
   ([authenticated, userId]) => {
-    if (authenticated && userId) {
-      loadUserNotifications()
+    if (!authenticated || !userId) {
+      openBets.value = 0
+      return
     }
+
+    const notificationLoadKey = `${userId}:${Cookies.get('SBE-TOKEN') || ''}`
+    if (lastNotificationLoadKey.value === notificationLoadKey) return
+    lastNotificationLoadKey.value = notificationLoadKey
+    loadUserNotifications()
+    getBetsData()
   },
   { immediate: true }
 )
@@ -174,9 +207,7 @@ function getNotificationItems(payload) {
 
 async function loadUserNotifications() {
   if (!isAuthenticated.value || !usersStore.currentUser?.id || notificationRequestInFlight) return
-
-  const sessionKey = `sbe:notification-modal:${CLIENT_ID}:${usersStore.currentUser.id}`
-  if (window.sessionStorage.getItem(sessionKey)) return
+  if (route.name === 'notifications') return
 
   notificationRequestInFlight = true
   try {
@@ -185,10 +216,11 @@ async function loadUserNotifications() {
 
     if (!notifications.length) return
 
-    dialogueMessage.value = { notifications }
+    dialogueMessage.value = {
+      notificationCount: notifications.length
+    }
     dialogueType.value = 'notification'
     dialogueShown.value = true
-    window.sessionStorage.setItem(sessionKey, '1')
   } catch (error) {
     console.warn('Failed to load user notifications:', error)
   } finally {
@@ -224,9 +256,13 @@ async function loadBet(code) {
 
 async function getBetsData() {
   if(route.name === 'bets-view') return
-  const res = await getBets({status: -1})
-  if (res.data.data) {
-    openBets.value = res?.data?.data.length
+  try {
+    const res = await getBets({status: -1})
+    if (res?.data?.data) {
+      openBets.value = res?.data?.data.length || 0
+    }
+  } catch (error) {
+    console.warn('Failed to load open bets count:', error)
   }
 }
 
@@ -363,17 +399,10 @@ onMounted(async () => {
     ])
 
   couponStore.sportsbookBonusList = []
-  couponStore.SportsbookGlobalVariable =
-    globalVarsResult.status === 'fulfilled'
-      ? globalVarsResult.value?.data?.data || { ...utilsStore.SportsbookGlobalVariable }
-      : { ...utilsStore.SportsbookGlobalVariable }
-
-  couponStore.SportsbookGlobalVariable.Currency =
-    couponStore.SportsbookGlobalVariable.Currency || '₦'
-  couponStore.SportsbookGlobalVariable.CurrencyCode =
-    couponStore.SportsbookGlobalVariable.CurrencyCode || 'NGN'
-  couponStore.SportsbookGlobalVariable.DialCode =
-    couponStore.SportsbookGlobalVariable.DialCode || '+234'
+  const globalVarsData = globalVarsResult.status === 'fulfilled' ? globalVarsResult.value?.data?.data : null
+  couponStore.SportsbookGlobalVariable = isEmptyPlainObject(globalVarsData)
+    ? { ...DEFAULT_GLOBAL_VARIABLES }
+    : (globalVarsData || {})
 
   couponStore.sportsbookFeatureConfig =
     featureConfigResult.status === 'fulfilled'
@@ -431,7 +460,6 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await loadUserNotifications()
   couponStore.startAbandonedBetslipTracker()
 
   emitter.on('openBetslip', toggleBetslip)
@@ -554,15 +582,13 @@ defineComponent({
 html,
 body {
   width: 100%;
-}
-
-html {
-  background: #111820;
+  min-height: 100%;
+  background: var(--brand-background-primary);
 }
 
 body {
-  background: #111820;
-  margin: 0 auto;
+  margin: 0;
+  overflow-x: hidden;
 }
 
 #app {
@@ -574,6 +600,13 @@ body {
   overflow-x: clip;
   position: relative;
   width: 100%;
+}
+
+html,
+body,
+#app,
+.mobile-app-shell {
+  background-color: var(--brand-background-primary);
 }
 
 .mobile-app-shell,

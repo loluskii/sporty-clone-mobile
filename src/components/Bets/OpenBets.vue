@@ -201,6 +201,7 @@ watch(
     box-sizing: border-box;
     padding: 0.83333333rem 0.83333333rem;
     width: 100%;
+    padding-bottom: 90px;
 }
 .no_bets {
     color: #353a45;

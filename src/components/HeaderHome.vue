@@ -72,11 +72,6 @@ onMounted(() => {
   if (myHeader.value) {
     resizeObserver.observe(myHeader.value)
   }
-
-  // Load user data if authenticated
-  if (authStore.isAuthenticated) {
-    usersStore.loadCurrentUser()
-  }
 })
 
 onBeforeUnmount(() => {
