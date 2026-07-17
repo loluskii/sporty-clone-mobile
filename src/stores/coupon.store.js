@@ -34,6 +34,7 @@ import {
   validateBetslipSelections,
   formatNumber,
   buildCouponSelectionPayload,
+  getSupportedEarlyWinModesFromFixture,
   createID
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
@@ -1414,7 +1415,7 @@ export const useCouponStore = defineStore({
         selection.earlyGoalLocalQuotes && typeof selection.earlyGoalLocalQuotes === 'object'
           ? selection.earlyGoalLocalQuotes
           : {}
-      const localSupportedModes = ['1up', '2up', '3up'].filter((mode) =>
+      const localSupportedModes = ['1up', '2up'].filter((mode) =>
         Boolean(selection.earlyWinLocalQuotes?.[mode])
       )
       const isDerivedEarlyWinSelection =
@@ -1435,16 +1436,24 @@ export const useCouponStore = defineStore({
           ...earlyWinState.supportedDerivedMarketIds
         ])
       ]
+      const supportedModesFromFixture = getSupportedEarlyWinModesFromFixture({
+        fixture: selection.fixture,
+        baseMarketId: selection.baseMarketId || selectionBaseState.baseMarketId,
+        derivedMarketIds: selection.supportedDerivedMarketIds
+      }).filter((mode) => mode !== '3up')
       selection.supportedEarlyWinModes = [
         ...new Set([
           ...(isDerivedEarlyWinSelection && Array.isArray(selection.supportedEarlyWinModes)
             ? selection.supportedEarlyWinModes
             : []),
-          ...localSupportedModes
+          ...localSupportedModes,
+          ...supportedModesFromFixture
         ])
       ]
       selection.supportsEarlyWin =
-        localSupportedModes.length > 0 || isDerivedEarlyWinSelection
+        localSupportedModes.length > 0 ||
+        supportedModesFromFixture.length > 0 ||
+        isDerivedEarlyWinSelection
       selection.isDerived = selection.supportsEarlyWin
       selection.earlyWinMode = selection.earlyWinMode || earlyWinState.earlyWinMode || 'base'
       selection.supportedEarlyGoalMarketIds = [

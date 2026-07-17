@@ -4,8 +4,7 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
     featureMarketId: 1601,
     modes: [
       { key: '1up', id: 1601, label: '1UP' },
-      { key: '2up', id: 1601, label: '2UP' },
-      { key: '3up', id: 1601, label: '3UP' }
+      { key: '2up', id: 1601, label: '2UP' }
     ]
   },
   18: {
@@ -444,6 +443,47 @@ export const getSupportedEarlyWinModes = (input) => {
     .filter((mode) => mode !== 'base')
 
   return EARLY_WIN_MODE_KEYS.filter((mode) => modes.includes(mode))
+}
+
+const getFixtureMarketExtensions = (fixture = {}) => {
+  return getFixtureMarkets(fixture).flatMap((market = {}) => {
+    const extensions = Array.isArray(market.marketExtendVOS) ? market.marketExtendVOS : []
+    return extensions
+      .map((extend = {}) => ({
+        rootMarketId: Number(extend.rootMarketId || extend.root_market_id || market.marketID || market.marketId || market.market_id || 0),
+        nodeMarketId: Number(extend.nodeMarketId || extend.node_market_id || 0),
+        nodeSpecifier: String(extend.nodeSpecifier || extend.node_specifier || '').trim(),
+        notSupport: Boolean(extend.notSupport)
+      }))
+      .filter((extend) => Number.isFinite(extend.rootMarketId) && extend.rootMarketId > 0)
+  })
+}
+
+export const getSupportedEarlyWinModesFromFixture = ({
+  fixture = {},
+  baseMarketId = EARLY_WIN_BASE_MARKET_ID,
+  derivedMarketIds = []
+} = {}) => {
+  if (!isFootballSport(fixture?.sportID || fixture?.sportId)) return []
+
+  const normalizedBaseMarketId = Number(baseMarketId || 0)
+  const extensionModes = getFixtureMarketExtensions(fixture)
+    .filter(
+      (extend) =>
+        extend.rootMarketId === normalizedBaseMarketId &&
+        extend.nodeMarketId === X_UP_FEATURE_MARKET_ID &&
+        !extend.notSupport
+    )
+    .map((extend) => getEarlyWinModeFromSpecifier(extend.nodeSpecifier))
+    .filter((mode) => EARLY_WIN_MODE_KEYS.includes(mode))
+
+  const derivedModes = getSupportedEarlyWinModes({
+    sportId: fixture?.sportID || fixture?.sportId,
+    marketId: normalizedBaseMarketId,
+    derivedMarketIds
+  })
+
+  return [...new Set([...derivedModes, ...extensionModes])].filter((mode) => mode !== '3up')
 }
 
 export const getDerivedMarketIdForMode = (baseMarketId, mode, supportedDerivedMarketIds = []) => {
