@@ -213,14 +213,21 @@ async function closeAbandonedBetslipSession(status) {
   if (!abandonedBetslipSessionId) return
 
   const sessionId = abandonedBetslipSessionId
+  abandonedBetslipSessionId = ''
+  abandonedBetslipLastActivitySignature = ''
+  abandonedBetslipLastReportedSignature = ''
+  abandonedBetslipLastActivityAt = ''
+  if (abandonedBetslipTimer) {
+    clearTimeout(abandonedBetslipTimer)
+    abandonedBetslipTimer = null
+  }
+  abandonedBetslipPendingEventId = ''
+  clearAbandonedBetslipStorage()
+
   try {
     await closeBetslipSession({ sessionId, status })
   } catch (error) {
     console.warn('Failed to close abandoned betslip session:', error)
-  } finally {
-    if (abandonedBetslipSessionId === sessionId) {
-      clearAbandonedBetslipTimer({ resetSession: true, clearStorage: true })
-    }
   }
 }
 
