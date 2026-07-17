@@ -379,6 +379,7 @@ const safeLoad = (promise) =>
   )
 
 onMounted(async () => {
+  console.log(import.meta.env.VITE_ENV_MODE)
   // Clear stale auth state if cookie has expired
   if (authStore.isAuthenticated && !authStore.isTokenValid) {
     authStore.isAuthenticated = null
