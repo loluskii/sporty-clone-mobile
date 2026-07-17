@@ -1,31 +1,48 @@
-const isProductionMode = String(import.meta.env.VITE_MODE) === 'production'
+const DEFAULT_ENV_MODE = 'production'
 
-console.log(isProductionMode)
+const resolvedMode = String(
+  import.meta.env.VITE_ENV_MODE ||
+    import.meta.env.VITE_MODE ||
+    import.meta.env.MODE ||
+    DEFAULT_ENV_MODE
+)
+  .trim()
+  .toLowerCase()
+
+const isProductionMode = resolvedMode === DEFAULT_ENV_MODE
+
+const fallbackByMode = (value, fallback) => (value && String(value).trim() ? value : fallback)
 
 export const BASE_API = isProductionMode
-  ? import.meta.env.VITE_BASE_URL
+  ? fallbackByMode(import.meta.env.VITE_BASE_URL, 'https://prod.sportsbookengine.com')
   : 'https://stag.sportsbookengine.com'
 export const NEW_BASE_API = isProductionMode
-  ? import.meta.env.VITE_NEW_BASE_API
+  ? fallbackByMode(import.meta.env.VITE_NEW_BASE_API, 'https://prod.sportsbookengine.com/api/v2')
   : 'https://stag.sportsbookengine.com/api/v2'
 export const NEW_FIXTURES_API = isProductionMode
-  ? import.meta.env.VITE_NEW_FIXTURES_API
+  ? fallbackByMode(import.meta.env.VITE_NEW_FIXTURES_API, 'https://fixture-prod.sportsbookengine.com')
   : 'https://fixture.sportsbookengine.com'
 export const NEW_NOTIFICATION_API = isProductionMode
-  ? import.meta.env.VITE_NEW_NOTIFICATION_API
+  ? fallbackByMode(
+      import.meta.env.VITE_NEW_NOTIFICATION_API,
+      'https://notification-prod.sportsbookengine.com/api/v2'
+    )
   : 'https://stag.sportsbookengine.com/api/v2'
 export const NEW_BET_API = isProductionMode
-  ? import.meta.env.VITE_NEW_BET_API
+  ? fallbackByMode(import.meta.env.VITE_NEW_BET_API, 'https://bet-prod.sportsbookengine.com/v1')
   : 'https://bet.staging.sportsbookengine.com/v1'
 export const BET_PROXY_API = '/bet'
 export const CASINO_CLIENT_API = isProductionMode
-  ? import.meta.env.VITE_CASINO_CLIENT_API
+  ? fallbackByMode(import.meta.env.VITE_CASINO_CLIENT_API, '/casino-client')
   : '/casino-client'
 export const CASINO_PROVIDER_API = isProductionMode
-  ? import.meta.env.VITE_CASINO_PROVIDER_API
+  ? fallbackByMode(import.meta.env.VITE_CASINO_PROVIDER_API, CASINO_CLIENT_API)
   : CASINO_CLIENT_API
 export const CASINO_PROVIDER_PUBLIC_API = isProductionMode
-  ? import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API
+  ? fallbackByMode(
+      import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API,
+      'https://clientapi.sportsbookengine.com'
+    )
   : 'https://clientapi.sportsbookengine.com'
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 
