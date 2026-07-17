@@ -582,7 +582,7 @@ const settledBets = computed(() => {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  font-weight: bold;
+  font-weight: medium;
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;

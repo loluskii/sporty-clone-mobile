@@ -57,6 +57,7 @@ const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
 let notificationRequestInFlight = false
+const lastNotificationLoadKey = ref('')
 // Centralized handler to close betslip from child features (e.g., simulation end).
 const closeBetslip = async () => {
   if (!showBetslip.value) return
@@ -112,9 +113,16 @@ const backToTopBlocked = computed(() => {
 watch(
   () => [isAuthenticated.value, usersStore.currentUser?.id],
   ([authenticated, userId]) => {
-    if (authenticated && userId) {
-      loadUserNotifications()
+    if (!authenticated || !userId) {
+      openBets.value = 0
+      return
     }
+
+    const notificationLoadKey = `${userId}:${Cookies.get('SBE-TOKEN') || ''}`
+    if (lastNotificationLoadKey.value === notificationLoadKey) return
+    lastNotificationLoadKey.value = notificationLoadKey
+    loadUserNotifications()
+    getBetsData()
   },
   { immediate: true }
 )
@@ -199,6 +207,7 @@ function getNotificationItems(payload) {
 
 async function loadUserNotifications() {
   if (!isAuthenticated.value || !usersStore.currentUser?.id || notificationRequestInFlight) return
+  if (route.name === 'notifications') return
 
   notificationRequestInFlight = true
   try {
@@ -207,7 +216,9 @@ async function loadUserNotifications() {
 
     if (!notifications.length) return
 
-    dialogueMessage.value = { notifications }
+    dialogueMessage.value = {
+      notificationCount: notifications.length
+    }
     dialogueType.value = 'notification'
     dialogueShown.value = true
   } catch (error) {
@@ -245,9 +256,13 @@ async function loadBet(code) {
 
 async function getBetsData() {
   if(route.name === 'bets-view') return
-  const res = await getBets({status: -1})
-  if (res.data.data) {
-    openBets.value = res?.data?.data.length
+  try {
+    const res = await getBets({status: -1})
+    if (res?.data?.data) {
+      openBets.value = res?.data?.data.length || 0
+    }
+  } catch (error) {
+    console.warn('Failed to load open bets count:', error)
   }
 }
 
