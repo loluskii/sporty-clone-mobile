@@ -1,17 +1,32 @@
-const isProductionMode = import.meta.env.VITE_ENV_MODE === 'production';
-export const BASE_API = isProductionMode ? import.meta.env.VITE_BASE_URL : 'https://stag.sportsbookengine.com'
-export const NEW_BASE_API = isProductionMode ? import.meta.env.VITE_NEW_BASE_API : 'https://stag.sportsbookengine.com/api/v2'
-export const NEW_FIXTURES_API = isProductionMode ?
-  import.meta.env.VITE_NEW_FIXTURES_API : 'https://fixture.sportsbookengine.com'
-export const NEW_NOTIFICATION_API = isProductionMode ?
-  import.meta.env.VITE_NEW_NOTIFICATION_API : 'https://stag.sportsbookengine.com/api/v2'
-export const NEW_BET_API = isProductionMode ?
-  import.meta.env.VITE_NEW_BET_API : 'https://bet.staging.sportsbookengine.com/v1'
-export const BET_PROXY_API = isProductionMode ? import.meta.env.VITE_BET_PROXY_API : '/bet'
-export const CASINO_CLIENT_API = isProductionMode ? import.meta.env.VITE_CASINO_CLIENT_API : '/casino-client'
-export const CASINO_PROVIDER_API = isProductionMode ? import.meta.env.VITE_CASINO_PROVIDER_API : CASINO_CLIENT_API
-export const CASINO_PROVIDER_PUBLIC_API = isProductionMode ?
-  import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API : 'https://clientapi.sportsbookengine.com'
+const isProductionMode = String(import.meta.env.VITE_MODE) === 'production'
+
+console.log(isProductionMode)
+
+export const BASE_API = isProductionMode
+  ? import.meta.env.VITE_BASE_URL
+  : 'https://stag.sportsbookengine.com'
+export const NEW_BASE_API = isProductionMode
+  ? import.meta.env.VITE_NEW_BASE_API
+  : 'https://stag.sportsbookengine.com/api/v2'
+export const NEW_FIXTURES_API = isProductionMode
+  ? import.meta.env.VITE_NEW_FIXTURES_API
+  : 'https://fixture.sportsbookengine.com'
+export const NEW_NOTIFICATION_API = isProductionMode
+  ? import.meta.env.VITE_NEW_NOTIFICATION_API
+  : 'https://stag.sportsbookengine.com/api/v2'
+export const NEW_BET_API = isProductionMode
+  ? import.meta.env.VITE_NEW_BET_API
+  : 'https://bet.staging.sportsbookengine.com/v1'
+export const BET_PROXY_API = '/bet'
+export const CASINO_CLIENT_API = isProductionMode
+  ? import.meta.env.VITE_CASINO_CLIENT_API
+  : '/casino-client'
+export const CASINO_PROVIDER_API = isProductionMode
+  ? import.meta.env.VITE_CASINO_PROVIDER_API
+  : CASINO_CLIENT_API
+export const CASINO_PROVIDER_PUBLIC_API = isProductionMode
+  ? import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API
+  : 'https://clientapi.sportsbookengine.com'
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 
 // export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
