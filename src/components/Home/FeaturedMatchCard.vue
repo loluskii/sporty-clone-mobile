@@ -177,6 +177,8 @@ function addToBetslip(event, odd) {
   }
   const fixtureWithMarkets = {
     ...event,
+    sportID: event.sportID || event.sportId,
+    sportId: event.sportId || event.sportID,
     market: Array.isArray(props.markets) ? props.markets : event.market,
     markets: Array.isArray(props.markets) ? props.markets : event.markets
   }

@@ -275,8 +275,7 @@ const canRequestMode = (mode) => {
   const hasDerivedContext =
     props.selection?.hasExplicitDerivedMarkets ||
     currentMode === '1up' ||
-    currentMode === '2up' ||
-    currentMode === '3up'
+    currentMode === '2up'
   if (!hasDerivedContext) return false
 
   return Boolean(
@@ -301,6 +300,9 @@ const displayMarketName = computed(() => {
 
   if (currentSelectionBaseMarketId.value === 1) {
     const normalizedBaseMarketName = stripEarlyWinSuffix(baseMarketName) || stripEarlyWinSuffix(marketName) || baseMarketName
+    if (props.selection?.supportsEarlyWin || props.selection?.hasExplicitDerivedMarkets) {
+      return [normalizedBaseMarketName, 'XUP'].filter(Boolean).join(' - ')
+    }
     const mode = props.selection?.earlyWinMode || 'base'
     return mode === 'base'
       ? normalizedBaseMarketName
