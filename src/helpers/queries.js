@@ -448,7 +448,7 @@ export const getToday2 = async (sid, page) => {
 export const searchFixtures = async (q) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_FIXTURES_API}/search/0?page=1&perPage=50&search=${q}`
+      `${NEW_FIXTURES_API}/search?page=1&perPage=50&search=${q}`
     )
   )
 }
