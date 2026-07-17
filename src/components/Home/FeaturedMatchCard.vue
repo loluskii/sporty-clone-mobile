@@ -175,10 +175,16 @@ function addToBetslip(event, odd) {
     )
     return
   }
+  const fixtureWithMarkets = {
+    ...event,
+    market: Array.isArray(props.markets) ? props.markets : event.market,
+    markets: Array.isArray(props.markets) ? props.markets : event.markets
+  }
   const data = buildCouponSelectionPayload({
-    fixture: event,
+    fixture: fixtureWithMarkets,
+    market: selectedMarket.value,
     outcome: odd,
-    marketName: '1X2',
+    marketName: selectedMarket.value?.marketName || '1X2',
     type: 'prematch'
   })
 

@@ -439,7 +439,7 @@ export const getToday2 = async (sid, page) => {
 export const searchFixtures = async (q) => {
   return parseData(
     fetchWrapper.get(
-      `${NEW_BASE_API}/sports/highlight/prematch/0?markets=1&upcoming=1&search=${q}&timeoffset=${sign}${offsetHours}`
+      `${NEW_FIXTURES_API}/search?page=1&perPage=50&search=${q}`
     )
   )
 }

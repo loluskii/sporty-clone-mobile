@@ -89,12 +89,13 @@ export const getBaseMarketIdFromMarketId = (marketId) => {
 
 export const stripEarlyWinSuffix = (marketName = '') => {
   return String(marketName || '')
-    .replace(/\s*[-–]?\s*(1|2|3)up$/i, '')
+    .trim()
+    .replace(/\s*(?:[-–]?\s*(?:xup\s*=\s*\d+|xup|(1|2|3)up)\s*)+$/i, '')
     .trim()
 }
 
 export const formatEarlyWinMarketName = (baseMarketName = '', mode = 'base') => {
-  const safeBaseName = String(baseMarketName || '').trim()
+  const safeBaseName = stripEarlyWinSuffix(baseMarketName).trim()
   if (mode === 'base') return safeBaseName
   return [safeBaseName, 'XUP'].filter(Boolean).join(' - ')
 }
