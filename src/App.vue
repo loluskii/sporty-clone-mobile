@@ -66,6 +66,32 @@ const closeBetslip = async () => {
 const winModalShown = ref(false)
 const winModalAmount = ref(0)
 const winModalCurrency = ref('')
+const DEFAULT_GLOBAL_VARIABLES = {
+  AllowRegistration: 'Yes',
+  Currency: '₦',
+  CurrencyCode: 'NGN',
+  DialCode: '+234',
+  MinDeposit: '100',
+  MinWithdrawal: '1000',
+  LiveTicketMax: '40',
+  singleMinStake: '100',
+  singleMaxStake: '50000',
+  MinBetStake: '20',
+  comboMinStake: '20',
+  comboMaxStake: '1000000',
+  MaxNoOfSelection: '50',
+  SingleMaxWinning: '500000',
+  MinBonusOdd: '1.18',
+  enableCashout: '1',
+  EnableSystemBet: '1',
+  EnableSplitBet: '0',
+  taxEnabled: '0',
+  exciseTax: '13.04',
+  wthTax: '20'
+}
+
+const isEmptyPlainObject = (value) =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value) && !Object.keys(value).length
 
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
@@ -358,17 +384,10 @@ onMounted(async () => {
     ])
 
   couponStore.sportsbookBonusList = []
-  couponStore.SportsbookGlobalVariable =
-    globalVarsResult.status === 'fulfilled'
-      ? globalVarsResult.value?.data?.data || { ...utilsStore.SportsbookGlobalVariable }
-      : { ...utilsStore.SportsbookGlobalVariable }
-
-  couponStore.SportsbookGlobalVariable.Currency =
-    couponStore.SportsbookGlobalVariable.Currency || '₦'
-  couponStore.SportsbookGlobalVariable.CurrencyCode =
-    couponStore.SportsbookGlobalVariable.CurrencyCode || 'NGN'
-  couponStore.SportsbookGlobalVariable.DialCode =
-    couponStore.SportsbookGlobalVariable.DialCode || '+234'
+  const globalVarsData = globalVarsResult.status === 'fulfilled' ? globalVarsResult.value?.data?.data : null
+  couponStore.SportsbookGlobalVariable = isEmptyPlainObject(globalVarsData)
+    ? { ...DEFAULT_GLOBAL_VARIABLES }
+    : (globalVarsData || {})
 
   couponStore.sportsbookFeatureConfig =
     featureConfigResult.status === 'fulfilled'

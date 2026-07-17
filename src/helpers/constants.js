@@ -16,7 +16,6 @@ export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 
 // export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
-export const WTH_PERC = 0
 export const APP_KEY = import.meta.env.VITE_APP_KEY
 export const SIM_ALLOWED_MARKETS = [
   1, 10, 11, 16, 18, 26, 29, 45, 60, 68, 74, 75, 80, 83, 90, 94, 95, 1601, 60100, 60200

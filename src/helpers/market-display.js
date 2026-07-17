@@ -58,16 +58,21 @@ const normalizePlaceholders = (value = '', specifierMap = {}) => {
 }
 
 const normalizeMarketName = (name = '') => {
-  const text = cleanWhitespace(String(name || ''))
+  let text = cleanWhitespace(String(name || ''))
   if (!text) return ''
 
-  return cleanWhitespace(
-    text
-      .replace(/\b(home|away)\s+team\b/gi, (_, side) => side)
-      .replace(/\s*[-–]?\s*(?:xup\s*=\s*)?(1|2|3)\s*up\s*$/i, ' - XUP')
-      .replace(/\s*\(\s*incl\.\s*overtime\s*\)\s*$/i, ' (incl. overtime)')
-      .replace(/\s*\(\s*incl\.\s*extra\s*time\s*\)\s*$/i, ' (incl. extra time)')
-  )
+  const derivedSuffixPattern = /\s*(?:[-–]?\s*(?:xup\s*=\s*\d+|xup|(1|2|3)\s*up)\s*)+$/i
+  const hasDerivedSuffix = derivedSuffixPattern.test(text)
+
+  text = text.replace(/\b(home|away)\s+team\b/gi, (_, side) => side)
+  text = text.replace(derivedSuffixPattern, '').trim()
+  if (hasDerivedSuffix) {
+    text = cleanWhitespace(`${text} - XUP`)
+  }
+  text = text.replace(/\s*\(\s*incl\.\s*overtime\s*\)\s*$/i, ' (incl. overtime)')
+  text = text.replace(/\s*\(\s*incl\.\s*extra\s*time\s*\)\s*$/i, ' (incl. extra time)')
+
+  return cleanWhitespace(text)
 }
 
 export const normalizeFixtureMarket = (market = {}) => {

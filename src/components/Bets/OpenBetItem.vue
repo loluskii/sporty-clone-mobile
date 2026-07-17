@@ -139,7 +139,7 @@
                                 </div>
                                 <div class="detail-content-right f-flex-item">
                                     <div class="m-t-14 m-t-l16 m-t-default f-wrap"><i class="m-r-5 m-icon-football"></i>
-                                        <span data-op="openbet-detail-outcome-desc" class="m-r-5 m-t-bold"><span> {{
+                                        <span class="m-r-5 m-t-bold capitalize"><span> {{
                                             event.outcomeName }}
                                             </span></span> <span data-op="openbet-detail-odds"
                                             class="m-t-bold m-r-5 m-b-5">

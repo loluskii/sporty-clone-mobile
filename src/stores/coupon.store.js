@@ -39,7 +39,6 @@ import {
 import { useMqttService } from '@/composables/useMqtt'
 
 const couponCalculation = new CouponCalculation()
-const WTH_PERC = import.meta.env.VITE_WTH_PERC
 const { subscribe } = useMqttService()
 const configuredAbandonedBetslipTimeout = Number(import.meta.env.VITE_ABANDONED_BETSLIP_TIMEOUT_MS)
 const ABANDONED_BETSLIP_TIMEOUT_MS =
@@ -2296,6 +2295,7 @@ export const useCouponStore = defineStore({
             this.clearBankers()
 
             const splitProps = await getSplitProps(this.coupon)
+            const withholdingTaxRate = this.getWithholdingTaxRate()
             //calculate winnings
             let minStake =
               splitProps.minStake !== undefined && splitProps.minStake !== ''
@@ -2310,10 +2310,12 @@ export const useCouponStore = defineStore({
             this.coupon.minBonus = calculateBonus(this.coupon, accaBonusConfig)
 
             this.coupon.minGrossWin = parseFloat(splitProps.minBonus) + minWinnings
-            this.coupon.minWTH = ((this.coupon.minGrossWin - this.coupon.stake) * WTH_PERC) / 100
+            this.coupon.minWTH =
+              ((this.coupon.minGrossWin - this.coupon.stake) * withholdingTaxRate) / 100
             this.coupon.minWin = this.coupon.minGrossWin - this.coupon.minWTH
             this.coupon.grossWin = parseFloat(splitProps.maxBonus) + maxWinnings
-            this.coupon.wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
+            this.coupon.wthTax =
+              ((this.coupon.grossWin - this.coupon.stake) * withholdingTaxRate) / 100
             this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
 
             const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
@@ -2354,6 +2356,7 @@ export const useCouponStore = defineStore({
           this.clearFlexPreview({ resetSelection: true })
           this.clearBankers()
           const splitProps = await getSplitProps(this.coupon)
+          const withholdingTaxRate = this.getWithholdingTaxRate()
 
           const minStake =
             splitProps.minStake !== undefined && splitProps.minStake !== ''
@@ -2369,10 +2372,12 @@ export const useCouponStore = defineStore({
           this.coupon.minBonus = calculateBonus(this.coupon, accaBonusConfig)
 
           this.coupon.minGrossWin = parseFloat(this.coupon.minBonus) + minWinnings
-          this.coupon.minWTH = ((this.coupon.minGrossWin - this.coupon.stake) * WTH_PERC) / 100
+          this.coupon.minWTH =
+            ((this.coupon.minGrossWin - this.coupon.stake) * withholdingTaxRate) / 100
           this.coupon.minWin = this.coupon.minGrossWin - this.coupon.minWTH
           this.coupon.grossWin = parseFloat(splitProps.maxBonus) + maxWinnings
-          const wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
+          const wthTax =
+            ((this.coupon.grossWin - this.coupon.stake) * withholdingTaxRate) / 100
           this.coupon.wthTax = wthTax < 1 ? 0 : wthTax
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
 
@@ -2567,6 +2572,7 @@ export const useCouponStore = defineStore({
           this.clearCutOnePreview({ resetSelection: true })
           this.clearFlexPreview({ resetSelection: true })
           const splitProps = await getSplitProps(this.coupon)
+          const withholdingTaxRate = this.getWithholdingTaxRate()
           //calculate winnings
           const minWinnings = parseFloat(splitProps.minOdds) * parseFloat(splitProps.minStake)
           const maxWinnings = parseFloat(splitProps.maxOdds) * parseFloat(splitProps.minStake)
@@ -2574,10 +2580,12 @@ export const useCouponStore = defineStore({
           this.coupon.minBonus = calculateBonus(this.coupon, accaBonusConfig)
 
           this.coupon.minGrossWin = parseFloat(this.coupon.minBonus) + minWinnings
-          this.coupon.minWTH = ((this.coupon.minGrossWin - this.coupon.stake) * WTH_PERC) / 100
+          this.coupon.minWTH =
+            ((this.coupon.minGrossWin - this.coupon.stake) * withholdingTaxRate) / 100
           this.coupon.minWin = this.coupon.minGrossWin - this.coupon.minWTH
           this.coupon.grossWin = parseFloat(this.coupon.maxBonus) + maxWinnings
-          this.coupon.wthTax = ((this.coupon.grossWin - this.coupon.stake) * WTH_PERC) / 100
+          this.coupon.wthTax =
+            ((this.coupon.grossWin - this.coupon.stake) * withholdingTaxRate) / 100
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
         } else {
           if (prevBetType === 'Split') {
