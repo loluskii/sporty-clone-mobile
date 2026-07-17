@@ -1,3 +1,10 @@
+## [1.4.7](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.6...v1.4.7) (2026-07-17)
+
+
+### Bug Fixes
+
+* resolve clearAbandonedBetslipTimer undefined and router.push null errors ([9c0b87f](https://github.com/zoroplay/sporty-clone-mobile/commit/9c0b87f7b16d6c53db5833de9bfc952ef10689b5))
+
 ## [1.4.6](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.5...v1.4.6) (2026-07-15)
 
 
