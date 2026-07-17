@@ -41,23 +41,9 @@ export const useUtilsStore = defineStore({
     activeBetView: 'open_bets'
   }),
 
-  getters: {
-    hasFeaturedData: (state) => state.featuredTournaments.length > 0,
-    isFeaturedStale: (state) => {
-      if (!state.featuredLastFetchTime) return true
-      const now = Date.now()
-      return now - state.featuredLastFetchTime > 300000 // 5 minutes
-    }
-  },
-
   actions: {
     async fetchFeaturedGames() {
       if (!FEED_TOGGLE) return;
-      // If we have fresh data, don't fetch again
-      if (this.hasFeaturedData && !this.isFeaturedStale) {
-        return
-      }
-
       // Prevent concurrent fetches
       if (this.featuredIsLoading || this.isFetchingTournamentGames) {
         return
@@ -82,9 +68,10 @@ export const useUtilsStore = defineStore({
           }
 
           this.featuredTournaments = uniqueTournaments.sort(
-            (a, b) => a.tournament_id - b.tournament_id
+            (a, b) =>
+              Number(b.priority || 0) - Number(a.priority || 0) ||
+              Number(a.tournament_id || 0) - Number(b.tournament_id || 0)
           )
-          this.featuredLastFetchTime = Date.now()
 
           // Set active tournament to the first one if not already set
           if (!this.activeFeaturedTournament && this.featuredTournaments.length > 0) {
@@ -146,6 +133,7 @@ export const useUtilsStore = defineStore({
                   // Take only first 5 fixtures
                   const tournamentGames = {
                     tournamentID: tournament.tournament_id,
+                    priority: Number(tournament.priority || 0),
                     fixtures: games.data.fixtures,
                     markets: games.data.markets
                   }
@@ -261,7 +249,6 @@ export const useUtilsStore = defineStore({
       'activeBetView',
       // 'featuredTournaments',
       // 'featuredTournamentGames',
-      'featuredLastFetchTime',
       'popupDialogShown',
       'bonusModalShown',
       'banners'

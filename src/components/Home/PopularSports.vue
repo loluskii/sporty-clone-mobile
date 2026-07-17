@@ -116,14 +116,9 @@ import FeaturedMatchCard from './FeaturedMatchCard.vue'
 import Codes from './Codes.vue'
 import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from 'vue'
 import {
-  getTopBets,
-  getFixturesByTournamentId,
-  slugify,
   getTopGameCategories,
   gamesByTopCategory,
-  getNext7Days,
   FEED_TOGGLE,
-  normalizeFixtureMarkets
 } from '@/helpers'
 import { useQuery } from 'vue-query'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -163,7 +158,11 @@ function setActiveTab(tab) {
 
 const sortedTournamentGames = computed(() => {
   return featuredTournamentGames.value.length
-    ? [...featuredTournamentGames.value].sort((a, b) => a.tournamentID - b.tournamentID)
+    ? [...featuredTournamentGames.value].sort(
+        (a, b) =>
+          Number(b.priority || 0) - Number(a.priority || 0) ||
+          Number(a.tournamentID || 0) - Number(b.tournamentID || 0)
+      )
     : []
 })
 
@@ -208,38 +207,6 @@ async function getCasinoGames() {
   featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
 }
 
-function assignTournaments(tournament, games, tournamentID) {
-  if (!games?.fixtures?.length || !games?.markets?.length) {
-    // Early return if no valid data
-    const index = featuredTournaments.value.findIndex((x) => x.tournament_id === tournament.id)
-    if (index !== -1) {
-      featuredTournaments.value.splice(index, 1)
-    }
-    return
-  }
-
-  // Take only first 5 fixtures
-  const gamesList = games.fixtures.slice(0, 5)
-  const normalizedMarkets = normalizeFixtureMarkets(games.markets || [])
-
-  // Create tournament games object
-  const tournamentGames = {
-    tournamentID,
-    fixtures: gamesList,
-    markets: normalizedMarkets
-  }
-
-  // Add to featured games
-  featuredTournamentGames.value.push(tournamentGames)
-
-  // Batch MQTT subscriptions
-  const matchIds = gamesList.filter((fixture) => fixture.matchID).map((fixture) => fixture.matchID)
-
-  if (matchIds.length > 0) {
-    setupMqttSubscriptions(matchIds)
-  }
-}
-
 // function setupMqttSubscriptions(matchIds) {
 //   // Only clear our own component's subscriptions
 //   const subscriptionKey = `${componentId}-${matchIds.join(',')}`
@@ -276,15 +243,11 @@ onBeforeUnmount(() => {
   // unsubscribeFunctions.value = {}
 })
 
-// Update onMounted
-onMounted(async () => {
-  // Only fetch if we don't have data or it's stale
-  // if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-  //   await utilsStore.fetchFeaturedGames().then(() => {
-  //     setActiveTournament(featuredTournaments.value[0])
-  //   })
-  // }
-})
+const loadFeaturedGames = async () => {
+  await utilsStore.fetchFeaturedGames()
+}
+
+onMounted(loadFeaturedGames)
 
 const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
   'casinoGames',
@@ -318,62 +281,9 @@ watch(
   { immediate: true }
 )
 
-// Update the getFeaturedGames function
-async function getFeaturedGames() {
-  if (!FEED_TOGGLE) return
-  if (!topBetsData.value) return
-
-  // Use Set for faster unique tournament filtering
-  const uniqueTournamentIds = new Set()
-  const uniqueTournaments = []
-
-  // Single pass to filter unique tournaments
-  for (const tournament of topBetsData.value.data) {
-    if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-      uniqueTournamentIds.add(tournament.tournamentID)
-      uniqueTournaments.push(tournament)
-    }
-  }
-
-  // Sort tournaments and update featuredTournaments immediately
-  featuredTournaments.value = uniqueTournaments.sort((a, b) => a.tournamentID - b.tournamentID)
-
-  // Set active tournament
-  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID
-
-  // Process tournaments in parallel with concurrency limit
-  const CONCURRENCY_LIMIT = 3
-  const chunks = []
-  for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
-    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT))
-  }
-
-  for (const chunk of chunks) {
-    await Promise.all(
-      chunk.map(async (tournament) => {
-        try {
-          const games = await getFixturesByTournamentId(tournament.tournamentID, tournament.sportID)
-          assignTournaments(tournament, games, tournament.tournamentID)
-        } catch (error) {
-          console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
-          const index = featuredTournaments.value.findIndex(
-            (t) => t.tournamentID === tournament.tournamentID
-          )
-          if (index !== -1) {
-            featuredTournaments.value.splice(index, 1)
-          }
-        }
-      })
-    )
-  }
-}
-
 // Update onActivated
 onActivated(async () => {
-  // Only fetch if we don't have data or it's stale
-  if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames()
-  }
+  await utilsStore.fetchFeaturedGames()
 })
 
 // Update onDeactivated
