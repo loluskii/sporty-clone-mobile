@@ -33,14 +33,6 @@ const { currentUser } = useUsersStore()
 const previousRoute = ref(null)
 const errorState = ref(false)
 
-watch(
-  () => [],
-  async () => {
-    await getCasinoURL()
-  },
-  { immediate: true }
-)
-
 async function getCasinoURL() {
   isLoading.value = true
 
@@ -48,8 +40,12 @@ async function getCasinoURL() {
     const { username, id, authCode } = currentUser || {}
     const bearerToken = Cookies.get('SBE-TOKEN') || undefined
 
+    if (!bearerToken) {
+      return router.push({ name: 'sign-in' })
+    }
+
     let payload = {
-      playerId: id,
+      playerId: String(id),
       currency: 'NGN',
       country: 'NG',
       lang: 'en_US',
@@ -60,7 +56,7 @@ async function getCasinoURL() {
     console.log(payload)
 
     const res = await getGameLobbyUrl(payload)
-    // window.location.href = res.url
+    return window.location.assign(res.url)
   } catch (error) {
     errorState.value = true
     console.error(error)
