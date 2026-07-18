@@ -41,7 +41,7 @@ export const CASINO_PROVIDER_API = isProductionMode
 export const CASINO_PROVIDER_PUBLIC_API = isProductionMode
   ? fallbackByMode(
       import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API,
-      'https://clientapi.sportsbookengine.com'
+      'https://clientapi-prod.sportsbookengine.com'
     )
   : 'https://clientapi.sportsbookengine.com'
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
