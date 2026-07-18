@@ -752,7 +752,7 @@ export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
 
 export const getQtechLaunchUrl = async (gameId, payload, authToken) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/${CLIENT_ID}/games/${gameId}/launch-url`, payload, {
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
       authToken,
       skipAuthLogout: true
     })
