@@ -292,7 +292,9 @@ export const getCombosData = async (payload) => {
 
 export const getGameLobbyUrl = async (payload) => {
   return parseData(
-    fetchWrapper.post(`${NEW_BASE_API}/games/${CLIENT_ID}/lobby-url`, payload),
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${CLIENT_ID}/lobby-url2`, payload, {
+          skipAuthLogout: true
+        }),
   );
 };
 
@@ -741,7 +743,7 @@ export const getGoldenRaceLobbyUrl = async (payload, authToken) => {
 
 export const getQtechLaunchUrl = async (gameId, payload, authToken) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${gameId}/launch-url`, payload, {
+    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/${CLIENT_ID}/games/${gameId}/launch-url`, payload, {
       authToken,
       skipAuthLogout: true
     })
