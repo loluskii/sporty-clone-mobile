@@ -13,7 +13,9 @@ import {
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
   getFixtureDerivedMarketIds,
-  X_UP_FEATURE_MARKET_ID
+  getSupportedEarlyWinModesFromFixture,
+  X_UP_FEATURE_MARKET_ID,
+  stripEarlyWinSuffix
 } from './early-win'
 
 export const applyBranding = async () => {
@@ -180,17 +182,18 @@ export const calculateBonus = (coupondata, bonusConfig) => {
 
 export const getDataFromPayload = (couponPayload) => {
   const derivedMarketIds = getFixtureDerivedMarketIds(couponPayload.fixture)
+  const resolvedMarketName = stripEarlyWinSuffix(couponPayload.market_name || '')
   const earlyWinState = buildEarlyWinSelectionState({
     sportId: couponPayload.fixture.sportID,
     marketId: couponPayload.market_id,
-    marketName: couponPayload.market_name,
+    marketName: resolvedMarketName || couponPayload.market_name,
     derivedMarketIds,
     specifier: couponPayload.specifier || couponPayload.outcome?.specifier || ''
   })
   const earlyGoalState = buildEarlyGoalSelectionState({
     sportId: couponPayload.fixture.sportID,
     marketId: couponPayload.market_id,
-    marketName: couponPayload.market_name,
+    marketName: resolvedMarketName || couponPayload.market_name,
     baseMarketId: couponPayload.baseMarketId,
     derivedMarketIds
   })
@@ -218,9 +221,18 @@ export const getDataFromPayload = (couponPayload) => {
     displayName: couponPayload.outcome.displayName,
     derivedMarketIds
   })
-  const supportedEarlyWinModes = ['1up', '2up', '3up'].filter((mode) =>
+  const supportedEarlyWinModes = ['1up', '2up'].filter((mode) =>
     Boolean(earlyWinLocalQuotes?.[mode])
   )
+  const supportedEarlyWinModesFromFixture = getSupportedEarlyWinModesFromFixture({
+    fixture: couponPayload.fixture,
+    baseMarketId: earlyWinState.baseMarketId,
+    derivedMarketIds
+  }).filter((mode) => mode !== '3up')
+  const mergedSupportedEarlyWinModes = [...new Set([
+    ...supportedEarlyWinModesFromFixture,
+    ...supportedEarlyWinModes
+  ])]
   const xupSelection = Number(couponPayload.market_id || 0) === X_UP_FEATURE_MARKET_ID
   const supportedDerivedMarketIds = [
     ...new Set([
@@ -264,6 +276,13 @@ export const getDataFromPayload = (couponPayload) => {
   const currentOutcomeName = currentQuote?.outcomeName || couponPayload.outcome.outcomeName
   const currentDisplayName = currentQuote?.displayName || couponPayload.outcome.displayName
   const currentSpecifier = currentQuote?.specifier ?? couponPayload.specifier ?? ''
+  const resolvedOddsValue = Number(
+    currentQuote?.odds ??
+      couponPayload.outcome?.odds ??
+      couponPayload.odds ??
+      baseQuote?.odds ??
+      0
+  )
   const stableSelectionId = createID(
     couponPayload.fixture.matchID,
     selectionBaseState.baseMarketId,
@@ -281,7 +300,7 @@ export const getDataFromPayload = (couponPayload) => {
     currentOutcomeName
   )
   const normalizedCurrentSelectionId = couponPayload.ele_id || currentSelectionId
-  const supportsEarlyWin = supportedEarlyWinModes.length > 0
+  const supportsEarlyWin = mergedSupportedEarlyWinModes.length > 0
   const supportsEarlyGoal = Boolean(earlyGoalLocalQuotes?.earlygoal)
 
   const data = {
@@ -295,7 +314,7 @@ export const getDataFromPayload = (couponPayload) => {
     outcomeName: currentOutcomeName,
     displayName: currentDisplayName,
     outcomeId: currentOutcomeId,
-    odds: parseFloat(currentQuote?.odds ?? couponPayload.outcome.odds).toFixed(2),
+    odds: Number.isFinite(resolvedOddsValue) && resolvedOddsValue > 0 ? resolvedOddsValue.toFixed(2) : '0.00',
     eventDate: couponPayload.fixture.date,
     tournament: couponPayload.fixture.tournament,
     category: couponPayload.fixture.categoryName,
@@ -318,7 +337,7 @@ export const getDataFromPayload = (couponPayload) => {
     hasExplicitDerivedMarkets: earlyWinState.hasExplicitDerivedMarkets,
     supportsEarlyWin,
     supportedDerivedMarketIds,
-    supportedEarlyWinModes,
+    supportedEarlyWinModes: mergedSupportedEarlyWinModes,
     earlyWinLocalQuotes,
     earlyWinMode: earlyWinState.earlyWinMode,
     supportsEarlyGoal,
