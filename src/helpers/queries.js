@@ -292,9 +292,9 @@ export const getCombosData = async (payload) => {
 
 export const getGameLobbyUrl = async (payload) => {
   return parseData(
-    fetchWrapper.post(`${CASINO_PROVIDER_API}/providers/qtech/platform/games/${CLIENT_ID}/lobby-url2`, payload, {
-          skipAuthLogout: true
-        }),
+    fetchWrapper.post(`https://clientapi-prod.sportsbookengine.com/providers/qtech/platform/games/${CLIENT_ID}/lobby-url2`, payload, {
+      skipAuthLogout: true
+    }),
   );
 };
 
@@ -421,7 +421,7 @@ export const getCategoriesBySport = async (sportID, period) => {
 
 export const getTournamentsByCategories = async (sid, categoryId, period = null) => {
   let periodFilter = null
-  if(period){
+  if (period) {
     periodFilter = `&start=${period.startDate}&end=${period.endDate}`
   }
   return parseData(
