@@ -298,7 +298,13 @@ async function playAviator() {
     },
     bearerToken
   )
-  return window.location.assign(res.launchUrl)
+  const launchUrl = res?.launchUrl || res?.url || res?.data?.launchUrl || res?.data?.url
+
+  if (!launchUrl) {
+    throw new Error('Aviator launch URL was not returned')
+  }
+
+  return window.location.assign(launchUrl)
 }
 
 function playSmatVirtual() {
