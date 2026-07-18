@@ -176,7 +176,7 @@
 import { useUtilsStore, useUsersStore } from '@/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { slugify, getGoldenRaceLobbyUrl } from '@/helpers'
+import { slugify, getGoldenRaceLobbyUrl,CASINO_PROVIDER_PUBLIC_API, getQtechLaunchUrl } from '@/helpers'
 import MD5 from 'crypto-js/md5'
 import emitter from '@/plugins/emitter'
 import Cookies from 'js-cookie'
@@ -269,6 +269,22 @@ async function openVirtual() {
 }
 
 async function playAviator() {
+	const bearerToken = Cookies.get('SBE-TOKEN');
+	const { id } = usersStore.currentUser;
+	const res = await getQtechLaunchUrl(
+	  'SPB-aviator',
+    {
+          playerId: id,
+          currency: 'NGN',
+          country: 'NG',
+          lang: 'en_US',
+          device: 'desktop',
+          walletSessionId: bearerToken,
+          lobbyUrl: `${CASINO_PROVIDER_PUBLIC_API}/providers/qtech/accounts/${id}/session?gameId=${gameCode}`,
+          mode: 'real'
+    },
+    bearerToken
+   )
   return router.push({
     name: 'game-play',
     params: { game_name: slugify('Aviator'), game_id: 1838 }
