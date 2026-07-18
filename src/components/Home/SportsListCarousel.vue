@@ -1,5 +1,14 @@
 <template lang="">
   <div class="m-snap-nav-wrap m-sports-choose">
+    <div
+      v-if="isAviatorLoading"
+      class="aviator-loading-overlay"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading Aviator"
+    >
+      <span class="aviator-loading-spinner" aria-hidden="true"></span>
+    </div>
     <ul class="m-snap-nav flex" style="width: 100%">
       <li class="m-sports-choose-item m-snap-nav-item">
         <a @click.prevent="$router.push({ name: 'sports', query: { sport: 'Soccer' } })">
@@ -63,7 +72,11 @@
         </a>
       </li>
       <li class="m-sports-choose-item m-snap-nav-item">
-        <a href="#" style="padding-top: 6px" @click.prevent="playAviator"
+        <a
+          href="#"
+          style="padding-top: 6px"
+          :aria-busy="isAviatorLoading"
+          @click.prevent="playAviator"
           ><div class="sport-con">
             <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTY8ynsa8sCGZBFO0kXlBsiR1RKR-f7VVwfI39t0Ol1snwY7KStpbdPycKA&s=10"
@@ -214,6 +227,8 @@ const activeSportID = computed(() => {
   return utilsStore.sportID
 })
 
+const isAviatorLoading = ref(false)
+
 const getActiveSport = computed(() => {
   return sportsList.value.find((x) => x.sport_id == activeSportID.value)
 })
@@ -269,42 +284,53 @@ async function openVirtual() {
 }
 
 async function playAviator() {
-  const bearerToken = Cookies.get('SBE-TOKEN')
-  if (!bearerToken) {
-    return router.push({ name: 'sign-in' })
+  if (isAviatorLoading.value) return
+
+  isAviatorLoading.value = true
+
+  try {
+    const bearerToken = Cookies.get('SBE-TOKEN')
+    if (!bearerToken) {
+      return router.push({ name: 'sign-in' })
+    }
+
+    if (!usersStore.currentUser) {
+      await usersStore.loadCurrentUser().catch(() => null)
+    }
+
+    const user = usersStore.currentUser
+    if (!user?.id) {
+      return router.push({ name: 'sign-in' })
+    }
+
+    const { id } = user
+    const res = await getQtechLaunchUrl(
+      'SPB-aviator',
+      {
+        playerId: String(id),
+        currency: 'NGN',
+        country: 'NG',
+        lang: 'en_US',
+        device: 'desktop',
+        walletSessionId: bearerToken,
+        lobbyUrl: `https://clientapi-prod.sportsbookengine.com/providers/qtech/accounts/${id}/session?gameId=SPB-aviator`,
+        mode: 'real'
+      },
+      bearerToken
+    )
+    const launchUrl = res?.launchUrl || res?.url || res?.data?.launchUrl || res?.data?.url
+
+    if (!launchUrl) {
+      throw new Error('Aviator launch URL was not returned')
+    }
+
+    return window.location.assign(launchUrl)
+  } catch (error) {
+    console.error('Unable to launch Aviator:', error)
+    emitter.emit('showErrorMessage', 'Unable to open Aviator right now. Please try again.')
+  } finally {
+    isAviatorLoading.value = false
   }
-
-  if (!usersStore.currentUser) {
-    await usersStore.loadCurrentUser().catch(() => null)
-  }
-
-  const user = usersStore.currentUser
-  if (!user?.id) {
-    return router.push({ name: 'sign-in' })
-  }
-
-  const { id } = user
-  const res = await getQtechLaunchUrl(
-    'SPB-aviator',
-    {
-      playerId: id,
-      currency: 'NGN',
-      country: 'NG',
-      lang: 'en_US',
-      device: 'desktop',
-      walletSessionId: bearerToken,
-      lobbyUrl: `https://clientapi-prod.sportsbookengine.com/providers/qtech/accounts/${id}/session?gameId=SPB-aviator`,
-      mode: 'real'
-    },
-    bearerToken
-  )
-  const launchUrl = res?.launchUrl || res?.url || res?.data?.launchUrl || res?.data?.url
-
-  if (!launchUrl) {
-    throw new Error('Aviator launch URL was not returned')
-  }
-
-  return window.location.assign(launchUrl)
 }
 
 function playSmatVirtual() {
@@ -327,6 +353,31 @@ onMounted(() => {
 })
 </script>
 <style scoped>
+.aviator-loading-overlay {
+  align-items: center;
+  background: rgba(20, 25, 34, 0.58);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 3000;
+}
+
+.aviator-loading-spinner {
+  animation: aviator-spinner 0.8s linear infinite;
+  border: 3px solid rgba(255, 255, 255, 0.32);
+  border-radius: 50%;
+  border-top-color: #fff;
+  height: 2.25rem;
+  width: 2.25rem;
+}
+
+@keyframes aviator-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .x-main-mid .m-bscast > div {
   height: auto;
 }
