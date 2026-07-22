@@ -136,7 +136,7 @@ export const useUpMode = ({
     const derivedMarketId = Number(activeConfig.value?.featureMarketId || 0) || modeIdMap.value.get(upMode.value)
     const derivedSpecifier =
       Number(activeConfig.value?.featureMarketId || 0) === 1601
-        ? `xup=${upMode.value === '1up' ? 1 : upMode.value === '2up' ? 2 : upMode.value === '3up' ? 3 : 0}`
+        ? `xup=${upMode.value === '1up' ? 1 : upMode.value === '2up' ? 2 : 0}`
         : String(baseMarket.specifier || '')
     const marketName =
       upMode.value === 'earlygoal'
