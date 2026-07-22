@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.2...v1.3.3) (2026-07-22)
+
+
+### Reverts
+
+* Revert "use qtech aviator launch endpoint" ([e1ceab2](https://github.com/zoroplay/sporty-clone-mobile/commit/e1ceab2af3ebcb81ea79ee2605f904a8661f9fd8))
+
 ## [1.3.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.1...v1.3.2) (2026-02-11)
 
 
