@@ -1,4 +1,4 @@
-const DEFAULT_ENV_MODE = 'staging'
+const DEFAULT_ENV_MODE = 'production'
 
 const resolvedMode = String(
   import.meta.env.VITE_ENV_MODE ||
@@ -44,7 +44,7 @@ export const CASINO_PROVIDER_PUBLIC_API = isProductionMode
       'https://clientapi-prod.sportsbookengine.com'
     )
   : 'https://clientapi.sportsbookengine.com'
-export const CLIENT_ID = 4
+export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 
 // export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 export const AUTH_EXCLUDE_LIST = []
