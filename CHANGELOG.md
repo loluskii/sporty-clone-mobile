@@ -1,3 +1,10 @@
+## [1.4.9](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.8...v1.4.9) (2026-07-22)
+
+
+### Reverts
+
+* Revert "Merge branch 'main' into west-bet24" ([63373c9](https://github.com/zoroplay/sporty-clone-mobile/commit/63373c90a59b363335432dc2f1440dbe0ea18fc5))
+
 ## [1.4.8](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.4.7...v1.4.8) (2026-07-22)
 
 
