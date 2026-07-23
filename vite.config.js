@@ -7,7 +7,13 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
-  process.env = { ...loadEnv(mode, process.cwd()), ...process.env }
+  const env = loadEnv(mode, process.cwd())
+  process.env = { ...env, ...process.env }
+  const resolvedMode = String(env.VITE_ENV_MODE || env.VITE_MODE || mode).toLowerCase()
+  const casinoProviderTarget =
+    resolvedMode === 'production'
+      ? 'https://clientapi-prod.sportsbookengine.com'
+      : 'https://clientapi.sportsbookengine.com'
   return defineConfig({
     plugins: [vue(), vueJsx()],
     resolve: {
@@ -46,12 +52,12 @@ export default ({ mode }) => {
           rewrite: (path) => path.replace(/^\/bet/, '/v1')
         },
         '/casino-client/providers': {
-          target: 'https://clientapi.sportsbookengine.com',
+          target: casinoProviderTarget,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/casino-client/, '')
         },
         '/casino-client': {
-          target: 'https://clientapi.sportsbookengine.com',
+          target: casinoProviderTarget,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/casino-client/, '/client')
         }

@@ -4,8 +4,7 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
     featureMarketId: 1601,
     modes: [
       { key: '1up', id: 1601, label: '1UP' },
-      { key: '2up', id: 1601, label: '2UP' },
-      { key: '3up', id: 1601, label: '3UP' }
+      { key: '2up', id: 1601, label: '2UP' }
     ]
   },
   18: {
@@ -14,12 +13,11 @@ export const DEFAULT_DERIVED_MARKET_CONFIG = {
   }
 }
 
-export const EARLY_WIN_MODE_KEYS = ['1up', '2up', '3up']
+export const EARLY_WIN_MODE_KEYS = ['1up', '2up']
 export const EARLY_WIN_MODE_LABELS = {
   base: 'Base',
   '1up': '1UP',
   '2up': '2UP',
-  '3up': '3UP',
   earlygoal: 'Early Goals'
 }
 export const EARLY_WIN_DEFAULT_MODE = '2up'
@@ -55,7 +53,6 @@ export const getEarlyWinModeFromSpecifier = (specifier = '') => {
   const xupValue = getSpecifierValue(specifier, 'xup')
   if (xupValue === '1') return '1up'
   if (xupValue === '2') return '2up'
-  if (xupValue === '3') return '3up'
   return 'base'
 }
 
@@ -238,9 +235,7 @@ export const isSupportedDerivedOutcome = ({
     normalizedBaseMarketId === EARLY_WIN_BASE_MARKET_ID &&
     (normalizedMode === '1up' ||
       normalizedMode === '2up' ||
-      normalizedMarketId === X_UP_FEATURE_MARKET_ID ||
-      normalizedMarketId === 60100 ||
-      normalizedMarketId === 60200)
+      normalizedMarketId === X_UP_FEATURE_MARKET_ID)
   ) {
     return isSupported1x2DerivedOutcome({ outcomeId, displayName, outcomeName })
   }
@@ -446,6 +441,47 @@ export const getSupportedEarlyWinModes = (input) => {
   return EARLY_WIN_MODE_KEYS.filter((mode) => modes.includes(mode))
 }
 
+const getFixtureMarketExtensions = (fixture = {}) => {
+  return getFixtureMarkets(fixture).flatMap((market = {}) => {
+    const extensions = Array.isArray(market.marketExtendVOS) ? market.marketExtendVOS : []
+    return extensions
+      .map((extend = {}) => ({
+        rootMarketId: Number(extend.rootMarketId || extend.root_market_id || market.marketID || market.marketId || market.market_id || 0),
+        nodeMarketId: Number(extend.nodeMarketId || extend.node_market_id || 0),
+        nodeSpecifier: String(extend.nodeSpecifier || extend.node_specifier || '').trim(),
+        notSupport: Boolean(extend.notSupport)
+      }))
+      .filter((extend) => Number.isFinite(extend.rootMarketId) && extend.rootMarketId > 0)
+  })
+}
+
+export const getSupportedEarlyWinModesFromFixture = ({
+  fixture = {},
+  baseMarketId = EARLY_WIN_BASE_MARKET_ID,
+  derivedMarketIds = []
+} = {}) => {
+  if (!isFootballSport(fixture?.sportID || fixture?.sportId)) return []
+
+  const normalizedBaseMarketId = Number(baseMarketId || 0)
+  const extensionModes = getFixtureMarketExtensions(fixture)
+    .filter(
+      (extend) =>
+        extend.rootMarketId === normalizedBaseMarketId &&
+        extend.nodeMarketId === X_UP_FEATURE_MARKET_ID &&
+        !extend.notSupport
+    )
+    .map((extend) => getEarlyWinModeFromSpecifier(extend.nodeSpecifier))
+    .filter((mode) => EARLY_WIN_MODE_KEYS.includes(mode))
+
+  const derivedModes = getSupportedEarlyWinModes({
+    sportId: fixture?.sportID || fixture?.sportId,
+    marketId: normalizedBaseMarketId,
+    derivedMarketIds
+  })
+
+  return [...new Set([...derivedModes, ...extensionModes])]
+}
+
 export const getDerivedMarketIdForMode = (baseMarketId, mode, supportedDerivedMarketIds = []) => {
   const normalizedMode = normalizeEarlyWinMode(mode)
   if (normalizedMode === 'base') {
@@ -519,40 +555,70 @@ export const buildEarlyWinLocalQuoteMap = ({
     specifier
   }
 
-  const xupMarket = markets.find((market) => getFixtureMarketId(market) === X_UP_FEATURE_MARKET_ID)
-  if (xupMarket && Number(baseMarketId || 0) === EARLY_WIN_BASE_MARKET_ID) {
-    const xupOutcomes = (Array.isArray(xupMarket.outcomes) ? xupMarket.outcomes : []).filter(
-      (outcome, index, self) =>
-        index ===
-        self.findIndex(
-          (item) =>
-            getFixtureOutcomeId(item) === getFixtureOutcomeId(outcome) &&
-            String(getFixtureOutcomeSpecifier(item) || '') ===
-              String(getFixtureOutcomeSpecifier(outcome) || '')
-        )
+  const xupOutcomes = [
+    ...flatOutcomes.filter(
+      (outcome) => Number(outcome.marketID ?? outcome.marketId ?? outcome.market_id ?? 0) === X_UP_FEATURE_MARKET_ID
+    ),
+    ...markets.flatMap((market) =>
+      getFixtureMarketId(market) === X_UP_FEATURE_MARKET_ID && Array.isArray(market.outcomes)
+        ? market.outcomes.map((outcome) => ({
+            ...outcome,
+            marketID: getFixtureMarketId(market),
+            marketName: getFixtureMarketName(market),
+            specifier: getFixtureMarketSpecifier(market) || getFixtureOutcomeSpecifier(outcome)
+          }))
+        : []
     )
+  ].filter(
+    (outcome, index, self) =>
+      index ===
+      self.findIndex(
+        (item) =>
+          getFixtureOutcomeId(item) === getFixtureOutcomeId(outcome) &&
+          String(getFixtureOutcomeSpecifier(item) || '') === String(getFixtureOutcomeSpecifier(outcome) || '')
+      )
+  )
 
-    xupOutcomes.forEach((outcome) => {
-      const mode = getEarlyWinModeFromSpecifier(getFixtureOutcomeSpecifier(outcome))
-      if (!EARLY_WIN_MODE_KEYS.includes(mode)) return
+  if (Number(baseMarketId || 0) === EARLY_WIN_BASE_MARKET_ID && xupOutcomes.length) {
+    const xupMarket =
+      markets.find((item) => getFixtureMarketId(item) === X_UP_FEATURE_MARKET_ID) || {
+        marketID: X_UP_FEATURE_MARKET_ID,
+        marketName: formatEarlyWinMarketName(baseMarketName, 'base'),
+        outcomes: xupOutcomes
+      }
 
-      const normalizedOdds = Number(outcome.odds)
+    EARLY_WIN_MODE_KEYS.forEach((mode) => {
+      const modeSpecifier = `xup=${mode === '1up' ? 1 : 2}`
+      const xupOutcome =
+        xupOutcomes.find(
+          (outcome) =>
+            getEarlyWinModeFromSpecifier(getFixtureOutcomeSpecifier(outcome)) === mode &&
+            String(getFixtureOutcomeId(outcome)) === String(outcomeId || '')
+        ) ||
+        xupOutcomes.find(
+          (outcome) =>
+            getEarlyWinModeFromSpecifier(getFixtureOutcomeSpecifier(outcome)) === mode
+        )
+
+      if (!xupOutcome) return
+
+      const normalizedOdds = Number(xupOutcome.odds)
       if (!Number.isFinite(normalizedOdds) || normalizedOdds <= 0) return
       if (mode !== 'base' && !baseOutcomeSupported) return
 
       quotes[mode] = {
         marketId: X_UP_FEATURE_MARKET_ID,
         marketName: formatEarlyWinMarketName(baseMarketName, mode),
-        specifier: getFixtureOutcomeSpecifier(outcome),
-        idSpecifier: getFixtureOutcomeSpecifier(outcome),
-        outcomeId: getFixtureOutcomeId(outcome),
-        outcomeName: getFixtureOutcomeName(outcome),
-        displayName: getFixtureOutcomeDisplayName(outcome),
+        specifier: modeSpecifier,
+        idSpecifier: modeSpecifier,
+        outcomeId: getFixtureOutcomeId(xupOutcome),
+        outcomeName: getFixtureOutcomeName(xupOutcome),
+        displayName: getFixtureOutcomeDisplayName(xupOutcome),
         odds: normalizedOdds,
-        active: getFixtureOutcomeActive(outcome),
+        active: getFixtureOutcomeActive(xupOutcome),
         statusName: getLocalQuoteStatusName({
           market: xupMarket,
-          outcome,
+          outcome: xupOutcome,
           odds: normalizedOdds
         })
       }
@@ -568,6 +634,8 @@ export const buildEarlyWinLocalQuoteMap = ({
     const sourceIndex = findOutcomeIndex(sourceMarket, reference)
 
     candidateMarketIds.forEach((candidateMarketId) => {
+      if (Number(candidateMarketId) === X_UP_FEATURE_MARKET_ID) return
+
       const market = findFixtureMarket(markets, candidateMarketId, specifier)
       if (!market) return
 
@@ -630,6 +698,8 @@ export const buildEarlyWinLocalQuoteMap = ({
   const sourceIndex = findOutcomeIndex({ outcomes: sourceOutcomes }, reference)
 
   candidateMarketIds.forEach((candidateMarketId) => {
+    if (Number(candidateMarketId) === X_UP_FEATURE_MARKET_ID) return
+
     const outcomesForMarket = findFixtureOutcomes(flatOutcomes, candidateMarketId, specifier)
     if (!outcomesForMarket.length) return
 

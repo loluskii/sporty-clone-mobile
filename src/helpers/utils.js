@@ -13,6 +13,7 @@ import {
   formatEarlyGoalMarketName,
   formatEarlyWinMarketName,
   getFixtureDerivedMarketIds,
+  getSupportedEarlyWinModesFromFixture,
   X_UP_FEATURE_MARKET_ID
 } from './early-win'
 
@@ -178,17 +179,32 @@ export const calculateBonus = (coupondata, bonusConfig) => {
   return Number(preview?.bonus_amount || 0)
 }
 
+const formatSafeOdds = (primaryOdds, fallbackOdds) => {
+  const normalizedPrimary = Number(primaryOdds)
+  if (Number.isFinite(normalizedPrimary) && normalizedPrimary > 0) {
+    return normalizedPrimary.toFixed(2)
+  }
+
+  const normalizedFallback = Number(fallbackOdds)
+  if (Number.isFinite(normalizedFallback) && normalizedFallback > 0) {
+    return normalizedFallback.toFixed(2)
+  }
+
+  return '0.00'
+}
+
 export const getDataFromPayload = (couponPayload) => {
   const derivedMarketIds = getFixtureDerivedMarketIds(couponPayload.fixture)
+  const fixtureSportId = couponPayload.fixture.sportID ?? couponPayload.fixture.sportId
   const earlyWinState = buildEarlyWinSelectionState({
-    sportId: couponPayload.fixture.sportID,
+    sportId: fixtureSportId,
     marketId: couponPayload.market_id,
     marketName: couponPayload.market_name,
     derivedMarketIds,
     specifier: couponPayload.specifier || couponPayload.outcome?.specifier || ''
   })
   const earlyGoalState = buildEarlyGoalSelectionState({
-    sportId: couponPayload.fixture.sportID,
+    sportId: fixtureSportId,
     marketId: couponPayload.market_id,
     marketName: couponPayload.market_name,
     baseMarketId: couponPayload.baseMarketId,
@@ -196,7 +212,7 @@ export const getDataFromPayload = (couponPayload) => {
   })
   const earlyWinLocalQuotes = buildEarlyWinLocalQuoteMap({
     fixture: couponPayload.fixture,
-    sportId: couponPayload.fixture.sportID,
+    sportId: fixtureSportId,
     baseMarketId: earlyWinState.baseMarketId,
     baseMarketName: earlyWinState.baseMarketName,
     supportedDerivedMarketIds: earlyWinState.supportedDerivedMarketIds,
@@ -208,7 +224,7 @@ export const getDataFromPayload = (couponPayload) => {
   })
   const earlyGoalLocalQuotes = buildEarlyGoalLocalQuoteMap({
     fixture: couponPayload.fixture,
-    sportId: couponPayload.fixture.sportID,
+    sportId: fixtureSportId,
     marketId: couponPayload.market_id,
     baseMarketId: earlyGoalState.baseMarketId,
     baseMarketName: earlyGoalState.baseMarketName,
@@ -218,9 +234,18 @@ export const getDataFromPayload = (couponPayload) => {
     displayName: couponPayload.outcome.displayName,
     derivedMarketIds
   })
-  const supportedEarlyWinModes = ['1up', '2up', '3up'].filter((mode) =>
+  const supportedEarlyWinModes = ['1up', '2up'].filter((mode) =>
     Boolean(earlyWinLocalQuotes?.[mode])
   )
+  const supportedEarlyWinModesFromFixture = getSupportedEarlyWinModesFromFixture({
+    fixture: couponPayload.fixture,
+    baseMarketId: earlyWinState.baseMarketId,
+    derivedMarketIds
+  })
+  const mergedSupportedEarlyWinModes = [...new Set([
+    ...supportedEarlyWinModesFromFixture,
+    ...supportedEarlyWinModes
+  ])]
   const xupSelection = Number(couponPayload.market_id || 0) === X_UP_FEATURE_MARKET_ID
   const supportedDerivedMarketIds = [
     ...new Set([
@@ -258,12 +283,16 @@ export const getDataFromPayload = (couponPayload) => {
   const baseOutcomeId = baseQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
   const baseOutcomeName = baseQuote?.outcomeName || couponPayload.outcome.outcomeName
   const baseDisplayName = baseQuote?.displayName || couponPayload.outcome.displayName
-  const baseOdds = Number(baseQuote?.odds ?? couponPayload.outcome.odds)
+  const baseOdds = Number(baseQuote?.odds ?? couponPayload.outcome?.odds ?? couponPayload.odds)
   const baseStatusName = baseQuote?.statusName || 'Active'
   const currentOutcomeId = currentQuote?.outcomeId || String(couponPayload.outcome.outcomeID)
   const currentOutcomeName = currentQuote?.outcomeName || couponPayload.outcome.outcomeName
   const currentDisplayName = currentQuote?.displayName || couponPayload.outcome.displayName
   const currentSpecifier = currentQuote?.specifier ?? couponPayload.specifier ?? ''
+  const resolvedOdds = formatSafeOdds(
+    currentQuote?.odds,
+    couponPayload.odds ?? couponPayload.outcome?.odds
+  )
   const stableSelectionId = createID(
     couponPayload.fixture.matchID,
     selectionBaseState.baseMarketId,
@@ -281,10 +310,11 @@ export const getDataFromPayload = (couponPayload) => {
     currentOutcomeName
   )
   const normalizedCurrentSelectionId = couponPayload.ele_id || currentSelectionId
-  const supportsEarlyWin = supportedEarlyWinModes.length > 0
+  const supportsEarlyWin = mergedSupportedEarlyWinModes.length > 0
   const supportsEarlyGoal = Boolean(earlyGoalLocalQuotes?.earlygoal)
 
   const data = {
+    fixture: couponPayload.fixture,
     matchId: parseInt(couponPayload.fixture.matchID),
     eventId: parseInt(couponPayload.fixture.gameID),
     event_id: parseInt(couponPayload.fixture.gameID),
@@ -295,12 +325,12 @@ export const getDataFromPayload = (couponPayload) => {
     outcomeName: currentOutcomeName,
     displayName: currentDisplayName,
     outcomeId: currentOutcomeId,
-    odds: parseFloat(currentQuote?.odds ?? couponPayload.outcome.odds).toFixed(2),
+    odds: resolvedOdds,
     eventDate: couponPayload.fixture.date,
     tournament: couponPayload.fixture.tournament,
     category: couponPayload.fixture.categoryName,
     sport: couponPayload.fixture.sportName,
-    sportId: couponPayload.fixture.sportID,
+    sportId: fixtureSportId,
     type: couponPayload?.type || 'prematch',
     fixed: false,
     combinability: couponPayload.fixture.combinability || 0,
@@ -318,7 +348,7 @@ export const getDataFromPayload = (couponPayload) => {
     hasExplicitDerivedMarkets: earlyWinState.hasExplicitDerivedMarkets,
     supportsEarlyWin,
     supportedDerivedMarketIds,
-    supportedEarlyWinModes,
+    supportedEarlyWinModes: mergedSupportedEarlyWinModes,
     earlyWinLocalQuotes,
     earlyWinMode: earlyWinState.earlyWinMode,
     supportsEarlyGoal,
@@ -333,7 +363,7 @@ export const getDataFromPayload = (couponPayload) => {
     baseOutcomeId,
     baseOutcomeName,
     baseDisplayName,
-    baseOdds: Number.isFinite(baseOdds) ? baseOdds.toFixed(2) : 0,
+    baseOdds: formatSafeOdds(baseOdds, couponPayload.odds ?? couponPayload.outcome?.odds),
     baseStatusName,
     earlyWinLabel: formatEarlyWinMarketName(earlyWinState.baseMarketName, earlyWinState.earlyWinMode),
     earlyGoalLabel: formatEarlyGoalMarketName(

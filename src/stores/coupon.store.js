@@ -34,6 +34,7 @@ import {
   validateBetslipSelections,
   formatNumber,
   buildCouponSelectionPayload,
+  getSupportedEarlyWinModesFromFixture,
   createID
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
@@ -692,9 +693,9 @@ export const useCouponStore = defineStore({
     isCutOneApplied() {
       return Boolean(
         this.coupon.useCutOne &&
-          this.cutOnePreview?.enabled &&
-          this.cutOnePreview?.qualifies &&
-          Number(this.cutOnePreview?.cut_one_odds || 0) > 0
+        this.cutOnePreview?.enabled &&
+        this.cutOnePreview?.qualifies &&
+        Number(this.cutOnePreview?.cut_one_odds || 0) > 0
       )
     },
     getDisplayedTotalOddsValue() {
@@ -769,10 +770,10 @@ export const useCouponStore = defineStore({
 
       return Boolean(
         accaBonusConfig.enabled &&
-          this.coupon.betslip_type === 'Multiple' &&
-          this.coupon.bet_type === 'Multiple' &&
-          activeSelections.length > 1 &&
-          stake > 0
+        this.coupon.betslip_type === 'Multiple' &&
+        this.coupon.bet_type === 'Multiple' &&
+        activeSelections.length > 1 &&
+        stake > 0
       )
     },
     async refreshAccaBonusPreview() {
@@ -914,9 +915,9 @@ export const useCouponStore = defineStore({
     isFlexApplied() {
       return Boolean(
         this.coupon.useFlex &&
-          this.flexPreview?.enabled &&
-          this.flexPreview?.qualifies &&
-          Number(this.flexPreview?.flex_odds || 0) > 0
+        this.flexPreview?.enabled &&
+        this.flexPreview?.qualifies &&
+        Number(this.flexPreview?.flex_odds || 0) > 0
       )
     },
     async refreshFlexPreview(activeSelections = this.getActiveCouponSelections()) {
@@ -1011,17 +1012,17 @@ export const useCouponStore = defineStore({
       if (!selection) return false
       return Boolean(
         selection?.supportsEarlyGoal ||
-          selection?.earlyGoalMode === 'earlygoal' ||
-          Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
+        selection?.earlyGoalMode === 'earlygoal' ||
+        Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
       )
     },
     syncEarlyGoalStateFromSelections(selections = this.coupon.selections) {
       const hasActiveEarlyGoal = Array.isArray(selections)
         ? selections.some((selection) => (selection?.earlyGoalMode || 'base') === 'earlygoal')
-          || selections.some(
-            (selection) =>
-              Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
-          )
+        || selections.some(
+          (selection) =>
+            Number(selection?.marketId || selection?.market_id || 0) === EARLY_GOAL_DERIVED_MARKET_ID
+        )
         : false
 
       this.coupon.useEarlyGoal = hasActiveEarlyGoal
@@ -1031,7 +1032,7 @@ export const useCouponStore = defineStore({
       return activeSelections.some(
         (selection) =>
           Number(selection?.baseMarketId || selection?.marketId || selection?.market_id || 0) ===
-            EARLY_GOAL_BASE_MARKET_ID && selection?.supportsEarlyGoal
+          EARLY_GOAL_BASE_MARKET_ID && selection?.supportsEarlyGoal
       )
     },
     getEarlyGoalValidationSpecifier(selection, mode) {
@@ -1089,9 +1090,9 @@ export const useCouponStore = defineStore({
         idSpecifier: validatedQuote.specifier ?? specifier,
         outcomeId: String(
           validatedQuote.outcome_id ||
-            validatedQuote.outcomeId ||
-            selection.baseOutcomeId ||
-            selection.outcomeId
+          validatedQuote.outcomeId ||
+          selection.baseOutcomeId ||
+          selection.outcomeId
         ),
         outcomeName:
           validatedQuote.outcome_name ||
@@ -1135,16 +1136,16 @@ export const useCouponStore = defineStore({
         quote ||
         (normalizedMode === 'base'
           ? {
-              marketId: selection.baseMarketId,
-              marketName: selection.baseMarketName,
-              specifier: selection.baseSpecifier ?? '',
-              idSpecifier: selection.baseSelectionKeySpecifier ?? '',
-              outcomeId: selection.baseOutcomeId || selection.outcomeId,
-              outcomeName: selection.baseOutcomeName || selection.outcomeName,
-              displayName: selection.baseDisplayName || selection.displayName,
-              odds: selection.baseOdds ?? selection.odds,
-              statusName: selection.baseStatusName || 'Active'
-            }
+            marketId: selection.baseMarketId,
+            marketName: selection.baseMarketName,
+            specifier: selection.baseSpecifier ?? '',
+            idSpecifier: selection.baseSelectionKeySpecifier ?? '',
+            outcomeId: selection.baseOutcomeId || selection.outcomeId,
+            outcomeName: selection.baseOutcomeName || selection.outcomeName,
+            displayName: selection.baseDisplayName || selection.displayName,
+            odds: selection.baseOdds ?? selection.odds,
+            statusName: selection.baseStatusName || 'Active'
+          }
           : null)
 
       const targetMarketId =
@@ -1295,7 +1296,7 @@ export const useCouponStore = defineStore({
         .filter(
           (selection) =>
             Number(selection?.baseMarketId || selection?.marketId || selection?.market_id || 0) ===
-              EARLY_GOAL_BASE_MARKET_ID && selection.supportsEarlyGoal
+            EARLY_GOAL_BASE_MARKET_ID && selection.supportsEarlyGoal
         )
         .map((selection) => String(selection.selectionId))
       const appliedCount = await this.applyEarlyGoalToSelections(supportedSelectionIds, true)
@@ -1313,11 +1314,7 @@ export const useCouponStore = defineStore({
       return this.applyEarlyGoalToSelections([String(selection.selectionId)], nextEnabled)
     },
     isTaxEnabled() {
-      return (
-        this.getExciseTaxRate() > 0 ||
-        this.getWithholdingTaxRate() > 0 ||
-        this.getGlobalVariableFlag('taxEnabled', false)
-      )
+      return this.getGlobalVariableFlag('taxEnabled', false)
     },
     getSelectionKey(selection) {
       if (!selection) return ''
@@ -1414,7 +1411,7 @@ export const useCouponStore = defineStore({
         selection.earlyGoalLocalQuotes && typeof selection.earlyGoalLocalQuotes === 'object'
           ? selection.earlyGoalLocalQuotes
           : {}
-      const localSupportedModes = ['1up', '2up', '3up'].filter((mode) =>
+      const localSupportedModes = ['1up', '2up'].filter((mode) =>
         Boolean(selection.earlyWinLocalQuotes?.[mode])
       )
       const isDerivedEarlyWinSelection =
@@ -1435,16 +1432,24 @@ export const useCouponStore = defineStore({
           ...earlyWinState.supportedDerivedMarketIds
         ])
       ]
+      const supportedModesFromFixture = getSupportedEarlyWinModesFromFixture({
+        fixture: selection.fixture,
+        baseMarketId: selection.baseMarketId || selectionBaseState.baseMarketId,
+        derivedMarketIds: selection.supportedDerivedMarketIds
+      })
       selection.supportedEarlyWinModes = [
         ...new Set([
           ...(isDerivedEarlyWinSelection && Array.isArray(selection.supportedEarlyWinModes)
             ? selection.supportedEarlyWinModes
             : []),
-          ...localSupportedModes
+          ...localSupportedModes,
+          ...supportedModesFromFixture
         ])
       ]
       selection.supportsEarlyWin =
-        localSupportedModes.length > 0 || isDerivedEarlyWinSelection
+        localSupportedModes.length > 0 ||
+        supportedModesFromFixture.length > 0 ||
+        isDerivedEarlyWinSelection
       selection.isDerived = selection.supportsEarlyWin
       selection.earlyWinMode = selection.earlyWinMode || earlyWinState.earlyWinMode || 'base'
       selection.supportedEarlyGoalMarketIds = [
@@ -1483,7 +1488,7 @@ export const useCouponStore = defineStore({
 
       const targetSpecifier =
         Number(targetMarketId) === 1601
-          ? `xup=${mode === '1up' ? 1 : mode === '2up' ? 2 : mode === '3up' ? 3 : 0}`
+          ? `xup=${mode === '1up' ? 1 : mode === '2up' ? 2 : 0}`
           : selection.baseSpecifier ?? selection.specifier ?? ''
 
       const response = await validateBetslipSelections([
@@ -1568,26 +1573,26 @@ export const useCouponStore = defineStore({
         quote ||
         (normalizedMode === 'base'
           ? {
-              marketId: selection.baseMarketId,
-              marketName: selection.baseMarketName,
-              specifier: selection.baseSpecifier ?? '',
-              idSpecifier: selection.baseSelectionKeySpecifier ?? '',
-              outcomeId: selection.baseOutcomeId || selection.outcomeId,
-              outcomeName: selection.baseOutcomeName || selection.outcomeName,
-              displayName: selection.baseDisplayName || selection.displayName,
-              odds: selection.baseOdds ?? selection.odds,
-              statusName: selection.baseStatusName || 'Active'
-            }
+            marketId: selection.baseMarketId,
+            marketName: selection.baseMarketName,
+            specifier: selection.baseSpecifier ?? '',
+            idSpecifier: selection.baseSelectionKeySpecifier ?? '',
+            outcomeId: selection.baseOutcomeId || selection.outcomeId,
+            outcomeName: selection.baseOutcomeName || selection.outcomeName,
+            displayName: selection.baseDisplayName || selection.displayName,
+            odds: selection.baseOdds ?? selection.odds,
+            statusName: selection.baseStatusName || 'Active'
+          }
           : null)
       const targetMarketId =
         Number(resolvedQuote?.marketId) ||
         (normalizedMode === 'base'
           ? selection.baseMarketId
           : getDerivedMarketIdForMode(
-              selection.baseMarketId,
-              normalizedMode,
-              selection.supportedDerivedMarketIds
-            ))
+            selection.baseMarketId,
+            normalizedMode,
+            selection.supportedDerivedMarketIds
+          ))
       const targetMarketName = formatEarlyWinMarketName(selection.baseMarketName, normalizedMode)
       const targetSpecifier = resolvedQuote?.specifier ?? selection.baseSpecifier ?? ''
       const targetOutcomeId =
@@ -1734,10 +1739,10 @@ export const useCouponStore = defineStore({
                 desiredMode === 'base'
                   ? selection.baseMarketId
                   : getDerivedMarketIdForMode(
-                      selection.baseMarketId,
-                      desiredMode,
-                      selection.supportedDerivedMarketIds
-                    )
+                    selection.baseMarketId,
+                    desiredMode,
+                    selection.supportedDerivedMarketIds
+                  )
 
               if (!targetMarketId) return null
 
@@ -2031,28 +2036,28 @@ export const useCouponStore = defineStore({
 
       const normalizedMarkets = Array.isArray(data.markets)
         ? data.markets.map((market) => ({
-            id: market.id ?? market.market_id ?? market.marketID,
-            statusName: market.status_name ?? market.statusName ?? '',
-            specifier: market.specifiers ?? market.specifier ?? '',
-            outcomes: (market.outcomes || []).map((outcome) => ({
-              id: outcome.id ?? outcome.outcome_id ?? outcome.outcomeID,
-              odds: outcome.odds,
-              active: outcome.active
-            }))
+          id: market.id ?? market.market_id ?? market.marketID,
+          statusName: market.status_name ?? market.statusName ?? '',
+          specifier: market.specifiers ?? market.specifier ?? '',
+          outcomes: (market.outcomes || []).map((outcome) => ({
+            id: outcome.id ?? outcome.outcome_id ?? outcome.outcomeID,
+            odds: outcome.odds,
+            active: outcome.active
           }))
+        }))
         : data.market_id !== undefined || data.marketID !== undefined
           ? [
-              {
-                id: data.market_id ?? data.marketID,
-                statusName: data.status_name ?? data.statusName ?? '',
-                specifier: data.specifier ?? data.specifiers ?? '',
-                outcomes: (data.outcomes || []).map((outcome) => ({
-                  id: outcome.id ?? outcome.outcome_id ?? outcome.outcomeID,
-                  odds: outcome.odds,
-                  active: outcome.active
-                }))
-              }
-            ]
+            {
+              id: data.market_id ?? data.marketID,
+              statusName: data.status_name ?? data.statusName ?? '',
+              specifier: data.specifier ?? data.specifiers ?? '',
+              outcomes: (data.outcomes || []).map((outcome) => ({
+                id: outcome.id ?? outcome.outcome_id ?? outcome.outcomeID,
+                odds: outcome.odds,
+                active: outcome.active
+              }))
+            }
+          ]
           : []
       let updatedAnySelection = false
 
@@ -2947,7 +2952,7 @@ export const useCouponStore = defineStore({
         stake = val
       }
 
-      if(!combo) {// update all combo stake
+      if (!combo) {// update all combo stake
         // Persist per-line stake for Combo mode.
         this.setStakeCache('Combo', stake)
         let total = 0
@@ -3238,10 +3243,10 @@ export const useCouponStore = defineStore({
           totalStake: stake,
           ...(isStandardMultiple && coupondata.useCutOne
             ? {
-                cutOne: {
-                  enabled: true
-                }
+              cutOne: {
+                enabled: true
               }
+            }
             : {})
         }
       }
@@ -3316,8 +3321,8 @@ export const useCouponStore = defineStore({
 
           // Transform coupon data to new API format for booking
           const suppressBonusFunding = Boolean(
-          coupondata.useCutOne || coupondata.useFlex
-        )
+            coupondata.useCutOne || coupondata.useFlex
+          )
           const payload = {
             bets: buildBets(),
             bonusId: suppressBonusFunding ? 0 : coupondata.bonusId || 0,

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getSportHighlights, FEED_TOGGLE } from '@/helpers'
+import { getTopBets, getSportHighlights, FEED_TOGGLE, normalizeFixtureMarkets } from '@/helpers'
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -20,7 +20,36 @@ export const useUtilsStore = defineStore({
       cutOne: null,
       stakeLimits: null
     },
-    SportsbookGlobalVariable: {},
+    SportsbookGlobalVariable: {
+      "AllowRegistration": "Yes",
+      "EnableSplitBet": "0",
+      "EnableSystemBet": "1",
+      "comboMaxStake": "1000000",
+      "MinBetStake": "20",
+      "comboMinStake": "20",
+      "MaxCombinationOddLength": "10000000",
+      "Currency": "₦",
+      "DialCode": "+234",
+      "EnableBankAcct": "1",
+      "enableCashout": "1",
+      "taxEnabled": "0",
+      "exciseTax": "13.04",
+      "wthTax": "20",
+      "LiabilityThreshold": "0",
+      "LiveTicketMax": "40",
+      "Logo": "",
+      "MaxPayout": "50000000",
+      "MinBonusOdd": "1.18",
+      "MinDeposit": "100",
+      "MinWithdrawal": "1000",
+      "PaymentDay": "tuesday",
+      "PowerBonusStartDate": "2024-11-01",
+      "singleMaxStake": "50000",
+      "SingleMaxWinning": "500000",
+      "singleMinStake": "100",
+      "SingleTicketLenght": "1000000",
+      "MaxNoOfSelection": "50"
+    },
     showBetslipCount: true,
     showFooter: true,
     showMobileNavigation: true,
@@ -115,7 +144,8 @@ export const useUtilsStore = defineStore({
                   page: 1,
                   sid: tournament.sportID,
                   per_page: 5,
-                  tournament_id: tournament.tournament_id
+                  tournament_id: tournament.tournament_id,
+                  feature_market_id: 1601
                 })
 
                 if (!games?.data?.fixtures?.length || !games?.data?.markets?.length) {
@@ -134,8 +164,16 @@ export const useUtilsStore = defineStore({
                   const tournamentGames = {
                     tournamentID: tournament.tournament_id,
                     priority: Number(tournament.priority || 0),
-                    fixtures: games.data.fixtures,
-                    markets: games.data.markets
+                    fixtures: (games.data.fixtures || []).map((fixture) => ({
+                      ...fixture,
+                      sportID: fixture.sportID || fixture.sportId || tournament.sportID || tournament.sportId,
+                      sportId: fixture.sportId || fixture.sportID || tournament.sportID || tournament.sportId,
+                      tournamentID: fixture.tournamentID || fixture.tournament_id || tournament.tournament_id,
+                      tournament: fixture.tournament || tournament.tournament_name,
+                      categoryID: fixture.categoryID || fixture.category_id || tournament.categoryID || tournament.category_id,
+                      categoryName: fixture.categoryName || tournament.category_name || fixture.categoryName
+                    })),
+                    markets: normalizeFixtureMarkets(games.data.markets)
                   }
 
                   this.featuredTournamentGames.push(tournamentGames)

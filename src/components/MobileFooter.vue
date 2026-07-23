@@ -448,13 +448,13 @@ function goToOpenBets(){
 
 const routeIsCasino = computed(() => {
   let route_names = [
-    'casino-games',
-    'casino-search',
-    'games-by-category',
-    'casino-providers',
-    'casino-category',
-    'games-by-provider',
-    'casino-bonus'
+    // 'casino-games',
+    // 'casino-search',
+    // 'games-by-category',
+    // 'casino-providers',
+    // 'casino-category',
+    // 'games-by-provider',
+    // 'casino-bonus'
   ]
   return route_names.includes(route.name)
 })

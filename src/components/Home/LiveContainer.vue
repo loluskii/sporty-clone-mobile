@@ -264,46 +264,6 @@ const fallbackMarketsBySport = {
       ],
       sportID: 0
     },
-    {
-      marketID: 60100,
-      marketName: '1x2 - 1up',
-      specifier: '',
-      outcomes: [
-        {
-          outcomeName: '1',
-          outcomeID: '1'
-        },
-        {
-          outcomeName: 'X',
-          outcomeID: '2'
-        },
-        {
-          outcomeName: '2',
-          outcomeID: '3'
-        }
-      ],
-      sportID: 0
-    },
-    {
-      marketID: 60200,
-      marketName: '1x2 - 2up',
-      specifier: '',
-      outcomes: [
-        {
-          outcomeName: '1',
-          outcomeID: '1'
-        },
-        {
-          outcomeName: 'X',
-          outcomeID: '2'
-        },
-        {
-          outcomeName: '2',
-          outcomeID: '3'
-        }
-      ],
-      sportID: 0
-    }
   ],
   2: [
     {
