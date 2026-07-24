@@ -515,16 +515,7 @@ watch(
     }
 })
 
-// Update totalFixtures when sport changes (for "View All" link count)
-watch(
-  [activeSportID, completeLiveData],
-  () => {
-    if (completeLiveData.value?.data.fixtures) {
-      const sportFixtures = completeLiveData.value.data.fixtures.filter(f => f.sportID === activeSportID.value)
-      totalFixtures.value = sportFixtures.length
-    }
-  }
-)
+
 // Keep the "View All" count scoped to the active sport.
 watch(
   [activeSportID, accumulatedFixtures],
