@@ -184,7 +184,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.STREETBET_SERVER_USER }}@${{ secrets.STREETBET_SERVER_IP }} 'mkdir -p ~/west-streetbet-mobile/'
 
           # Copy all source files to server for local build
-          tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
+          tar --exclude='.git' --exclude='node_modules' --exclude='.env' -czf /tmp/source.tar.gz .
           scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.STREETBET_SERVER_USER }}@${{ secrets.STREETBET_SERVER_IP }}:~/west-streetbet-mobile/
           ssh -o StrictHostKeyChecking=no ${{ secrets.STREETBET_SERVER_USER }}@${{ secrets.STREETBET_SERVER_IP }} 'cd ~/west-streetbet-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
 

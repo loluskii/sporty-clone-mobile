@@ -21,7 +21,7 @@ import {
   fetchUserNotifications
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
-import ErrorDialogue from './components/ErrorDialogue.vue'
+import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
 import { useAuthStore, useUsersStore } from './stores'
