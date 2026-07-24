@@ -15,6 +15,23 @@
 
 * Revert "use qtech aviator launch endpoint" ([e1ceab2](https://github.com/zoroplay/sporty-clone-mobile/commit/e1ceab2af3ebcb81ea79ee2605f904a8661f9fd8))
 
+# [1.4.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.2...v1.4.0) (2026-07-24)
+
+
+### Bug Fixes
+
+* refactore error display ([f75fcb0](https://github.com/zoroplay/sporty-clone-mobile/commit/f75fcb09cf4bc7af76502979860554bfd2aff8ff))
+
+
+### Features
+
+* added validation for max number of draws per ticket ([40a731c](https://github.com/zoroplay/sporty-clone-mobile/commit/40a731c418e345bd3886059c7900a93c753b0144))
+
+
+### Reverts
+
+* Revert "use qtech aviator launch endpoint" ([e1ceab2](https://github.com/zoroplay/sporty-clone-mobile/commit/e1ceab2af3ebcb81ea79ee2605f904a8661f9fd8))
+
 ## [1.3.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.1...v1.3.2) (2026-02-11)
 
 
