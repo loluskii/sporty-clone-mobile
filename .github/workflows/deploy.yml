@@ -132,7 +132,7 @@ jobs:
               { name: 'west-bet24' }
             ],
             repositoryUrl: 'https://github.com/${{ github.repository }}.git',
-            tagFormat: 'v${version}',
+            tagFormat: 'west-bet24-v${version}',
             plugins: [
               '@semantic-release/commit-analyzer',
               '@semantic-release/release-notes-generator',
