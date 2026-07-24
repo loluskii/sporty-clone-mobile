@@ -1,4 +1,4 @@
-const DEFAULT_ENV_MODE = 'staging'
+const DEFAULT_ENV_MODE = 'production'
 
 const resolvedMode = String(
   import.meta.env.VITE_ENV_MODE ||

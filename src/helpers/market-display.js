@@ -150,7 +150,20 @@ export const normalizeFixtureMarkets = (markets = []) => {
     normalizedMarkets.push(normalizedMarket)
   })
 
-  return normalizedMarkets
+  const orderedMarkets = normalizedMarkets
     .sort((left, right) => left.__orderIndex - right.__orderIndex)
     .map(({ __orderIndex, ...market }) => market)
+
+  const overUnderIndex = orderedMarkets.findIndex(
+    (market) =>
+      Number(market?.sportID ?? market?.sportId ?? market?.sport_id ?? 0) === 1 &&
+      Number(market?.marketID ?? market?.marketId ?? market?.market_id ?? 0) === 18
+  )
+
+  if (overUnderIndex >= 0 && overUnderIndex !== 1) {
+    const [overUnder] = orderedMarkets.splice(overUnderIndex, 1)
+    orderedMarkets.splice(1, 0, overUnder)
+  }
+
+  return orderedMarkets
 }

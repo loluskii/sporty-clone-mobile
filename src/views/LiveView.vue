@@ -127,7 +127,7 @@ import LiveFixture from '@/components/Live/LiveFixture.vue'
 import { useUtilsStore } from '@/stores'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useQuery } from 'vue-query'
-import { getLiveHighlights, FEED_TOGGLE } from '@/helpers'
+import { getLiveHighlights, FEED_TOGGLE, normalizeFixtureMarkets } from '@/helpers'
 import { defineComponent, onMounted, ref, computed, watch, onBeforeUnmount, toRef } from 'vue'
 import HeaderOther from '@/components/HeaderOther.vue'
 import _ from 'lodash'
@@ -200,8 +200,10 @@ function applyLiveData(response) {
   const fixtures = (response?.fixtures || response?.data?.fixtures || []).filter((fixture) =>
     isAllowedLiveSport(fixture.sportID)
   )
-  const markets = (response?.markets || response?.data?.markets || []).filter((market) =>
-    isAllowedLiveSport(market.sportID)
+  const markets = normalizeFixtureMarkets(
+    (response?.markets || response?.data?.markets || []).filter((market) =>
+      isAllowedLiveSport(market.sportID)
+    )
   )
 
   if (fixtures.length > 0) {
@@ -283,8 +285,8 @@ const groupedFixtures = computed(() => {
 const activeSportMarkets = computed(() => {
   // Strip derived markets from tabs to keep the base list clean.
   const activeMarkets = sanitizeMarkets(marketsGroup.value)
-    .filter((s) => s.sportID == activeSportID.value)
-  return activeMarkets ? _.sortBy(activeMarkets, 'marketID') : []
+    .filter((s) => Number(s.sportID ?? s.sportId ?? s.sport_id) === Number(activeSportID.value))
+  return activeMarkets
 })
 
 watch(activeSportMarkets, (newValue) => {

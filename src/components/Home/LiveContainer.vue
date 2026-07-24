@@ -476,13 +476,18 @@ const visibleFixtures = computed(() => {
 const activeSportMarkets = computed(() => {
   // Strip derived markets from tabs to keep the base list clean.
   const markets = sanitizeMarkets(marketsGroup.value).filter(
-    (m) => m.sportID === activeSportID.value
+    (m) => Number(m.sportID ?? m.sportId ?? m.sport_id) === Number(activeSportID.value)
   )
   if (markets.length) {
-    return _.sortBy(markets, 'marketID')
+    return markets
   }
 
-  return sanitizeMarkets(fallbackMarketsBySport[activeSportID.value] || [])
+  return normalizeFixtureMarkets(
+    (fallbackMarketsBySport[activeSportID.value] || []).map((market) => ({
+      ...market,
+      sportID: activeSportID.value
+    }))
+  )
 })
 
 /**
