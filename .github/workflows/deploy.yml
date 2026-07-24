@@ -127,7 +127,7 @@ jobs:
               { name: 'west-streetbet' }
             ],
             repositoryUrl: 'https://github.com/${{ github.repository }}.git',
-            tagFormat: 'v${version}',
+            tagFormat: 'west-streetbet-v${version}',
             plugins: [
               '@semantic-release/commit-analyzer',
               '@semantic-release/release-notes-generator',
@@ -149,7 +149,7 @@ jobs:
         run: npx semantic-release
 
   deploy:
-    needs: [version]
+    needs: [version, build]
     runs-on: [self-hosted, linux, x64]
     if: github.ref == 'refs/heads/west-streetbet'
     steps:
