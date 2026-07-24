@@ -3,7 +3,7 @@
 set -e  # Exit on any error
 
 # Change to correct directory
-cd ~/gcp-staging-mobile
+cd ~/west-streetbet-mobile
 
 # Build image locally with server's .env file
 echo "Building Docker image with server's .env file"
@@ -36,20 +36,20 @@ docker ps
 
 # Verify environment variables in built files
 echo "Verifying environment variables in Docker image..."
-if docker ps | grep -q gcp-staging; then
+if docker ps | grep -q west-streetbet; then
     echo "Checking main JS bundle for environment variables:"
-    MAIN_JS=$(docker exec gcp-staging-mobile-sportsbook-web-1 find /usr/share/nginx/html/assets -name "index-*.js" | head -1)
+    MAIN_JS=$(docker exec west-streetbet-mobile-sportsbook-web-1 find /usr/share/nginx/html/assets -name "index-*.js" | head -1)
     echo "Main JS file: $MAIN_JS"
     echo "Sample content from main JS (first 500 chars):"
-    docker exec gcp-staging-mobile-sportsbook-web-1 head -c 500 "$MAIN_JS" 2>/dev/null || echo "Could not read main JS file"
+    docker exec west-streetbet-mobile-sportsbook-web-1 head -c 500 "$MAIN_JS" 2>/dev/null || echo "Could not read main JS file"
     echo "\nSearching for 'api' in main JS:"
-    docker exec gcp-staging-mobile-sportsbook-web-1 grep -o "[a-zA-Z0-9:/.-]*api[a-zA-Z0-9:/.-]*" "$MAIN_JS" 2>/dev/null | head -5 || echo "No API references found"
+    docker exec west-streetbet-mobile-sportsbook-web-1 grep -o "[a-zA-Z0-9:/.-]*api[a-zA-Z0-9:/.-]*" "$MAIN_JS" 2>/dev/null | head -5 || echo "No API references found"
     echo "\nSearching for 'bet24' in all files:"
-    docker exec gcp-staging-mobile-sportsbook-web-1 grep -r "bet24" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No bet24 references found"
+    docker exec west-streetbet-mobile-sportsbook-web-1 grep -r "bet24" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No bet24 references found"
     echo "\nSearching for server's API URL in built files:"
-    docker exec gcp-staging-mobile-sportsbook-web-1 grep -r "https://fixture.staging.sportsbookengine.com/docs//index.html#/" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
+    docker exec west-streetbet-mobile-sportsbook-web-1 grep -r "https://fixture.staging.sportsbookengine.com/docs//index.html#/" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
 else
-    echo "Container gcp-staging-mobile-sportsbook-web-1 is not running"
+    echo "Container west-streetbet-mobile-sportsbook-web-1 is not running"
 fi
 
 echo "Deployment completed successfully"

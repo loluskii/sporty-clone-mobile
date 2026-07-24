@@ -26,10 +26,10 @@ import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
 import { useAuthStore, useUsersStore } from './stores'
 import { checkVersion } from '@/utils/version'
-import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
+import DepositWithdrawalCode from '@/components/DepositWithdrawalCode.vue'
 import Cookies from 'js-cookie'
-import ImageDialog from './components/ImageDialog.vue'
-import BackToTopButton from './components/BackToTopButton.vue'
+import ImageDialog from '@/components/ImageDialog.vue'
+import BackToTopButton from '@/components/BackToTopButton.vue'
 
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
