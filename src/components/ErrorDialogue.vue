@@ -201,6 +201,18 @@ async function replaceBetslip() {
       return
     }
 
+    if (dialogueData.value.action === 'switchSimulationToRealAndAdd') {
+      const switchedToReal = await couponStore.setBetslipMode('real')
+      if (!switchedToReal) return
+
+      const addedSelection = await couponStore.toggleCouponSelection(dialogueData.value.selection)
+      if (!addedSelection) return
+
+      emits('hide-dialogue')
+      emitter.emit('openBetslip')
+      return
+    }
+
     const loadedData = await getReplacementBetslipData()
     if (dialogueData.value.switchModeTo) {
       couponStore.setBetslipMode(dialogueData.value.switchModeTo)
