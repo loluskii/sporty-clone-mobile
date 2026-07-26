@@ -52,7 +52,7 @@ export const APP_KEY = import.meta.env.VITE_APP_KEY
 export const SIM_ALLOWED_MARKETS = [
   1, 10, 11, 16, 18, 26, 29, 45, 60, 68, 74, 75, 80, 83, 90, 94, 95, 1601
 ];
-export const SIM_ENABLED = true;
+export const SIM_ENABLED = false;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true
 export const SMS_BYPASS = true
