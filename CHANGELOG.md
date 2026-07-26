@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/zoroplay/sporty-clone-mobile/compare/west-bet24-v1.0.0...west-bet24-v1.1.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* clean up bet placement failures ([b19e354](https://github.com/zoroplay/sporty-clone-mobile/commit/b19e3544160f3b9f8c2ef4e6b110b8c38ecf33a9))
+
+
+### Features
+
+* filter simulation bets to football ([b272345](https://github.com/zoroplay/sporty-clone-mobile/commit/b272345223c3365d6c892d10ab393998d4889bfa))
+
 # 1.0.0 (2026-07-24)
 
 
