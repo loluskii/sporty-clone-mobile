@@ -2406,7 +2406,7 @@ export const useCouponStore = defineStore({
             const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
             this.coupon.combos = calculatedGroup.Groups
 
-            return
+            return data
           }
         }
 
@@ -2466,7 +2466,7 @@ export const useCouponStore = defineStore({
           this.coupon.wthTax = wthTax < 1 ? 0 : wthTax
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
 
-          return
+          return data
         } else {
           const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
           this.coupon.combos = calculatedGroup.Groups
@@ -2484,6 +2484,7 @@ export const useCouponStore = defineStore({
 
       // After successfully adding selection, subscribe to its updates
       this.manageSubscription(selection, true)
+      return data
     },
     buildCouponPayloadFromLoadedSelection(selection = {}) {
       const matchId = selection.matchId || selection.match_id || selection.eventId || selection.event_id
@@ -3228,7 +3229,6 @@ export const useCouponStore = defineStore({
       })
     },
     async placeBet(e, type, bonusId) {
-      let ele = e.target
       const coupondata = { ...this.coupon }
       const usersStore = useUsersStore()
       if (usersStore.currentUser) {
@@ -3393,7 +3393,8 @@ export const useCouponStore = defineStore({
           }
           return res
         } catch (error) {
-          emitter.emit('showErrorMessage', error)
+          this.isBetslipLoading = false
+          throw error
         }
       } else if (type == 'book') {
         try {
@@ -3415,10 +3416,8 @@ export const useCouponStore = defineStore({
           this.isBetslipLoading = false
           return res
         } catch (error) {
-          ele.disabled = false
-          ele.innerHTML = 'Place Bet'
-          // console.error(error)
-          emitter.emit('showErrorMessage', error)
+          this.isBetslipLoading = false
+          throw error
         }
       }
     },
