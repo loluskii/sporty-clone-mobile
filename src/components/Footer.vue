@@ -13,26 +13,33 @@
   </div>
   <footer class="x-footer x-footer--ng">
     <div class="partnership-wrap text-center">
-      <img src="/logo.png" />
+      <img src="/logos.png" />
     </div>
     <div></div>
     <div class="payment-methods">
-      <h5>Payment methods</h5>
-      <div class="slider-wrap">
-        <div class="slider-window">
-          <div class="sliders" style="transform: translateX(0%)">
-            <div class="row">
-              <img src="/logo_visa.fd08bf37cf.png" />
-              <img src="/logo_mc.51fc36230c.png" />
-              <img src="/paystack-logo.png" style="height: 3rem" />
-            </div>
+      <p>
+        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
+        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
+        licensed by the National Lottery Regulatory Commission.
+      </p>
+    </div>
+    
+    <div class="slider-wrap">
+      <div class="slider-window">
+        <div class="sliders" style="transform: translateX(0%)">
+          <div class="row">
+            <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
+              <img src="@/assets/images/facebook.png" style="height: 2rem" />
+            </a>
+            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank" style="margin: 0 12px;">
+              <img src="@/assets/images/instagram.png" style="height: 2rem" />
+            </a>
+            <a href="https://x.com/bet24_ng" target="_blank">
+              <img src="@/assets/images/twitter.png" style="height: 2rem" />
+            </a>
           </div>
         </div>
       </div>
-      <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful.
-      </p>
     </div>
     <div class="hr"></div>
     <div class="t_c-about_us">

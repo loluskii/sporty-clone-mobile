@@ -98,7 +98,8 @@ import {
   sendOTP,
   verifyUsername,
   register,
-  verifyOTP
+  verifyOTP,
+  SMS_BYPASS
 } from '../helpers'
 import { useAuthStore, useUtilsStore } from '../stores'
 import Cookies from 'js-cookie'
@@ -159,7 +160,10 @@ const registerUser = async () => {
     phoneNumber: internationalNumber
   }
 
-  // await doRegistration()
+  if(SMS_BYPASS){
+    await doRegistration()
+    return;
+  }
 
   const res = await sendOTP(payload);
   isLoading.value = false;
@@ -469,6 +473,7 @@ onMounted(() => {
   width: 100%;
   border-radius: 5px;
 }
+
 #enterMobile .enter-mobile-container .verifyInputs .m-loading-circle-icon::before {
   content: '\e654';
   font-family: 'iconfont' !important;

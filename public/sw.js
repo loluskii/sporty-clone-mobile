@@ -7,14 +7,11 @@ const STATIC_ASSETS = [
   '/index.html',
   '/logo.png',
   '/loader.gif',
-  '/assets/css/base.css',
-  '/assets/css/main.css',
   '/assets/css/loading.css'
 ];
 
 // File extensions to cache
 const CACHEABLE_EXTENSIONS = [
-  '.css',
   '.png',
   '.jpg',
   '.jpeg',
@@ -49,7 +46,7 @@ self.addEventListener('fetch', (event) => {
   const pathname = url.pathname;
 
   // Handle image and CSS requests
-  if (event.request.url.match(/\.(png|jpg|jpeg|gif|css)$/)) {
+  if (event.request.url.match(/\.(png|jpg|jpeg|gif)$/)) {
     event.respondWith(
       caches.match(event.request)
         .then((response) => {

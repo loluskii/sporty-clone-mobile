@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  sportsbook-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_BASE_URL=${VITE_BASE_URL}
+        - VITE_NEW_BASE_API=${VITE_NEW_BASE_API}
+        - VITE_CLIENT_ID=${VITE_CLIENT_ID}
+        - VITE_CURRENCY=${VITE_CURRENCY}
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - sbenet
+
+networks:
+  sbenet:
+    external: true

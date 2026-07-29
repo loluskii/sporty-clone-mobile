@@ -16,20 +16,14 @@
         >
           <li
             v-for="(sport, index) in sportsListData"
-            :class="sport.sportID === activeSportID ? 'active' : ''"
-            @click="setActiveSport(sport.sportID)"
+            :class="sport.sport_id === activeSportID ? 'active' : ''"
+            @click="setActiveSport(sport.sport_id)"
             :key="index"
-            :id="'highlights_' + sport.sportID"
+            :id="'highlights_' + sport.sport_id"
             class="m-sport-type-item m-snap-nav-item"
           >
-            <!-- <img
-              :src="getImageSrc(sport.sportID)"
-              style="height: 20px; margin-right: 0.4rem"
-              alt=""
-              srcset=""
-            /> -->
             <Transition name="bounce">
-              <span>{{ sport.sportName }}</span>
+              <span>{{ sport.sport_name }}</span>
             </Transition>
           </li>
         </ul>
@@ -51,133 +45,199 @@
       >
         <div
           class="m-tabs-tab"
-          @click="setActiveTab('highlights')"
-          :class="[highlightsActiveTab ? 'm-tabs-tab-active' : '']"
+          v-for="tab in tabList"
+          @click="setActiveTab(tab)"
+          :class="tabView == tab.toLowerCase() ? 'm-tabs-tab-active' : ''"
         >
-          Highlights
-        </div>
-        <div
-          class="m-tabs-tab"
-          @click="setActiveTab('today')"
-          :class="[todayActiveTab ? 'm-tabs-tab-active' : '']"
-        >
-          Today
-        </div>
-        <div
-          class="m-tabs-tab"
-          @click="setActiveTab('countries')"
-          :class="[countriesActiveTab ? 'm-tabs-tab-active' : '']"
-        >
-          Countries
+          {{tab}}
         </div>
       </div>
       <div class="m-tabs-content">
-        <div v-show="highlightsActiveTab" class="m-tabs-tabpane">
+        <div v-show="tabView !== 'countries'" class="m-tabs-tabpane">
           <div class="m-highlights-wrap" style="position: relative">
             <Highlights
-              :highlightsData="highlightsData"
+              :highlightsData="filteredFixtures"
+              :view="tabView"
               :marketsGroup="marketsGroup"
               :activeMarket="activeMarket"
+              :effectiveMarket="effectiveMarket"
+              :isLoading="isLoading"
+              :upMode="upMode"
+              :isModeLoading="isModeLoading"
+              :showUpToggle="showUpToggle"
+              :modeOptions="modeOptions"
+              :baseLabel="baseLabel"
               @select-market="getFixturesByMarkets"
-              v-if="!isLoading && !loadingError"
+              @set-up-mode="handleUpModeChange"
+              v-if="!loadingError && !isLoading"
             ></Highlights>
 
-            <LoadingSpinner v-show="isLoading"></LoadingSpinner>
+            <LoadingSpinner v-show="isLoading" ></LoadingSpinner>
             <LoadingError v-show="loadingError"></LoadingError>
           </div>
         </div>
-        <div v-show="todayActiveTab" class="m-tabs-tabpane">
-          <Today
-            v-if="!isLoading && !loadingError"
-            :todaysData="todaysData"
-            :marketsGroup="marketsGroup"
-            :activeMarket="activeMarket"
-            @select-market="getFixturesByMarkets"
-          ></Today>
-          <LoadingSpinner v-show="isLoading"></LoadingSpinner>
-          <LoadingError v-show="loadingError"></LoadingError>
-        </div>
-        <div v-show="countriesActiveTab" class="m-tabs-tabpane">
+        <div v-show="tabView === 'countries'" class="m-tabs-tabpane">
           <Countries
             v-if="countriesData.length"
             :countriesData="countriesData"
             :activeSportID="activeSportID"
           ></Countries>
-        </div>
+        </div> 
       </div>
     </div>
   </div>
 </template>
 <script setup>
 import { useUtilsStore } from '@/stores/utils.store'
-import Highlights from '@/components/Highlights/Highlights.vue'
-import Today from '@/components/Highlights/Today.vue'
-import Countries from '@/components/Highlights/Countries.vue'
+import Highlights from '@/components/Home/Highlights.vue'
+import Countries from '@/components/Home/Countries.vue'
 import LoadingError from '@/components/Loaders/LoadingError.vue'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 
-import { getHighlights2, getToday2, getCategoriesBySport, FEED_TOGGLE } from '@/helpers'
+import {
+  getFeatureMarketIdForMode,
+  getSportHighlights,
+  getToday2,
+  getCategoriesBySport,
+  FEED_TOGGLE,
+  normalizeFixtureMarkets
+} from '@/helpers'
 import { defineComponent, onMounted, ref, onUnmounted, computed } from 'vue'
 import _ from 'lodash'
 import emitter from '@/plugins/emitter'
+import { useUpMode } from '@/composables/useUpMode'
 
 const utilsStore = useUtilsStore()
 
 const highlightsData = ref([])
-const todaysData = ref([])
+const todayData = ref([]);
+const derivedHighlightsData = ref([])
+const derivedTodayData = ref([])
+const fixturesList = ref([])
 const countriesData = ref([])
+// Track last selected market per tab for consistent UX.
+const activeMarketByTab = ref({
+  highlights: null,
+  today: null
+})
 
-// const sportsListData = ref([])
+const tabList = ["Highlights", "Today", "Countries"];
+const tabView = ref('highlights')
+const prevTabView = ref('')
+
 const prevSportID = ref(1)
 const activeSportID = ref(1)
-
 const marketsGroup = ref({})
 const activeMarket = ref({})
 
-const todayActiveTab = ref(false)
-const highlightsActiveTab = ref(true)
-const countriesActiveTab = ref(false)
+const isCollectionEmpty = (value) => {
+  if (!value) return true
+  if (Array.isArray(value)) return value.length === 0
+  return Object.keys(value).length === 0
+}
+
+const mergeGroupedFixtures = (baseGroups = {}, derivedGroups = {}) => {
+  const merged = {}
+  const allKeys = new Set([
+    ...Object.keys(baseGroups || {}),
+    ...Object.keys(derivedGroups || {})
+  ])
+
+  allKeys.forEach((key) => {
+    const baseList = Array.isArray(baseGroups?.[key]) ? baseGroups[key] : []
+    const derivedList = Array.isArray(derivedGroups?.[key]) ? derivedGroups[key] : []
+    const seenMatchIds = new Set()
+    const nextList = []
+
+    ;[...baseList, ...derivedList].forEach((fixture) => {
+      const matchId = String(
+        fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
+      )
+      const dedupeKey = matchId || JSON.stringify(fixture)
+      if (seenMatchIds.has(dedupeKey)) return
+      seenMatchIds.add(dedupeKey)
+      nextList.push(fixture)
+    })
+
+    if (nextList.length) {
+      merged[key] = nextList
+    }
+  })
+
+  return merged
+}
+
+const getTabDatasets = (tab) => {
+  if (tab === 'today') {
+    return {
+      base: todayData,
+      derived: derivedTodayData
+    }
+  }
+
+  return {
+    base: highlightsData,
+    derived: derivedHighlightsData
+  }
+}
+
+const baseTabFixtures = computed(() => {
+  const { base, derived } = getTabDatasets(tabView.value)
+  if (upMode.value === 'none') {
+    return mergeGroupedFixtures(base.value, derived.value)
+  }
+  return derived.value
+})
+
+const {
+  upMode,
+  setUpMode,
+  resetUpMode,
+  showUpToggle,
+  modeOptions,
+  baseLabel,
+  effectiveMarket,
+  filteredFixtures,
+  sanitizeMarkets
+} = useUpMode({
+  fixtures: baseTabFixtures,
+  activeMarket,
+  marketsGroup,
+  enabledSportId: 1,
+  requireDerivedFixturesForToggle: false,
+  filterFixturesByDerived: false
+})
 
 const isLoading = ref(false)
+const isModeLoading = ref(false)
 const loadingError = ref(false)
 
 function setActiveTab(tab) {
-  switch (tab) {
-    case 'highlights':
-      highlightsActiveTab.value = true
-      todayActiveTab.value = false
-      countriesActiveTab.value = false
-      getHighlightGames()
-      break
-    case 'today':
-      todayActiveTab.value = true
-      countriesActiveTab.value = false
-      highlightsActiveTab.value = false
-      getTodayGames()
-      break
-    case 'countries':
-      countriesActiveTab.value = true
-      highlightsActiveTab.value = false
-      todayActiveTab.value = false
-      break
-
-    default:
-      break
-  }
+  prevTabView.value = tabView.value
+  tabView.value = tab.toLowerCase()
+  // Reset 1UP/2UP when switching tabs so each tab starts with full fixtures.
+  resetUpMode()
+  tab === 'countries' ? getCountriesList() : getHighlightGames()
 }
 
 const sportsListData = computed(() => {
   return utilsStore.sportsMenu
 })
-const getImageSrc = (sportId) => {
-  const imageUrl = new URL(`../../assets/images/sports/${sportId}.png`, import.meta.url)
-  return imageUrl
-}
 
 async function setActiveSport(sid) {
   // set the active sport id
   prevSportID.value = activeSportID.value
   activeSportID.value = sid
+  // Clear the active market immediately so football-only derived controls disappear.
+  activeMarket.value = {}
+  resetUpMode()
+  // Clear cached market selection when sport changes to avoid mismatches.
+  activeMarketByTab.value = { highlights: null, today: null }
+  highlightsData.value = []
+  marketsGroup.value = {}
+  todayData.value = []
+  derivedHighlightsData.value = []
+  derivedTodayData.value = []
   await getHomeData()
   document.getElementById('highlights_' + sid).scrollIntoView({
     behavior: 'smooth',
@@ -186,54 +246,82 @@ async function setActiveSport(sid) {
   })
 }
 
-async function getHighlightGames() {
-  if(!FEED_TOGGLE) return;
-  isLoading.value = true
-  if (!Object.keys(highlightsData.value).length || prevSportID.value !== activeSportID.value) {
-    const response = await getHighlights2(activeSportID.value, 1)
-    if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
-      highlightsData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
-      marketsGroup.value = response.markets
-      setMarkets()
-    } else {
-      highlightsData.value = []
-      marketsGroup.value = []
-    }
-  }
-  isLoading.value = false
+const getFeatureMarketIdParam = () => {
+  return getFeatureMarketIdForMode(upMode.value)
 }
 
-async function getTodayGames() {
+async function getHighlightGames({ force = false, preserveContent = false } = {}) {
   if(!FEED_TOGGLE) return;
-  isLoading.value = true
-  if (!Object.keys(todaysData.value).length || prevSportID.value !== activeSportID.value) {
-    const response = await getToday2(activeSportID.value, 1)
-    if (response.fixtures) {
-      let filteredData = response.fixtures.filter((f) => f.activeMarkets > 0)
-      todaysData.value = _.groupBy(filteredData, (fixture) => fixture.date.split(' ')[0])
-      marketsGroup.value = response.markets
-      setMarkets()
+  const { base, derived } = getTabDatasets(tabView.value)
+  const isDerivedRequest = upMode.value !== 'none'
+  const targetDataset = isDerivedRequest ? derived : base
+  const currentTabHasData = !isCollectionEmpty(targetDataset.value)
+  const currentTabHasMarkets = Array.isArray(marketsGroup.value) && marketsGroup.value.length
+  const isNewActiveSport = activeSportID.value !== prevSportID.value
+  try {
+    if(force || !currentTabHasData || !currentTabHasMarkets || isNewActiveSport) {
+      // Keep the existing highlights visible while derived mode is loading.
+      if (preserveContent) {
+        isModeLoading.value = true
+      } else {
+        isLoading.value = true
+      }
+      const response = await getSportHighlights({
+        sid: activeSportID.value, 
+        today: tabView.value === 'today' ? 1 : 0,
+        order_type: 'priority|desc',
+        per_page: 30,
+        feature_market_id: getFeatureMarketIdParam()
+      })
+      if (response.data.fixtures && response.data.markets) {
+        fixturesList.value = _.groupBy(response.data.fixtures, (fixture) => fixture.date.split('T')[0])
+        targetDataset.value = fixturesList.value
+        
+        // Hard reset the active market to avoid stale specifier state when swapping tabs.
+        activeMarket.value = {}
+        const filteredMarkets = sanitizeMarkets(normalizeFixtureMarkets(response.data.markets || []))
+        marketsGroup.value = filteredMarkets.length ? filteredMarkets : []
+        const cachedMarketId = activeMarketByTab.value[tabView.value]
+        const nextMarket =
+          marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
+          marketsGroup.value[0] ||
+          {}
+        activeMarket.value = nextMarket
+      } else {
+        targetDataset.value = []
+        marketsGroup.value = []
+      }
     } else {
-      todaysData.value = []
-      // marketsGroup.value = []
+      fixturesList.value = baseTabFixtures.value
+      // Hard reset the active market to avoid stale specifier state when reusing cached markets.
+      activeMarket.value = {}
+      marketsGroup.value = marketsGroup.value || []
+      const cachedMarketId = activeMarketByTab.value[tabView.value]
+      const nextMarket =
+        marketsGroup.value.find((market) => Number(market.marketID) === Number(cachedMarketId)) ||
+        marketsGroup.value[0] ||
+        {}
+      activeMarket.value = nextMarket
     }
+  } finally {
+    isLoading.value = false
+    isModeLoading.value = false
   }
-  isLoading.value = false
+}
+
+async function handleUpModeChange(mode) {
+  setUpMode(mode)
+  await getHighlightGames({ preserveContent: true })
 }
 
 async function getCountriesList() {
   if(!FEED_TOGGLE) return;
-  countriesData.value = (await getCategoriesBySport(activeSportID.value)).sports || []
-}
-
-function setMarkets() {
-  // marketsGroup.value = sportsListData.value.find((obj) => obj.sport_id === activeSportID.value)
-  activeMarket.value = marketsGroup.value[0]
+  countriesData.value = (await getCategoriesBySport(activeSportID.value, null)).data.filter((x) => x.games > 0) || []
 }
 
 function getFixturesByMarkets(market) {
   activeMarket.value = market
+  activeMarketByTab.value[tabView.value] = market?.marketID || null
 }
 
 async function getHomeData() {
@@ -268,44 +356,122 @@ const handleScroll = () => {
   }
 }
 
+const removeFixtureByMatchId = (matchID) => {
+  const removeFromGroups = (groups) => {
+    Object.keys(groups).forEach((date) => {
+      groups[date] = groups[date].filter(
+        (fixture) =>
+          String(fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id) !==
+          String(matchID)
+      )
+      if (groups[date].length === 0) {
+        delete groups[date]
+      }
+    })
+  }
+
+  if (highlightsData.value && Object.keys(highlightsData.value).length) {
+    removeFromGroups(highlightsData.value)
+  }
+  if (todayData.value && Object.keys(todayData.value).length) {
+    removeFromGroups(todayData.value)
+  }
+}
+
+const applyValidatedSelections = (selections) => {
+  console.log('[odds-validated][HighlightsContainer] incoming', selections)
+  if (!Array.isArray(selections) || selections.length === 0) return
+  const selectionsByMatch = selections.reduce((acc, selection) => {
+    const key = String(selection.match_id ?? selection.matchID ?? selection.matchId ?? '')
+    if (!key) return acc
+    if (!acc[key]) acc[key] = []
+    acc[key].push(selection)
+    return acc
+  }, {})
+  console.log('[odds-validated][HighlightsContainer] matches', Object.keys(selectionsByMatch).length)
+
+  const updateGroups = (groups) => {
+    Object.keys(groups).forEach((date) => {
+      groups[date] = groups[date].map((fixture) => {
+        const fixtureMatchId = String(
+          fixture.matchID ?? fixture.match_id ?? fixture.gameID ?? fixture.game_id ?? ''
+        )
+        const matchSelections = selectionsByMatch[fixtureMatchId]
+        if (!matchSelections) {
+          return fixture
+        }
+        if (!Array.isArray(fixture.outcomes)) {
+          console.log('[odds-validated][HighlightsContainer] no outcomes for match', fixtureMatchId)
+          return fixture
+        }
+        if (!matchSelections || !Array.isArray(fixture.outcomes)) {
+          return fixture
+        }
+        const nextOutcomes = fixture.outcomes.map((outcome) => {
+          const match = matchSelections.find((sel) => {
+            const specifier = String(outcome.specifier || '')
+            const selSpecifier = String(sel.specifier || '')
+            return (
+              String(outcome.marketID) === String(sel.market_id) &&
+              String(outcome.outcomeID) === String(sel.outcome_id) &&
+              specifier === selSpecifier
+            )
+          })
+          if (!match) {
+            return outcome
+          }
+          console.log('[odds-validated][HighlightsContainer] update', {
+            matchId: fixtureMatchId,
+            marketId: outcome.marketID,
+            outcomeId: outcome.outcomeID,
+            specifier: outcome.specifier || '',
+            from: outcome.odds,
+            to: match.odds,
+            status: match.status_name
+          })
+          if (!match) return outcome
+          const statusName = String(match.status_name || '').toLowerCase()
+          const active =
+            statusName === 'suspended' || statusName === 'deactivated'
+              ? 0
+              : match.active ?? outcome.active
+          return {
+            ...outcome,
+            odds: match.odds ?? outcome.odds,
+            active
+          }
+        })
+        return { ...fixture, outcomes: nextOutcomes }
+      })
+    })
+  }
+
+  if (highlightsData.value && Object.keys(highlightsData.value).length) {
+    updateGroups(highlightsData.value)
+  }
+  if (todayData.value && Object.keys(todayData.value).length) {
+    updateGroups(todayData.value)
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   await getHomeData()
 
   // Add event listener for removing fixtures
-  emitter.on('remove-fixture', (matchID) => {
-    // Remove from highlights data
-    Object.keys(highlightsData.value).forEach((date) => {
-      highlightsData.value[date] = highlightsData.value[date].filter(
-        (fixture) => String(fixture.matchID) !== String(matchID)
-      )
-      // Remove empty date groups
-      if (highlightsData.value[date].length === 0) {
-        delete highlightsData.value[date]
-      }
-    })
-
-    // Remove from today's data
-    Object.keys(todaysData.value).forEach((date) => {
-      todaysData.value[date] = todaysData.value[date].filter(
-        (fixture) => String(fixture.matchID) !== String(matchID)
-      )
-      // Remove empty date groups
-      if (todaysData.value[date].length === 0) {
-        delete todaysData.value[date]
-      }
-    })
-  })
+  emitter.on('remove-fixture', removeFixtureByMatchId)
+  emitter.on('odds-validated', applyValidatedSelections)
 })
 
 onUnmounted(() => {
   // Remove scroll event listener when the component is unmounted
   window.removeEventListener('scroll', handleScroll)
+  emitter.off('remove-fixture', removeFixtureByMatchId)
+  emitter.off('odds-validated', applyValidatedSelections)
 })
 
 defineComponent({
   components: {
-    Today,
     Highlights,
     Countries,
     LoadingError,
@@ -318,7 +484,7 @@ defineComponent({
 .m-sports-title {
   top: 3.66666667rem;
   position: sticky;
-  background-color: var(--brand-background-secondary);
+  background-color: #fff;
   /* z-index: 220; */
 }
 
@@ -328,21 +494,6 @@ defineComponent({
   top: 0px;
 }
 
-.bounce-enter-active {
-  animation: bounce-in 0.3s;
-}
-/* .bounce-leave-active {
-  animation: bounce-in 0.2s reverse;
-} */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 </style>
+
+

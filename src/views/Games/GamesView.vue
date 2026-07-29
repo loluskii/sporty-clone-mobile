@@ -1,17 +1,13 @@
 <template>
   <div class="casino">
     <HeaderCasino></HeaderCasino>
-    <Winners />
-    <div class="carousel">
-      <Carousel></Carousel>
-    </div>
     <div v-if="!isLoading" class="games-container pb-5">
       <div class="head-top d-flex align-items-center">
         <div class="categories-list">
           <div
             class="category"
             :class="!activeTopCategory ? 'active' : ''"
-            @click="getGameByTopCategory()"
+            @click="showGroupedView()"
             id="discover"
           >
             <img src="@/assets/images/casino/all.png" class="img-fluid" alt="" srcset="" />
@@ -19,16 +15,7 @@
           </div>
           <div
             class="category"
-            :class="activeTopCategory?.id === 'bonus' ? 'active' : ''"
-            @click="getBonusGames()"
-            id="bonus_games"
-          >
-            <img src="@/assets/images/casino/bonus.png" class="img-fluid" alt="" srcset="" />
-            <span>Bonus Games</span>
-          </div>
-          <div
-            class="category"
-            @click="openQtechLobby()"
+            @click="$router.push({ name: 'casino' })"
             id="qtech_games"
           >
             <img
@@ -37,13 +24,13 @@
               alt=""
               srcset=""
             />
-            <span>QTech Lobby</span>
+            <span>QTech</span>
           </div>
           <template v-for="(top, index) in topGameCategories" :key="index">
             <div
               class="category"
               :class="activeTopCategory?.id == top.id ? 'active' : ''"
-              @click="getGameByTopCategory(top)"
+              @click="scrollToCategory(top)"
               v-if="top.priority >= 0"
               :id="'category_' + top.id"
             >
@@ -54,7 +41,7 @@
         </div>
       </div>
       <div v-if="!isLoading" ref="myElement" class="games-grid mt-3">
-        <div v-if="currentView === 'grouped_category'" class="grouped-games-section">
+        <div class="grouped-games-section">
           <!-- Jackpots -->
           <!-- <template v-if="jackpots">
             <div
@@ -76,6 +63,7 @@
             <div
               class="group"
               v-if="top.priority >= 0"
+              :id="'group_' + top.id"
               :data-category-id="top.id"
               v-intersection="handleIntersection"
             >
@@ -87,11 +75,11 @@
                   >Show More
                 </span>
               </div>
-              <template v-if="gamesList[top.id] && gamesList[top.id].length">
-                <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+              <template v-if="groupedGames[top.id] && groupedGames[top.id].length">
+                <div class="grid-container preview-rail mb-3 pb-3" ref="scrollComponent">
                   <div
                     class=""
-                    v-for="(game, index) in gamesList[top.id]"
+                    v-for="(game, index) in groupedGames[top.id]"
                     :key="index"
                     @click="redirectToGamePlay(game)"
                   >
@@ -99,9 +87,9 @@
                   </div>
                 </div>
               </template>
-              <template v-else-if="!gamesList[top.id]">
-                <div class="grid-container mb-3 pb-3">
-                  <div class="" v-for="i in 4" :key="i">
+              <template v-else-if="!groupedGames[top.id]">
+                <div class="grid-container preview-rail mb-3 pb-3">
+                  <div class="" v-for="i in 5" :key="i">
                     <GameCard loading />
                   </div>
                 </div>
@@ -164,6 +152,7 @@
             <div
               class="group"
               v-if="top.priority >= 0"
+              :id="'group_' + top.id"
               :data-category-id="top.id"
               v-intersection="handleIntersection"
             >
@@ -175,11 +164,11 @@
                   >Show More
                 </span>
               </div>
-              <template v-if="gamesList[top.id] && gamesList[top.id].length">
-                <div class="grid-container mb-3 pb-3" ref="scrollComponent">
+              <template v-if="groupedGames[top.id] && groupedGames[top.id].length">
+                <div class="grid-container preview-rail mb-3 pb-3" ref="scrollComponent">
                   <div
                     class=""
-                    v-for="(game, index) in gamesList[top.id]"
+                    v-for="(game, index) in groupedGames[top.id]"
                     :key="index"
                     @click="redirectToGamePlay(game)"
                   >
@@ -187,9 +176,9 @@
                   </div>
                 </div>
               </template>
-              <template v-else-if="!gamesList[top.id]">
-                <div class="grid-container mb-3 pb-3">
-                  <div class="" v-for="i in 4" :key="i">
+              <template v-else-if="!groupedGames[top.id]">
+                <div class="grid-container preview-rail mb-3 pb-3">
+                  <div class="" v-for="i in 5" :key="i">
                     <GameCard loading />
                   </div>
                 </div>
@@ -205,32 +194,6 @@
               </div>
             </div>
           </template>
-        </div>
-        <div v-if="currentView === 'single_category'" class="grouped-games-section">
-          <div class="group">
-            <div class="header d-flex justify-content-between align-items-center mb-3">
-              <h1 class="card-title h2 fw-bold text-white">
-                {{ activeTopCategory.name }}
-              </h1>
-            </div>
-            <div class="grid-container mb-3 pb-3" v-if="gamesList.length" ref="scrollComponent">
-              <div
-                class=""
-                v-for="(game, index) in gamesList"
-                :key="index"
-                @click="redirectToGamePlay(game)"
-              >
-                <GameCard :image="getImagePath(game)" :title="game.title" :type="game.type" />
-              </div>
-            </div>
-            <div v-else-if="!singleCategoryLoading && !gamesList.length" class="no-data">
-              <div style="white-space: pre-line">
-                Sorry, there are no games currently<br />available in this category. Please try
-                later.<br />Thank you.
-              </div>
-            </div>
-            <LoadingSpinner v-else></LoadingSpinner>
-          </div>
         </div>
       </div>
     </div>
@@ -275,37 +238,30 @@
 
 <script setup>
 import Winners from '../../components/Casino/Winners.vue'
-import Jackpots from '../../components/Casino/Jackpots.vue'
 import HeaderCasino from '@/components/HeaderCasino.vue'
 import Carousel from '@/components/Home/Carousel.vue'
-import { ref, onBeforeMount, computed } from 'vue'
+import { ref, onBeforeMount, computed, nextTick } from 'vue'
 import {
+  getCasinoListGames,
   getTopGameCategories,
   gamesByTopCategory,
   getGameLobbyUrl,
   getProviders,
-  FEED_TOGGLE
-} from "@/helpers";
-import router from "@/router";
-import { useAuthStore, useUsersStore, useUtilsStore } from "@/stores";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner.vue";
-import { getJackpots, slugify } from "@/helpers";
-import emitter from "@/plugins/emitter";
-import { useRoute } from "vue-router";
-import GameCard from "@/components/Casino/GameCard.vue";
-import { getCasinoBonusGames } from "@/helpers";
+  getJackpots,
+  slugify
+} from '@/helpers'
+import router from '@/router'
+import { useUsersStore, useUtilsStore } from '@/stores'
+import emitter from '@/plugins/emitter'
+import { useRoute } from 'vue-router'
+import GameCard from '@/components/Casino/GameCard.vue'
 
 const topGameCategories = ref([])
-const gamesList = ref({})
+const groupedGames = ref({})
 const activeTopCategory = ref(null)
-const scrollComponent = ref(null)
-const authStore = useAuthStore()
 const userStore = useUsersStore()
 const isLoading = ref(true)
-const singleCategoryLoading = ref(true)
 const myElement = ref(null)
-const currentView = ref('grouped_category')
-const bonus = ref(null)
 const jackpots = ref([])
 const route = useRoute()
 const utilsStore = useUtilsStore()
@@ -334,7 +290,7 @@ const vIntersection = {
 
 const handleIntersection = async (element) => {
   const categoryId = element.getAttribute('data-category-id')
-  if (categoryId && !gamesList.value[categoryId]) {
+  if (categoryId && !groupedGames.value[categoryId]) {
     await loadGamesForCategory(categoryId)
   }
 }
@@ -342,11 +298,10 @@ const handleIntersection = async (element) => {
 const loadGamesForCategory = async (categoryId) => {
   try {
     const response = await gamesByTopCategory(categoryId)
-    gamesList.value[categoryId] =
-      response.data?.slice(0, 12).sort((a, b) => b.priority - a.priority) || []
+    groupedGames.value[categoryId] = response.data?.slice(0, 5) || []
   } catch (error) {
     console.error(`Error loading games for category ${categoryId}:`, error)
-    gamesList.value[categoryId] = []
+    groupedGames.value[categoryId] = []
   }
 }
 
@@ -393,7 +348,10 @@ const showMore = (top) => {
   return router.push({
     name: 'games-by-category',
     params: { category: slugify(top.name) },
-    query: { category_id: top.id }
+    query: {
+      category_id: top.id,
+      providerId: top.providerId || ''
+    }
   })
 }
 
@@ -406,21 +364,32 @@ async function getCategories() {
   errorState.value.categoriesError = false
 
   try {
-    const response = await getTopGameCategories()
-    const categories = response.data
+    const [categoriesResponse, gamesResponse] = await Promise.all([
+      getTopGameCategories(),
+      getCasinoListGames()
+    ])
+    const categories = categoriesResponse.data
+    const allGames = gamesResponse.data || []
+    const groupedByCategory = allGames.reduce((acc, game) => {
+      if (!acc[game.categoryId]) {
+        acc[game.categoryId] = []
+      }
+      acc[game.categoryId].push(game)
+      return acc
+    }, {})
 
     topGameCategories.value = categories
       .map((category) => ({
         ...category,
+        providerId: groupedByCategory[category.id]?.[0]?.providerId || '',
         isLoading: false,
         hasError: false
       }))
       .sort((a, b) => b.priority - a.priority)
 
-    // Load first category immediately
-    if (topGameCategories.value.length > 0) {
-      await loadGamesForCategory(topGameCategories.value[0].id)
-    }
+    groupedGames.value = Object.fromEntries(
+      topGameCategories.value.map((category) => [category.id, (groupedByCategory[category.id] || []).slice(0, 5)])
+    )
   } catch (error) {
     console.error('Error fetching categories:', error)
     errorState.value.categoriesError = true
@@ -429,40 +398,21 @@ async function getCategories() {
   }
 }
 
-async function getGameByTopCategory(category) {
-  singleCategoryLoading.value = true
-  errorState.value.gamesError = false
-  gamesList.value = [] // Clear the list to show loading state
+function showGroupedView() {
+  activeTopCategory.value = null
+  myElement.value?.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
 
-  try {
-    if (category) {
-      const element = document.getElementById('category_' + category.id)
-      element?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      })
-
-      currentView.value = 'single_category'
-      activeTopCategory.value = category
-      const res = await gamesByTopCategory(category.id)
-      gamesList.value = res.data || []
-    } else {
-      document.getElementById('discover')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      })
-      currentView.value = 'grouped_category'
-      activeTopCategory.value = null
-      await getCategories()
-    }
-  } catch (error) {
-    console.error('Error fetching games by category:', error)
-    errorState.value.gamesError = true
-  } finally {
-    singleCategoryLoading.value = false
-  }
+async function scrollToCategory(category) {
+  activeTopCategory.value = category
+  await nextTick()
+  document.getElementById(`group_${category.id}`)?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
 }
 
 const getJK = async () => {
@@ -477,6 +427,10 @@ const getJK = async () => {
 
 const getImagePath = (game) => {
   try {
+    if (game?.image) {
+      return game.image
+    }
+
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
       game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
     )}.png?alt=media`
@@ -484,13 +438,6 @@ const getImagePath = (game) => {
     console.error('Error generating image path:', error)
     return `https://placehold.co/150x175?text=${encodeURIComponent(game.title)}`
   }
-}
-
-const handleImageError = (event, game) => {
-  // Replace the failed image with a placeholder
-  let name = encodeURIComponent(game.title)
-  event.target.src = `https://placehold.co/150x175?text=${name}` // Specify your placeholder image path
-  event.target.alt = `${game.title}`
 }
 
 async function redirectToGamePlay(game) {
@@ -526,7 +473,7 @@ const getTopProviders = async () => {
   isLoadingProviders.value = true
   try {
     const response = await getProviders()
-    providers.value = Object.values(response.data).slice(0, 5)
+    providers.value = response.data.slice(0, 5)
   } catch (error) {
     console.error('Error fetching providers:', error)
     providers.value = []
@@ -547,33 +494,11 @@ const getProviderImage = (provider) => {
 }
 
 async function getBonusGames() {
-  singleCategoryLoading.value = true
-  errorState.value.gamesError = false
-  gamesList.value = [] // Clear the list to show loading state
-
-  try {
-    const element = document.getElementById('bonus_games')
-    element?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center'
-    })
-
-    currentView.value = 'single_category'
-    activeTopCategory.value = { id: 'bonus', name: 'Bonus Games' }
-
-    const res = await getCasinoBonusGames(userStore.currentUser.id)
-    gamesList.value = Object.values(res.data) || []
-  } catch (error) {
-    console.error('Error fetching bonus games:', error)
-    errorState.value.gamesError = true
-  } finally {
-    singleCategoryLoading.value = false
-  }
+  return null
 }
 
 onBeforeMount(async () => {
-  Promise.all([getJK(), getCategories(), getTopProviders()])
+  Promise.all([getCategories(), getTopProviders()])
   updateCSSVar()
   // $("body").addClass("no-scroll");
 })
@@ -733,6 +658,21 @@ onBeforeMount(async () => {
   flex: 0 0 auto;
 }
 
+.games-container .grid-container.preview-rail {
+  display: flex !important;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+}
+
+.games-container .grid-container.preview-rail > div {
+  flex: 0 0 44%;
+  min-width: 155px;
+  max-width: 175px;
+}
+
 .games-container .categories-list {
   display: flex;
   flex-wrap: nowrap;
@@ -818,6 +758,20 @@ onBeforeMount(async () => {
 .header h1 {
   font-size: 1.25rem;
   margin: 0;
+}
+
+.category-detail-header {
+  gap: 12px;
+}
+
+.back-button {
+  background: transparent;
+  border: 1px solid #4f4f4f;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 6px 14px;
 }
 
 .header span {

@@ -24,28 +24,22 @@
     <div class="mid" @click="goToMarket($event)">
       <div class="homeIcon">
         <img
-          :src="
-            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-            getEncodedURI(matchDetails.homeTeam) +
-            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-          "
+          :src="getTeamLogoUrl(matchDetails.homeTeam)"
+          @error="setTeamLogoFallback($event, 'home')"
         />
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
       <div class="dateTime">
-        <div class="time">{{ matchDetails.eventTime }}</div>
-        <div class="date">{{ formatDate(matchDetails.date, 'ddd D') }}</div>
+        <div class="time">{{moment(matchDetails.date).format('ha') }}</div>
+        <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
       </div>
       <div class="market">
-        <span>{{ props.markets[0].marketName }}</span>
+        <span>{{ selectedMarket?.marketName }}</span>
       </div>
       <div class="awayIcon">
         <img
-          :src="
-            'https://firebasestorage.googleapis.com/v0/b/sbe-dev-ecd57.firebasestorage.app/o/TEAMS%2F' +
-            getEncodedURI(matchDetails.awayTeam) +
-            '.png?alt=media&token=8c7ef0e7-c4db-4446-b674-58d86d956efd'
-          "
+          :src="getTeamLogoUrl(matchDetails.awayTeam)"
+          @error="setTeamLogoFallback($event, 'away')"
         />
       </div>
       <div class="awayName">{{ matchDetails.awayTeam }}</div>
@@ -59,14 +53,7 @@
           @click="addToBetslip(matchDetails, market)"
           :class="
             isSelected(
-              createID(
-                matchDetails.matchID,
-                market.marketID,
-                market.outcomeID,
-                market.specifier,
-                '1X2',
-                market.outcomeName
-              ),
+              getSelectionElementId(matchDetails, market),
               couponStore.coupon
             )
               ? 'm-outcome--checked'
@@ -86,11 +73,18 @@
 
 <script setup>
 import { defineProps, computed, watch } from 'vue'
-import { formatDate, slugify, isSelected, createID } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  formatDate,
+  slugify,
+  isSelected,
+  getTeamLogoUrl,
+  setTeamLogoFallback
+} from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
-import emitter from '@/plugins/emitter'
+import moment from 'moment'
 
 const router = useRouter()
 const couponStore = useCouponStore()
@@ -100,12 +94,27 @@ const props = defineProps({
   markets: Object
 })
 
+const selectedMarket = computed(() => {
+  const markets = Array.isArray(props.markets) ? props.markets : []
+  return (
+    markets.find((market) => Number(market.marketID) === 1) ||
+    markets.find((market) => Number(market.marketID) === 1601) ||
+    markets[0] ||
+    {}
+  )
+})
+
 const getMatchOdds = computed(() => {
-  // Get unique outcomes by outcomeID first
-  const uniqueOutcomes = props.matchDetails?.outcomes
-    .filter((x) => x.marketID == props.markets[0].marketID)
-    .filter((outcome, index, self) => 
-      index === self.findIndex(o => o.outcomeID === outcome.outcomeID)
+  const uniqueOutcomes = (props.matchDetails?.outcomes || [])
+    .filter((x) => Number(x.marketID) === Number(selectedMarket.value.marketID))
+    .filter(
+      (outcome, index, self) =>
+        index ===
+        self.findIndex(
+          (item) =>
+            String(item.outcomeID) === String(outcome.outcomeID) &&
+            String(item.specifier || '') === String(outcome.specifier || '')
+        )
     )
 
   // Get the latest odds from the coupon store if available
@@ -117,7 +126,9 @@ const getMatchOdds = computed(() => {
     // If we have selections in the betslip, use their updated odds
     return uniqueOutcomes.map((outcome) => {
       const selection = matchSelections.find(
-        (sel) => String(sel.outcomeId) === String(outcome.outcomeID)
+        (sel) =>
+          String(sel.outcomeId) === String(outcome.outcomeID) &&
+          String(sel.specifier || sel.selectionKeySpecifier || '') === String(outcome.specifier || '')
       )
       return selection
         ? {
@@ -133,10 +144,6 @@ const getMatchOdds = computed(() => {
   return uniqueOutcomes
 })
 
-function getEncodedURI(name) {
-  return encodeURIComponent(name.toUpperCase())
-}
-
 function goToMarket() {
   return router.push({
     name: 'fixtures-detail',
@@ -144,40 +151,36 @@ function goToMarket() {
       sport: slugify(props.matchDetails.sportName),
       tournament_name: slugify(props.matchDetails.tournament),
       event_name: slugify(props.matchDetails.name),
-      event_id: slugify(props.matchDetails.matchID)
+      event_id: (props.matchDetails.matchID)
     }
   })
 }
 
+const getSelectionElementId = (fixture, outcome) =>
+  buildCouponSelectionElementId({
+    fixture,
+    outcome,
+    marketName: '1X2'
+  })
+
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
-  let marketId = parseInt(odd.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
+  const fixtureWithMarkets = {
+    ...event,
+    sportID: event.sportID || event.sportId,
+    sportId: event.sportId || event.sportID,
+    market: Array.isArray(props.markets) ? props.markets : event.market,
+    markets: Array.isArray(props.markets) ? props.markets : event.markets
   }
-  const id = createID(event.matchID,odd.marketID,odd.outcomeID,odd.specifier,'1X2',odd.outcomeName)
-  const data = {
-    fixture: event,
-    market_name: '1X2',
-    market_id: odd.marketID,
-    ele_id: id,
+  const data = buildCouponSelectionPayload({
+    fixture: fixtureWithMarkets,
+    market: selectedMarket.value,
     outcome: odd,
-    odds: odd.odds,
-    odd_id: odd.oddID,
-    odd_name: odd.outcomeName,
-    type: 'prematch',
-    event_id: event.gameID,
-    specifier: ''
-  }
+    marketName: selectedMarket.value?.marketName || '1X2',
+    type: 'prematch'
+  })
 
-  // return couponStore.addToCoupon(data)
-
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+  return couponStore.toggleCouponSelection(data)
 }
 </script>
 
@@ -199,8 +202,8 @@ function addToBetslip(event, odd) {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  height: 35vw;
-  min-height: 120px;
+  height: calc(var(--mobile-app-width, 100vw) * 0.35);
+  min-height: 136px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -234,7 +237,6 @@ function addToBetslip(event, odd) {
 }
 .featuredMatchCard .top .tournamentLink {
   color: #000;
-  font-size: 0.83333333rem;
   margin-left: 0.5rem;
   overflow: hidden;
   padding-right: 0.08333333rem;
@@ -332,7 +334,7 @@ function addToBetslip(event, odd) {
 .featuredMatchCard .mid .dateTime .date::before {
   color: #dfe0e6;
   content: '|';
-  margin: 0 0.2rem;
+  margin: 0 0.3rem;
 }
 .featuredMatchCard .mid .market {
   color: var(--brand-highlight-text);

@@ -565,7 +565,7 @@ onMounted(async () => {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-secondary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;

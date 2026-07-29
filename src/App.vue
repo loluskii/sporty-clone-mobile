@@ -1,31 +1,35 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onMounted, ref, watch, computed } from 'vue'
+import { defineComponent, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
 import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
 import BookBetModal from '@/components/Betslip/BookBetModal.vue'
+import WinModal from '@/components/WinModal.vue'
 import {
-  fetchBonusList,
+  fetchSportsbookFeatureConfig,
   fetchGlobalVars,
   getSportsMenu,
   loadBetslipByCode,
   getBets,
   getUserActiveBonus,
-  CLIENT_ID,
   validateBetslipSelections,
   fetchBanners,
   getUserCashbackBonus,
-  getBanksList
+  getBanksList,
+  fetchUserNotifications
 } from '@/helpers'
 import Betlist from '@/components//Betslip/Betlist.vue'
 import ErrorDialogue from './components/ErrorDialogue.vue'
 import { useRoute, useRouter } from 'vue-router'
 import emitter from './plugins/emitter'
-import { useUsersStore, useAuthStore } from './stores'
+import { useAuthStore, useUsersStore } from './stores'
+import { checkVersion } from '@/utils/version'
+import DepositWithdrawalCode from './components/DepositWithdrawalCode.vue'
 import Cookies from 'js-cookie'
 import ImageDialog from './components/ImageDialog.vue'
+import BackToTopButton from './components/BackToTopButton.vue'
 
 const utilsStore = useUtilsStore()
 const couponStore = useCouponStore()
@@ -52,17 +56,88 @@ const depositWithdrawalShown = ref(false)
 const depositWithdrawalData = ref(null)
 const depositWithdrawalType = ref('')
 const popupData = ref(null)
+let notificationRequestInFlight = false
+const lastNotificationLoadKey = ref('')
+// Centralized handler to close betslip from child features (e.g., simulation end).
+const closeBetslip = async () => {
+  if (!showBetslip.value) return
+  await toggleBetslip()
+}
+// Win modal state shared across app (simulation uses this now, other flows can reuse).
+const winModalShown = ref(false)
+const winModalAmount = ref(0)
+const winModalCurrency = ref('')
+const DEFAULT_GLOBAL_VARIABLES = {
+  AllowRegistration: 'Yes',
+  Currency: '₦',
+  CurrencyCode: 'NGN',
+  DialCode: '+234',
+  MinDeposit: '100',
+  MinWithdrawal: '1000',
+  LiveTicketMax: '40',
+  singleMinStake: '100',
+  singleMaxStake: '50000',
+  MinBetStake: '20',
+  comboMinStake: '20',
+  comboMaxStake: '1000000',
+  MaxNoOfSelection: '50',
+  SingleMaxWinning: '500000',
+  MinBonusOdd: '1.18',
+  enableCashout: '1',
+  EnableSystemBet: '1',
+  EnableSplitBet: '0',
+  taxEnabled: '0',
+  exciseTax: '13.04',
+  wthTax: '20'
+}
+
+const isEmptyPlainObject = (value) =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value) && !Object.keys(value).length
 
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
 })
 
-function toggleBetslip() {
+const backToTopBlocked = computed(() => {
+  return (
+    showBetslip.value ||
+    dialogueShown.value ||
+    bookBetModalShown.value ||
+    depositWithdrawalShown.value ||
+    customDatePickerShown.value ||
+    (route.name === 'home' && utilsStore.bonusModalShown === false && Boolean(casinoGameData.value)) ||
+    (route.name === 'home' && utilsStore.popupDialogShown === false && Boolean(popupData.value))
+  )
+})
+
+watch(
+  () => [isAuthenticated.value, usersStore.currentUser?.id],
+  ([authenticated, userId]) => {
+    if (!authenticated || !userId) {
+      openBets.value = 0
+      return
+    }
+
+    const notificationLoadKey = `${userId}:${Cookies.get('SBE-TOKEN') || ''}`
+    if (lastNotificationLoadKey.value === notificationLoadKey) return
+    lastNotificationLoadKey.value = notificationLoadKey
+    loadUserNotifications()
+    getBetsData()
+  },
+  { immediate: true }
+)
+
+async function toggleBetslip() {
+  couponStore.recordAbandonedBetslipInteraction()
   showBetslip.value = !showBetslip.value
   if (showBetslip.value) {
     document.body.style.overflowY = 'hidden'
+    // Validate selections and subscribe to MQTT when betslip opens
+    await couponStore.validateAndSubscribe()
   } else {
     document.body.style.overflowY = 'scroll'
+    // Unsubscribe from MQTT when betslip closes
+    couponStore.unsubscribeAll()
   }
 }
 
@@ -101,6 +176,64 @@ function showToaster(data) {
   dialogueType.value = 'toaster'
 }
 
+function showWinModal(data = {}) {
+  winModalShown.value = true
+  winModalAmount.value = data?.amount ?? 0
+  winModalCurrency.value = data?.currency ?? ''
+}
+
+function hideWinModal() {
+  winModalShown.value = false
+}
+
+function getNotificationItems(payload) {
+  const looksLikeNotification = (value) => {
+    return Boolean(
+      value &&
+        typeof value === 'object' &&
+        (value.id ||
+          value.notificationId ||
+          value.title ||
+          value.subject ||
+          value.body ||
+          value.content ||
+          value.text)
+    )
+  }
+  const data = payload?.data ?? payload?.notifications ?? payload?.notification ?? payload
+
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.notifications)) return data.notifications
+  if (Array.isArray(data?.items)) return data.items
+  if (Array.isArray(data?.data)) return data.data
+  if (looksLikeNotification(data)) return [data]
+
+  return []
+}
+
+async function loadUserNotifications() {
+  if (!isAuthenticated.value || !usersStore.currentUser?.id || notificationRequestInFlight) return
+  if (route.name === 'notifications') return
+
+  notificationRequestInFlight = true
+  try {
+    const response = await fetchUserNotifications()
+    const notifications = getNotificationItems(response)
+
+    if (!notifications.length) return
+
+    dialogueMessage.value = {
+      notificationCount: notifications.length
+    }
+    dialogueType.value = 'notification'
+    dialogueShown.value = true
+  } catch (error) {
+    console.warn('Failed to load user notifications:', error)
+  } finally {
+    notificationRequestInFlight = false
+  }
+}
+
 function showDepositWithdrawal(data) {
   document.getElementById('body').classList.add('no-scroll')
   depositWithdrawalShown.value = true
@@ -111,21 +244,9 @@ function showDepositWithdrawal(data) {
 async function loadBet(code) {
   try {
     const res = await loadBetslipByCode(code)
-    if (res.success) {
-      if (res.data.selections.length) {
-        couponStore.coupon.selections = res.data.selections
-        couponStore.coupon.totalOdds = res.data.totalOdd
-        couponStore.coupon.totalStake = res.data.stake
-        couponStore.coupon.stake = res.data.stake
-        couponStore.coupon.maxWin = res.data.possibleWin
-        couponStore.coupon.source = 'mobile'
-        if (res.data.selections.length === 1) {
-          couponStore.coupon.bet_type = 'Single'
-          couponStore.coupon.betslip_type = 'Single'
-        } else {
-          couponStore.coupon.bet_type = 'Multiple'
-          couponStore.coupon.betslip_type = 'Multiple'
-        }
+    if (res.status_code === 200 ) {
+      const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(res.data)
+      if (loadedSelections) {
         // emitter.emit('openBetslip')
         return router.push({ name: 'home' })
       } else {
@@ -140,15 +261,14 @@ async function loadBet(code) {
 }
 
 async function getBetsData() {
-  let payload = {
-    clientId: CLIENT_ID,
-    date: '',
-    status: 0,
-    userId: usersStore.currentUser.id
-  }
-  const res = await getBets(payload)
-  if (res.bets) {
-    openBets.value = res.bets.length
+  if(route.name === 'bets-view') return
+  try {
+    const res = await getBets({status: -1})
+    if (res?.data?.data) {
+      openBets.value = res?.data?.data.length || 0
+    }
+  } catch (error) {
+    console.warn('Failed to load open bets count:', error)
   }
 }
 
@@ -184,44 +304,66 @@ async function validateSelections() {
   if (!couponStore.coupon.selections.length) return
 
   const selections = couponStore.coupon.selections.map((event) => ({
-    matchId: parseInt(event.matchId),
-    marketId: event.marketId.toString(),
-    outcomeId: event.outcomeId,
-    specifier: event.specifier
+    match_id: parseInt(event.matchId),
+    market_id: parseInt(event.marketId),
+    outcome_id: String(event.outcomeId),
+    producer_id: event.producerId || 0,
+    specifier: event.specifier || ''
   }))
-  const res = await validateBetslipSelections({ events: selections })
+  const res = await validateBetslipSelections(selections)
 
-  if (res.success) {
-    // Convert response object to array of validated selections
-    const validatedSelections = Object.values(res.data)
+  if (res.status_code === 200 && res.data) {
+    // data is already an array
+    const validatedSelections = Array.isArray(res.data) ? res.data : Object.values(res.data)
+    let hasSelectionChange = false
 
     // Update each selection with the new odds and active status
     validatedSelections.forEach((validatedSelection) => {
       const selection = couponStore.coupon.selections.find(
         (sel) =>
-          String(sel.matchId) === String(validatedSelection.matchId) &&
-          String(sel.marketId) === validatedSelection.marketId &&
-          String(sel.outcomeId) === validatedSelection.outcomeId
+          String(sel.matchId) === String(validatedSelection.match_id) &&
+          String(sel.marketId) === String(validatedSelection.market_id) &&
+          String(sel.outcomeId) === String(validatedSelection.outcome_id) &&
+          String(sel.specifier || '') === String(validatedSelection.specifier || '')
       )
 
       if (selection) {
-        selection.odds = validatedSelection.odds
-        selection.suspended = !validatedSelection.active
-        selection.unavailable = !validatedSelection.active
-        selection.changed = true
+        // Handle different status states based on status_name
+        const statusName = validatedSelection.status_name || ''
+        const nextOdds = Number(validatedSelection.odds)
+        const previousOdds = Number(selection.odds)
+        const nextSuspended = statusName === 'Suspended'
+        const nextUnavailable = statusName === 'Deactivated'
+        const didChange =
+          nextOdds !== previousOdds ||
+          selection.suspended !== nextSuspended ||
+          selection.unavailable !== nextUnavailable
 
-        // Reset the changed flag after 5 seconds
+        selection.odds = validatedSelection.odds
+        selection.suspended = nextSuspended
+        selection.unavailable = nextUnavailable
+        selection.changed = didChange
+
+        if (didChange) {
+          hasSelectionChange = true
+          couponStore.coupon.acceptChanges = false
+        }
+
+        // Reset the changed flag after 1 second
         setTimeout(() => {
           selection.changed = false
-        }, 5000)
+        }, 1000)
       }
     })
 
     // Recalculate winnings after updating all selections
     couponStore.updateWinnings({
       stake: couponStore.coupon.totalStake,
-      id: 'all'
+      id: 'all',
+      skipPreview: !hasSelectionChange
     })
+
+    emitter.emit('odds-validated', validatedSelections)
   }
 }
 
@@ -231,16 +373,16 @@ const safeLoad = (promise) =>
     return null
   })
 
-watch(
-  () => route.query.shareCode,
-  async (code) => {
-    // get booking code
-    if (code) {
-      await loadBet(code)
-    }
-  },
-  { immediate: true } // Trigger the watch callback immediately on component mount
-)
+  watch(
+    () => route.query.shareCode,
+    async (code) => {
+      // get booking code
+      if (code) {
+        await loadBet(code)
+      }
+    },
+    { immediate: true } // Trigger the watch callback immediately on component mount
+  )
 
 onMounted(async () => {
   if (route.path !== '/') {
@@ -252,16 +394,50 @@ onMounted(async () => {
     Cookies.set('clickId', clickId, { expires: 30 }) // expires in 30 days
   }
 
-  try {
-    const res = await fetchBanners()
-    if (res.data && Object.keys(res.data).length > 0) {
-      utilsStore.banners = Object.values(res.data).filter((b) => b.target === 'mobile')
-    } else {
-      utilsStore.banners = []
-    }
-  } catch (error) {
-    console.log('failed to get banners')
+  const [globalVarsResult, sportsResult, , banksResult, featureConfigResult, bannersResult] =
+    await Promise.allSettled([
+      fetchGlobalVars(),
+      getSportsMenu(),
+      validateSelections(),
+      getBanksList(),
+      fetchSportsbookFeatureConfig(),
+      fetchBanners()
+    ])
+
+  couponStore.sportsbookBonusList = []
+  const globalVarsData = globalVarsResult.status === 'fulfilled' ? globalVarsResult.value?.data?.data : null
+  couponStore.SportsbookGlobalVariable = isEmptyPlainObject(globalVarsData)
+    ? { ...DEFAULT_GLOBAL_VARIABLES }
+    : (globalVarsData || {})
+
+  couponStore.sportsbookFeatureConfig =
+    featureConfigResult.status === 'fulfilled'
+      ? featureConfigResult.value
+      : { ...utilsStore.SportsbookFeatureConfig }
+
+  utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
+  utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
+  utilsStore.SportsbookFeatureConfig = couponStore.sportsbookFeatureConfig
+
+  utilsStore.sportsMenu =
+    sportsResult.status === 'fulfilled' && Array.isArray(sportsResult.value?.data)
+      ? sportsResult.value.data.filter((sport) => sport.games > 0)
+      : []
+
+  utilsStore.banksList =
+    banksResult.status === 'fulfilled' && Array.isArray(banksResult.value?.data)
+      ? banksResult.value.data
+      : []
+
+  if (bannersResult.status === 'fulfilled' && bannersResult.value?.data) {
+    utilsStore.banners = Object.values(bannersResult.value.data).filter(
+      (banner) => banner.target === 'mobile'
+    )
+  } else {
+    utilsStore.banners = []
   }
+
+  isLoading.value = false
 
   if (isAuthenticated.value) {
     const [, activeBonus, cashbackData] = await Promise.all([
@@ -290,25 +466,7 @@ onMounted(async () => {
     isLoading.value = false
   }
 
-  await Promise.allSettled([fetchBonusList(), fetchGlobalVars(), getSportsMenu(), validateSelections(), getBanksList()]).then((results) => {
-    couponStore.sportsbookBonusList =
-      results[0].status === "fulfilled" ? results[0].value.data.data || [] : []
-
-    couponStore.SportsbookGlobalVariable =
-      results[1].status === "fulfilled" ? results[1].value.data.data : null
-
-    utilsStore.sportsbookBonusList = couponStore.sportsbookBonusList
-    utilsStore.SportsbookGlobalVariable = couponStore.SportsbookGlobalVariable
-
-    utilsStore.sportsMenu =
-      results[2].status === "fulfilled" ? results[2].value.sports : []
-
-    utilsStore.banksList =
-      results[4].status === "fulfilled" ? results[4].value.data : []
-
-    isLoading.value = false
-  })
-
+  couponStore.startAbandonedBetslipTracker()
 
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
@@ -320,7 +478,12 @@ onMounted(async () => {
   emitter.on('showCustomDatePicker', toggleDatePicker)
   emitter.on('showBookBetModal', toggleBookBetModal)
   emitter.on('showDepositWithdrawalModal', showDepositWithdrawal)
-  emitter.on('showManualDepositDialogueMessage', showManualDepositDialogue)
+  emitter.on('showWinModal', showWinModal)
+  emitter.on('closeBetslip', closeBetslip)
+})
+
+onBeforeUnmount(() => {
+  couponStore.stopAbandonedBetslipTracker()
 })
 
 defineComponent({
@@ -330,7 +493,7 @@ defineComponent({
 </script>
 
 <template>
-  <div>
+  <div class="mobile-app-shell">
     <div v-if="isLoading">
       <transition name="move">
         <div class="loading-overlay">
@@ -351,17 +514,27 @@ defineComponent({
       <div class="x-main x-layout-main">
         <div class="x-main-mid x-has-bottom-nav">
           <RouterView />
-          <AppFooter v-show="utilsStore.showFooter"></AppFooter>
+          <div v-show="utilsStore.showFooter">
+            <AppFooter></AppFooter>
+          </div>
           <MobileFooter @show-betslip="toggleBetslip" :open-bet-count="openBets"></MobileFooter>
-          <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
-            :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
           <CasinoDialog v-if="
             utilsStore.bonusModalShown === false && casinoGameData && route.name === 'home'
           " :data="casinoGameData" @hide-dialogue="utilsStore.bonusModalShown = true" />
           <ImageDialog v-if="utilsStore.popupDialogShown === false && popupData && route.name === 'home'"
             :image="popupData" @hide-dialogue="utilsStore.popupDialogShown = true" />
+
         </div>
         <Betlist @toggle-betslip="toggleBetslip" v-if="showBetslip" @update-betcount="getBetsData"></Betlist>
+          <ErrorDialogue v-if="dialogueShown" @hide-dialogue="toggleDialogue" :dialogue-message="dialogueMessage"
+          :error-message="errorMessage" :dialogue-type="dialogueType" :next-route="nextRoute"></ErrorDialogue>
+        <WinModal
+            v-if="winModalShown"
+            :amount="winModalAmount"
+            :currency="winModalCurrency"
+            @close="hideWinModal"
+          />
+        <BackToTopButton :blocked="backToTopBlocked" />
       </div>
   
       <!-- <transition name="move">
@@ -406,9 +579,95 @@ defineComponent({
 <style>
 @import url('./assets/css/loading.css');
 
+:root {
+  --mobile-app-max-width: 480px;
+  --mobile-app-width: min(100vw, var(--mobile-app-max-width));
+  --mobile-app-gutter: max(0px, calc((100vw - var(--mobile-app-max-width)) / 2));
+}
+
 html,
 body {
   width: 100%;
+  min-height: 100%;
+  background: var(--brand-background-primary);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+#app {
+  background: var(--brand-background-primary);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.28);
+  margin: 0 auto;
+  max-width: var(--mobile-app-max-width);
+  min-height: 100dvh;
+  overflow-x: clip;
+  position: relative;
+  width: 100%;
+}
+
+html,
+body,
+#app,
+.mobile-app-shell {
+  background-color: var(--brand-background-primary);
+}
+
+.mobile-app-shell,
+.page-content,
+.x-layout-main {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.x-layout-main {
+  position: relative;
+}
+
+/* Keep viewport-bound chrome on the same centered mobile rail as the app. */
+.mobile-navbar-wrap,
+.m-nav-secondary[style*='position: fixed'],
+.fixed-wrap,
+.m-bottom-nav .m-bottom-fixed,
+.m-bottom-nav .m-fast-betslip-wrap,
+.m-sports .m-sports-title.fixed,
+.m-sports .m-overlay,
+.m-sports .m-filter-pop.m-filter,
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav,
+.m-sports .nav-fixed .market-wrapper,
+.x-layout-main .x-main-left,
+.x-layout-main .x-main-right {
+  left: 50% !important;
+  max-width: var(--mobile-app-max-width);
+  right: auto !important;
+  transform: translateX(-50%);
+  width: var(--mobile-app-width) !important;
+}
+
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav::before {
+  width: var(--mobile-app-width) !important;
+}
+
+/* This swipeable row owns its transform inline, so center it with its left edge. */
+.m-sports .m-pre-opts.nav-fixed > .m-tabs-nav {
+  left: var(--mobile-app-gutter) !important;
+}
+
+.m-bottom-nav .betslip-float-wrapper:not([style*='left']) {
+  right: calc(var(--mobile-app-gutter) + 4px) !important;
+}
+
+@media screen and (min-width: 481px) {
+  html,
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 13px;
+  }
 }
 
 .no-scroll {
@@ -418,8 +677,9 @@ body {
 .loading-overlay {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  max-width: var(--mobile-app-max-width);
+  width: var(--mobile-app-width);
   height: 100%;
   background-color: #fafafa;
   /* semi-transparent white */
@@ -427,6 +687,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  transform: translateX(-50%);
   /* ensure overlay is on top */
 }
 
