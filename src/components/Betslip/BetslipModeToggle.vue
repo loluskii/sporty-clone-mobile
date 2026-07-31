@@ -93,6 +93,3 @@ const toggleMode = () => {
   transform: translateX(74px);
 }
 </style>
-
-
-

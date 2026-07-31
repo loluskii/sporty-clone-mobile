@@ -138,4 +138,24 @@ describe('market display normalization', () => {
     expect(market.marketName).toBe('home over/under (incl. overtime)')
     expect(market.outcomes.map((outcome) => outcome.outcomeName)).toEqual(['1', '2', 'over 3.5'])
   })
+
+  it('places football Over/Under second without changing other sports', () => {
+    const footballMarkets = normalizeFixtureMarkets([
+      { marketID: 1, marketName: '1x2', sportID: 1, outcomes: [] },
+      { marketID: 10, marketName: 'DC', sportID: 1, outcomes: [] },
+      { marketID: 18, marketName: 'Over/Under', sportID: 1, outcomes: [] },
+      { marketID: 14, marketName: 'handicap', sportID: 1, outcomes: [] }
+    ])
+
+    expect(footballMarkets.map((market) => market.marketID)).toEqual([1, 18, 10, 14])
+  })
+
+  it('moves football Over/Under to second when it arrives first', () => {
+    const footballMarkets = normalizeFixtureMarkets([
+      { marketID: 18, marketName: 'Over/Under', sportID: 1, outcomes: [] },
+      { marketID: 1, marketName: '1x2', sportID: 1, outcomes: [] }
+    ])
+
+    expect(footballMarkets.map((market) => market.marketID)).toEqual([1, 18])
+  })
 })

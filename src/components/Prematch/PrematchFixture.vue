@@ -3,15 +3,26 @@
     <div data-op="label-prematch" class="m-event-sport m-sports-row">
       <div class="m-event-meta">
         <div>
-          <span class="m-time" style="margin-right: 5px">{{ eventTimeLabel }}</span>
+          <span class="m-time" style="margin-right: 5px">{{
+            formatDate(eventData.date.slice(0, -1).split('T').join(' '), "HH:mm")
+          }}</span>
           <!-- <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span> -->
-          <span class="m-league-name">{{ eventData.categoryName }} - {{ eventData.tournament }}</span>
+          <span class="m-league-name"
+            >{{ eventData.categoryName }} - {{ eventData.tournament }}</span
+          >
         </div>
-        <img src="@/assets/images/chart.png" style="height: 12px" alt=""
-          @click="showFixtureAnalysis(eventData.match_id)" srcset="" />
+        <img
+          src="@/assets/images/chart.png"
+          style="height: 12px"
+          alt=""
+          @click="showFixtureAnalysis(eventData.match_id)"
+          srcset=""
+        />
       </div>
       <div class="x-table-row m-sports-table">
-        <div class="x-table-cell m-info-cell" @click="
+        <div
+          class="x-table-cell m-info-cell"
+          @click="
             $router.push({
               name: 'fixtures-detail',
               params: {
@@ -21,7 +32,8 @@
                 event_id: eventData.matchID
               }
             })
-          ">
+          "
+        >
           <div class="team">{{ eventData.homeTeam }}</div>
           <div class="team">{{ eventData.awayTeam }}</div>
         </div>
@@ -30,9 +42,12 @@
             <template v-if="eventData.outcomes">
               <template v-if="outcomes.length">
                 <div
-                  v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
+                  v-if="
+                    activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601
+                  "
                   class="m-outcome m-event-outcome-default specifiers-select"
-                  @click="toggleList">
+                  @click="toggleList"
+                >
                   <div tabindex="0" class="grid-specifier-select">
                     <div class="grid-specifier-select-label">
                       {{ activeSpecifier }}
@@ -43,23 +58,42 @@
                     <!---->
                   </div>
                 </div>
-                <div class="af-select-list m-event-specifiers-order" v-if="specifierOpen"
+                <div
+                  class="af-select-list m-event-specifiers-order"
+                  v-if="specifierOpen"
                   :class="'af-select-list-' + eventData.matchID"
-                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0">
-                  <span class="af-select-item" @click="setActiveSpecifierAndClose(item)" v-for="(item, i) in getSpecifiers"
-                    :key="i">{{ item.value }}</span>
+                  style="width: 62px; opacity: 1; position: absolute; top: 34px; left: 0"
+                >
+                  <span
+                    class="af-select-item"
+                    @click="setActiveSpecifierAndClose(item)"
+                    v-for="(item, i) in getSpecifiers"
+                    :key="i"
+                    >{{ item.value }}</span
+                  >
                 </div>
-                <Odds @click="addToBetslip(eventData, odd)" v-for="(odd, index) in outcomes"
-                  :key="index" :odds="odd" :selectionClass="
-                    isSelected(getSelectionElementId(eventData, activeMarket, odd), couponStore.coupon)
+                <Odds
+                  @click="addToBetslip(eventData, odd)"
+                  v-for="(odd, index) in outcomes"
+                  :key="index"
+                  :odds="odd"
+                  :selectionClass="
+                    isSelected(
+                      getSelectionElementId(eventData, activeMarket, odd),
+                      couponStore.coupon
+                    )
                       ? 'm-outcome--checked'
                       : ''
-                  "></Odds>
+                  "
+                ></Odds>
               </template>
               <template v-else>
                 <div
-                  v-if="activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601"
-                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock">
+                  v-if="
+                    activeMarket.specifier !== '' && Number(activeMarket.marketID || 0) !== 1601
+                  "
+                  class="m-outcome--disabled m-outcome m-event-outcome-default m-icon-lock"
+                >
                   <span data-op="prematch-lock" class="m-icon-lock"></span>
                 </div>
                 <EmptyOdds v-for="(odd, index) in activeMarket.outcomes" :key="index"></EmptyOdds>
@@ -82,13 +116,12 @@ import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
   isSelected,
-  slugify
+  slugify, formatDate
 } from '@/helpers'
 import Odds from '@/components/Prematch/Odds.vue'
 import EmptyOdds from '@/components/EmptyOdds.vue'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMatchOdds } from '@/composables/useMatchOdds'
 
 const couponStore = useCouponStore()
@@ -103,13 +136,6 @@ const specifierOpen = ref(false)
 const matchId = computed(() => props.eventData.matchID)
 const baseOutcomes = computed(() => props.eventData.outcomes || [])
 const sportId = computed(() => props.eventData?.sportID || 1)
-const eventTimeLabel = computed(() => {
-  const rawDate = props.eventData?.date
-  if (!rawDate) return ''
-  const date = new Date(rawDate)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-})
 
 const { outcomes, activeSpecifier, getSpecifiers, setActiveSpecifier } = useMatchOdds({
   matchId,
@@ -154,14 +180,6 @@ const getSelectionElementId = (fixture, market, outcome) =>
 
 function addToBetslip(event, odd) {
   if (odd.active === 0 || odd.odds <= 1) return
-  const marketId = parseInt(odd.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
-  }
   const data = buildCouponSelectionPayload({
     fixture: event,
     market: props.activeMarket,
@@ -187,7 +205,7 @@ defineComponent({
 
 <style scoped>
 .m-event-sport {
-  border-bottom: .5px solid #dedede;
+  border-bottom: 0.5px solid #dedede;
   display: block;
   padding: 0.66666667rem 0;
 }
@@ -221,11 +239,11 @@ defineComponent({
   line-height: 1.25rem;
 }
 
-.m-event-sport .m-event-meta>span {
+.m-event-sport .m-event-meta > span {
   margin-right: 0.83333333rem;
 }
 
-.m-event-sport .m-event-meta>span:last-child {
+.m-event-sport .m-event-meta > span:last-child {
   margin-right: 0;
 }
 
@@ -250,7 +268,6 @@ defineComponent({
   -ms-flex: 0;
   flex: 0;
   white-space: nowrap;
-
 }
 
 .m-event-sport .m-event-meta .m-game-id {
@@ -318,7 +335,7 @@ defineComponent({
   color: var(--brand-secondary);
 }
 
-.m-event-sport .m-info-cell>div {
+.m-event-sport .m-info-cell > div {
   line-height: 1.4;
 }
 
@@ -363,7 +380,7 @@ defineComponent({
   margin-left: 0.25rem;
 }
 
-.m-event-sport .m-market-size .media-icon+.media-icon {
+.m-event-sport .m-market-size .media-icon + .media-icon {
   margin-left: 0.41666667rem;
 }
 
@@ -407,7 +424,7 @@ defineComponent({
   width: 55%;
 }
 
-.m-sports-table .m-date-row .market-title>div {
+.m-sports-table .m-date-row .market-title > div {
   color: #9ca0ab;
   color: var(--text-type1-secondary);
   -webkit-box-flex: 1;

@@ -98,8 +98,7 @@ export const useUtilsStore = defineStore({
 
           this.featuredTournaments = uniqueTournaments.sort(
             (a, b) =>
-              Number(b.priority || 0) - Number(a.priority || 0) ||
-              Number(a.tournament_id || 0) - Number(b.tournament_id || 0)
+              Number(b.priority || 0) - Number(a.priority || 0) 
           )
 
           // Set active tournament to the first one if not already set
@@ -134,6 +133,7 @@ export const useUtilsStore = defineStore({
 
       // Clear existing games before fetching new ones
       this.featuredTournamentGames = []
+      const rawList = []
 
       try {
         for (const chunk of chunks) {
@@ -141,11 +141,10 @@ export const useUtilsStore = defineStore({
             chunk.map(async (tournament) => {
               try {
                 const games = await getSportHighlights({
+                  sid: tournament.sport_id,
                   page: 1,
-                  sid: tournament.sportID,
                   per_page: 5,
-                  tournament_id: tournament.tournament_id,
-                  feature_market_id: 1601
+                  tournament_id: tournament.tournament_id
                 })
 
                 if (!games?.data?.fixtures?.length || !games?.data?.markets?.length) {
@@ -176,7 +175,7 @@ export const useUtilsStore = defineStore({
                     markets: normalizeFixtureMarkets(games.data.markets)
                   }
 
-                  this.featuredTournamentGames.push(tournamentGames)
+                  rawList.push(tournamentGames)
                 }
               } catch (error) {
                 console.error(`Error processing tournament ${tournament.tournament_id}:`, error)
@@ -184,6 +183,7 @@ export const useUtilsStore = defineStore({
             })
           )
         }
+        this.featuredTournamentGames = rawList.sort((a, b) => b.priority - a.priority);
       } finally {
         this.isFetchingTournamentGames = false
       }

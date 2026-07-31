@@ -35,12 +35,15 @@ import {
   formatNumber,
   buildCouponSelectionPayload,
   getSupportedEarlyWinModesFromFixture,
-  createID
+  createID,
+  isSimulationSportAllowed,
+  SIM_ALLOWED_MARKETS
 } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 
 const couponCalculation = new CouponCalculation()
 const { subscribe } = useMqttService()
+const cloneState = (value) => JSON.parse(JSON.stringify(value))
 const configuredAbandonedBetslipTimeout = Number(import.meta.env.VITE_ABANDONED_BETSLIP_TIMEOUT_MS)
 const ABANDONED_BETSLIP_TIMEOUT_MS =
   Number.isFinite(configuredAbandonedBetslipTimeout) && configuredAbandonedBetslipTimeout > 0
@@ -289,6 +292,7 @@ export const useCouponStore = defineStore({
     isEarlyGoalLoading: false,
     mode: 'real',
     isSimulating: false,
+    simulationRealSnapshot: null,
     earlyWinBulkMode: EARLY_WIN_DEFAULT_MODE,
     coupon: {
       acceptChanges: true,
@@ -328,7 +332,7 @@ export const useCouponStore = defineStore({
     }
   }),
   getters: {
-    betslipMode: (state) => state.mode === 'sim'
+    betslipMode: (state) => state.mode === 'sim',
   },
   actions: {
     startAbandonedBetslipTracker() {
@@ -1690,8 +1694,30 @@ export const useCouponStore = defineStore({
         id: 'all'
       })
     },
+    requestSimulationSelectionConfirmation(selectionPayload, selection) {
+      emitter.emit('showBetslipConfirmation', {
+        action: 'switchSimulationToRealAndAdd',
+        selection: selectionPayload,
+        title: 'Unsupported market',
+        message:
+          'This market is unavailable for simulated betting. Simulation currently supports only selected Soccer markets. Switch back to REAL mode and add it?',
+        confirmText: 'Switch to REAL',
+        cancelText: 'Stay in SIM',
+        pendingText: 'Switching...'
+      })
+    },
     async toggleCouponSelection(selectionPayload) {
       const nextSelection = this.normalizeSelectionEarlyWinState(getDataFromPayload(selectionPayload))
+      const nextMarketId = Number(nextSelection.marketId || nextSelection.market_id || 0)
+      const simulationMarketAllowed = SIM_ALLOWED_MARKETS.includes(nextMarketId)
+      if (
+        this.betslipMode &&
+        (!isSimulationSportAllowed(nextSelection.sportId) || !simulationMarketAllowed)
+      ) {
+        this.requestSimulationSelectionConfirmation(selectionPayload, nextSelection)
+        return null
+      }
+
       const existingSelection = this.coupon.selections.find(
         (selection) => String(selection.selectionId) === String(nextSelection.selectionId)
       )
@@ -1996,29 +2022,74 @@ export const useCouponStore = defineStore({
       this.betslipStakeCache[betslipType] = Number.isFinite(normalized) ? normalized : null
     },
     async setBetslipMode(nextMode) {
-      this.mode = nextMode
+      if (nextMode === this.mode) return true
 
-      // Sim mode only supports Multiple bets — force the switch so Single
-      // and Combo (System) coupons aren't simulated with an incompatible type.
-      if (nextMode === 'sim' && this.coupon.betslip_type !== 'Multiple') {
-        await this.setBetType('Multiple')
-        return
-      }
-
-      // Keep stake initialized to min stake when toggling mode (unless user cleared to 0).
-      const isCombo = this.coupon.betslip_type === 'Combo' || this.coupon.bet_type === 'Combo'
-      const minStake = this.getMinStakeForBetslipType(isCombo ? 'Combo' : 'Single')
-      const currentStake = Number(this.coupon.totalStake || 0)
-      if (minStake > 0 && (!Number.isFinite(currentStake) || currentStake === 0)) {
-        if (isCombo && Array.isArray(this.coupon.combos) && this.coupon.combos.length > 0) {
-          this.updateComboWinnings(minStake, null)
-        } else {
-          this.updateWinnings({
-            stake: minStake,
-            id: 'all'
-          })
+      if (nextMode === 'sim') {
+        const realSnapshot = {
+          coupon: cloneState(this.coupon),
+          betslipStakeCache: cloneState(this.betslipStakeCache),
+          earlyWinBulkMode: this.earlyWinBulkMode
         }
+
+        const simulationSelections = this.coupon.selections.filter((selection) =>
+          isSimulationSportAllowed(
+            selection?.sportId ||
+              selection?.sportID ||
+              selection?.sport_id ||
+              selection?.fixture?.sportID
+          )
+        )
+        const removedSelections = this.coupon.selections.filter(
+          (selection) => !simulationSelections.includes(selection)
+        )
+
+        removedSelections.forEach((selection) => this.manageSubscription(selection, false))
+        this.simulationRealSnapshot = realSnapshot
+        this.coupon.selections = simulationSelections
+        this.coupon.fixtures = groupSelections(simulationSelections)
+        this.coupon.tournaments = groupTournament(simulationSelections)
+        this.coupon.hasLive = checkIfHasLive(simulationSelections)
+        this.mode = 'sim'
+        this.isSimulating = false
+
+        if (!simulationSelections.length) {
+          this.coupon = this.createEmptyCouponState({
+            stake: realSnapshot.coupon.stake,
+            totalStake: realSnapshot.coupon.totalStake
+          })
+          this.clearCutOnePreview()
+          this.clearFlexPreview()
+          return true
+        }
+
+        // SIM mode only supports Multiple bets. Rebuild the active SIM slip
+        // after filtering so odds, winnings, and feature previews use football only.
+        await this.setBetType('Multiple')
+        return true
       }
+
+      if (nextMode === 'real' && this.mode === 'sim' && this.simulationRealSnapshot) {
+        this.coupon.selections.forEach((selection) => this.manageSubscription(selection, false))
+        const snapshot = this.simulationRealSnapshot
+        this.coupon = cloneState(snapshot.coupon)
+        this.betslipStakeCache = cloneState(snapshot.betslipStakeCache)
+        this.earlyWinBulkMode = snapshot.earlyWinBulkMode
+        this.simulationRealSnapshot = null
+        this.mode = 'real'
+        this.isSimulating = false
+        this.clearCutOnePreview()
+        this.clearFlexPreview()
+
+        if (this.coupon.selections.length) {
+          await this.refreshCouponAfterSelectionMutation()
+          this.resubscribeToAllSelections()
+        }
+        return true
+      }
+
+      this.mode = nextMode
+      this.isSimulating = false
+      return true
     },
     handleOddsChange(data, selection) {
       if (!data) return
@@ -2201,6 +2272,15 @@ export const useCouponStore = defineStore({
       const accaBonusConfig = this.getAccaBonusConfig()
 
       const data = this.normalizeSelectionEarlyWinState(getDataFromPayload(couponPayload))
+      const dataMarketId = Number(data.marketId || data.market_id || 0)
+      if (
+        this.betslipMode &&
+        (!isSimulationSportAllowed(data.sportId) || !SIM_ALLOWED_MARKETS.includes(dataMarketId))
+      ) {
+        this.requestSimulationSelectionConfirmation(couponPayload, data)
+        return null
+      }
+
       if (this.coupon.useEarlyGoal && data.supportsEarlyGoal && data.earlyGoalLocalQuotes?.earlygoal) {
         this.updateSelectionEarlyGoalState(data, 'earlygoal', data.earlyGoalLocalQuotes.earlygoal)
       }
@@ -2326,7 +2406,7 @@ export const useCouponStore = defineStore({
             const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
             this.coupon.combos = calculatedGroup.Groups
 
-            return
+            return data
           }
         }
 
@@ -2386,7 +2466,7 @@ export const useCouponStore = defineStore({
           this.coupon.wthTax = wthTax < 1 ? 0 : wthTax
           this.coupon.maxWin = this.coupon.grossWin - this.coupon.wthTax
 
-          return
+          return data
         } else {
           const calculatedGroup = couponCalculation.calcCombinations(this.coupon)
           this.coupon.combos = calculatedGroup.Groups
@@ -2404,6 +2484,7 @@ export const useCouponStore = defineStore({
 
       // After successfully adding selection, subscribe to its updates
       this.manageSubscription(selection, true)
+      return data
     },
     buildCouponPayloadFromLoadedSelection(selection = {}) {
       const matchId = selection.matchId || selection.match_id || selection.eventId || selection.event_id
@@ -3148,7 +3229,6 @@ export const useCouponStore = defineStore({
       })
     },
     async placeBet(e, type, bonusId) {
-      let ele = e.target
       const coupondata = { ...this.coupon }
       const usersStore = useUsersStore()
       if (usersStore.currentUser) {
@@ -3313,7 +3393,8 @@ export const useCouponStore = defineStore({
           }
           return res
         } catch (error) {
-          emitter.emit('showErrorMessage', error)
+          this.isBetslipLoading = false
+          throw error
         }
       } else if (type == 'book') {
         try {
@@ -3335,15 +3416,14 @@ export const useCouponStore = defineStore({
           this.isBetslipLoading = false
           return res
         } catch (error) {
-          ele.disabled = false
-          ele.innerHTML = 'Place Bet'
-          // console.error(error)
-          emitter.emit('showErrorMessage', error)
+          this.isBetslipLoading = false
+          throw error
         }
       }
     },
     clearBetslip() {
       try {
+        const isSimulationMode = this.betslipMode
         const hadSelections = Array.isArray(this.coupon.selections) && this.coupon.selections.length > 0
         if (hadSelections) {
           void closeAbandonedBetslipSession('cleared')
@@ -3367,6 +3447,9 @@ export const useCouponStore = defineStore({
         this.clearCutOnePreview()
         this.clearFlexPreview()
         this.coupon = coupon
+        if (!isSimulationMode) {
+          this.simulationRealSnapshot = null
+        }
         // Clear cached stakes when betslip is emptied.
         this.betslipStakeCache = { Single: null, Multiple: null, Combo: null }
         this.earlyWinBulkMode = EARLY_WIN_DEFAULT_MODE
@@ -3375,6 +3458,9 @@ export const useCouponStore = defineStore({
         // console.error("📊 Betslip: Error in clearBetslip:", error);
         // Still try to reset the coupon state even if cleanup fails
         this.coupon = this.createEmptyCouponState()
+        if (!this.betslipMode) {
+          this.simulationRealSnapshot = null
+        }
         this.accaBonusPreviewRequestId += 1
         this.clearCutOnePreview()
         this.clearFlexPreview()
@@ -3505,6 +3591,11 @@ export const useCouponStore = defineStore({
   persist: {
     storage: localStorage,
     afterRestore: (ctx) => {
+      if (ctx.store.mode === 'sim' && !ctx.store.simulationRealSnapshot) {
+        ctx.store.mode = 'real'
+        ctx.store.isSimulating = false
+      }
+
       // Resubscribe to MQTT topics for all selections in the betslip
       if (ctx.store.coupon.selections && ctx.store.coupon.selections.length > 0) {
         // console.log('📊 Betslip: Resubscribing to MQTT topics for all selections after page refresh')

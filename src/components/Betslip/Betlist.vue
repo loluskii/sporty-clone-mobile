@@ -258,24 +258,24 @@ async function placeBet(e) {
   show.value = false
   couponStore.isBetslipLoading = true
   let bonusId = null
-  if (couponStore.coupon.useCashback) {
-    bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
-    try {
+  let cashbackActivationFailed = false
+  try {
+    if (couponStore.coupon.useCashback) {
+      bonusId = usersStore.activeCashback ? usersStore.activeCashback.id : null
       const bonus = {
         bonusId: bonusId,
         amount: totalStake.value,
         username: usersStore.currentUser.username
       }
-      await awardBonus(bonus)
-    } catch (error) {
-      emitter.emit('showErrorMessage', 'Failed to activate Cashback!')
-      return
+      try {
+        await awardBonus(bonus)
+      } catch (error) {
+        cashbackActivationFailed = true
+        throw error
+      }
     }
-  }
 
-  try {
     const res = await couponStore.placeBet(e, 'bet', bonusId)
-    couponStore.isBetslipLoading = false
 
     if (res?.status_code === 200) {
       if (betslipMode.value) {
@@ -294,17 +294,25 @@ async function placeBet(e) {
         placeBetStatus.value = true
         placeBetResponse.value = res
       }
-      await usersStore.loadCurrentUser()
+      try {
+        await usersStore.loadCurrentUser()
+      } catch (error) {
+        console.warn('Bet placed, but the user balance could not be refreshed:', error)
+      }
       emit('update-betcount')
     } else {
-      emit('toggle-betslip')
       emitter.emit('showErrorMessage', res?.status_description || 'Failed to place bet')
     }
   } catch (error) {
     console.error('Error placing bet:', error)
+    emitter.emit(
+      'showErrorMessage',
+      cashbackActivationFailed
+        ? 'Failed to activate Cashback!'
+        : error?.message || error || 'An unexpected error occurred'
+    )
+  } finally {
     couponStore.isBetslipLoading = false
-    emit('toggle-betslip')
-    emitter.emit('showErrorMessage', error?.message || 'An unexpected error occurred')
   }
 }
 
