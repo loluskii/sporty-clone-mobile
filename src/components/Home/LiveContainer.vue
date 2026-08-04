@@ -672,6 +672,7 @@ onBeforeUnmount(() => {
   padding-right: 0.83333333rem;
   border-right-color: #9ca0ab;
   border-right-color: var(--text-type2-tertiary);
+  font-family: 'Oswald', sans-serif;
 }
 .live-container .m-bet-tab .m-sport-type {
   /* background-color: #1b1e25; */

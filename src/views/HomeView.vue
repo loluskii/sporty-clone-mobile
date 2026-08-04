@@ -86,6 +86,7 @@ onMounted(async () => {})
   border-right-color: var(--line-type1-secondary);
   margin-right: 1rem;
   padding-right: 1rem;
+  font-family: 'Oswald', sans-serif;
 }
 
 .m-sports .m-sports-title .m-title-sport.filter {

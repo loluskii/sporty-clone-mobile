@@ -537,6 +537,7 @@ onDeactivated(() => {
   border-right-color: var(--line-type1-secondary);
   color: #353a45;
   color: var(--text-type1-primary);
+  font-family: 'Oswald', sans-serif;
 }
 .featured-nav-item .feature-nav-span {
   font-size: 1.16666667rem;
