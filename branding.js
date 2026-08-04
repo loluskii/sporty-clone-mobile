@@ -29,10 +29,10 @@ export const brandDetails = {
     highlightTextColor: '#f28705'
   },
   fonts: {
-    primaryFont: 'Inter',
-    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
-    secondaryFont: '',
-    secondaryFontURL: ''
+    primaryFont: "'Open Sans'",
+    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap',
+    secondaryFont: 'Montserrat',
+    secondaryFontURL: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
   },
   images: {
     logo: '/assets/logo/default-logo.png'
