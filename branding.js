@@ -35,6 +35,6 @@ export const brandDetails = {
     secondaryFontURL: ''
   },
   images: {
-    logo: '/assets/logos/default-logo.png'
+    logo: '/assets/logo/default-logo.png'
   }
 }
