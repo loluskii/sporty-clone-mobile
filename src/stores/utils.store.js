@@ -6,19 +6,21 @@ import {
   normalizeFixtureMarkets
 } from '@/helpers'
 
-const FEATURED_DEFAULT_MARKET_NAMES = {
-  1: '1X2',
-  10: 'Double chance',
-  11: 'Draw no bet',
-  18: 'Total',
-  29: 'Both teams to score',
-  1601: 'X-UP'
-}
-
 const getFeaturedMarketKey = (marketId, specifier = '') => `${marketId}|${specifier}`
 
-const getFeaturedMarketName = (marketId) => {
-  return FEATURED_DEFAULT_MARKET_NAMES[Number(marketId)] || `Market ${marketId}`
+const getFeaturedFixturePriority = (fixture = {}) => {
+  const priority = Number(fixture?.fixture_priority ?? fixture?.fixturePriority ?? 0)
+  return Number.isFinite(priority) ? priority : 0
+}
+
+const sortFeaturedFixturesByPriority = (fixtures = []) => {
+  return fixtures
+    .map((fixture, index) => ({ fixture, index }))
+    .sort((left, right) => {
+      const priorityDiff = getFeaturedFixturePriority(right.fixture) - getFeaturedFixturePriority(left.fixture)
+      return priorityDiff || left.index - right.index
+    })
+    .map(({ fixture }) => fixture)
 }
 
 const buildFeaturedMarketsFromFixtures = (fixtures = []) => {
@@ -41,7 +43,7 @@ const buildFeaturedMarketsFromFixtures = (fixtures = []) => {
         marketMap.set(key, {
           ...market,
           marketID: marketId,
-          marketName: market?.marketName ?? market?.market_name ?? market?.name ?? getFeaturedMarketName(marketId),
+          marketName: market?.marketName ?? market?.market_name ?? market?.name ?? '',
           specifier,
           sportID: market?.sportID ?? market?.sportId ?? market?.sport_id ?? fixture?.sportID ?? fixture?.sportId,
           outcomes: Array.isArray(market?.outcomes) ? market.outcomes : []
@@ -78,7 +80,7 @@ const buildFeaturedMarketsFromFixtures = (fixtures = []) => {
 
       marketMap.set(key, {
         marketID: marketId,
-        marketName: getFeaturedMarketName(marketId),
+        marketName: outcome?.marketName ?? outcome?.market_name ?? outcome?.name ?? '',
         specifier,
         sportID: fixture?.sportID ?? fixture?.sportId,
         outcomes: [outcome]
@@ -247,7 +249,7 @@ export const useUtilsStore = defineStore({
                   tournament.tournament_id
                 const games = await getTopTournamentFixtures(topTournamentId)
 
-                const fixtures = games?.data?.fixtures || games?.fixtures || []
+                const fixtures = sortFeaturedFixturesByPriority(games?.data?.fixtures || games?.fixtures || [])
                 const markets =
                   normalizeFixtureMarkets(games?.data?.markets || games?.markets || []) ||
                   []
