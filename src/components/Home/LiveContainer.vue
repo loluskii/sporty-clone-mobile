@@ -573,13 +573,13 @@ onBeforeUnmount(() => {
 
 <style type="text/css">
 .live-container {
-  background-color: #000825;
+  background-color: #0a0c12;
   background-color: var(--brand-background-live);
   color: #ffffff;
   color: var(--text-type2-primary);
 }
 .live-container .m-market-tab {
-  background-color: #000825;
+  background-color: #0a0c12;
   background-color: var(--brand-background-live);
   position: -webkit-sticky;
   position: sticky;

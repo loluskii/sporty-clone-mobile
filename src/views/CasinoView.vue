@@ -2,7 +2,7 @@
   <div class="game-play">
     <template v-if="isLoading">
       <div>
-        <img src="/logos.png" alt="" style="height: 50px" />
+        <img src="/logo.png" alt="BetCruz" style="height: 50px" />
         <LoadingSpinner></LoadingSpinner>
       </div>
     </template>

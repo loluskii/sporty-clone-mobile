@@ -1,50 +1,50 @@
 export const brandDetails = {
-  name: 'Sportsbook Engine',
+  name: 'Cruz',
   url: '',
-  title: 'SportsBook Engine',
+  title: 'Cruz Sports',
   colors: {
-    primaryColor: '#e41827',
-    secondaryColor: '#0D9737',
-    tertiaryColor: '#C5C5C5',
+    primaryColor: '#F4521E',
+    secondaryColor: '#F4521E',
+    tertiaryColor: '#FFFFFF',
 
     primaryBackground: '#FFFFFF',
-    secondaryBackground: '#f1f1f1',
+    secondaryBackground: '#FFFFFF',
 
-    primaryTextColor: '#353a45',
-    secondaryTextColor: '#0D9737',
+    primaryTextColor: '#1A1A1E',
+    secondaryTextColor: '#F4521E',
 
-    primaryButtonColor: '#0D9737',
-    secondaryButtonColor: '#e41827',
+    primaryButtonColor: '#F4521E',
+    secondaryButtonColor: '#1A1A1E',
 
-    primaryButtonBackgroundColor: '#0D9737',
-    secondaryButtonBackgroundColor: '#0D9737',
+    primaryButtonBackgroundColor: '#F4521E',
+    secondaryButtonBackgroundColor: '#1A1A1E',
 
-    headerBackgroundColor: 'rgb(222, 226 ,230)',
+    headerBackgroundColor: '#D9D9D9',
 
-    prematchOddBackgroundColor: '#D6EBDC',
-    prematchOddTextColor: '#096B27',
-    activePrematchOddBackground: '#0D9737',
-    activePrematchOddTextColor: '#fff',
+    prematchOddBackgroundColor: 'rgba(26, 26, 30, 0.10)',
+    prematchOddTextColor: '#1A1A1E',
+    activePrematchOddBackground: '#F4521E',
+    activePrematchOddTextColor: '#FFFFFF',
 
-    liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
-    liveOddTextColor: '#32ce62',
-    activeLiveOddBackground: '#32ce62',
-    activeLiveOddTextColor: '#fff',
+    liveOddBackgroundColor: 'rgba(244, 82, 30, 0.13)',
+    liveOddTextColor: '#F4521E',
+    activeLiveOddBackground: '#F4521E',
+    activeLiveOddTextColor: '#FFFFFF',
 
-    liveContainerBackgroundColor: '#1B1E25',
+    liveContainerBackgroundColor: '#0A0C12',
 
-    activeTabColor: '#0D9737',
-    activeTabColor2: '#0D9737',
-    highlightTextColor: '#0D9737'
+    activeTabColor: '#F4521E',
+    activeTabColor2: '#F4521E',
+    highlightTextColor: '#F4521E'
   },
   fonts: {
-    primaryFont: 'Avenir',
-    primaryFontURL: 'https://fonts.cdnfonts.com/css/avenir',
-    secondaryFont: 'Open Sans',
+    primaryFont: 'Oswald',
+    primaryFontURL: 'https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap',
+    secondaryFont: 'Inter',
     secondaryFontURL:
-      'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap'
+      'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
   },
   images: {
-    logo: '/assets/logos/default-logo.png'
+    logo: '/logo.png'
   }
 }

@@ -6,7 +6,7 @@
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  font-family: 'Open Sans', sans-serif !important;
+  font-family: var(--brand-secondary-font-family, 'Inter'), sans-serif;
 }
 
 @font-face {
@@ -21,12 +21,18 @@
 }
 
 :root {
-  --brand-type1-secondary: #d6ebdc;
-  --brand-type2-secondary: #096b27;
-  --brand-type3-secondary: #32ce62;
-  --text-type1-primary: #353a45;
+  --brand-primary-font-family: 'Oswald';
+  --brand-secondary-font-family: 'Inter';
+  --brand-background-primary: #ffffff;
+  --brand-background-secondary: #ffffff;
+  --brand-header-bg: #d9d9d9;
+  --brand-text-primary: #1a1a1e;
+  --brand-type1-secondary: rgba(26, 26, 30, 0.1);
+  --brand-type2-secondary: #f4521e;
+  --brand-type3-secondary: #f4521e;
+  --text-type1-primary: #1a1a1e;
   --text-type1-secondary: #9ca0ab;
-  --text-type1-tertiary: #1b1e25;
+  --text-type1-tertiary: #1a1a1e;
   --text-type2-primary: #ffffff;
   --text-type2-secondary: #f2f3f5;
   --text-type2-tertiary: #f1f1f1;
@@ -34,14 +40,14 @@
   --background-type1-secondary: #ffffff;
   --background-type1-tertiary: #eaecef;
   --background-type1-quaternary: #ffffff;
-  --background-type2-primary: #000825;
-  --background-type2-secondary: #353a45;
+  --background-type2-primary: #0a0c12;
+  --background-type2-secondary: #1a1a1e;
   --background-type2-tertiary: #50545f;
   --background-general-primary: #fafafa;
   --background-type2-IV: #9ca0ab;
-  --warning-primary: #e41827;
-  --warning-secondary: #7b0911;
-  --warning-tertiary: #ffe3e5;
+  --warning-primary: #f4521e;
+  --warning-secondary: #c53e17;
+  --warning-tertiary: #fce1d8;
   --disable-brand-secondary: #dcdee5;
   --disable-type1-primary: #50545f;
   --disable-type2-primary: #22252d;
@@ -55,11 +61,11 @@
   --background-hint-type1: #feffe4;
   --absolute-type1: #ffffff;
   --absolute-type2: #000000;
-  --brand-primary: #262262;
-  --brand-text-secondary: #051c55;
+  --brand-primary: #f4521e;
+  --brand-text-secondary: #f4521e;
   --brand-tertiary: #ffffff;
-  --brand-quaternary: #001041;
-  --brand-quinary: #001041;
+  --brand-quaternary: #0a0c12;
+  --brand-quinary: #0a0c12;
   --c-sports-banner-text: #353a45;
   --c-prematch-sport-item-text: #353a45;
   --c-prematch-tab-name-text: #353a45;
@@ -68,17 +74,17 @@
   --c-sports-prematch-market-title-text: #353a45;
   --c-event-sport-time-text: #353a45;
   --c-event-sport-team-text: #353a45;
-  --c-event-live-outcome-bg: rgba(214, 235, 220, 0.13);
+  --c-event-live-outcome-bg: rgba(26, 26, 30, 0.1);
   --c-event-normal-text: var(--brand-secondary);
   --c-prematch-comment-title-text: #353a45;
   --c-prematch-list-league-title-text: #1b1e25;
   --c-prematch-tab-border: #f2f3f5;
   --c-prematch-outcome-disabled-bg: #dcdee5;
-  --c-prematch-active-tab-bg: #000825;
+  --c-prematch-active-tab-bg: #0a0c12;
   --c-prematch-active-tab-text: #ffffff;
-  --c-event-af-select-title-bg: #d6ebdc;
-  --c-event-af-select-title-text: #096b27;
-  --c-event-af-select-title-active-text: #32ce62;
+  --c-event-af-select-title-bg: rgba(26, 26, 30, 0.1);
+  --c-event-af-select-title-text: #1a1a1e;
+  --c-event-af-select-title-active-text: #f4521e;
   --c-openbet-tab-bg: #dcdee5;
   --c-openbet-tab-bg-active: #3a3c42;
   --c-openbet-label-text: #ffffff;
@@ -125,8 +131,8 @@
   --tab-status-active: #0d9737;
   --c-featured-match-card-bg: #ffffff;
   --c-featured-match-market-text: #0d9737;
-  --c-featured-match-card-outcome-bg: #d6ebdc;
-  --c-featured-match-card-outcome-desc-text: #096b27;
+  --c-featured-match-card-outcome-bg: rgba(26, 26, 30, 0.1);
+  --c-featured-match-card-outcome-desc-text: #1a1a1e;
   --c-featured-match-category-icon: unset;
   --c-featured-match-category-border: #dcdee5;
   --c-featured-match-category-border-active: #9ca0ab;
@@ -296,7 +302,6 @@ ul {
   list-style: none;
 }
 
-b,
 h1,
 h2,
 h3,
@@ -304,6 +309,15 @@ h4,
 h5,
 h6 {
   font-family: var(--brand-primary-font-family);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-transform: uppercase;
 }
 
 q:after,
@@ -477,7 +491,7 @@ input,
 select,
 textarea {
   font:
-    12px/1.5 var(--brand-text-secondary-font-family),
+    12px/1.5 var(--brand-secondary-font-family, 'Inter'),
     sans-serif;
 }
 

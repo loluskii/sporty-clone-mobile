@@ -4,14 +4,12 @@ $primary: var(--brand-secondary);
 $home: var(--brand-secondary);
 $away: #F1F1F1;
 $cl: #FFFFFF;
-$base: #000825;
+$base: #0A0C12;
 */
-@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&subset=latin,latin-ext');
-
 .sr-bb {
-  font-family: 'Roboto', 'Noto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-family: var(--brand-secondary-font-family, 'Inter'), sans-serif;
   text-align: left;
-  background: #000825;
+  background: #0A0C12;
 }
 
 .sr-bb.sr-rtl {
@@ -131,13 +129,13 @@ $base: #000825;
 }
 
 .sr-bb .srt-base-1-background {
-  background-color: #000825;
+  background-color: #0A0C12;
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.12);
 }
 
 .sr-bb .srt-base-2 {
-  background-color: #000825;
+  background-color: #0A0C12;
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.12);
 }
@@ -173,7 +171,7 @@ $base: #000825;
 }
 
 .sr-bb .srt-base-3-background {
-  background-color: #000825;
+  background-color: #0A0C12;
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.12);
 }
@@ -283,7 +281,7 @@ $base: #000825;
 .sr-bb .srt-primary-8-is-active-2 {
   background-color: #e3930f;
   color: #000000;
-  border-color: #000825;
+  border-color: #0A0C12;
 }
 
 .sr-bb .srt-primary-9 {
@@ -383,7 +381,7 @@ $base: #000825;
 }
 
 .sr-bb .srt-base-1-primary-13 {
-  background-color: #000825;
+  background-color: #0A0C12;
   color: #0d1024;
   border-color: rgba(252, 163, 17, 0.3);
 }
@@ -703,13 +701,13 @@ $base: #000825;
 .sr-bb .srt-home-3 {
   background-color: var(--brand-secondary);
   color: #000000;
-  border-color: #000825;
+  border-color: #0A0C12;
 }
 
 .sr-bb .srt-away-3 {
   background-color: #f1f1f1;
   color: #000000;
-  border-color: #000825;
+  border-color: #0A0C12;
 }
 
 .sr-bb .srt-home-4 {
@@ -1835,11 +1833,11 @@ $base: #000825;
 }
 
 .sr-bb .srt-fill-neutral-14 {
-  fill: #000825;
+  fill: #0A0C12;
 }
 
 .sr-bb .srt-stroke-neutral-14 {
-  stroke: #000825;
+  stroke: #0A0C12;
 }
 
 .sr-bb .srt-logo-powered-by-light {

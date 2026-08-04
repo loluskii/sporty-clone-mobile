@@ -132,13 +132,13 @@ onMounted(() => {
 
 <style scoped>
 .live-container {
-  background-color: #000825;
+  background-color: #0a0c12;
   background-color: var(--background-type2-primary);
   color: #ffffff;
   /* color: var(--text-type2-primary); */
 }
 .live-container .m-market-tab {
-  background-color: #000825;
+  background-color: #0a0c12;
   background-color: var(--background-type2-primary);
   position: -webkit-sticky;
   position: sticky;
@@ -184,7 +184,7 @@ onMounted(() => {
   position: sticky;
   top: 3.66666667rem;
   z-index: 200;
-  background-color: #000825;
+  background-color: #0a0c12;
   /* background-color: var(--background-type2-primary); */
 }
 .live-container .m-bet-tab .x-live-title > span {

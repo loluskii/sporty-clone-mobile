@@ -13,7 +13,7 @@
   </div>
   <footer class="x-footer x-footer--ng">
     <div class="partnership-wrap text-center">
-      <img src="/logos.png" />
+      <img src="/logo.png" alt="BetCruz" />
     </div>
     <div></div>
     <div class="payment-methods">

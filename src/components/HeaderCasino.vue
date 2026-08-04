@@ -30,10 +30,10 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-header-bg);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #ffffff;
+  color: var(--brand-text-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -72,7 +72,7 @@ defineProps({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  color: var(--text-type2-primary);
+  color: var(--brand-text-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -110,7 +110,7 @@ defineProps({
 .m-nav-secondary a :link,
 .m-nav-secondary a :hover {
   color: #1c2485;
-  color: var(--text-type2-primary);
+  color: var(--brand-text-primary);
   text-decoration: none;
 }
 .m-nav-secondary .title {
@@ -136,7 +136,7 @@ defineProps({
   padding: 0 0.66666667rem;
 }
 .m-nav-secondary .m-login-balance .m-login-jump span:last-of-type:before {
-  border-left: 1px solid #ffffff;
+  border-left: 1px solid var(--brand-text-primary);
   content: '';
   height: 100%;
   left: -0.75rem;
@@ -196,7 +196,7 @@ defineProps({
 }
 
 .x-icon-search:before {
-  color: #ffffff;
+  color: var(--brand-text-primary);
   font-size: 1.5rem;
 }
 </style>

@@ -27,6 +27,7 @@ export const applyBranding = async () => {
     // }
     const config = defConfig
     const utilsStore = useUtilsStore()
+    document.title = config.title
     const loadFont = (url) => {
       const link = document.createElement('link')
       link.rel = 'stylesheet'

@@ -842,7 +842,7 @@ async function shareCustomCode() {
 .custom-code-sheet button,
 .custom-code-sheet input {
   appearance: none;
-  font-family: var(--brand-text-secondary-font-family), sans-serif !important;
+  font-family: var(--brand-secondary-font-family, 'Inter'), sans-serif !important;
   line-height: 1 !important;
 }
 

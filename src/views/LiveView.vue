@@ -396,18 +396,18 @@ defineComponent({
 
 <style scoped>
 .m-event-list {
-  background-color: #000825;
+  background-color: #0a0c12;
   color: #fff;
   min-height: 100vh;
 }
 
 /* Sports Navigation */
 .nav-container {
-  background-color: #000825;
+  background-color: #0a0c12;
 }
 
 .m-sport-type {
-  background-color: #000825;
+  background-color: #0a0c12;
   padding: 0.5rem 0;
 }
 
@@ -467,7 +467,7 @@ defineComponent({
 /* Markets Navigation */
 .m-sanp-nav-container {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: #000825;
+  background-color: #0a0c12;
   position: sticky;
   top: 4.5rem;
   z-index: 100;
@@ -558,7 +558,7 @@ defineComponent({
 }
 
 .m-league-conent {
-  background-color: #000825;
+  background-color: #0a0c12;
 }
 
 .m-league-conent.d-none {

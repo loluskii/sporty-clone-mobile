@@ -15,7 +15,7 @@
   -ms-flex-align: center;
   align-items: center;
   background-color: var(--brand-header-bg);
-  color: #ffffff;
+  color: var(--brand-text-primary);
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -57,8 +57,7 @@
 } */
 
 .mobile-navbar .mobile-navbar-logo:before {
-  color: #ffffff;
-  color: var(--brand-tertiary);
+  color: var(--brand-text-primary);
   font-size: 1.5rem;
   position: relative;
   top: 0.16666667rem;
@@ -96,7 +95,7 @@
 }
 
 .mobile-navbar .x-icon-search:before {
-  color: #fff;
+  color: var(--brand-text-primary);
   font-size: 1.5rem;
 }
 
@@ -140,7 +139,7 @@
 
 .mobile-navbar .mobile-navbar-right .user-img {
   background-color: transparent;
-  border: 0.08333333rem solid #ffffff;
+  border: 0.08333333rem solid var(--brand-text-primary);
   border-radius: 50%;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
@@ -187,7 +186,7 @@
 
 .mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon {
   align-items: center;
-  color: #ffffff;
+  color: var(--brand-text-primary);
   display: inline-flex;
   height: 1.75rem;
   justify-content: center;
@@ -209,7 +208,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  border: 1px solid #ffffff;
+  border: 1px solid var(--brand-text-primary);
   border-radius: 0.16666667rem;
   display: -webkit-box;
   display: -webkit-flex;
@@ -282,12 +281,12 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login {
-  border: 1px solid #ffffff;
-  color: #ffffff !important;
+  border: 1px solid var(--brand-text-primary);
+  color: var(--brand-text-primary) !important;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login a {
-  color: #ffffff !important;
+  color: var(--brand-text-primary) !important;
 }
 
 
@@ -298,7 +297,8 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
-  background-color: #ffffff;
+  background-color: transparent;
+  border: 1px solid var(--brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -306,6 +306,7 @@
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now a {
   color: var(--brand-primary);
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -314,7 +315,7 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {
-  color: #ffffff;
+  color: var(--brand-text-primary);
 }
 
 .mobile-navbar .history-tip {
@@ -361,5 +362,5 @@
 }
 
 .page-content--ng .mobile-navbar .navbar-wraper {
-  background-color: var(--brand-primary);
+  background-color: var(--brand-header-bg);
 }
