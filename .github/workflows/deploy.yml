@@ -2,9 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ gcp-staging ]
+    branches: [ west-soccerpay ]
   pull_request:
-    branches: [ gcp-staging ]
+    branches: [ west-soccerpay ]
 
 permissions:
   contents: write
@@ -14,7 +14,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/gcp-staging-mobile
+  IMAGE_NAME: ${{ github.repository_owner }}/west-soccerpay-mobile
 
 jobs:
   version:
@@ -101,7 +101,7 @@ jobs:
   release:
     needs: [version, build]
     runs-on: [self-hosted, linux, x64]
-    if: github.ref == 'refs/heads/gcp-staging' 
+    if: github.ref == 'refs/heads/west-soccerpay' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -124,7 +124,7 @@ jobs:
           cat > release.config.js << 'EOF'
           export default {
             branches: [
-              { name: 'gcp-staging' }
+              { name: 'west-soccerpay' }
             ],
             repositoryUrl: 'https://github.com/${{ github.repository }}.git',
             tagFormat: 'v${version}',
@@ -152,7 +152,7 @@ jobs:
     needs: [version]
     runs-on: [self-hosted, linux, x64]
     environment: GCP CI
-    if: github.ref == 'refs/heads/gcp-staging' 
+    if: github.ref == 'refs/heads/west-soccerpay' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -167,7 +167,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.SOCCER_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Prepare deployment files
         run: |
@@ -182,17 +182,17 @@ jobs:
       - name: Deploy to GCP server
         run: |
           # Create directory on server
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} 'mkdir -p ~/gcp-staging-mobile/'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SOCCER_SERVER_USER }}@${{ secrets.SOCCER_SERVER_IP }} 'mkdir -p ~/west-soccerpay-mobile/'
           
           # Copy all source files to server for local build
           tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
-          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }}:~/gcp-staging-mobile/
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} 'cd ~/gcp-staging-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
+          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.SOCCER_SERVER_USER }}@${{ secrets.SOCCER_SERVER_IP }}:~/west-soccerpay-mobile/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SOCCER_SERVER_USER }}@${{ secrets.SOCCER_SERVER_IP }} 'cd ~/west-soccerpay-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
           
           # Login to GitHub Container Registry on server and execute deployment
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SOCCER_SERVER_USER }}@${{ secrets.SOCCER_SERVER_IP }} '
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            cd ~/gcp-staging-mobile/
+            cd ~/west-soccerpay-mobile/
             echo "Current directory: $(pwd)"
             echo "Files in directory:"
             ls -la
