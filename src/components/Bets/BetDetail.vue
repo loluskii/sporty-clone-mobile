@@ -105,9 +105,6 @@
             </div>
           </div>
         </div>
-        <div v-if="bet.statusCode == 1" class="m-share">
-          <img src="/winning.png" style="height: 100%; width: 100%" />
-        </div>
       </div>
       <div
         v-for="(selection, s) in props.bet.selections"
