@@ -97,7 +97,6 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import {
   getFeatureMarketIdForMode,
   getSportHighlights,
-  getToday2,
   getCategoriesBySport,
   FEED_TOGGLE,
   normalizeFixtureMarkets
