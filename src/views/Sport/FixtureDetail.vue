@@ -340,7 +340,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
-  getFixtureMarkets,
+  getFeedsGameDetail,
   getMarketsGrouping,
   formatDate,
   isSelected,
@@ -438,7 +438,7 @@ function setupPeriodicRefetch(matchId) {
   refetchInterval.value = setInterval(async () => {
     if (eventDetail.value?.status === 0) {
       try {
-        const res = await getFixtureMarkets(matchId)
+        const res = await getFeedsGameDetail(matchId)
         if (Object.keys(res.data).length && res.data.market.length) {
           eventMarkets.value = res.data?.market.filter((market) => market.statusName !== 'Suspended')
         }
@@ -462,7 +462,7 @@ async function getEventDetail(id) {
   isLoading.value = true
   const { sport_id } = sportsMenu.find((x) => x.sport_name == unslugify(route.params.sport))
   try {
-    const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
+    const res = await Promise.all([getFeedsGameDetail(id), getMarketsGrouping(sport_id)])
     if (res[0].data && res[0].data.market) {
       if (res[0].data.matchStatus.toLowerCase() !== 'not started') {
         router.push({
