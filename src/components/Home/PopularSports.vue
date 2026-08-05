@@ -1,30 +1,6 @@
 <template>
   <div class="m-popular featuredMatch">
     <div class="tournaments">
-      <div
-        class="topTournamentCard"
-        @click.prevent="
-          $router.push({
-            name: 'today-fixtures',
-            params: { sport: 'Soccer' }
-          })
-        "
-      >
-        <div class="image"></div>
-        <div class="text">today's football</div>
-      </div>
-      <div
-        class="topTournamentCard"
-        @click.prevent="
-          $router.push({
-            name: 'fixtures-by-sports',
-            params: { sport: 'Soccer' },
-            query: { period: '3hrs' }
-          })
-        "
-      >
-        <div class="text">football in 3 hours</div>
-      </div>
       <template v-for="(match, index) in featuredTournaments" :key="index">
         <div
           class="topTournamentCard"
@@ -32,7 +8,7 @@
             $router.push({
               name: 'fixtures-by-tournaments',
               params: {
-                sport: 'Soccer',
+                sport: getSportName(match.sport_id || match.sportID || match.sportId),
                 categories: `sr:category:${match.categoryID}`,
                 tournaments: `sr:tournament:${match.tournament_id}`
               }
@@ -66,6 +42,7 @@
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
+                ref="featuredTournamentNav"
                 class="m-snap-nav-wrap featuredMatchCategoryNav m-popular-list"
                 style="overflow: hidden"
               >
@@ -93,12 +70,19 @@
                 <i class="controls right-controls"></i>
               </div>
             </div>
-            <div class="HorizonSwipe" id="featuredMatchCardBox" style="overflow: auto">
+            <div
+              ref="featuredMatchScroller"
+              class="HorizonSwipe"
+              id="featuredMatchCardBox"
+              style="overflow: auto"
+              @scroll.passive="handleFeaturedScroll"
+            >
               <template v-for="tournament in sortedTournamentGames">
                 <FeaturedMatchCard
                   v-for="(game, g) in tournament.fixtures"
                   ref="gamesList"
-                  :key="g"
+                  :key="`${tournament.tournamentID}-${game.matchID || game.matchId || game.id || g}`"
+                  :data-featured-tournament-id="tournament.tournamentID"
                   :matchDetails="game"
                   :markets="tournament.markets"
                 ></FeaturedMatchCard>
@@ -114,11 +98,12 @@
 <script setup>
 import FeaturedMatchCard from './FeaturedMatchCard.vue'
 import Codes from './Codes.vue'
-import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch, nextTick } from 'vue'
 import {
   getTopGameCategories,
   gamesByTopCategory,
   FEED_TOGGLE,
+  sportsList
 } from '@/helpers'
 import { useQuery } from 'vue-query'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -143,13 +128,86 @@ const activeCasinoCategory = ref(null)
 const featuredCasinogames = ref([])
 const featuredCasino = ref([])
 const codes = ref([])
+const featuredMatchScroller = ref(null)
+const featuredTournamentNav = ref(null)
+const isProgrammaticFeaturedScroll = ref(false)
+let featuredScrollResetTimer = null
 
-function scrollGamesIntoView() {
-  document.getElementById('featuredMatchCard_' + activeFeaturedTournament.value).scrollIntoView({
+function getSportName(sportId) {
+  return sportsList.find((sport) => Number(sport.sport_id) === Number(sportId))?.name || 'Soccer'
+}
+
+function setProgrammaticFeaturedScroll() {
+  isProgrammaticFeaturedScroll.value = true
+  window.clearTimeout(featuredScrollResetTimer)
+  featuredScrollResetTimer = window.setTimeout(() => {
+    isProgrammaticFeaturedScroll.value = false
+  }, 700)
+}
+
+async function scrollGamesIntoView(tournamentId = activeFeaturedTournament.value) {
+  await nextTick()
+  const scroller = featuredMatchScroller.value
+  if (!scroller || !tournamentId) return
+
+  const target = Array.from(scroller.querySelectorAll('[data-featured-tournament-id]')).find(
+    (element) => String(element.dataset.featuredTournamentId) === String(tournamentId)
+  )
+
+  if (!target) return
+
+  setProgrammaticFeaturedScroll()
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'start'
+  })
+}
+
+function scrollActiveTournamentNavIntoView() {
+  const activePill = featuredTournamentNav.value?.querySelector('.featuredMatchCategory.active')
+  activePill?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
     inline: 'center'
   })
+}
+
+function getVisibleTournamentId() {
+  const scroller = featuredMatchScroller.value
+  if (!scroller) return null
+
+  const scrollerRect = scroller.getBoundingClientRect()
+  const scrollerCenter = scrollerRect.left + scrollerRect.width / 2
+  let visibleTournamentId = null
+  let closestDistance = Number.POSITIVE_INFINITY
+
+  Array.from(scroller.querySelectorAll('[data-featured-tournament-id]')).forEach((element) => {
+    const rect = element.getBoundingClientRect()
+    const isVisible = rect.right > scrollerRect.left && rect.left < scrollerRect.right
+    if (!isVisible) return
+
+    const elementCenter = rect.left + rect.width / 2
+    const distance = Math.abs(elementCenter - scrollerCenter)
+    if (distance < closestDistance) {
+      closestDistance = distance
+      visibleTournamentId = element.dataset.featuredTournamentId
+    }
+  })
+
+  return visibleTournamentId
+}
+
+function handleFeaturedScroll() {
+  if (isProgrammaticFeaturedScroll.value) return
+
+  const visibleTournamentId = getVisibleTournamentId()
+  if (
+    visibleTournamentId &&
+    String(visibleTournamentId) !== String(activeFeaturedTournament.value)
+  ) {
+    utilsStore.setActiveFeaturedTournament(visibleTournamentId)
+  }
 }
 
 function setActiveTab(tab) {
@@ -178,7 +236,7 @@ function getImageURL(name) {
 
 const setActiveTournament = (tournament) => {
   utilsStore.setActiveFeaturedTournament(tournament.tournament_id)
-  scrollGamesIntoView()
+  scrollGamesIntoView(tournament.tournament_id)
 }
 
 const setActiveCategory = async (category) => {
@@ -236,11 +294,16 @@ async function getCasinoGames() {
 // }
 
 onBeforeUnmount(() => {
+  window.clearTimeout(featuredScrollResetTimer)
   // Clean up all MQTT subscriptions
   // Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
   //   subscriptions.forEach((unsubscribe) => unsubscribe())
   // })
   // unsubscribeFunctions.value = {}
+})
+
+watch(activeFeaturedTournament, () => {
+  nextTick(scrollActiveTournamentNavIntoView)
 })
 
 const loadFeaturedGames = async () => {
@@ -365,6 +428,8 @@ onDeactivated(() => {
 }
 #featuredMatchCardBox {
   padding: 0.5rem 1.1rem;
+  scroll-padding-left: 1.1rem;
+  scroll-snap-type: x mandatory;
 }
 
 .featured-widget {
@@ -590,6 +655,7 @@ onDeactivated(() => {
 }
 .featuredMatch #featuredMatchCardBox > * {
   margin-right: 0.66666667rem;
+  scroll-snap-align: start;
 }
 @media only screen and (max-width: 320px) {
   .featuredMatch #featuredMatchCardBox > * {

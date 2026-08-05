@@ -346,8 +346,21 @@ export const getUserDetailsByToken = async () => {
   )
 }
 
-export const getTopBets = async () => {
-  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/top_tournament`))
+export const getTopTournaments = async () => {
+  return parseData(fetchWrapper.get(`${NEW_FIXTURES_API}/${CLIENT_ID}/top_tournament?source=mobile`))
+}
+
+export const getTopTournamentFixtures = async (topTournamentId, source = 'mobile') => {
+  const params = new URLSearchParams({
+    source,
+    structure: 'outcomes'
+  })
+
+  return parseData(
+    fetchWrapper.get(
+      `${NEW_FIXTURES_API}/v1/${CLIENT_ID}/fixtures/top-tournament/${topTournamentId}?${params.toString()}`
+    )
+  )
 }
 
 export const getCodeHubItems = async (data) => {
