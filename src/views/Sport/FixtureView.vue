@@ -60,8 +60,6 @@ import {
   getSportHighlights,
   getFixturesByCategories,
   getFixturesByTournamentId,
-  getSportUpcoming,
-  getToday2,
   extractIdsFromURL,
   getDateRange,
   FEED_TOGGLE,
