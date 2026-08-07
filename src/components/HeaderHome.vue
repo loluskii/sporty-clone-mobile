@@ -10,7 +10,7 @@
       <header class="mobile-navbar">
         <div class="navbar-wraper">
           <a href="/" class="mobile-navbar-logo">
-            <img src="/logo.png" alt="" />
+            <img src="/logo.png?v=2" alt="Soccerpay" id="logo" />
           </a>
           <div class="mobile-navbar-right">
             <span class="x-icon-search" @click="$router.push({ name: 'search' })"></span>

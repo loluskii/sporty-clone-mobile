@@ -2,7 +2,7 @@
   <div class="game-play">
     <template v-if="isLoading">
       <div>
-        <img src="/logo.png" alt="" style="height: 50px" />
+        <img src="/logo.png?v=2" alt="" style="height: 50px" />
         <LoadingSpinner></LoadingSpinner>
       </div>
     </template>
@@ -22,7 +22,7 @@ import { useRoute } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
 import Cookies from 'js-cookie'
-import { CASINO_PROVIDER_PUBLIC_API } from '@/helpers/constants'
+import { CASINO_PROVIDER_PUBLIC_API, CLIENT_ID } from '@/helpers/constants'
 
 const route = useRoute()
 const isLoading = ref(false)
@@ -52,7 +52,7 @@ async function getCasinoURL() {
 
     let payload = {
       gameId: parseInt(game_id),
-      clientId: 9,
+      clientId: CLIENT_ID,
       username,
       userId: id,
       demo: false,

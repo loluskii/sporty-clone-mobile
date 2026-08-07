@@ -13,7 +13,7 @@
   </div>
   <footer class="x-footer x-footer--ng">
     <div class="partnership-wrap text-center">
-      <img src="/logo.png" />
+      <img src="/logo.png?v=2" alt="Soccerpay" />
     </div>
     <div></div>
     <div class="payment-methods">
