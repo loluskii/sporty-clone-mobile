@@ -28,13 +28,13 @@
       <div class="slider-window">
         <div class="sliders" style="transform: translateX(0%)">
           <div class="row">
-            <a href="https://www.facebook.com/profile.php?id=61586939995098" target="_blank">
+            <a href="https://www.facebook.com/profile.php" target="_blank">
               <img src="@/assets/images/facebook.png" style="height: 2rem" />
             </a>
-            <a href="https://www.instagram.com/bet24.ng/?hl=en" target="_blank" style="margin: 0 12px;">
+            <a href="https://www.instagram.com/?hl=en" target="_blank" style="margin: 0 12px;">
               <img src="@/assets/images/instagram.png" style="height: 2rem" />
             </a>
-            <a href="https://x.com/bet24_ng" target="_blank">
+            <a href="https://x.com/" target="_blank">
               <img src="@/assets/images/twitter.png" style="height: 2rem" />
             </a>
           </div>

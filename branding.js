@@ -1,7 +1,7 @@
 export const brandDetails = {
-  name: 'Sportsbook Engine',
+  name: 'Soccerpay',
   url: '',
-  title: 'SportsBook Engine',
+  title: 'Soccerpay',
   colors: {
     primaryColor: '#e41827',
     secondaryColor: '#0D9737',

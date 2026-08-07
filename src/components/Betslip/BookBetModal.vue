@@ -113,7 +113,7 @@ function copyToClipboard() {
 }
 
 function redirectToPlatform(platform) {
-  let message = `Hey I just placed on Bet24! ${window.location.origin}?shareCode=${bookingShareCode.value}`
+  let message = `Hey I just placed on Soccerpay! ${window.location.origin}?shareCode=${bookingShareCode.value}`
   switch (platform) {
     case 'whatsapp':
       return window.open('https://wa.me/?text=' + encodeURIComponent(message))
