@@ -20,7 +20,7 @@ export const NEW_BASE_API = isProductionMode
   ? fallbackByMode(import.meta.env.VITE_NEW_BASE_API, 'https://prod.sportsbookengine.com/api/v2')
   : 'https://stag.sportsbookengine.com/api/v2'
 export const NEW_FIXTURES_API = isProductionMode
-  ? fallbackByMode(import.meta.env.VITE_NEW_FIXTURES_API, 'https://fixture.sportsbookengine.com')
+  ? fallbackByMode(import.meta.env.VITE_NEW_FIXTURES_API, 'https://fixture-prod.sportsbookengine.com')
   : 'https://fixture.sportsbookengine.com'
 export const NEW_NOTIFICATION_API = isProductionMode
   ? fallbackByMode(
