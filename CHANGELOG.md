@@ -1,3 +1,20 @@
+# [1.4.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.2...v1.4.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* clean up bet placement failures ([b19e354](https://github.com/zoroplay/sporty-clone-mobile/commit/b19e3544160f3b9f8c2ef4e6b110b8c38ecf33a9))
+
+
+### Features
+
+* filter simulation bets to football ([b272345](https://github.com/zoroplay/sporty-clone-mobile/commit/b272345223c3365d6c892d10ab393998d4889bfa))
+
+
+### Reverts
+
+* Revert "use qtech aviator launch endpoint" ([e1ceab2](https://github.com/zoroplay/sporty-clone-mobile/commit/e1ceab2af3ebcb81ea79ee2605f904a8661f9fd8))
+
 ## [1.3.2](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.1...v1.3.2) (2026-02-11)
 
 
