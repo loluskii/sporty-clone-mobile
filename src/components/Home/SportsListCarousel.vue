@@ -87,7 +87,7 @@
           <!-- <span class="sport-text" data-cms-key="live" data-cms-page="wap_home" style="color: ">Aviator</span> -->
         </a>
       </li>
-      <li class="m-sports-choose-item m-snap-nav-item">
+      <!-- <li class="m-sports-choose-item m-snap-nav-item">
         <a href="#" @click.prevent="openVirtual"
           ><div class="sport-icon">
             <svg
@@ -112,7 +112,7 @@
           </div>
           <span class="sport-text" data-cms-key="live" data-cms-page="wap_home">Virtuals</span>
         </a>
-      </li>
+      </li> -->
 
       <li class="m-sports-choose-item m-snap-nav-item" v-if="0">
         <a href="#" @click.prevent="goToLiveScore"
