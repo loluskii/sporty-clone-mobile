@@ -50,6 +50,29 @@
 ### Bug Fixes
 
 * clean up bet placement failures ([b19e354](https://github.com/zoroplay/sporty-clone-mobile/commit/b19e3544160f3b9f8c2ef4e6b110b8c38ecf33a9))
+* map host port 3009 to container nginx port 3007 in docker-compose ([7589f75](https://github.com/zoroplay/sporty-clone-mobile/commit/7589f75c6f8dae55e8deff1781d6372f076b17c7))
+* refactore error display ([f75fcb0](https://github.com/zoroplay/sporty-clone-mobile/commit/f75fcb09cf4bc7af76502979860554bfd2aff8ff))
+* remove non-existent branding-template import causing build failure ([23af920](https://github.com/zoroplay/sporty-clone-mobile/commit/23af9205b2053496e66d02d462d1e20f5372480a))
+* restore environment approval for deploy ([4ad50c0](https://github.com/zoroplay/sporty-clone-mobile/commit/4ad50c0ad2ec4eb27fef0f9f6491b128cec52f5e))
+* set docker port to 3009 and update deploy directory for soccerpay ([ebbfa69](https://github.com/zoroplay/sporty-clone-mobile/commit/ebbfa69de5d90e265e805cd5ac586933d5570ac2))
+
+
+### Features
+
+* added validation for max number of draws per ticket ([40a731c](https://github.com/zoroplay/sporty-clone-mobile/commit/40a731c418e345bd3886059c7900a93c753b0144))
+* filter simulation bets to football ([b272345](https://github.com/zoroplay/sporty-clone-mobile/commit/b272345223c3365d6c892d10ab393998d4889bfa))
+
+
+### Reverts
+
+* Revert "use qtech aviator launch endpoint" ([e1ceab2](https://github.com/zoroplay/sporty-clone-mobile/commit/e1ceab2af3ebcb81ea79ee2605f904a8661f9fd8))
+
+# [1.4.0](https://github.com/zoroplay/sporty-clone-mobile/compare/v1.3.2...v1.4.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* clean up bet placement failures ([b19e354](https://github.com/zoroplay/sporty-clone-mobile/commit/b19e3544160f3b9f8c2ef4e6b110b8c38ecf33a9))
 * refactore error display ([f75fcb0](https://github.com/zoroplay/sporty-clone-mobile/commit/f75fcb09cf4bc7af76502979860554bfd2aff8ff))
 * remove non-existent branding-template import causing build failure ([23af920](https://github.com/zoroplay/sporty-clone-mobile/commit/23af9205b2053496e66d02d462d1e20f5372480a))
 * restore environment approval for deploy ([4ad50c0](https://github.com/zoroplay/sporty-clone-mobile/commit/4ad50c0ad2ec4eb27fef0f9f6491b128cec52f5e))
