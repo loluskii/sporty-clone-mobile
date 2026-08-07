@@ -340,7 +340,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
-  getFixtureMarkets,
+  getFeedsGameDetail,
   getMarketsGrouping,
   formatDate,
   isSelected,
@@ -352,7 +352,6 @@ import {
 import ErrorDialogue from '@/components/ErrorDialogue.vue'
 import { useCouponStore } from '@/stores'
 import emitter from '@/plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 import { useUtilsStore } from '../../stores'
 import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
@@ -439,7 +438,7 @@ function setupPeriodicRefetch(matchId) {
   refetchInterval.value = setInterval(async () => {
     if (eventDetail.value?.status === 0) {
       try {
-        const res = await getFixtureMarkets(matchId)
+        const res = await getFeedsGameDetail(matchId)
         if (Object.keys(res.data).length && res.data.market.length) {
           eventMarkets.value = res.data?.market.filter((market) => market.statusName !== 'Suspended')
         }
@@ -463,7 +462,7 @@ async function getEventDetail(id) {
   isLoading.value = true
   const { sport_id } = sportsMenu.find((x) => x.sport_name == unslugify(route.params.sport))
   try {
-    const res = await Promise.all([getFixtureMarkets(id), getMarketsGrouping(sport_id)])
+    const res = await Promise.all([getFeedsGameDetail(id), getMarketsGrouping(sport_id)])
     if (res[0].data && res[0].data.market) {
       if (res[0].data.matchStatus.toLowerCase() !== 'not started') {
         router.push({
@@ -500,14 +499,6 @@ async function getEventDetail(id) {
 
 function addToBetslip(market, outcome) {
   if (outcome.active === 0 || outcome.odds <= 1) return
-  let marketId = parseInt(market.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
-  }
   const data = buildCouponSelectionPayload({
     fixture: eventDetail.value,
     market,

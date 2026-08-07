@@ -367,7 +367,6 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
 import { useCouponStore, useUtilsStore } from '@/stores'
 import emitter from '@/plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
 import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
 
@@ -856,14 +855,6 @@ function groupByMarketID(data) {
 
 function addToBetslip(market, outcome) {
   if (outcome.active === 0 || outcome.odds <= 1) return
-  let marketId = parseInt(market.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
-  }
   const data = buildCouponSelectionPayload({
     fixture: eventDetail.value,
     market,

@@ -1,4 +1,4 @@
-const DEFAULT_ENV_MODE = 'staging'
+const DEFAULT_ENV_MODE = 'production'
 
 const resolvedMode = String(
   import.meta.env.VITE_ENV_MODE ||
@@ -20,7 +20,7 @@ export const NEW_BASE_API = isProductionMode
   ? fallbackByMode(import.meta.env.VITE_NEW_BASE_API, 'https://prod.sportsbookengine.com/api/v2')
   : 'https://stag.sportsbookengine.com/api/v2'
 export const NEW_FIXTURES_API = isProductionMode
-  ? fallbackByMode(import.meta.env.VITE_NEW_FIXTURES_API, 'https://fixture-prod.sportsbookengine.com')
+  ? fallbackByMode(import.meta.env.VITE_NEW_FIXTURES_API, 'https://fixture.sportsbookengine.com')
   : 'https://fixture.sportsbookengine.com'
 export const NEW_NOTIFICATION_API = isProductionMode
   ? fallbackByMode(
@@ -50,6 +50,10 @@ export const APP_KEY = import.meta.env.VITE_APP_KEY
 export const SIM_ALLOWED_MARKETS = [
   1, 10, 11, 16, 18, 26, 29, 45, 60, 68, 74, 75, 80, 83, 90, 94, 95, 1601
 ];
+// Keep this list extensible as simulation support is added for more sports.
+export const SIM_ALLOWED_SPORT_IDS = [1];
+export const isSimulationSportAllowed = (sportId) =>
+  SIM_ALLOWED_SPORT_IDS.includes(Number(sportId));
 export const SIM_ENABLED = true;
 export const DEPOSIT_ALLOWED = true
 export const FEED_TOGGLE = true

@@ -21,7 +21,7 @@
         >{{ matchDetails.categoryName }} - {{ matchDetails.tournament }}</a
       >
     </div>
-    <div class="mid" @click="goToMarket($event)">
+    <div class="mid" :class="{ live: hasScoreDisplay }" @click="goToMarket($event)">
       <div class="homeIcon">
         <img
           :src="getTeamLogoUrl(matchDetails.homeTeam)"
@@ -29,9 +29,17 @@
         />
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
-      <div class="dateTime">
+      <div v-if="!hasScoreDisplay" class="dateTime">
         <div class="time">{{moment(matchDetails.date).format('ha') }}</div>
         <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
+      </div>
+      <div v-else class="score">{{ liveHomeScore }} - {{ liveAwayScore }}</div>
+      <div v-if="hasScoreDisplay" class="playSeconds">
+        <span v-if="isInPlayMatch" class="liveFlag">LIVE</span>
+        <span v-if="liveEventTime || liveMatchStatus" class="border" :class="{ solo: !isInPlayMatch }">
+          <span v-if="liveEventTime" class="eventTime">{{ liveEventTime }}</span>
+          <span v-if="liveMatchStatus" class="matchStatus">{{ liveMatchStatus }}</span>
+        </span>
       </div>
       <div class="market">
         <span>{{ selectedMarket?.marketName }}</span>
@@ -72,7 +80,7 @@
 </template>
 
 <script setup>
-import { defineProps, computed, watch } from 'vue'
+import { defineProps, computed } from 'vue'
 import {
   buildCouponSelectionElementId,
   buildCouponSelectionPayload,
@@ -84,8 +92,6 @@ import {
 } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
-import emitter from '@/plugins/emitter'
 import moment from 'moment'
 
 const router = useRouter()
@@ -94,6 +100,74 @@ const couponStore = useCouponStore()
 const props = defineProps({
   matchDetails: Object,
   markets: Object
+})
+
+const parseScoreValue = (value) => {
+  if (value === null || value === undefined) return null
+  const normalized = String(value).trim()
+  if (!normalized || normalized === '-' || normalized === '--') return null
+
+  const numeric = Number(normalized)
+  return Number.isFinite(numeric) ? numeric : null
+}
+
+const getScoreValue = (side) => {
+  const scoreKey = side === 'home' ? 'homeScore' : 'awayScore'
+  const snakeKey = side === 'home' ? 'home_score' : 'away_score'
+  const eventInfo = props.matchDetails?.eventInfo || {}
+  const sportEventStatus = props.matchDetails?.sport_event_status || eventInfo.sport_event_status || {}
+
+  return parseScoreValue(
+    props.matchDetails?.[scoreKey] ??
+      props.matchDetails?.[snakeKey] ??
+      sportEventStatus?.[snakeKey] ??
+      sportEventStatus?.[scoreKey] ??
+      eventInfo.score?.[side] ??
+      eventInfo.scores?.[side] ??
+      eventInfo.game_score?.[side] ??
+      eventInfo.score?.[snakeKey] ??
+      eventInfo.scores?.[snakeKey] ??
+      eventInfo.game_score?.[snakeKey]
+  )
+}
+
+const liveHomeScore = computed(() => getScoreValue('home'))
+const liveAwayScore = computed(() => getScoreValue('away'))
+
+const normalizedMatchStatus = computed(() =>
+  String(props.matchDetails?.matchStatus || props.matchDetails?.match_status || '').trim()
+)
+
+const isPrematchStatus = computed(() =>
+  ['not started', 'scheduled', 'prematch'].includes(normalizedMatchStatus.value.toLowerCase())
+)
+
+const isEndedMatch = computed(() =>
+  ['ended', 'finished', 'closed', 'completed', 'ft', 'full time', 'full-time'].includes(
+    normalizedMatchStatus.value.toLowerCase()
+  )
+)
+
+const hasScoreDisplay = computed(() => {
+  return liveHomeScore.value !== null && liveAwayScore.value !== null && !isPrematchStatus.value
+})
+
+const isInPlayMatch = computed(() => hasScoreDisplay.value && !isEndedMatch.value)
+
+const liveMatchStatus = computed(() => {
+  const status = normalizedMatchStatus.value
+  if (!status || isPrematchStatus.value) return ''
+  if (isEndedMatch.value) return 'FT'
+  return status
+})
+
+const liveEventTime = computed(() => {
+  if (!isInPlayMatch.value) return ''
+  const eventInfo = props.matchDetails?.eventInfo || {}
+  const eventTime = String(
+    props.matchDetails?.eventTime || props.matchDetails?.event_time || eventInfo.eventTime || eventInfo.event_time || ''
+  ).trim()
+  return eventTime && eventTime !== '--:--' ? eventTime : ''
 })
 
 const selectedMarket = computed(() => {
@@ -167,14 +241,6 @@ const getSelectionElementId = (fixture, outcome) =>
 
 function addToBetslip(event, odd) {
   if (odd.odds <= 1) return
-  let marketId = parseInt(odd.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
-  }
   const fixtureWithMarkets = {
     ...event,
     sportID: event.sportID || event.sportId,
@@ -421,6 +487,10 @@ function addToBetslip(event, odd) {
   font-size: 0.83333333rem;
   padding-right: 0.08333333rem;
   white-space: nowrap;
+}
+.featuredMatchCard .mid .playSeconds .border.solo {
+  border-left: 0.5px solid rgba(156, 160, 171, 0.3);
+  padding-left: 0.08333333rem;
 }
 .featuredMatchCard .mid .playSeconds .border .eventTime {
   margin-left: 0.16666667rem;

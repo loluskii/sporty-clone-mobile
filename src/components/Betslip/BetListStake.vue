@@ -556,29 +556,30 @@ const hasSuspendedSelections = computed(() => {
 })
 
 async function book(e) {
+  const button = e.currentTarget || e.target
   try {
     if (totalStake.value < 1) {
       return
     }
 
-    e.target.classList.add('loading-icon')
+    button.classList.add('loading-icon')
     couponStore.isBetslipBooking = true
 
     const res = await couponStore.placeBet(e, 'book')
-    couponStore.isBetslipBooking = false
-    e.target.classList.remove('loading-icon')
 
-    if (res.status_code === 200) {
+    if (res?.status_code === 200) {
       emit('book-bet', res.data)
     } else {
-      // Handle error display or other actions as needed
-      emit('toggle-betslip')
-      emitter.emit('showErrorMessage', res.message)
+      emitter.emit(
+        'showErrorMessage',
+        res?.status_description || res?.message || 'Failed to book bet'
+      )
     }
   } catch (error) {
-    emit('toggle-betslip')
-    // Handle error display or other actions as needed
-    emitter.emit('showErrorMessage', error)
+    emitter.emit('showErrorMessage', error?.message || error || 'Failed to book bet')
+  } finally {
+    couponStore.isBetslipBooking = false
+    button.classList.remove('loading-icon')
   }
 }
 

@@ -1,5 +1,95 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getSportHighlights, FEED_TOGGLE, normalizeFixtureMarkets } from '@/helpers'
+import {
+  getTopTournaments,
+  getTopTournamentFixtures,
+  FEED_TOGGLE,
+  normalizeFixtureMarkets
+} from '@/helpers'
+
+const getFeaturedMarketKey = (marketId, specifier = '') => `${marketId}|${specifier}`
+
+const getFeaturedFixturePriority = (fixture = {}) => {
+  const priority = Number(fixture?.fixture_priority ?? fixture?.fixturePriority ?? 0)
+  return Number.isFinite(priority) ? priority : 0
+}
+
+const sortFeaturedFixturesByPriority = (fixtures = []) => {
+  return fixtures
+    .map((fixture, index) => ({ fixture, index }))
+    .sort((left, right) => {
+      const priorityDiff = getFeaturedFixturePriority(right.fixture) - getFeaturedFixturePriority(left.fixture)
+      return priorityDiff || left.index - right.index
+    })
+    .map(({ fixture }) => fixture)
+}
+
+const buildFeaturedMarketsFromFixtures = (fixtures = []) => {
+  const marketMap = new Map()
+
+  fixtures.forEach((fixture) => {
+    const explicitMarkets = [
+      ...(Array.isArray(fixture.market) ? fixture.market : []),
+      ...(Array.isArray(fixture.markets) ? fixture.markets : [])
+    ]
+
+    explicitMarkets.forEach((market) => {
+      const marketId = Number(market?.marketID ?? market?.marketId ?? market?.market_id ?? market?.id ?? 0)
+      if (!Number.isFinite(marketId) || marketId <= 0) return
+
+      const specifier = String(market?.specifier ?? market?.specifiers ?? '')
+      const key = getFeaturedMarketKey(marketId, specifier)
+
+      if (!marketMap.has(key)) {
+        marketMap.set(key, {
+          ...market,
+          marketID: marketId,
+          marketName: market?.marketName ?? market?.market_name ?? market?.name ?? '',
+          specifier,
+          sportID: market?.sportID ?? market?.sportId ?? market?.sport_id ?? fixture?.sportID ?? fixture?.sportId,
+          outcomes: Array.isArray(market?.outcomes) ? market.outcomes : []
+        })
+      }
+    })
+
+    const outcomes = Array.isArray(fixture.outcomes) ? fixture.outcomes : []
+    outcomes.forEach((outcome) => {
+      const marketId = Number(outcome?.marketID ?? outcome?.marketId ?? outcome?.market_id ?? 0)
+      if (!Number.isFinite(marketId) || marketId <= 0) return
+
+      const specifier = String(outcome?.specifier ?? outcome?.specifiers ?? '')
+      const key = getFeaturedMarketKey(marketId, specifier)
+      const existing = marketMap.get(key)
+
+      if (existing) {
+        if (!Array.isArray(existing.outcomes)) {
+          existing.outcomes = []
+        }
+
+        const duplicateIndex = existing.outcomes.findIndex(
+          (item) =>
+            String(item?.outcomeID ?? item?.outcomeId ?? item?.outcome_id ?? '') ===
+              String(outcome?.outcomeID ?? outcome?.outcomeId ?? outcome?.outcome_id ?? '') &&
+            String(item?.specifier ?? item?.specifiers ?? '') === specifier
+        )
+
+        if (duplicateIndex === -1) {
+          existing.outcomes.push(outcome)
+        }
+        return
+      }
+
+      marketMap.set(key, {
+        marketID: marketId,
+        marketName: outcome?.marketName ?? outcome?.market_name ?? outcome?.name ?? '',
+        specifier,
+        sportID: fixture?.sportID ?? fixture?.sportId,
+        outcomes: [outcome]
+      })
+    })
+  })
+
+  return normalizeFixtureMarkets(Array.from(marketMap.values()))
+}
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -82,24 +172,35 @@ export const useUtilsStore = defineStore({
       this.featuredError = null
 
       try {
-        const response = await getTopBets()
+        const response = await getTopTournaments()
 
-        if (response?.data) {
+        const topTournaments = Array.isArray(response) ? response : response?.data || []
+
+        if (topTournaments.length) {
           // Process tournaments
           const uniqueTournamentIds = new Set()
           const uniqueTournaments = []
 
-          for (const tournament of response.data) {
-            if (!uniqueTournamentIds.has(tournament.tournament_id)) {
-              uniqueTournamentIds.add(tournament.tournament_id)
-              uniqueTournaments.push(tournament)
+          for (const tournament of topTournaments) {
+            const tournamentId = tournament.tournament_id || tournament.tournamentID || tournament.id
+            if (!tournamentId || uniqueTournamentIds.has(tournamentId)) {
+              continue
             }
+
+            uniqueTournamentIds.add(tournamentId)
+            uniqueTournaments.push({
+              ...tournament,
+              top_tournament_id: tournament.id || tournament.top_tournament_id || tournament.topTournamentID,
+              tournament_id: tournamentId,
+              tournamentID: tournamentId,
+              categoryID: tournament.categoryID || tournament.category_id,
+              categoryName: tournament.categoryName || tournament.category_name || tournament.country || tournament.country_name
+            })
           }
 
           this.featuredTournaments = uniqueTournaments.sort(
             (a, b) =>
-              Number(b.priority || 0) - Number(a.priority || 0) ||
-              Number(a.tournament_id || 0) - Number(b.tournament_id || 0)
+              Number(b.priority || 0) - Number(a.priority || 0) 
           )
 
           // Set active tournament to the first one if not already set
@@ -134,49 +235,53 @@ export const useUtilsStore = defineStore({
 
       // Clear existing games before fetching new ones
       this.featuredTournamentGames = []
+      const rawList = []
 
       try {
         for (const chunk of chunks) {
           await Promise.all(
             chunk.map(async (tournament) => {
               try {
-                const games = await getSportHighlights({
-                  page: 1,
-                  sid: tournament.sportID,
-                  per_page: 5,
-                  tournament_id: tournament.tournament_id,
-                  feature_market_id: 1601
-                })
+                const topTournamentId =
+                  tournament.top_tournament_id ||
+                  tournament.topTournamentID ||
+                  tournament.id ||
+                  tournament.tournament_id
+                const games = await getTopTournamentFixtures(topTournamentId)
 
-                if (!games?.data?.fixtures?.length || !games?.data?.markets?.length) {
-                  // Early return if no valid data
-                  const index = this.featuredTournaments.findIndex(
-                    (x) => x.tournament_id === tournament.tournament_id
-                  )
-                  if (index !== -1) {
-                    this.featuredTournaments.splice(index, 1)
-                  }
+                const fixtures = sortFeaturedFixturesByPriority(games?.data?.fixtures || games?.fixtures || [])
+                const markets =
+                  normalizeFixtureMarkets(games?.data?.markets || games?.markets || []) ||
+                  []
+                const normalizedMarkets = markets.length ? markets : buildFeaturedMarketsFromFixtures(fixtures)
+
+                if (!fixtures.length || !normalizedMarkets.length) {
                   return
                 }
 
-                if (games?.data?.fixtures?.length && games?.data?.markets?.length) {
+                if (fixtures.length && normalizedMarkets.length) {
                   // Take only first 5 fixtures
                   const tournamentGames = {
                     tournamentID: tournament.tournament_id,
                     priority: Number(tournament.priority || 0),
-                    fixtures: (games.data.fixtures || []).map((fixture) => ({
+                    fixtures: fixtures.map((fixture) => ({
                       ...fixture,
                       sportID: fixture.sportID || fixture.sportId || tournament.sportID || tournament.sportId,
                       sportId: fixture.sportId || fixture.sportID || tournament.sportID || tournament.sportId,
                       tournamentID: fixture.tournamentID || fixture.tournament_id || tournament.tournament_id,
                       tournament: fixture.tournament || tournament.tournament_name,
                       categoryID: fixture.categoryID || fixture.category_id || tournament.categoryID || tournament.category_id,
-                      categoryName: fixture.categoryName || tournament.category_name || fixture.categoryName
+                      categoryName:
+                        fixture.categoryName ||
+                        fixture.category_name ||
+                        tournament.categoryName ||
+                        tournament.category_name ||
+                        tournament.country_name
                     })),
-                    markets: normalizeFixtureMarkets(games.data.markets)
+                    markets: normalizedMarkets
                   }
 
-                  this.featuredTournamentGames.push(tournamentGames)
+                  rawList.push(tournamentGames)
                 }
               } catch (error) {
                 console.error(`Error processing tournament ${tournament.tournament_id}:`, error)
@@ -184,6 +289,7 @@ export const useUtilsStore = defineStore({
             })
           )
         }
+        this.featuredTournamentGames = rawList.sort((a, b) => b.priority - a.priority);
       } finally {
         this.isFetchingTournamentGames = false
       }

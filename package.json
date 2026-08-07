@@ -58,5 +58,8 @@
     "vite": "^4.4.11",
     "vite-plugin-mkcert": "^1.17.6",
     "vitest": "^0.34.6"
+  },
+  "resolutions": {
+    "rollup": "npm:@rollup/wasm-node"
   }
 }

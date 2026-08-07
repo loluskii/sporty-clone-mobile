@@ -139,7 +139,7 @@ import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import emitter from '@/plugins/emitter'
 import { CLIENT_ID, checkFirstDeposit, formatNumber } from '@/helpers'
 
-const activeTab = ref('paystack')
+const activeTab = ref('payonus')
 const depositMethods = ref([])
 const usersStore = useUsersStore()
 const utilsStore = useUtilsStore()
@@ -215,6 +215,9 @@ async function beginDeposit() {
           type: 'Deposit',
           code: res.data.transactionRef
         })
+      }else if(activeTab.value === 'payonus'){
+        isDepositing.value = false;
+        emitter.emit('showManualDepositDialogueMessage', JSON.parse(res.data.link))
       } else {
         isDepositing.value = false
         if (res.data.link === 'ACCEPTED') {

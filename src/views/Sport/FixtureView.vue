@@ -60,12 +60,11 @@ import {
   getSportHighlights,
   getFixturesByCategories,
   getFixturesByTournamentId,
-  getSportUpcoming,
-  getToday2,
   extractIdsFromURL,
   getDateRange,
   FEED_TOGGLE,
-  getFeatureMarketIdForMode
+  getFeatureMarketIdForMode,
+  normalizeFixtureMarkets
 } from '@/helpers'
 import emitter from '@/plugins/emitter'
 import { useUpMode } from '@/composables/useUpMode'
@@ -272,7 +271,9 @@ async function getTournamentFixtures(sid) {
     } else {
       baseFixturesList.value = { ...fixtures }
     }
-    const filteredMarkets = sanitizeMarkets(results[0].value?.data.markets || [])
+    const filteredMarkets = sanitizeMarkets(
+      normalizeFixtureMarkets(results[0].value?.data.markets || [])
+    )
     marketsGroup.value = filteredMarkets
     activeMarket.value =
       filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
@@ -313,7 +314,7 @@ async function getCategoryFixtures(sid, cid) {
     }
     isLastPage.value = false
     lastPage.value = Math.max(page.value, 1)
-    const filteredMarkets = sanitizeMarkets(markets || [])
+    const filteredMarkets = sanitizeMarkets(normalizeFixtureMarkets(markets || []))
     marketsGroup.value = filteredMarkets
     activeMarket.value =
       filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||
@@ -372,7 +373,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
       : [...fixtures]
     isLastPage.value = false
     lastPage.value = Math.max(page.value, 1)
-    const filteredMarkets = sanitizeMarkets(markets || [])
+    const filteredMarkets = sanitizeMarkets(normalizeFixtureMarkets(markets || []))
     marketsGroup.value = filteredMarkets
     activeMarket.value =
       filteredMarkets.find((market) => Number(market.marketID) === selectedMarketId) ||

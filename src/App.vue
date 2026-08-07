@@ -158,10 +158,16 @@ function handleBetslipConfirmation(data) {
   dialogueType.value = 'betslip'
 }
 
-function showDialogue(data) {
+function showWithdrawalDialogue(data) {
   dialogueShown.value = true
   dialogueMessage.value = data
   dialogueType.value = 'withdrawal'
+}
+
+function showManualDepositDialogue(data) {
+  dialogueShown.value = true
+  dialogueMessage.value = data
+  dialogueType.value = 'manual-deposit'
 }
 
 function showToaster(data) {
@@ -465,7 +471,7 @@ onMounted(async () => {
   emitter.on('openBetslip', toggleBetslip)
   emitter.on('showErrorMessage', handleError)
   emitter.on('showBetslipConfirmation', handleBetslipConfirmation)
-  emitter.on('showDialogueMessage', showDialogue)
+  emitter.on('showWithdrawalDialogueMessage', showWithdrawalDialogue)
   emitter.on('showDialogueToaster', showToaster)
   emitter.on('hideDialogueToaster', toggleDialogue)
   emitter.on('showCasinoDialog', showCasinoDialog)
@@ -493,7 +499,7 @@ defineComponent({
         <div class="loading-overlay">
           <div class="loading-spinner">
             <img
-              src="/logos.png"
+              src="/logo.png"
               class="scaling-image"
               style="height: 60px; margin-bottom: 20px"
               alt="logo"
