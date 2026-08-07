@@ -3,7 +3,7 @@ export const brandDetails = {
   url: '',
   title: 'Soccerpay',
   colors: {
-    primaryColor: '#e41827',
+    primaryColor: '#021642',
     secondaryColor: '#0D9737',
     tertiaryColor: '#C5C5C5',
 
@@ -13,29 +13,29 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#0D9737',
 
-    primaryButtonColor: '#0D9737',
-    secondaryButtonColor: '#e41827',
+    primaryButtonColor: '#f28705',
+    secondaryButtonColor: '#d9042c',
 
     primaryButtonBackgroundColor: '#0D9737',
     secondaryButtonBackgroundColor: '#0D9737',
 
     headerBackgroundColor: 'rgb(222, 226 ,230)',
 
-    prematchOddBackgroundColor: '#D6EBDC',
-    prematchOddTextColor: '#096B27',
+    prematchOddBackgroundColor: '#e1e2e7',
+    prematchOddTextColor: '#000',
     activePrematchOddBackground: '#0D9737',
     activePrematchOddTextColor: '#fff',
 
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
-    liveOddTextColor: '#32ce62',
+    liveOddTextColor: '#f28705',
     activeLiveOddBackground: '#32ce62',
     activeLiveOddTextColor: '#fff',
 
     liveContainerBackgroundColor: '#1B1E25',
 
-    activeTabColor: '#0D9737',
-    activeTabColor2: '#0D9737',
-    highlightTextColor: '#0D9737'
+    activeTabColor: '#f28705',
+    activeTabColor2: '#f28705',
+    highlightTextColor: '#f28705'
   },
   fonts: {
     primaryFont: 'Avenir',
