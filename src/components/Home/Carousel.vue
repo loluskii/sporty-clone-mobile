@@ -97,13 +97,7 @@ const displayBanners = computed(() => {
     return banners.value
   }
 
-  return [
-    {
-      image: placeholderBanner,
-      link: '',
-      title: 'Promo'
-    }
-  ]
+  return []
 })
 
 const activeStory = computed(() => {
