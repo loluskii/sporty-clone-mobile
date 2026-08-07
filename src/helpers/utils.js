@@ -2,7 +2,6 @@ import moment from 'moment'
 // import _ from 'lodash'
 import { getSplitPropsData } from '@/helpers'
 import { brandDetails } from '/branding'
-import { brandDetails as defBrandDetails } from '/branding-template'
 import { useUtilsStore } from '../stores/utils.store'
 import { calculateAccaBonusPreview } from './acca-bonus'
 import {
@@ -19,13 +18,7 @@ import {
 
 export const applyBranding = async () => {
   try {
-    let defConfig
-    if (brandDetails) {
-      defConfig = brandDetails
-    } else {
-    defConfig = defBrandDetails
-    }
-    const config = defConfig
+    const config = brandDetails
     const utilsStore = useUtilsStore()
     const loadFont = (url) => {
       const link = document.createElement("link");
