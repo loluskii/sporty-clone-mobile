@@ -11,7 +11,7 @@ services:
         - VITE_CLIENT_ID=${VITE_CLIENT_ID}
         - VITE_CURRENCY=${VITE_CURRENCY}
     ports:
-      - "3008:3007"
+      - "3009:3009"
     environment:
       - NODE_ENV=production
     env_file:

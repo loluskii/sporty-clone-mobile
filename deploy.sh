@@ -3,7 +3,7 @@
 set -e  # Exit on any error
 
 # Change to correct directory
-cd ~/west-streetbet-mobile
+cd ~/west-soccerpay-mobile
 
 # Build image locally with server's .env file
 echo "Building Docker image with server's .env file"
