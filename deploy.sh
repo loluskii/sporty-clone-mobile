@@ -44,8 +44,8 @@ if docker ps | grep -q west-soccerpay-new; then
     docker exec west-soccerpay-new-mobile-sportsbook-web-1 head -c 500 "$MAIN_JS" 2>/dev/null || echo "Could not read main JS file"
     echo "\nSearching for 'api' in main JS:"
     docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -o "[a-zA-Z0-9:/.-]*api[a-zA-Z0-9:/.-]*" "$MAIN_JS" 2>/dev/null | head -5 || echo "No API references found"
-    echo "\nSearching for 'bet24' in all files:"
-    docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -r "bet24" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No bet24 references found"
+    echo "\nSearching for 'soccerpay' in all files:"
+    docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -ri "soccerpay" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No soccerpay references found"
     echo "\nSearching for server's API URL in built files:"
     docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -r "https://fixture.staging.sportsbookengine.com/docs//index.html#/" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
 else
