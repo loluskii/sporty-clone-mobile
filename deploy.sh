@@ -47,7 +47,7 @@ if docker ps | grep -q west-soccerpay-new; then
     echo "\nSearching for 'soccerpay' in all files:"
     docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -ri "soccerpay" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "No soccerpay references found"
     echo "\nSearching for server's API URL in built files:"
-    docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -r "https://fixture.staging.sportsbookengine.com/docs//index.html#/" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
+    docker exec west-soccerpay-new-mobile-sportsbook-web-1 grep -r "fixture-prod.sportsbookengine.com" /usr/share/nginx/html/ 2>/dev/null | head -3 || echo "Server API URL not found in built files"
 else
     echo "Container west-soccerpay-new-mobile-sportsbook-web-1 is not running"
 fi
