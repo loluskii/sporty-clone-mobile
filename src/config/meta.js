@@ -40,7 +40,7 @@ export const defaultMeta = {
     },
     {
       property: 'og:image',
-      content: '/logo.png'
+      content: '/logo.png?v=2'
     }
   ],
   link: [
