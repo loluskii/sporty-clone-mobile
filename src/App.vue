@@ -1,7 +1,7 @@
 <script setup>
 import AppFooter from '@/components/Footer.vue'
 import MobileFooter from '@/components/MobileFooter.vue'
-import { defineComponent, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
+import { defineComponent, onBeforeUnmount, onMounted, ref, watch, computed, nextTick } from 'vue'
 import { useUtilsStore, useCouponStore } from '@/stores'
 import CasinoDialog from '@/components/CasinoDialog.vue'
 import CalendarBox from '@/components/CalendarBox.vue'
@@ -97,6 +97,28 @@ const isEmptyPlainObject = (value) =>
 const isAuthenticated = computed(() => {
   return authStore.isAuthenticated
 })
+
+const setAppViewportHeight = () => {
+  if (typeof window === 'undefined') return
+  const viewportHeight = window.visualViewport?.height || window.innerHeight
+  document.documentElement.style.setProperty('--app-visible-height', `${viewportHeight}px`)
+}
+
+const handleAppResume = () => {
+  if (typeof window === 'undefined') return
+  nextTick(() => {
+    window.requestAnimationFrame(() => {
+      setAppViewportHeight()
+      window.dispatchEvent(new Event('resize'))
+    })
+  })
+}
+
+const handleVisibilityChange = () => {
+  if (!document.hidden) {
+    handleAppResume()
+  }
+}
 
 const backToTopBlocked = computed(() => {
   return (
@@ -379,6 +401,13 @@ const safeLoad = (promise) =>
   )
 
 onMounted(async () => {
+  setAppViewportHeight()
+  window.addEventListener('resize', setAppViewportHeight, { passive: true })
+  window.addEventListener('orientationchange', handleAppResume, { passive: true })
+  window.addEventListener('pageshow', handleAppResume, { passive: true })
+  window.addEventListener('focus', handleAppResume, { passive: true })
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+
   if (route.path !== '/') {
     isLoading.value = false
   }
@@ -478,6 +507,11 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   couponStore.stopAbandonedBetslipTracker()
+  window.removeEventListener('resize', setAppViewportHeight)
+  window.removeEventListener('orientationchange', handleAppResume)
+  window.removeEventListener('pageshow', handleAppResume)
+  window.removeEventListener('focus', handleAppResume)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 defineComponent({
@@ -577,6 +611,7 @@ defineComponent({
   --mobile-app-max-width: 480px;
   --mobile-app-width: min(100vw, var(--mobile-app-max-width));
   --mobile-app-gutter: max(0px, calc((100vw - var(--mobile-app-max-width)) / 2));
+  --app-visible-height: 100vh;
 }
 
 html,
@@ -596,7 +631,7 @@ body {
   box-shadow: 0 0 32px rgba(0, 0, 0, 0.28);
   margin: 0 auto;
   max-width: var(--mobile-app-max-width);
-  min-height: 100dvh;
+  min-height: var(--app-visible-height);
   overflow-x: clip;
   position: relative;
   width: 100%;
@@ -612,11 +647,13 @@ body,
 .mobile-app-shell,
 .page-content,
 .x-layout-main {
-  min-height: 100dvh;
+  min-height: var(--app-visible-height);
   width: 100%;
 }
 
 .x-layout-main {
+  align-items: stretch;
+  flex-direction: column;
   position: relative;
 }
 
@@ -763,10 +800,11 @@ body,
 }
 
 .x-layout-main .x-main-mid {
-  height: 100%;
-  left: 0px;
-  position: absolute;
-  top: 0px;
+  flex: 1 1 auto;
+  left: auto;
+  min-height: inherit;
+  position: relative;
+  top: auto;
   width: 100%;
   z-index: 2;
 }
