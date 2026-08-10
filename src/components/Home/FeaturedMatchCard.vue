@@ -30,8 +30,8 @@
       </div>
       <div class="homeName">{{ matchDetails.homeTeam }}</div>
       <div v-if="!hasScoreDisplay" class="dateTime">
-        <div class="time">{{ formatDate(matchDetails.date.slice(0, -1).split('T').join(' '), "HH:mm") }}</div>
-        <div class="date">{{ moment(matchDetails.date).format('ddd D') }}</div>
+        <div class="time">{{ formatDate(matchDetails.date, "HH:mm") }}</div>
+        <div class="date">{{ formatDate(matchDetails.date, 'ddd D') }}</div>
       </div>
       <div v-else class="score">{{ liveHomeScore }} - {{ liveAwayScore }}</div>
       <div v-if="hasScoreDisplay" class="playSeconds">
@@ -92,7 +92,6 @@ import {
 } from '@/helpers'
 import { useCouponStore } from '@/stores'
 import { useRouter } from 'vue-router'
-import moment from 'moment'
 
 const router = useRouter()
 const couponStore = useCouponStore()
