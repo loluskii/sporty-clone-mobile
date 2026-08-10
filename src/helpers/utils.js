@@ -381,10 +381,25 @@ export const getDataFromPayload = (couponPayload) => {
   return data
 }
 
+export const parseApiDateForBrowser = (date) => {
+  if (!date) return null
+  if (date instanceof Date) return Number.isNaN(date.getTime()) ? null : date
+
+  const value = String(date).trim()
+  if (!value) return null
+
+  const hasExplicitTimeZone = /(?:z|[+-]\d{2}:?\d{2})$/i.test(value)
+  const isIsoDateTime = /^\d{4}-\d{2}-\d{2}T/.test(value)
+  const normalizedValue =
+    hasExplicitTimeZone || isIsoDateTime ? value : value.replace(/-/g, '/')
+  const parsedDate = new Date(normalizedValue)
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
+}
+
 export const formatDate = (date, format) => {
-  const fixDateForAllBrowsers = date.replace(/-/g, '/')
-  const d = new Date(fixDateForAllBrowsers)
-  return moment(d).format(format)
+  const parsedDate = parseApiDateForBrowser(date)
+  return parsedDate ? moment(parsedDate).format(format) : ''
 }
 
 export const slugify = (str) => {

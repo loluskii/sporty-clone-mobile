@@ -4,7 +4,7 @@
       <div class="m-event-meta">
         <div>
           <span class="m-time" style="margin-right: 5px">{{
-            formatDate(eventData.date.slice(0, -1).split('T').join(' '), "HH:mm")
+            formatDate(eventData.date, "HH:mm")
           }}</span>
           <!-- <span class="m-game-id" style="margin-right: 5px">ID {{ eventData.gameID }}</span> -->
           <span class="m-league-name"
