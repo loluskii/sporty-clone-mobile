@@ -179,7 +179,7 @@ function confirmWithdrawal() {
   background-color: var(--brand-secondary);
 }
 .es-dialog.m-wd-pop-cfm .af-button--info {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary-button);
   filter: grayscale();
   width: 26%;
   color: white;

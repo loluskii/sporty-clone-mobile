@@ -132,7 +132,7 @@ async function loadBet() {
 }
 
 .m-main-info .m-form-wrap .af-button--primary {
-  background: var(--brand-secondary);
+  background-color: var(--brand-primary-button);
   border: 0;
   border-radius: 2px;
   color: #ffffff;
