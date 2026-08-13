@@ -3,9 +3,7 @@
     <div class="icons">
       <img
         src="//s.sporty.net/global/main/brand/sportybet/mobile/images/license.89d68648de.svg"
-      /><img
-        src="//s.sporty.net/global/main/brand/sportybet/mobile/images/icon18.996cdffd94.svg"
-      />
+      /><img src="//s.sporty.net/global/main/brand/sportybet/mobile/images/icon18.996cdffd94.svg" />
     </div>
     <div class="copyright" style="color: var(--brand-primary)">
       &copy; {{ new Date().getFullYear() }} {{ utilsStore.brandName }}. All rights reserved.
@@ -18,12 +16,12 @@
     <div></div>
     <div class="payment-methods">
       <p>
-        Age 18 and above only to register or play at {{ utilsStore.brandName }}. Play Responsibly.
-        Betting is addictive and can be psychologically harmful. | {{ utilsStore.brandName }} is a product of Fane International Sports Tour LTD and is 
-        licensed by the National Lottery Regulatory Commission.
+        Age 18 and above only to register or play at Soccerpay. Play Responsibly. Betting is
+        addictive and can be psychologically harmful. | Soccerpay is a product of Soccerpay LTD and
+        is licensed by the Enugu Gaming Coporation
       </p>
     </div>
-    
+
     <div class="slider-wrap">
       <div class="slider-window">
         <div class="sliders" style="transform: translateX(0%)">
@@ -31,7 +29,7 @@
             <a href="https://www.facebook.com/profile.php" target="_blank">
               <img src="@/assets/images/facebook.png" style="height: 2rem" />
             </a>
-            <a href="https://www.instagram.com/?hl=en" target="_blank" style="margin: 0 12px;">
+            <a href="https://www.instagram.com/?hl=en" target="_blank" style="margin: 0 12px">
               <img src="@/assets/images/instagram.png" style="height: 2rem" />
             </a>
             <a href="https://x.com/" target="_blank">
@@ -61,7 +59,7 @@
       >
         Terms and Conditions
       </h5>
-      
+
       <h5 class="divider">|</h5>
       <h5
         class="underline"
@@ -94,7 +92,7 @@
       >
         Refund Policy
       </h5>
-			<h5 class="divider">|</h5>
+      <h5 class="divider">|</h5>
       <h5
         class="underline"
         @click="$router.push({ name: 'cms-page', params: { page: 'contact_us' } })"
