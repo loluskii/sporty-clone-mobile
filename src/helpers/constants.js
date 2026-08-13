@@ -43,7 +43,7 @@ export const CASINO_PROVIDER_PUBLIC_API = isProductionMode
       import.meta.env.VITE_CASINO_PROVIDER_PUBLIC_API,
       'https://clientapi-prod.sportsbookengine.com'
     )
-  : 'https://clientapi.sportsbookengine.com'
+  : 'https://clientapi-prod.sportsbookengine.com'
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ? Number(import.meta.env.VITE_CLIENT_ID) : 6
 export const AUTH_EXCLUDE_LIST = []
 export const APP_KEY = import.meta.env.VITE_APP_KEY || 'SCP'
