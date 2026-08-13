@@ -1250,7 +1250,7 @@ watch(
 
 .betslip-action-primary {
   background: var(--brand-primary-button);
-  color: #ffffff;
+  color: #000;
 }
 
 .sim-theme .betslip-action-primary {

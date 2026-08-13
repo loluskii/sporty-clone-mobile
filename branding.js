@@ -4,7 +4,7 @@ export const brandDetails = {
   title: 'Soccerpay',
   colors: {
     primaryColor: '#021642',
-    secondaryColor: '#0D9737',
+    secondaryColor: '#f28705',
     tertiaryColor: '#C5C5C5',
 
     primaryBackground: '#FFFFFF',
@@ -13,23 +13,23 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#0D9737',
 
-    primaryButtonColor: '#f28705',
-    secondaryButtonColor: '#d9042c',
+    primaryButtonColor: '#ea8d1d',
+    secondaryButtonColor: '#f28705',
 
-    primaryButtonBackgroundColor: '#0D9737',
+    primaryButtonBackgroundColor: '#ea8d1d',
     secondaryButtonBackgroundColor: '#0D9737',
 
     headerBackgroundColor: 'rgb(222, 226 ,230)',
 
     prematchOddBackgroundColor: '#e1e2e7',
     prematchOddTextColor: '#000',
-    activePrematchOddBackground: '#0D9737',
-    activePrematchOddTextColor: '#fff',
+    activePrematchOddBackground: '#ea8d1d',
+    activePrematchOddTextColor: '#000',
 
     liveOddBackgroundColor: 'rgba(214, 235, 220, 0.13)',
     liveOddTextColor: '#f28705',
-    activeLiveOddBackground: '#32ce62',
-    activeLiveOddTextColor: '#fff',
+    activeLiveOddBackground: '#f28705',
+    activeLiveOddTextColor: '#000',
 
     liveContainerBackgroundColor: '#1B1E25',
 
