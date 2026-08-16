@@ -13,6 +13,14 @@ export const brandDetails = {
     primaryTextColor: '#353a45',
     secondaryTextColor: '#22ABE1',
 
+    primaryButtonColor: '#0D9737',
+    secondaryButtonColor: '#e41827',
+
+    primaryButtonBackgroundColor: '#0D9737',
+    secondaryButtonBackgroundColor: '#0D9737',
+
+    headerBackgroundColor: 'rgb(222, 226 ,230)',
+
     prematchOddBackgroundColor: '#ECF2FE',
     prematchOddTextColor: '#000',
     activePrematchOddBackground: '#22ABE1',
@@ -26,6 +34,8 @@ export const brandDetails = {
     liveContainerBackgroundColor: '#0B2A45',
 
     activeTabColor: '#22ABE1',
+    highlightTextColor: '#22ABE1',
+    activeTabColor2: '#22ABE1',
     highlightTextColor: '#22ABE1'
   },
   fonts: {
