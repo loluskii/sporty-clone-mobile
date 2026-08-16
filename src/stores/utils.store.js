@@ -1,5 +1,95 @@
 import { defineStore } from 'pinia'
-import { getTopBets, getFixturesByTournamentId,FEED_TOGGLE } from '@/helpers'
+import {
+  getTopTournaments,
+  getTopTournamentFixtures,
+  FEED_TOGGLE,
+  normalizeFixtureMarkets
+} from '@/helpers'
+
+const getFeaturedMarketKey = (marketId, specifier = '') => `${marketId}|${specifier}`
+
+const getFeaturedFixturePriority = (fixture = {}) => {
+  const priority = Number(fixture?.fixture_priority ?? fixture?.fixturePriority ?? 0)
+  return Number.isFinite(priority) ? priority : 0
+}
+
+const sortFeaturedFixturesByPriority = (fixtures = []) => {
+  return fixtures
+    .map((fixture, index) => ({ fixture, index }))
+    .sort((left, right) => {
+      const priorityDiff = getFeaturedFixturePriority(right.fixture) - getFeaturedFixturePriority(left.fixture)
+      return priorityDiff || left.index - right.index
+    })
+    .map(({ fixture }) => fixture)
+}
+
+const buildFeaturedMarketsFromFixtures = (fixtures = []) => {
+  const marketMap = new Map()
+
+  fixtures.forEach((fixture) => {
+    const explicitMarkets = [
+      ...(Array.isArray(fixture.market) ? fixture.market : []),
+      ...(Array.isArray(fixture.markets) ? fixture.markets : [])
+    ]
+
+    explicitMarkets.forEach((market) => {
+      const marketId = Number(market?.marketID ?? market?.marketId ?? market?.market_id ?? market?.id ?? 0)
+      if (!Number.isFinite(marketId) || marketId <= 0) return
+
+      const specifier = String(market?.specifier ?? market?.specifiers ?? '')
+      const key = getFeaturedMarketKey(marketId, specifier)
+
+      if (!marketMap.has(key)) {
+        marketMap.set(key, {
+          ...market,
+          marketID: marketId,
+          marketName: market?.marketName ?? market?.market_name ?? market?.name ?? '',
+          specifier,
+          sportID: market?.sportID ?? market?.sportId ?? market?.sport_id ?? fixture?.sportID ?? fixture?.sportId,
+          outcomes: Array.isArray(market?.outcomes) ? market.outcomes : []
+        })
+      }
+    })
+
+    const outcomes = Array.isArray(fixture.outcomes) ? fixture.outcomes : []
+    outcomes.forEach((outcome) => {
+      const marketId = Number(outcome?.marketID ?? outcome?.marketId ?? outcome?.market_id ?? 0)
+      if (!Number.isFinite(marketId) || marketId <= 0) return
+
+      const specifier = String(outcome?.specifier ?? outcome?.specifiers ?? '')
+      const key = getFeaturedMarketKey(marketId, specifier)
+      const existing = marketMap.get(key)
+
+      if (existing) {
+        if (!Array.isArray(existing.outcomes)) {
+          existing.outcomes = []
+        }
+
+        const duplicateIndex = existing.outcomes.findIndex(
+          (item) =>
+            String(item?.outcomeID ?? item?.outcomeId ?? item?.outcome_id ?? '') ===
+              String(outcome?.outcomeID ?? outcome?.outcomeId ?? outcome?.outcome_id ?? '') &&
+            String(item?.specifier ?? item?.specifiers ?? '') === specifier
+        )
+
+        if (duplicateIndex === -1) {
+          existing.outcomes.push(outcome)
+        }
+        return
+      }
+
+      marketMap.set(key, {
+        marketID: marketId,
+        marketName: outcome?.marketName ?? outcome?.market_name ?? outcome?.name ?? '',
+        specifier,
+        sportID: fixture?.sportID ?? fixture?.sportId,
+        outcomes: [outcome]
+      })
+    })
+  })
+
+  return normalizeFixtureMarkets(Array.from(marketMap.values()))
+}
 
 export const useUtilsStore = defineStore({
   id: 'utils',
@@ -14,7 +104,42 @@ export const useUtilsStore = defineStore({
     activeLiveMarkets: [],
     homeCarousel: [],
     SportsbookBonusList: [],
-    SportsbookGlobalVariable: {},
+    SportsbookFeatureConfig: {
+      accaBonus: null,
+      flex: null,
+      cutOne: null,
+      stakeLimits: null
+    },
+    SportsbookGlobalVariable: {
+      "AllowRegistration": "Yes",
+      "EnableSplitBet": "0",
+      "EnableSystemBet": "1",
+      "comboMaxStake": "1000000",
+      "MinBetStake": "20",
+      "comboMinStake": "20",
+      "MaxCombinationOddLength": "10000000",
+      "Currency": "₦",
+      "DialCode": "+234",
+      "EnableBankAcct": "1",
+      "enableCashout": "1",
+      "taxEnabled": "0",
+      "exciseTax": "13.04",
+      "wthTax": "20",
+      "LiabilityThreshold": "0",
+      "LiveTicketMax": "40",
+      "Logo": "",
+      "MaxPayout": "50000000",
+      "MinBonusOdd": "1.18",
+      "MinDeposit": "100",
+      "MinWithdrawal": "1000",
+      "PaymentDay": "tuesday",
+      "PowerBonusStartDate": "2024-11-01",
+      "singleMaxStake": "50000",
+      "SingleMaxWinning": "500000",
+      "singleMinStake": "100",
+      "SingleTicketLenght": "1000000",
+      "MaxNoOfSelection": "50"
+    },
     showBetslipCount: true,
     showFooter: true,
     showMobileNavigation: true,
@@ -31,26 +156,13 @@ export const useUtilsStore = defineStore({
     featuredError: null,
     activeFeaturedTournament: null,
     isFetchingTournamentGames: false,
-    banksList: []
+    banksList: [],
+    activeBetView: 'open_bets'
   }),
-
-  getters: {
-    hasFeaturedData: (state) => state.featuredTournaments.length > 0,
-    isFeaturedStale: (state) => {
-      if (!state.featuredLastFetchTime) return true
-      const now = Date.now()
-      return now - state.featuredLastFetchTime > 300000 // 5 minutes
-    }
-  },
 
   actions: {
     async fetchFeaturedGames() {
-      if(!FEED_TOGGLE) return;
-      // If we have fresh data, don't fetch again
-      if (this.hasFeaturedData && !this.isFeaturedStale) {
-        return
-      }
-
+      if (!FEED_TOGGLE) return;
       // Prevent concurrent fetches
       if (this.featuredIsLoading || this.isFetchingTournamentGames) {
         return
@@ -60,34 +172,44 @@ export const useUtilsStore = defineStore({
       this.featuredError = null
 
       try {
-        const response = await getTopBets()
+        const response = await getTopTournaments()
 
-        if (response?.data || response.data !== undefined || Object.keys(response).length > 0) {
+        const topTournaments = Array.isArray(response) ? response : response?.data || []
+
+        if (topTournaments.length) {
           // Process tournaments
           const uniqueTournamentIds = new Set()
           const uniqueTournaments = []
 
-          for (const tournament of response.data) {
-            if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-              uniqueTournamentIds.add(tournament.tournamentID)
-              uniqueTournaments.push(tournament)
+          for (const tournament of topTournaments) {
+            const tournamentId = tournament.tournament_id || tournament.tournamentID || tournament.id
+            if (!tournamentId || uniqueTournamentIds.has(tournamentId)) {
+              continue
             }
+
+            uniqueTournamentIds.add(tournamentId)
+            uniqueTournaments.push({
+              ...tournament,
+              top_tournament_id: tournament.id || tournament.top_tournament_id || tournament.topTournamentID,
+              tournament_id: tournamentId,
+              tournamentID: tournamentId,
+              categoryID: tournament.categoryID || tournament.category_id,
+              categoryName: tournament.categoryName || tournament.category_name || tournament.country || tournament.country_name
+            })
           }
 
           this.featuredTournaments = uniqueTournaments.sort(
-            (a, b) => a.tournamentID - b.tournamentID
+            (a, b) =>
+              Number(b.priority || 0) - Number(a.priority || 0) 
           )
-          this.featuredLastFetchTime = Date.now()
 
           // Set active tournament to the first one if not already set
           if (!this.activeFeaturedTournament && this.featuredTournaments.length > 0) {
-            this.activeFeaturedTournament = this.featuredTournaments[0].tournamentID
+            this.activeFeaturedTournament = this.featuredTournaments[0].tournament_id
           }
 
           // Fetch games for each tournament
           await this.fetchTournamentGames()
-        }else{
-          return []
         }
       } catch (error) {
         console.error('Error fetching featured games:', error)
@@ -113,44 +235,61 @@ export const useUtilsStore = defineStore({
 
       // Clear existing games before fetching new ones
       this.featuredTournamentGames = []
+      const rawList = []
 
       try {
         for (const chunk of chunks) {
           await Promise.all(
             chunk.map(async (tournament) => {
               try {
-                const games = await getFixturesByTournamentId(
-                  tournament.tournamentID,
-                  tournament.sportID
-                )
+                const topTournamentId =
+                  tournament.top_tournament_id ||
+                  tournament.topTournamentID ||
+                  tournament.id ||
+                  tournament.tournament_id
+                const games = await getTopTournamentFixtures(topTournamentId)
 
-                if (!games?.fixtures?.length || !games?.markets?.length) {
-                  // Early return if no valid data
-                  const index = this.featuredTournaments.findIndex(
-                    (x) => x.tournamentID === tournament.tournamentID
-                  )
-                  if (index !== -1) {
-                    this.featuredTournaments.splice(index, 1)
-                  }
+                const fixtures = sortFeaturedFixturesByPriority(games?.data?.fixtures || games?.fixtures || [])
+                const markets =
+                  normalizeFixtureMarkets(games?.data?.markets || games?.markets || []) ||
+                  []
+                const normalizedMarkets = markets.length ? markets : buildFeaturedMarketsFromFixtures(fixtures)
+
+                if (!fixtures.length || !normalizedMarkets.length) {
                   return
                 }
 
-                if (games?.fixtures?.length && games?.markets?.length) {
+                if (fixtures.length && normalizedMarkets.length) {
                   // Take only first 5 fixtures
                   const tournamentGames = {
-                    tournamentID: tournament.tournamentID,
-                    fixtures: games.fixtures.slice(0, 5),
-                    markets: games.markets
+                    tournamentID: tournament.tournament_id,
+                    priority: Number(tournament.priority || 0),
+                    fixtures: fixtures.map((fixture) => ({
+                      ...fixture,
+                      sportID: fixture.sportID || fixture.sportId || tournament.sportID || tournament.sportId,
+                      sportId: fixture.sportId || fixture.sportID || tournament.sportID || tournament.sportId,
+                      tournamentID: fixture.tournamentID || fixture.tournament_id || tournament.tournament_id,
+                      tournament: fixture.tournament || tournament.tournament_name,
+                      categoryID: fixture.categoryID || fixture.category_id || tournament.categoryID || tournament.category_id,
+                      categoryName:
+                        fixture.categoryName ||
+                        fixture.category_name ||
+                        tournament.categoryName ||
+                        tournament.category_name ||
+                        tournament.country_name
+                    })),
+                    markets: normalizedMarkets
                   }
 
-                  this.featuredTournamentGames.push(tournamentGames)
+                  rawList.push(tournamentGames)
                 }
               } catch (error) {
-                console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
+                console.error(`Error processing tournament ${tournament.tournament_id}:`, error)
               }
             })
           )
         }
+        this.featuredTournamentGames = rawList.sort((a, b) => b.priority - a.priority);
       } finally {
         this.isFetchingTournamentGames = false
       }
@@ -243,6 +382,7 @@ export const useUtilsStore = defineStore({
       'activeLiveMarkets',
       'homeCarousel',
       'SportsbookBonusList',
+      'SportsbookFeatureConfig',
       'SportsbookGlobalVariable',
       'showBetslipCount',
       'showFooter',
@@ -250,9 +390,9 @@ export const useUtilsStore = defineStore({
       'errorMessage',
       'categoriesList',
       'previousRoute',
+      'activeBetView',
       // 'featuredTournaments',
       // 'featuredTournamentGames',
-      'featuredLastFetchTime',
       'popupDialogShown',
       'bonusModalShown',
       'banners'

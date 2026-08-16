@@ -10,7 +10,7 @@
         v-for="(code, index) in codes"
         :key="index"
         class="featured-code-card-container"
-        :data-hs-id="code.betslipId"
+        :data-hs-id="getCodeValue(code)"
         :data-hs-index="index"
       >
         <div
@@ -26,7 +26,7 @@
               data-op="booking-code-1C92348-heading"
               class="code flex-1"
             >
-              {{ code.betslipId }}
+              {{ getCodeValue(code) }}
             </div>
             <div class="folds text-center flex-1">
               <span class="label">Folds:</span><span>{{ code.totalSelections }}</span>
@@ -149,6 +149,7 @@ const props = defineProps(['codes'])
 const addToBetslipLoading = ref(false)
 const shareCodeLoading = ref(false)
 const couponStore = useCouponStore()
+const getCodeValue = (code) => code?.shareCode || code?.betslipId || ''
 
 function getImageURL(name) {
   if (name == 'Championship') {
@@ -160,34 +161,25 @@ function getImageURL(name) {
   }
 }
 
-function addToBetslip(code) {
+async function addToBetslip(code) {
   addToBetslipLoading.value = true
-  setTimeout(() => {
-    addToBetslipLoading.value = false
-    try {
-      if (couponStore.coupon.selections.length) {
-        emitter.emit('showBetslipConfirmation', code)
-      } else {
-        couponStore.coupon.selections = code.selections
-        couponStore.coupon.totalOdds = parseFloat(code.totalOdd)
-        couponStore.coupon.totalStake = parseFloat(code.stake)
-        couponStore.coupon.stake = parseFloat(code.stake)
-        couponStore.coupon.maxWin = parseFloat(code.possibleWin)
-        couponStore.coupon.source = code.source
-        if (code.selections.length === 1) {
-          couponStore.coupon.bet_type = 'Single'
-          couponStore.coupon.betslip_type = 'Single'
-        } else {
-          couponStore.coupon.bet_type = 'Multiple'
-          couponStore.coupon.betslip_type = 'Multiple'
-        }
+  try {
+    if (couponStore.coupon.selections.length) {
+      emitter.emit('showBetslipConfirmation', code)
+    } else {
+      const loadedSelections = await couponStore.rebuildBetslipFromLoadedSelections(code.selections)
+      if (loadedSelections) {
         emitter.emit('openBetslip')
+      } else {
+        emitter.emit('showDialogueToaster', 'All selections have expired')
       }
-    } catch (error) {
-      console.log(error)
-      emitter.emit('showDialogueToaster', 'Error Loading Betslip')
     }
-  }, 2000)
+  } catch (error) {
+    console.log(error)
+    emitter.emit('showDialogueToaster', 'Error Loading Betslip')
+  } finally {
+    addToBetslipLoading.value = false
+  }
 }
 
 function shareCode(data) {

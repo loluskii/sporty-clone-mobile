@@ -163,28 +163,10 @@ jobs:
 
       - name: Set up SSH
         run: |
-          set -e
           mkdir -p ~/.ssh
-          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/gcp_deploy_key
-          echo "" >> ~/.ssh/gcp_deploy_key
-          chmod 600 ~/.ssh/gcp_deploy_key
-          ssh-keyscan -H ${{ secrets.GCP_SERVER_IP }} >> ~/.ssh/known_hosts 2>&1 || true
-          cat > ~/.ssh/config << 'EOF'
-          Host gcp-server
-            HostName ${{ secrets.GCP_SERVER_IP }}
-            User ${{ secrets.GCP_SERVER_USER }}
-            IdentityFile ~/.ssh/gcp_deploy_key
-            IdentitiesOnly yes
-            StrictHostKeyChecking no
-            ServerAliveInterval 60
-            ServerAliveCountMax 3
-            TCPKeepAlive yes
-            ControlMaster auto
-            ControlPath ~/.ssh/control-%r@%h:%p
-            ControlPersist 10m
-          EOF
-          chmod 600 ~/.ssh/config
-          echo "SSH setup completed"
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Prepare deployment files
         run: |

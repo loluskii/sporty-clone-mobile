@@ -14,7 +14,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: var(--brand-primary);
+  background-color: var(--brand-header-bg);
   color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;
@@ -43,7 +43,7 @@
 }
 
 .mobile-navbar .mobile-navbar-logo img {
-  height: 40px;
+  height: 36px;
   padding-left: 8px;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .mobile-navbar .x-icon-search:before {
-  color: #ffffff;
+  color: #fff;
   font-size: 1.5rem;
 }
 
@@ -177,10 +177,31 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit {
+  align-items: center;
   display: -webkit-inline-box;
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
   display: inline-flex;
+  gap: 0.75rem;
+}
+
+.mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon {
+  align-items: center;
+  color: #ffffff;
+  display: inline-flex;
+  height: 1.75rem;
+  justify-content: center;
+  text-decoration: none;
+  width: 1.75rem;
+}
+
+.mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon:hover {
+  text-decoration: none;
+}
+
+.mobile-navbar .mobile-navbar-right .x-login-yes .header-action-icon--deposit svg {
+  height: 1.35rem;
+  width: 1.35rem;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-deposit .avatar-box {
@@ -198,7 +219,6 @@
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
-  margin-left: 0.66666667rem;
   padding: 0.33333333rem 0.66666667rem;
   text-align: center;
 }
@@ -229,14 +249,7 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-yes .x-btn-text {
-  background-color: #ffffff;
-  border: 1px solid #ffffff;
-  border-radius: 0.16666667rem;
-  color: var(--brand-primary);
-  display: inline-block;
-  font-size: 1rem;
-  line-height: 1.066rem;
-  padding: 0.58333333rem 0.66666667rem;
+  display: none;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not {
@@ -248,12 +261,13 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
+  flex: none;
+  gap: 8px;
   height: 100%;
   overflow: hidden;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not > div {
-  border: 1px solid #ffffff;
   border-radius: 0.16666667rem;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -261,9 +275,21 @@
   font-size: 1rem;
   font-weight: 500;
   height: 2.33333333rem;
-  line-height: 2.33333333rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0 8px;
 }
+
+.mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login {
+  border: 1px solid #ffffff;
+  color: #ffffff !important;
+}
+
+.mobile-navbar .mobile-navbar-right .x-login-not > .x-btn-login a {
+  color: #ffffff !important;
+}
+
 
 @media screen and (max-width: 320px) {
   .mobile-navbar .mobile-navbar-right .x-login-not > div {
@@ -273,7 +299,6 @@
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-join-now {
   background-color: #ffffff;
-  color: var(--brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -285,7 +310,7 @@
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 .mobile-navbar .mobile-navbar-right .x-login-not .x-btn-login a {

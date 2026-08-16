@@ -1,10 +1,6 @@
 <template>
   <div class="casino">
     <HeaderCasino />
-    <Winners />
-    <div class="carousel">
-      <Carousel></Carousel>
-    </div>
     <div class="games-container">
       <template v-if="viewMode === 'games-group-view'">
         <Providers v-if="viewType === 'provider'" :providers="providers" />
@@ -73,6 +69,8 @@ import Carousel from '@/components/Home/Carousel.vue'
 import { ref, onBeforeMount, watch, computed, onMounted, provide } from 'vue'
 import Winners from '../../components/Casino/Winners.vue'
 import {
+  getCasinoGamesByProviderCategory,
+  getCasinoListGames,
   getGamesByProviders,
   gamesByTopCategory,
   getProviders,
@@ -191,13 +189,39 @@ async function handleGamesView(name, id, fetchFunction, type) {
   viewHeaderTitle.value = name.replace(/_/g, ' ')
   categoryName.value = name.replace(/_/g, ' ')
   const res = await fetchFunction(id)
-  gamesList.value = res.data.sort((a, b) => b.priority - a.priority) || []
+  gamesList.value = res.data || []
   viewType.value = type
   isLoading.value = false
 }
 
 async function handleGamesByCategoryView(name, id) {
-  await handleGamesView(name, id, gamesByTopCategory, 'category')
+  const providerId = route.query.providerId
+
+  if (providerId) {
+    await handleGamesView(name, { providerId, categoryId: id }, ({ providerId, categoryId }) => getCasinoGamesByProviderCategory(providerId, categoryId), 'category')
+    return
+  }
+
+  const allGames = await getCasinoListGames()
+  const categoryGames = (allGames.data || []).filter((game) => game.categoryId === String(id))
+  const derivedProviderId = categoryGames[0]?.providerId || ''
+
+  if (derivedProviderId) {
+    await handleGamesView(
+      name,
+      { providerId: derivedProviderId, categoryId: id },
+      ({ providerId, categoryId }) => getCasinoGamesByProviderCategory(providerId, categoryId),
+      'category'
+    )
+    return
+  }
+
+  gamesList.value = []
+  viewMode.value = 'games-list-view'
+  viewHeaderTitle.value = name.replace(/_/g, ' ')
+  categoryName.value = name.replace(/_/g, ' ')
+  viewType.value = 'category'
+  isLoading.value = false
 }
 
 async function handleGamesByProviderView(name, id) {
@@ -227,6 +251,10 @@ async function handleCasinoJackpots(gameIds) {
 
 const getImagePath = (game) => {
   try {
+    if (game?.image) {
+      return game.image
+    }
+
     return `https://firebasestorage.googleapis.com/v0/b/iron-envelope-405217.appspot.com/o/Casino2%2F${encodeURIComponent(
       game.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
     )}.png?alt=media`
@@ -286,7 +314,6 @@ const loadMore = async () => {
 
 onMounted(() => {
   $('body').removeClass('no-scroll')
-  console.log('dfdf')
 })
 </script>
 
@@ -321,7 +348,7 @@ onMounted(() => {
   height: 100%;
   border-bottom: 1px solid rgb(var(--stb-unique-color-1));
   background-color: rgb(var(--stb-green-1000));
-  background-image: url(/assets/static/general/ornament-title.svg);
+  background-image: url('/ornament-title.svg');
   background-repeat: repeat-x;
   background-position: center;
   background-size: 40px 70px;

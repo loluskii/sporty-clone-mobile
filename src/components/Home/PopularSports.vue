@@ -1,30 +1,6 @@
 <template>
   <div class="m-popular featuredMatch">
     <div class="tournaments">
-      <div
-        class="topTournamentCard"
-        @click.prevent="
-          $router.push({
-            name: 'today-fixtures',
-            params: { sport: 'Soccer' }
-          })
-        "
-      >
-        <div class="image"></div>
-        <div class="text">today's football</div>
-      </div>
-      <div
-        class="topTournamentCard"
-        @click.prevent="
-          $router.push({
-            name: 'fixtures-by-sports',
-            params: { sport: 'Soccer' },
-            query: { period: '3hrs' }
-          })
-        "
-      >
-        <div class="text">football in 3 hours</div>
-      </div>
       <template v-for="(match, index) in featuredTournaments" :key="index">
         <div
           class="topTournamentCard"
@@ -32,9 +8,9 @@
             $router.push({
               name: 'fixtures-by-tournaments',
               params: {
-                sport: 'Soccer',
+                sport: getSportName(match.sport_id || match.sportID || match.sportId),
                 categories: `sr:category:${match.categoryID}`,
-                tournaments: `sr:tournament:${match.tournamentID}`
+                tournaments: `sr:tournament:${match.tournament_id}`
               }
             })
           "
@@ -47,7 +23,7 @@
               srcset=""
             />
           </div> -->
-          <div class="text">{{ match.tournamentName }}</div>
+          <div class="text">{{ match.tournament_name }}</div>
         </div>
       </template>
     </div>
@@ -66,6 +42,7 @@
           <template v-if="!isLoading || featuredTournaments.length > 0">
             <div class="featuredMatchCategoryBox">
               <div
+                ref="featuredTournamentNav"
                 class="m-snap-nav-wrap featuredMatchCategoryNav m-popular-list"
                 style="overflow: hidden"
               >
@@ -78,13 +55,13 @@
                   >
                     <div
                       class="featuredMatchCategory"
-                      :class="activeFeaturedTournament == top.tournamentID ? 'active' : ''"
+                      :class="activeFeaturedTournament == top.tournament_id ? 'active' : ''"
                     >
                       <div class="wrapper">
                         <div class="img">
-                          <img :src="getImageURL(top.tournamentName)" />
+                          <img :src="getImageURL(top.tournament_name)" />
                         </div>
-                        <div class="name">{{ top.tournamentName }}</div>
+                        <div class="name">{{ top.tournament_name }}</div>
                       </div>
                     </div>
                   </li>
@@ -93,12 +70,19 @@
                 <i class="controls right-controls"></i>
               </div>
             </div>
-            <div class="HorizonSwipe" id="featuredMatchCardBox" style="overflow: auto">
+            <div
+              ref="featuredMatchScroller"
+              class="HorizonSwipe"
+              id="featuredMatchCardBox"
+              style="overflow: auto"
+              @scroll.passive="handleFeaturedScroll"
+            >
               <template v-for="tournament in sortedTournamentGames">
                 <FeaturedMatchCard
                   v-for="(game, g) in tournament.fixtures"
                   ref="gamesList"
-                  :key="g"
+                  :key="`${tournament.tournamentID}-${game.matchID || game.matchId || game.id || g}`"
+                  :data-featured-tournament-id="tournament.tournamentID"
                   :matchDetails="game"
                   :markets="tournament.markets"
                 ></FeaturedMatchCard>
@@ -107,7 +91,6 @@
           </template>
           <LoadingSpinner v-else></LoadingSpinner>
         </div>
-        <Codes v-show="activeFeaturedTab == 'codes'" :codes="codes" />
       </div>
     </div>
   </div>
@@ -115,16 +98,12 @@
 <script setup>
 import FeaturedMatchCard from './FeaturedMatchCard.vue'
 import Codes from './Codes.vue'
-import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount, onActivated, onDeactivated, watch, nextTick } from 'vue'
 import {
-  getTopBets,
-  getFixturesByTournamentId,
-  slugify,
   getTopGameCategories,
   gamesByTopCategory,
-  getCodeHubItems,
-  getNext7Days,
-  FEED_TOGGLE
+  FEED_TOGGLE,
+  sportsList
 } from '@/helpers'
 import { useQuery } from 'vue-query'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
@@ -149,13 +128,86 @@ const activeCasinoCategory = ref(null)
 const featuredCasinogames = ref([])
 const featuredCasino = ref([])
 const codes = ref([])
+const featuredMatchScroller = ref(null)
+const featuredTournamentNav = ref(null)
+const isProgrammaticFeaturedScroll = ref(false)
+let featuredScrollResetTimer = null
 
-function scrollGamesIntoView() {
-  document.getElementById('featuredMatchCard_' + activeFeaturedTournament.value).scrollIntoView({
+function getSportName(sportId) {
+  return sportsList.find((sport) => Number(sport.sport_id) === Number(sportId))?.name || 'Soccer'
+}
+
+function setProgrammaticFeaturedScroll() {
+  isProgrammaticFeaturedScroll.value = true
+  window.clearTimeout(featuredScrollResetTimer)
+  featuredScrollResetTimer = window.setTimeout(() => {
+    isProgrammaticFeaturedScroll.value = false
+  }, 700)
+}
+
+async function scrollGamesIntoView(tournamentId = activeFeaturedTournament.value) {
+  await nextTick()
+  const scroller = featuredMatchScroller.value
+  if (!scroller || !tournamentId) return
+
+  const target = Array.from(scroller.querySelectorAll('[data-featured-tournament-id]')).find(
+    (element) => String(element.dataset.featuredTournamentId) === String(tournamentId)
+  )
+
+  if (!target) return
+
+  setProgrammaticFeaturedScroll()
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'start'
+  })
+}
+
+function scrollActiveTournamentNavIntoView() {
+  const activePill = featuredTournamentNav.value?.querySelector('.featuredMatchCategory.active')
+  activePill?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
     inline: 'center'
   })
+}
+
+function getVisibleTournamentId() {
+  const scroller = featuredMatchScroller.value
+  if (!scroller) return null
+
+  const scrollerRect = scroller.getBoundingClientRect()
+  const scrollerCenter = scrollerRect.left + scrollerRect.width / 2
+  let visibleTournamentId = null
+  let closestDistance = Number.POSITIVE_INFINITY
+
+  Array.from(scroller.querySelectorAll('[data-featured-tournament-id]')).forEach((element) => {
+    const rect = element.getBoundingClientRect()
+    const isVisible = rect.right > scrollerRect.left && rect.left < scrollerRect.right
+    if (!isVisible) return
+
+    const elementCenter = rect.left + rect.width / 2
+    const distance = Math.abs(elementCenter - scrollerCenter)
+    if (distance < closestDistance) {
+      closestDistance = distance
+      visibleTournamentId = element.dataset.featuredTournamentId
+    }
+  })
+
+  return visibleTournamentId
+}
+
+function handleFeaturedScroll() {
+  if (isProgrammaticFeaturedScroll.value) return
+
+  const visibleTournamentId = getVisibleTournamentId()
+  if (
+    visibleTournamentId &&
+    String(visibleTournamentId) !== String(activeFeaturedTournament.value)
+  ) {
+    utilsStore.setActiveFeaturedTournament(visibleTournamentId)
+  }
 }
 
 function setActiveTab(tab) {
@@ -164,7 +216,11 @@ function setActiveTab(tab) {
 
 const sortedTournamentGames = computed(() => {
   return featuredTournamentGames.value.length
-    ? [...featuredTournamentGames.value].sort((a, b) => a.tournamentID - b.tournamentID)
+    ? [...featuredTournamentGames.value].sort(
+        (a, b) =>
+          Number(b.priority || 0) - Number(a.priority || 0) ||
+          Number(a.tournamentID || 0) - Number(b.tournamentID || 0)
+      )
     : []
 })
 
@@ -179,8 +235,8 @@ function getImageURL(name) {
 }
 
 const setActiveTournament = (tournament) => {
-  utilsStore.setActiveFeaturedTournament(tournament.tournamentID)
-  scrollGamesIntoView()
+  utilsStore.setActiveFeaturedTournament(tournament.tournament_id)
+  scrollGamesIntoView(tournament.tournament_id)
 }
 
 const setActiveCategory = async (category) => {
@@ -201,7 +257,7 @@ const setActiveCategory = async (category) => {
 }
 
 async function getCasinoGames() {
-  if(!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const res = await getTopGameCategories()
   featuredCasino.value = res.data
   activeCasinoCategory.value = res.data[0].id
@@ -209,126 +265,63 @@ async function getCasinoGames() {
   featuredCasinogames.value = games.data ? games.data.splice(0, 5) : []
 }
 
-async function getCodes() {
-  if(!FEED_TOGGLE) return;
-  let payload = {
-    from: getNext7Days()[0],
-    to: getNext7Days()[7],
-    betType: 0
-  }
-  const res = await getCodeHubItems(payload)
-  codes.value = res.data.data
-}
+// function setupMqttSubscriptions(matchIds) {
+//   // Only clear our own component's subscriptions
+//   const subscriptionKey = `${componentId}-${matchIds.join(',')}`
+//   if (unsubscribeFunctions.value[subscriptionKey]) {
+//     unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
+//   }
 
-function assignTournaments(tournament, games, tournamentID) {
-  if (!games?.fixtures?.length || !games?.markets?.length) {
-    // Early return if no valid data
-    const index = featuredTournaments.value.findIndex((x) => x.tournament_id === tournament.id)
-    if (index !== -1) {
-      featuredTournaments.value.splice(index, 1)
-    }
-    return
-  }
+//   // Create subscriptions for each match ID
+//   const subscriptions = matchIds.map((matchId) => {
+//     // Subscribe to odds changes
+//     const oddsChangeTopic = `feeds/prematch/odds_change/${matchId}`
+//     const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
+//       utilsStore.handleOddsChange(data)
+//     })
 
-  // Take only first 5 fixtures
-  const gamesList = games.fixtures.slice(0, 5)
+//     // Subscribe to bet stop
+//     const betStopTopic = `feeds/prematch/bet_stop/${matchId}`
+//     const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
+//       utilsStore.handleBetStop(data)
+//     })
 
-  // Create tournament games object
-  const tournamentGames = {
-    tournamentID,
-    fixtures: gamesList,
-    markets: games.markets
-  }
+//     return [unsubscribeOddsChange, unsubscribeBetStop]
+//   })
 
-  // Add to featured games
-  featuredTournamentGames.value.push(tournamentGames)
-
-  // Batch MQTT subscriptions
-  const matchIds = gamesList.filter((fixture) => fixture.matchID).map((fixture) => fixture.matchID)
-
-  if (matchIds.length > 0) {
-    setupMqttSubscriptions(matchIds)
-  }
-}
-
-function setupMqttSubscriptions(matchIds) {
-  // Only clear our own component's subscriptions
-  const subscriptionKey = `${componentId}-${matchIds.join(',')}`
-  if (unsubscribeFunctions.value[subscriptionKey]) {
-    unsubscribeFunctions.value[subscriptionKey].forEach((unsubscribe) => unsubscribe())
-  }
-
-  // Create subscriptions for each match ID
-  const subscriptions = matchIds.map((matchId) => {
-    // Subscribe to odds changes
-    const oddsChangeTopic = `sbe/feeds/prematch/odds_change/${matchId}`
-    const unsubscribeOddsChange = subscribe(oddsChangeTopic, (data) => {
-      utilsStore.handleOddsChange(data)
-    })
-
-    // Subscribe to bet stop
-    const betStopTopic = `sbe/feeds/prematch/bet_stop/${matchId}`
-    const unsubscribeBetStop = subscribe(betStopTopic, (data) => {
-      utilsStore.handleBetStop(data)
-    })
-
-    return [unsubscribeOddsChange, unsubscribeBetStop]
-  })
-
-  // Flatten the array of subscription pairs
-  unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
-}
+//   // Flatten the array of subscription pairs
+//   unsubscribeFunctions.value[subscriptionKey] = subscriptions.flat()
+// }
 
 onBeforeUnmount(() => {
+  window.clearTimeout(featuredScrollResetTimer)
   // Clean up all MQTT subscriptions
-  Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
-    subscriptions.forEach((unsubscribe) => unsubscribe())
-  })
-  unsubscribeFunctions.value = {}
+  // Object.values(unsubscribeFunctions.value).forEach((subscriptions) => {
+  //   subscriptions.forEach((unsubscribe) => unsubscribe())
+  // })
+  // unsubscribeFunctions.value = {}
 })
 
-// Update onMounted
-onMounted(async () => {
-  // Only fetch if we don't have data or it's stale
-  if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames().then(() => {
-      if(featuredTournaments.value.length){
-        setActiveTournament(featuredTournaments.value[0])
-      }
-    })
-  }
+watch(activeFeaturedTournament, () => {
+  nextTick(scrollActiveTournamentNavIntoView)
 })
+
+const loadFeaturedGames = async () => {
+  await utilsStore.fetchFeaturedGames()
+}
+
+onMounted(loadFeaturedGames)
 
 const { data: casinoData, isLoading: isCasinoLoading } = useQuery(
   'casinoGames',
   getTopGameCategories,
   {
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     staleTime: 60000,
     cacheTime: 300000,
-    enabled: FEED_TOGGLE
-  }
-)
-
-const { data: codesData, isLoading: isCodesLoading } = useQuery(
-  'codes',
-  () => {
-    const payload = {
-      from: getNext7Days()[0],
-      to: getNext7Days()[7],
-      betType: 0
-    }
-    return getCodeHubItems(payload)
-  },
-  {
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 60000,
-    cacheTime: 300000,
-    enabled: FEED_TOGGLE
+    enabled: false
   }
 )
 
@@ -351,73 +344,9 @@ watch(
   { immediate: true }
 )
 
-// Watch for codes data changes
-watch(
-  codesData,
-  (newData) => {
-    if (newData?.data?.data) {
-      codes.value = newData.data.data
-    }
-  },
-  { immediate: true }
-)
-
-// Update the getFeaturedGames function
-async function getFeaturedGames() {
-  if(!FEED_TOGGLE) return;
-  if (!topBetsData.value) return
-
-  // Use Set for faster unique tournament filtering
-  const uniqueTournamentIds = new Set()
-  const uniqueTournaments = []
-
-  // Single pass to filter unique tournaments
-  for (const tournament of topBetsData.value.data) {
-    if (!uniqueTournamentIds.has(tournament.tournamentID)) {
-      uniqueTournamentIds.add(tournament.tournamentID)
-      uniqueTournaments.push(tournament)
-    }
-  }
-
-  // Sort tournaments and update featuredTournaments immediately
-  featuredTournaments.value = uniqueTournaments.sort((a, b) => a.tournamentID - b.tournamentID)
-
-  // Set active tournament
-  activeFeaturedTournament.value = featuredTournaments.value[0]?.tournamentID
-
-  // Process tournaments in parallel with concurrency limit
-  const CONCURRENCY_LIMIT = 3
-  const chunks = []
-  for (let i = 0; i < featuredTournaments.value.length; i += CONCURRENCY_LIMIT) {
-    chunks.push(featuredTournaments.value.slice(i, i + CONCURRENCY_LIMIT))
-  }
-
-  for (const chunk of chunks) {
-    await Promise.all(
-      chunk.map(async (tournament) => {
-        try {
-          const games = await getFixturesByTournamentId(tournament.tournamentID, tournament.sportID)
-          assignTournaments(tournament, games, tournament.tournamentID)
-        } catch (error) {
-          console.error(`Error processing tournament ${tournament.tournamentID}:`, error)
-          const index = featuredTournaments.value.findIndex(
-            (t) => t.tournamentID === tournament.tournamentID
-          )
-          if (index !== -1) {
-            featuredTournaments.value.splice(index, 1)
-          }
-        }
-      })
-    )
-  }
-}
-
 // Update onActivated
 onActivated(async () => {
-  // Only fetch if we don't have data or it's stale
-  if (!utilsStore.hasFeaturedData || utilsStore.isFeaturedStale) {
-    await utilsStore.fetchFeaturedGames()
-  }
+  await utilsStore.fetchFeaturedGames()
 })
 
 // Update onDeactivated
@@ -499,6 +428,8 @@ onDeactivated(() => {
 }
 #featuredMatchCardBox {
   padding: 0.5rem 1.1rem;
+  scroll-padding-left: 1.1rem;
+  scroll-snap-type: x mandatory;
 }
 
 .featured-widget {
@@ -514,10 +445,9 @@ onDeactivated(() => {
   font-family: 'roboto', sans-serif;
   background-color: #ffffff;
   background-color: var(--background-type1-secondary);
+  margin-bottom: 10px;
 }
-.featured-widget.with-nav {
-  height: 18.91666667rem;
-}
+
 .featured-widget .featured-nav-list {
   -webkit-box-align: stretch;
   -webkit-align-items: stretch;
@@ -725,6 +655,7 @@ onDeactivated(() => {
 }
 .featuredMatch #featuredMatchCardBox > * {
   margin-right: 0.66666667rem;
+  scroll-snap-align: start;
 }
 @media only screen and (max-width: 320px) {
   .featuredMatch #featuredMatchCardBox > * {
@@ -892,7 +823,6 @@ onDeactivated(() => {
 }
 
 .topTournamentCard {
-  background-color: #ffffff;
   padding: 5px;
   border-top: 3px solid orangered;
   display: flex;
@@ -901,7 +831,6 @@ onDeactivated(() => {
   -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
   margin-right: 15px;
-  color: #121212;
 }
 
 .topTournamentCard:last-of-type {

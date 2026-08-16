@@ -99,7 +99,7 @@ const handleEnter = async (event) => {
   isLoading.value = true
   searchFixtures(event.target.value)
     .then((res) => {
-      results.value = res
+      results.value = res.data
       isLoading.value = false
     })
     .catch((err) => {

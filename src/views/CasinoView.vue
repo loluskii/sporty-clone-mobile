@@ -2,7 +2,7 @@
   <div class="game-play">
     <template v-if="isLoading">
       <div>
-        <img src="/logo.png" alt="" style="height: 50px" />
+        <img src="/logos.png" alt="" style="height: 50px" />
         <LoadingSpinner></LoadingSpinner>
       </div>
     </template>
@@ -24,6 +24,8 @@ import { getGameLobbyUrl } from '@/helpers'
 import { useRouter } from 'vue-router'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import { useUsersStore } from '@/stores'
+import Cookies from 'js-cookie'
+
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -31,35 +33,30 @@ const { currentUser } = useUsersStore()
 const previousRoute = ref(null)
 const errorState = ref(false)
 
-watch(
-  () => [],
-  async () => {
-    await getCasinoURL()
-  },
-  { immediate: true }
-)
-
 async function getCasinoURL() {
   isLoading.value = true
 
   try {
     const { username, id, authCode } = currentUser || {}
+    const bearerToken = Cookies.get('SBE-TOKEN') || undefined
 
-    let payload = {
-      gameId: 0,
-      clientId: import.meta.env.VITE_CLIENT_ID,
-      username: username || 'Demo',
-      userId: id || 0,
-      demo: id ? false : true,
-      isMobile: true,
-      homeUrl: import.meta.env.VITE_SITE_URL,
-      authCode: authCode || '111111',
-      balanceType: 'real',
-      type: 'lobby'
+    if (!bearerToken) {
+      return router.push({ name: 'sign-in' })
     }
 
+    let payload = {
+      playerId: String(id),
+      currency: 'NGN',
+      country: 'NG',
+      lang: 'en_US',
+      device: 'desktop',
+      walletSessionId: bearerToken,
+      mode: 'real'
+    }
+    console.log(payload)
+
     const res = await getGameLobbyUrl(payload)
-    window.location.href = res.url
+    return window.location.assign(res.url)
   } catch (error) {
     errorState.value = true
     console.error(error)

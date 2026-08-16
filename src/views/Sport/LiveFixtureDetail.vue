@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="background-color: #1b1e25">
     <HeaderOther :headerTitle="'Details'"></HeaderOther>
     <div class="m-event-detail-wrap">
       <template v-if="isLoading">
@@ -14,25 +14,66 @@
               <div class="m-event-league">
                 <div class="m-event-title-time">
                   <p class="category-league">
-                    <span v-if="eventDetail?.categoryName !== ''">{{
-                      eventDetail.categoryName
-                    }}</span>
-                    - {{ eventDetail.tournament }}
+                    <span v-if="eventDetail?.country !== ''">{{ eventDetail?.country }}</span>
+                    - {{ eventDetail?.tournament }}
                   </p>
                 </div>
                 <div class="event-time">
-                  <span>{{ matchHasEnded ? 'Finished' : `${eventTime} ${eventDetail.matchStatus}` }}</span>
+                  <span>{{ matchHasEnded ? '' : eventTime }} {{ eventDetail.matchStatus }}</span>
                 </div>
               </div>
-              <div class="m-event-team-wrap">
+              <div v-if="liveScoreboard.hasBreakdown" class="m-event-team-wrap m-event-team-breakdown">
+                <div
+                  class="score-breakdown-header"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team-spacer"></span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-label`"
+                    class="score-header-cell"
+                  >
+                    {{ column.label }}
+                  </span>
+                </div>
+                <div
+                  class="score-breakdown-row"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team">{{ eventDetail.homeTeam }}</span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-home`"
+                    class="score-breakdown-cell"
+                    :class="{ total: column.kind === 'total' }"
+                  >
+                    {{ column.home }}
+                  </span>
+                </div>
+                <div
+                  class="score-breakdown-row"
+                  :style="{ gridTemplateColumns: `minmax(0, 1fr) repeat(${liveScoreboard.columns.length}, 2.2rem)` }"
+                >
+                  <span class="team">{{ eventDetail.awayTeam }}</span>
+                  <span
+                    v-for="column in liveScoreboard.columns"
+                    :key="`${column.key}-away`"
+                    class="score-breakdown-cell"
+                    :class="{ total: column.kind === 'total' }"
+                  >
+                    {{ column.away }}
+                  </span>
+                </div>
+              </div>
+              <div v-else class="m-event-team-wrap">
                 <div class="home-team-name">
-                  <span class="team">{{ eventDetail.competitor1 }}</span>
+                  <span class="team">{{ eventDetail.homeTeam }}</span>
                   <span class="score"
                     ><em class="setScore">{{ scores.homeScore }}</em>
                   </span>
                 </div>
                 <div class="away-team-name">
-                  <span class="team">{{ eventDetail.competitor2 }}</span>
+                  <span class="team">{{ eventDetail.awayTeam }}</span>
                   <span class="score"
                     ><em class="setScore">{{ scores.awayScore }}</em>
                   </span>
@@ -53,172 +94,249 @@
         </div>
 
         <div class="live-match event-detail">
-          <div v-if="(!matchHasEnded && !isLoading) || !noMarkets" class="m-sport-market">
-            <div
-              v-for="(marketGroup, index) in groupedMarkets"
-              :key="index"
-              :data-key="'market-' + marketGroup.marketID"
+          <div class="m-snap-nav-wrap m-group" style="overflow: hidden">
+            <ul
+              class="m-snap-nav flex"
+              style="
+                transform: translate(0px, 0px) translateZ(0px);
+                transition-duration: 350ms;
+                transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
+              "
             >
-              <div class="m-market m-detail-market-default">
-                <div class="m-market-title">
-                  <span class="dis-icon"></span>
-                  <span class="text">{{ marketGroup.marketName }} </span>
-                </div>
-                <div class="m-table market-content">
-                  <div
-                    class="m-table-row"
-                    v-for="(market, m) in getChunks(marketGroup.markets[0].outcomes)"
-                    :key="m"
-                  >
-                    <template
-                      v-if="marketGroup.specifier !== undefined && marketGroup.specifier === ''"
+              <li
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: sharedSelectedGroupId === null }"
+                @click="sharedSelectedGroupId = null"
+              >
+                <span>All</span>
+              </li>
+              <li
+                v-for="group in sharedSortedMarketGroups"
+                :key="group.id"
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: sharedSelectedGroupId === group.id }"
+                @click="sharedSelectedGroupId = group.id"
+              >
+                <span>{{ group.name }}</span>
+              </li>
+            </ul>
+            <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+          </div>
+          <div v-if="!matchHasEnded && !isLoading" class="m-sport-market">
+            <div v-if="sharedHasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
+              <div style="white-space: pre-line">
+                Sorry, there are no markets available in this category.
+              </div>
+            </div>
+            <div v-else-if="sharedDisplayGroupedMarkets.length === 0" class="m-sport-market-no-data">
+              <div style="white-space: pre-line">
+                Sorry, there are no markets available in this category.
+              </div>
+            </div>
+            <div v-else class="m-sport-market">
+              <div
+                v-for="(marketGroup, index) in sharedDisplayGroupedMarkets"
+                :key="index"
+                :data-key="'market-' + marketGroup.marketID"
+              >
+                <div class="m-market m-detail-market-default">
+                  <div class="m-market-title">
+                    <span class="dis-icon"></span>
+                    <span class="text" style="text-transform: capitalize"
+                      >{{ sharedCleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
+                    </span>
+                  </div>
+                  <div class="m-table market-content">
+                    <div
+                      v-if="sharedHasSectionTabs(marketGroup)"
+                      class="m-market-section-tabs"
                     >
-                      <template
-                        v-for="(selection, odd) in sortByKey(market, 'outcomeID')"
-                        :key="odd"
+                      <button
+                        v-for="option in marketGroup.layout.sections"
+                        :key="option.key"
+                        type="button"
+                        class="m-market-section-tab"
+                        :class="{
+                          active: sharedGetActiveSection(marketGroup)?.key === option.key
+                        }"
+                        @click="sharedSetActiveSection(marketGroup, option.key)"
                       >
+                        {{ option.label }}
+                      </button>
+                    </div>
+                    <template
+                      v-for="section in [sharedGetActiveSection(marketGroup)].filter(Boolean)"
+                      :key="section.key"
+                    >
+                      <!-- <div
+                        v-if="section.label && !sharedHasSectionTabs(marketGroup)"
+                        class="m-market-section-label"
+                      >
+                        {{ section.label }}
+                      </div> -->
+                      <template v-if="marketGroup.layout.type === 'matrix'">
+                        <div class="m-table">
+                          <!-- TITLE-DRIVEN LAYOUT -->
+                          <div class="m-table-row">
+                            <!-- blank label cell — only when there is a specifier label -->
+                            <div
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="sharedColClass(section.totalCols)"
+                            ></div>
+                            <!-- column headers from title -->
+                            <div
+                              v-for="column in section.displayColumns || section.columns"
+                              :key="column"
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
+                              :class="sharedColClass(section.totalCols)"
+                            >
+                              {{ column }}
+                            </div>
+                          </div>
+                          <!-- one row per specifier variant -->
+                          <div
+                            v-for="row in section.rows"
+                            class="m-table-row"
+                            :key="row.key"
+                          >
+                            <!-- row label — only when there is a specifier label -->
+                            <div
+                              class="m-table-cell m-outcome-only-odds m-outcome-combo-title"
+                              :class="sharedColClass(section.totalCols)"
+                            >
+                              <em>{{ row.label }}</em>
+                            </div>
+                            <template
+                              v-for="cell in row.cells"
+                              :key="cell?.key || `${row.key}-empty`"
+                            >
+                              <div
+                                v-if="cell"
+                                class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
+                                :class="[
+                                  sharedColClass(section.totalCols),
+                                  {
+                                    'm-outcome--checked': isSelected(
+                                      getSelectionElementId(eventDetail, cell.market, cell.outcome),
+                                      couponStore.coupon
+                                    ),
+                                    'm-outcome--disabled':
+                                      cell.outcome.active === 0 ||
+                                      cell.outcome.odds <= 1 ||
+                                      !cell.outcome.odds
+                                  }
+                                ]"
+                                @click="addToBetslip(cell.market, cell.outcome)"
+                              >
+                                <em
+                                  :class="{
+                                    'm-icon-lock':
+                                      cell.outcome.active === 0 ||
+                                      cell.outcome.odds <= 1 ||
+                                      !cell.outcome.odds
+                                  }"
+                                  >{{
+                                     cell.outcome.active === 0 ||
+                                     cell.outcome.odds <= 1 ||
+                                     !cell.outcome.odds
+                                      ? ''
+                                       : cell.outcome.odds.toFixed(2)
+                                  }}</em
+                                >
+                              </div>
+                              <div
+                                v-else
+                                class="m-table-cell m-outcome-only-odds"
+                                :class="sharedColClass(section.totalCols)"
+                              ></div>
+                            </template>
+                          </div>
+                        </div>
                         <div
-                          class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
-                          :class="{
-                            'm-outcome--checked': isSelected(
-                              createID(
-                                eventDetail.matchID,
-                                marketGroup.marketID,
-                                selection.outcomeID,
-                                marketGroup.specifier,
-                                marketGroup.marketName,
-                                selection.outcomeName
-                              ),
-                              couponStore.coupon
-                            ),
-                            'm-outcome-two': market.length === 2,
-                            'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
-                          }"
-                          @click="addToBetslip(marketGroup, selection)"
+                          v-for="leftoverRow in section.leftoverRows || []"
+                          :key="leftoverRow.key"
+                          class="m-table-row"
                         >
-                          <em style="text-transform: capitalize">{{
-                            selection.displayName ?? selection.outcomeName
-                          }}</em>
-                          <em :class="{ 'm-icon-lock': !selection.odds || selection.odds <= 1 }">{{
-                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
-                          }}</em>
+                          <div
+                            v-for="cell in leftoverRow.cells"
+                            :key="cell.key"
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
+                            :class="{
+                              'm-outcome--checked': isSelected(
+                                getSelectionElementId(eventDetail, cell.market, cell.outcome),
+                                couponStore.coupon
+                              ),
+                              'm-outcome-two': leftoverRow.cells.length === 2,
+                              'm-outcome-three': leftoverRow.cells.length === 3,
+                              'm-outcome--disabled':
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                            }"
+                            @click="addToBetslip(cell.market, cell.outcome)"
+                          >
+                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em
+                              :class="{
+                                'm-icon-lock':
+                                  cell.outcome.active === 0 ||
+                                  cell.outcome.odds <= 1 ||
+                                  !cell.outcome.odds
+                              }"
+                              >{{
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                                  ? ''
+                                  : cell.outcome.odds.toFixed(2)
+                              }}</em
+                            >
+                          </div>
                         </div>
                       </template>
-                    </template>
-                    <template v-else>
-                      <div class="m-table" v-if="isTotalOrHandicap(marketGroup)">
-                        <!-- <div class="m-table-row">
+                      <template v-else>
+                        <div v-for="row in section.rows" :key="row.key" class="m-table-row">
                           <div
-                            class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
+                            v-for="cell in row.cells"
+                            :key="cell.key"
+                            class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
                             :class="{
-                              'm-outcome-row-three':
-                                marketGroup.markets[0].outcomes.length + 1 === 3,
-                              'm-outcome-row-four': marketGroup.markets[0].outcomes.length + 1 === 4
-                            }"
-                          ></div>
-                          <div
-                            v-for="(name, index) in marketGroup.markets[0].outcomes"
-                            :key="index"
-                            class="m-table-cell m-outcome-combo-title m-outcome-row-specifier-combo-title"
-                            :class="{
-                              'm-outcome-row-three':
-                                marketGroup.markets[0].outcomes.length + 1 === 3,
-                              'm-outcome-row-four': marketGroup.markets[0].outcomes.length + 1 === 4
-                            }"
-                          >
-                            {{ name.displayName }}
-                          </div>
-                        </div> -->
-                        <div
-                          v-for="(mg, idx) in uniqueMarkets(marketGroup.markets)"
-                          class="m-table-row"
-                          :key="idx"
-                        >
-                          <!-- {{ mg }} -->
-                          <div
-                            class="m-table-cell m-table-cell m-outcome-only-odds m-outcome-combo-title m-specifier-colum-title"
-                            :class="{
-                              'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
-                              'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4
-                            }"
-                          >
-                            <em>{{ getSpecifierValue(mg.specifier) }}</em>
-                          </div>
-                          <template v-for="(outcome, o) in uniqueOutcomes(mg.outcomes)" :key="o">
-                            <div
-                              class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
-                              @click="addToBetslip(mg, outcome)"
-                              :class="{
-                                'm-outcome--checked': isSelected(
-                                  createID(
-                                    eventDetail.matchID,
-                                    mg.marketID,
-                                    outcome.outcomeID,
-                                    mg.specifier,
-                                    mg.marketName,
-                                    outcome.outcomeName
-                                  ),
-                                  couponStore.coupon
-                                ),
-                                'm-outcome-three': uniqueOutcomes(mg.outcomes).length + 1 === 3,
-                                'm-outcome-four': uniqueOutcomes(mg.outcomes).length + 1 === 4,
-                                'm-outcome--disabled': outcome.odds <= 1
-                              }"
-                            >
-                              <em :class="{ 'm-icon-lock': !outcome.odds || outcome.odds <= 1 }">{{
-                                outcome.odds && outcome.odds > 1 ? outcome.odds.toFixed(2) : ''
-                              }}</em>
-                            </div>
-                          </template>
-                        </div>
-                      </div>
-                      <template
-                        v-for="(selection, odd) in _.sortBy(market, 'outcomeID')"
-                        :key="odd"
-                        v-else
-                      >
-                        <div
-                          class="m-table-cell m-outcome m-detail-outcome-default m-outcome-odds-des"
-                          :class="{
-                            'm-outcome--checked': isSelected(
-                              createID(
-                                eventDetail.matchID,
-                                marketGroup.marketID,
-                                selection.outcomeID,
-                                marketGroup.specifier,
-                                marketGroup.marketName,
-                                selection.outcomeName
+                              'm-outcome--checked': isSelected(
+                                getSelectionElementId(eventDetail, cell.market, cell.outcome),
+                                couponStore.coupon
                               ),
-                              couponStore.coupon
-                            ),
-                            'm-outcome-two': market.length === 2,
-                            'm-outcome-three': market.length === 3,
-                            'm-outcome--disabled': !selection.odds || selection.odds <= 1
-                          }"
-                          @click="addToBetslip(marketGroup, selection)"
-                        >
-                          <em style="text-transform: capitalize">{{
-                            getMarketCode(selection.outcomeName)
-                          }}</em>
-                          <em :class="!selection.odds || selection.odds <= 1 ? 'm-icon-lock' : ''">{{
-                            selection.odds && selection.odds > 1 ? selection.odds.toFixed(2) : ''
-                          }}</em>
+                              'm-outcome-two': row.cells.length === 2,
+                              'm-outcome-three': row.cells.length === 3,
+                              'm-outcome--disabled':
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                            }"
+                            @click="addToBetslip(cell.market, cell.outcome)"
+                          >
+                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em
+                              :class="{
+                                'm-icon-lock':
+                                  cell.outcome.active === 0 ||
+                                  cell.outcome.odds <= 1 ||
+                                  !cell.outcome.odds
+                              }"
+                              >{{
+                                cell.outcome.active === 0 ||
+                                cell.outcome.odds <= 1 ||
+                                !cell.outcome.odds
+                                  ? ''
+                                  : cell.outcome.odds.toFixed(2)
+                              }}</em
+                            >
+                          </div>
                         </div>
                       </template>
                     </template>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div
-            v-else-if="noMarkets"
-            class="m-sport-market-no-data"
-            style="padding: 5rem 2.33333333rem 10rem"
-          >
-            <div style="white-space: pre-line">
-              Sorry, there are no available markets for this event. Please choose other games.
             </div>
           </div>
           <div v-else class="m-sport-market-no-data" style="padding: 5rem 2.33333333rem 10rem">
@@ -237,183 +355,104 @@
 import HeaderOther from '@/components/HeaderOther.vue'
 import { defineComponent, watch, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { getFeedsGameDetail, chunks, createID, isSelected } from '@/helpers'
+import {
+  buildCouponSelectionElementId,
+  buildCouponSelectionPayload,
+  getFeedsGameDetail,
+  getLiveScoreboard,
+  getMarketsGrouping,
+  isSelected
+} from '@/helpers'
 import LoadingSpinner from '@/components/Loaders/LoadingSpinner.vue'
 import _ from 'lodash'
-import { useCouponStore } from '@/stores'
+import { useCouponStore, useUtilsStore } from '@/stores'
 import emitter from '@/plugins/emitter'
-import { SIM_ALLOWED_MARKETS } from '@/helpers'
 import { useMqttService } from '@/composables/useMqtt'
+import { useFixtureDetailMarkets } from '@/composables/useFixtureDetailMarkets'
 
+const { sportsMenu } = useUtilsStore()
 const eventMarkets = ref()
 const eventDetail = ref()
+const periodScores = ref([])
 const scores = reactive({
   homeScore: 0,
   awayScore: 0
 })
 const eventTime = ref('00:00')
+const hasMqttTime = ref(false)
 const timer = ref(null)
-const groupedMarkets = ref([])
 const isLoading = ref(false)
 const route = useRoute()
-const refetchInterval = ref(null)
-const REFETCH_INTERVAL_MS = 60000 // 60 seconds
-
 const couponStore = useCouponStore()
 const homeTeam = ref()
 const awayTeam = ref()
 const isLiveTrackerShowing = ref(false)
 const { subscribe } = useMqttService()
-const updatedOutcomes = ref({})
-const updatePending = ref(false)
 const unsubscribeFunctions = ref([])
 const isClockStopped = ref(false)
+const marketGroups = ref()
+// Tracks bet_stop so API refresh doesn't re-activate markets.
+const betStopped = ref(false)
 
-// Computed properties
+const {
+  selectedGroupId: sharedSelectedGroupId,
+  displayGroupedMarkets: sharedDisplayGroupedMarkets,
+  sortedMarketGroups: sharedSortedMarketGroups,
+  hasNoMarketsInSelectedGroup: sharedHasNoMarketsInSelectedGroup,
+  colClass: sharedColClass,
+  cleanMarketName: sharedCleanMarketName,
+  getActiveSection: sharedGetActiveSection,
+  setActiveSection: sharedSetActiveSection,
+  hasSectionTabs: sharedHasSectionTabs
+} = useFixtureDetailMarkets(eventMarkets, marketGroups, eventDetail)
+
+// Other computed properties
 const matchHasEnded = computed(() => {
-  return eventDetail.value?.status === 3
+  return (
+    eventDetail.value?.matchStatus === 'Ended' ||
+    Number(eventDetail.value?.statusCode || 0) === 3
+  )
 })
+const liveScoreboard = computed(() =>
+  getLiveScoreboard(
+    {
+      ...(eventDetail.value || {}),
+      homeScore: scores.homeScore,
+      awayScore: scores.awayScore,
+      eventInfo: {
+        ...(eventDetail.value?.eventInfo || {}),
+        period_scores: periodScores.value,
+        score: {
+          ...(eventDetail.value?.eventInfo?.score || {}),
+          home: scores.homeScore,
+          away: scores.awayScore
+        },
+        scores: {
+          ...(eventDetail.value?.eventInfo?.scores || {}),
+          home: scores.homeScore,
+          away: scores.awayScore
+        }
+      }
+    },
+    'detail'
+  )
+)
 
 const noMarkets = computed(() => {
   return eventMarkets.value?.length === 0
 })
 
-// Sports that have a running clock (sportID)
-// 1 = Soccer, 4 = Ice Hockey, 29 = Futsal
-const TIMED_SPORTS = [1, 4, 29]
-
-// Check if sport has a running clock
-const isTimedSport = (sportId) => {
-  return TIMED_SPORTS.includes(sportId)
-}
-
 // Time handling functions
-const parseTime = (timeString) => {
-  if (!timeString || timeString === '--:--') return null
-  const parts = timeString.split(':')
-  if (parts.length >= 2) {
-    return {
-      minutes: parseInt(parts[0], 10),
-      seconds: parseInt(parts[1], 10)
-    }
-  } else if (parts.length === 1) {
-    return {
-      minutes: parseInt(parts[0], 10),
-      seconds: 0
-    }
-  }
-  return null
+const parseTimeToSeconds = (timeStr) => {
+  if (timeStr === '--:--') return null
+  const [minutes, seconds] = timeStr.split(':').map(Number)
+  return minutes * 60 + seconds
 }
 
-const formatTime = (minutes, seconds) => {
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-}
-
-// Helper to format event time (append + for 45+ or 90+ minutes in soccer)
-const formatEventTime = (time, sportId) => {
-  if (!time || time === '--:--') return time
-  const minutes = parseInt(time.split(':')[0])
-  // For soccer (sportId 1), append + for 45+ or 90+
-  if (sportId === 1 && (minutes >= 45 || minutes >= 90)) {
-    return time.replace(/^(\d+)/, '$1+')
-  }
-  return time
-}
-
-// Latency compensation for MQTT event_time (in seconds)
-const MQTT_LATENCY_COMPENSATION = 2
-
-// Adjust time received from MQTT to compensate for backend latency
-const adjustTimeForLatency = (timeStr, sportId, matchStatus) => {
-  if (!timeStr || timeStr === '--:--') return timeStr
-
-  // Only adjust for timed sports
-  if (!isTimedSport(sportId)) return timeStr
-
-  const parsed = parseTime(timeStr)
-  if (!parsed) return timeStr
-
-  let { minutes, seconds } = parsed
-
-  // Add latency compensation
-  seconds += MQTT_LATENCY_COMPENSATION
-
-  // Handle overflow
-  if (seconds >= 60) {
-    minutes += Math.floor(seconds / 60)
-    seconds = seconds % 60
-  }
-
-  // Cap at halftime/fulltime boundaries
-  const status = (matchStatus || '').toLowerCase()
-  if (status.includes('2nd') || status.includes('second')) {
-    // Second half: cap at 90 minutes
-    if (minutes >= 90) {
-      minutes = 90
-      seconds = 0
-    }
-  } else if (!status.includes('halftime') && !status.includes('half time') && !status.includes('ht')) {
-    // First half: cap at 45 minutes
-    if (minutes >= 45) {
-      minutes = 45
-      seconds = 0
-    }
-  }
-
-  return formatTime(minutes, seconds)
-}
-
-// Calculate elapsed match time from kick-off (only for timed sports)
-const calculateElapsedTime = (kickOffDateStr, sportId, matchStatus) => {
-  if (!kickOffDateStr) return null
-
-  // Only calculate for timed sports like Soccer
-  if (!isTimedSport(sportId)) return null
-
-  const kickOffTime = new Date(kickOffDateStr).getTime()
-  const now = Date.now()
-  const elapsedMs = now - kickOffTime
-
-  // If kick-off hasn't started yet or invalid date
-  if (elapsedMs < 0) return null
-
-  const elapsedMinutes = Math.floor(elapsedMs / 60000)
-  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000)
-
-  // Handle halftime: if elapsed > 45 mins but match status is still 1st half or halftime
-  const status = matchStatus?.toLowerCase() || ''
-
-  if (status.includes('2nd') || status.includes('second')) {
-    // Second half: cap at 90 minutes
-    const adjustedMinutes = Math.min(elapsedMinutes, 90)
-    return { minutes: adjustedMinutes, seconds: elapsedSeconds }
-  } else if (status.includes('halftime') || status.includes('half time') || status.includes('ht')) {
-    // Halftime: cap at 45:00
-    return { minutes: 45, seconds: 0 }
-  } else {
-    // First half or unknown: cap at 45 mins
-    const cappedMinutes = Math.min(elapsedMinutes, 45)
-    return { minutes: cappedMinutes, seconds: elapsedSeconds }
-  }
-}
-
-// Get initial display time - use eventTime from API response
-// TODO: Re-enable time calculation from kick-off when needed
-const getDisplayTime = (gameData) => {
-  // Temporarily disabled: time calculation from kick-off
-  // const sportId = gameData?.sportID
-  // if (isTimedSport(sportId)) {
-  //   const kickOffDate = gameData?.date
-  //   if (kickOffDate) {
-  //     const calculated = calculateElapsedTime(kickOffDate, sportId, gameData?.matchStatus)
-  //     if (calculated) {
-  //       return formatTime(calculated.minutes, calculated.seconds)
-  //     }
-  //   }
-  // }
-
-  // Use eventTime directly from API response
-  return gameData?.eventTime || '--:--'
+const formatSecondsToTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
 const stopTimer = () => {
@@ -426,70 +465,39 @@ const stopTimer = () => {
 const startTimer = () => {
   stopTimer()
 
-  const sportId = eventDetail.value?.sportID
-  // Don't run timer for non-timed sports (Tennis, Basketball, etc.)
-  if (!isTimedSport(sportId)) return
+  const initialTime = parseTimeToSeconds(eventTime.value)
+  if (initialTime === null || initialTime === 45 * 60 || initialTime === 90 * 60) return
 
-  const initialTime = parseTime(eventTime.value)
-  if (initialTime === null || initialTime.minutes === 45 || initialTime.minutes === 90) return
-
-  let currentMinutes = initialTime.minutes
-  let currentSeconds = initialTime.seconds
+  let currentSeconds = initialTime
+  eventTime.value = formatSecondsToTime(currentSeconds)
 
   timer.value = setInterval(() => {
     currentSeconds++
 
-    if (currentSeconds >= 60) {
-      currentSeconds = 0
-      currentMinutes++
-    }
-
-    // Stop at key match times (halftime and fulltime)
-    if (currentMinutes === 45 || currentMinutes === 90) {
+    // Stop at key match times (45:00 and 90:00)
+    if (currentSeconds === 45 * 60 || currentSeconds === 90 * 60) {
       stopTimer()
       return
     }
 
-    eventTime.value = formatTime(currentMinutes, currentSeconds)
-  }, 1000) // Increment every second
+    eventTime.value = formatSecondsToTime(currentSeconds)
+  }, 1000)
 }
 
 // MQTT handlers
 function handleFixtureStatus(data) {
-  // Handle match end
-  if (data.status_code === 100) {
-    stopTimer()
-    // Clean up intervals
-    if (refetchInterval.value) {
-      clearInterval(refetchInterval.value)
-      refetchInterval.value = null
-    }
-
-    if (timer.value) {
-      clearInterval(timer.value)
-      timer.value = null
-    }
-
-    eventMarkets.value = []
-    groupedMarkets.value = []
-    return
-  }
   requestAnimationFrame(() => {
-    // Update scores
-    scores.homeScore = data.home_score
-    scores.awayScore = data.away_score
-
-    // Update event time and status (with latency compensation)
-    const sportId = eventDetail.value?.sportID || 1
-    const matchStatus = eventDetail.value?.matchStatus || data.match_status
-    const adjustedTime = adjustTimeForLatency(data.event_time, sportId, matchStatus)
-    eventTime.value = formatEventTime(adjustedTime, sportId)
+    if (data.event_time) {
+      hasMqttTime.value = true
+      eventTime.value = data.event_time
+      startTimer() // restart from MQTT time, discarding stale interval
+    }
     if (eventDetail.value) {
       eventDetail.value.matchStatus = data.match_status
     }
-
-    // Restart timer with synced time
-    startTimer()
+    if (Array.isArray(data.period_scores)) {
+      periodScores.value = data.period_scores
+    }
   })
 }
 
@@ -497,157 +505,140 @@ function handleBetStop(data) {
   const matchId = eventDetail.value?.matchID
   const dataMatchId = data.event_id || data.match_id
 
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) {
-    return
-  }
+  if (dataMatchId && String(dataMatchId) !== String(matchId)) return
 
+  // Bet stop locks all outcomes until next market update.
+  betStopped.value = true
   if (eventMarkets.value?.length > 0) {
     eventMarkets.value = eventMarkets.value.map((market) => ({
       ...market,
       outcomes: market.outcomes.map((outcome) => ({
         ...outcome,
-        odds: 0,
         active: 0
       }))
     }))
-
-    groupedMarkets.value = groupByMarketID(eventMarkets.value)
   }
 }
 
-function handleOddsChange(data) {
-  if (!data || !data.markets) return
+function handleOddsChange(data, match_id) {
+  if (!data || !eventMarkets.value) return
 
-  const matchId = eventDetail.value?.matchID
-  const dataMatchId = data.event_id || data.match_id
+  const dataMatchId = data.match_id
+  if (String(dataMatchId) !== String(match_id)) return
 
-  if (dataMatchId && String(dataMatchId) !== String(matchId)) return
+  const statusName = data.status_name ? data.status_name.toLowerCase() : ''
+  const outcomes = data.outcomes || []
 
-  // Handle clock status
-  if (data.sport_event_status?.clock?.stopped !== undefined) {
-    isClockStopped.value = data.sport_event_status.clock.stopped
-    if (isClockStopped.value) {
-      stopTimer()
-    } else {
-      startTimer()
+  requestAnimationFrame(() => {
+    // Lift bet_stop lock — first odds message after bet_stop re-activates all markets
+    if (betStopped.value) {
+      betStopped.value = false
+      eventMarkets.value = eventMarkets.value.map((market) => ({
+        ...market,
+        outcomes: market.outcomes.map((o) => ({ ...o, active: 1 }))
+      }))
     }
-  }
 
-  if (!updatePending.value) {
-    updatePending.value = true
+    let marketFound = false
 
-    requestAnimationFrame(() => {
-      const markets = data.markets || []
-      if (markets.length > 0) {
-        const updatedOutcomesCopy = { ...updatedOutcomes.value }
+    eventMarkets.value = eventMarkets.value
+      .map((market) => {
+        const marketMatches = market.marketID === data.market_id
+        const specifierMatches = (market.specifier || '') === (data.specifier || '')
 
-        markets.forEach((market) => {
-          if (market.outcomes) {
-            market.outcomes.forEach((outcome) => {
-              const key = `${market.id}-${outcome.id}-${market.specifiers || ''}`
-              updatedOutcomesCopy[key] = {
-                odds: outcome.odds,
-                active: outcome.active ? 1 : 0,
-                timestamp: Date.now()
-              }
-            })
+        if (!marketMatches || !specifierMatches) return market
+
+        marketFound = true
+
+        // Deactivated or settled → remove market entirely
+        if (statusName === 'deactivated' || statusName === 'settled' || statusName === 'handedover') return null
+
+        // Suspended → zero out all odds
+        if (statusName === 'suspended') {
+          return {
+            ...market,
+            outcomes: market.outcomes.map((o) => ({ ...o, odds: 0, active: 0 }))
           }
-        })
-
-        updatedOutcomes.value = updatedOutcomesCopy
-
-        if (eventMarkets.value?.length > 0) {
-          eventMarkets.value = eventMarkets.value.map((market) => {
-            const updatedMarket = markets.find(
-              (m) => m.id === market.marketID && (m.specifiers || '') === (market.specifier || '')
-            )
-
-            if (updatedMarket?.outcomes) {
-              market.outcomes = market.outcomes.map((outcome) => {
-                const newOutcome = updatedMarket.outcomes.find(
-                  (o) => String(o.id) === String(outcome.outcomeID)
-                )
-
-                return newOutcome
-                  ? {
-                      ...outcome,
-                      odds: newOutcome.odds,
-                      active: newOutcome.active ? 1 : 0
-                    }
-                  : outcome
-              })
-            }
-            return market
-          })
-
-          groupedMarkets.value = groupByMarketID(eventMarkets.value)
         }
-      }
 
-      updatePending.value = false
-    })
+        // Active → update only odds for matched outcomes
+        return {
+          ...market,
+          outcomes: market.outcomes.map((o) => {
+            const update = outcomes.find((u) => String(u.outcome_id) === String(o.outcomeID))
+            return update ? { ...o, odds: update.odds, active: update.active ? 1 : 0 } : o
+          })
+        }
+      })
+      .filter(Boolean)
+
+    // New market from MQTT — insert it (only if not deactivated/suspended)
+    if (!marketFound && statusName !== 'deactivated' && outcomes.length > 0) {
+      eventMarkets.value.push({
+        marketID: data.market_id,
+        marketName: data.market_name,
+        specifier: data.specifier || '',
+        title: data.title || undefined,
+        statusName: data.status_name || 'Active',
+        sportID: data.sport_id || 0,
+        outcomes: outcomes.map((o) => ({
+          outcomeID: o.outcome_id,
+          outcomeName: o.outcome_name,
+          displayName: o.alias || o.outcome_name,
+          odds: statusName === 'suspended' ? 0 : o.odds,
+          active: statusName === 'suspended' ? 0 : (o.active ? 1 : 0),
+          probability: o.probability || 0,
+          marketID: data.market_id,
+          specifier: data.specifier || ''
+        }))
+      })
+    }
+  })
+}
+
+function resetMqttSubscriptions() {
+  if (unsubscribeFunctions.value.length > 0) {
+    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
+    unsubscribeFunctions.value = []
   }
 }
 
 // MQTT setup
-function setupMqttSubscriptions(matchId) {
+function setupMqttSubscriptions(matchId, sport_id) {
+  resetMqttSubscriptions()
+  const baseTopic = `sports/${sport_id}/match/${matchId}`
   const topics = {
-    oddsChange: `sbe/feeds/live/odds_change/${matchId}`,
-    betStop: `sbe/feeds/live/bet_stop/${matchId}`,
-    fixtureStatus: `sbe/feeds/live/fixture_status/${matchId}`
+    markets: `${baseTopic}/markets`,
+    betStop: `${baseTopic}/bet_stop`,
+    matchStatus: `${baseTopic}/match_status`,
+    scores: `${baseTopic}/scores`
   }
 
-  const handlers = {
-    oddsChange: handleOddsChange,
-    betStop: handleBetStop,
-    fixtureStatus: handleFixtureStatus
-  }
-
-  const unsubscribers = Object.entries(topics).map(([key, topic]) => {
-    return subscribe(topic, (data) => {
-      handlers[key](data)
-    })
-  })
-
-  unsubscribeFunctions.value = unsubscribers
-}
-
-// Periodic refetch setup
-function setupPeriodicRefetch(matchId) {
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value)
-  }
-
-  refetchInterval.value = setInterval(async () => {
-    if (!matchHasEnded.value) {
-      try {
-        const {data} = await getFeedsGameDetail(matchId)
-        if (data && Object.keys(data).length && data.market) {
-          const isActive = data.status === 0
-          // Filter out suspended and deactivated markets
-          eventMarkets.value = !isActive
-            ? []
-            : data.market.filter(
-                (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
-              )
-          groupedMarkets.value = !isActive ? [] : groupByMarketID(eventMarkets.value)
-          // Get scores from eventInfo.scores if available, fallback to top-level
-          // if (data.eventInfo?.scores) {
-          //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
-          //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
-          // } else {
-            scores.homeScore = data.homeScore ?? 0
-            scores.awayScore = data.awayScore ?? 0
-          // }
-          eventTime.value = data.eventTime
-        }
-      } catch (error) {
-        // Silent fail for periodic refetch
+  const unsubscribers = [
+    subscribe(topics.markets, (data) => {
+      handleOddsChange(data, matchId)
+    }),
+    subscribe(topics.betStop, (data) => {
+      handleBetStop(data, matchId)
+    }),
+    subscribe(topics.matchStatus, (data) => {
+      handleFixtureStatus(data, matchId)
+    }),
+    subscribe(topics.scores, (data) => {
+      if (data.home_score !== undefined && data.away_score !== undefined) {
+        scores.homeScore = data.home_score
+        scores.awayScore = data.away_score
       }
-    } else {
-      clearInterval(refetchInterval.value)
-    }
-  }, REFETCH_INTERVAL_MS)
+      if (data.event_time) {
+        hasMqttTime.value = true
+        eventTime.value = data.event_time
+      }
+      if (Array.isArray(data.period_scores)) {
+        periodScores.value = data.period_scores
+      }
+    })
+  ]
+  unsubscribeFunctions.value = unsubscribers
 }
 
 // Lifecycle hooks
@@ -661,16 +652,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // Clean up MQTT subscriptions
-  if (unsubscribeFunctions.value.length > 0) {
-    unsubscribeFunctions.value.forEach((unsubscribe) => unsubscribe())
-    unsubscribeFunctions.value = []
-  }
-
-  // Clean up intervals
-  if (refetchInterval.value) {
-    clearInterval(refetchInterval.value)
-    refetchInterval.value = null
-  }
+  resetMqttSubscriptions()
 
   if (timer.value) {
     clearInterval(timer.value)
@@ -694,80 +676,136 @@ watch(
   () => eventTime.value,
   (newTime) => {
     if (newTime) {
-      startTimer()
+      // startTimer()
     }
   },
   { immediate: true }
 )
 
-function isTotalOrHandicap(market) {
+// Parse title string into { specifierLabel, columns }
+function getTitleInfo(title) {
+  if (!title) return null
+  const parts = title.split(',')
+  if (parts.length < 2) return null
+  return { specifierLabel: parts[0], columns: parts.slice(1) }
+}
+
+// Match an outcome to a column name by displayName convention
+function findOutcomeForColumn(outcomes, col) {
+  const colLower = col.toLowerCase().trim()
   return (
-    (market.specifier.includes('total') && market.markets[0].outcomes.length === 2) ||
-    market.specifier.includes('hcp')
+    outcomes.find((o) => {
+      const dn = o.displayName?.toLowerCase() ?? ''
+      if (colLower === 'home') return /^1[\s(]|^1$/.test(o.displayName)
+      if (colLower === 'away') return /^2[\s(]|^2$/.test(o.displayName)
+      if (colLower === 'draw') return /^x[\s(]|^x$/i.test(o.displayName)
+      return dn.startsWith(colLower)
+    }) ?? null
   )
 }
 
-const getMarketCode = (name) => {
-  return name.trim()
+// Get available columns for a market group based on title field
+function getMarketColumns(marketGroup) {
+  const title = marketGroup.markets[0]?.title
+  const titleInfo = getTitleInfo(title)
+  if (!titleInfo || titleInfo.columns.length === 0) return null
+
+  const sampleOutcomes = marketGroup.markets[0].outcomes
+  let specifierLabel = titleInfo.specifierLabel
+  let candidateCols = titleInfo.columns
+
+  // If the first title element matches an outcome, it is a column not a label (e.g. "1,None,2")
+  if (findOutcomeForColumn(sampleOutcomes, specifierLabel) !== null) {
+    specifierLabel = null
+    candidateCols = [titleInfo.specifierLabel, ...titleInfo.columns]
+  }
+
+  const availableCols = candidateCols.filter(
+    (col) => findOutcomeForColumn(sampleOutcomes, col) !== null
+  )
+  if (availableCols.length === 0) return null
+
+  // totalCols = outcome columns + 1 label column (only when specifierLabel exists)
+  const totalCols = availableCols.length + (specifierLabel !== null ? 1 : 0)
+  return { specifierLabel, columns: availableCols, totalCols }
+}
+
+// Get row label: for Handicap use home hcp value; otherwise extract from specifier
+function getRowLabel(market, specifierLabel) {
+  if (specifierLabel?.toLowerCase() === 'handicap') {
+    const homeOutcome = market.outcomes?.find((o) => /^1[\s(]/.test(o.displayName))
+    if (homeOutcome) return getHcpFromDisplayName(homeOutcome.displayName)
+  }
+  return getSpecifierDisplayValue(market.specifier)
+}
+
+// CSS width class based on total number of cells in a row
+function colClass(n) {
+  if (n <= 2) return 'm-outcome-two'
+  if (n === 3) return 'm-outcome-three'
+  return 'm-outcome-four'
+}
+
+// Extract the meaningful display value from a specifier ("total=18.5" → "18.5", "setnr=1|total=8.5" → "8.5")
+function getSpecifierDisplayValue(specifier) {
+  if (!specifier) return ''
+  const totalMatch = specifier.match(/total=([\d.]+)/)
+  if (totalMatch) return totalMatch[1]
+  const hcpMatch = specifier.match(/hcp=([+-]?[\d.]+)/)
+  if (hcpMatch) return hcpMatch[1]
+  const parts = specifier.split('|')
+  return parts[parts.length - 1].split('=').pop()
 }
 
 async function getEventDetail(id) {
   isLoading.value = true
+  resetMqttSubscriptions()
+  const sportId = Number(
+    sportsMenu.find((sport) => sport.sport_name === route.params.sport)?.sport_id || 1
+  )
   try {
-    const res = await getFeedsGameDetail(id)
+    const [detailResponse, groupsResponse] = await Promise.all([
+      getFeedsGameDetail(id),
+      getMarketsGrouping(sportId)
+    ])
     isLoading.value = false
-
-    if (res && Object.keys(res).length) {
-      const data = res.data;
-      // Map new response structure to expected format
+    const {data} = detailResponse
+    if (data) {
       const mappedData = {
         ...data,
-        competitor1: data.homeTeam,
-        competitor2: data.awayTeam,
-        categoryName: data.country,
-        statusCode: data.producerStatus === 1 ? 1 : 3 // 1 = active/live, 3 = ended
+        categoryName: data.country || data.categoryName || '',
+        competitor1: data.homeTeam || data.competitor1 || '',
+        competitor2: data.awayTeam || data.competitor2 || '',
+        matchStatus: data.matchStatus || (Number(data.producerStatus) === 1 ? 'Live' : 'Ended'),
+        statusCode: Number(data.producerStatus) === 1 ? 1 : 3
       }
 
-      const isLive = mappedData.producerID !== 3 // Not Prematch
+      eventDetail.value = mappedData
+      eventMarkets.value = Array.isArray(mappedData.market)
+        ? mappedData.market.filter(
+            (market) =>
+              !['Suspended', 'Deactivated', 'HandedOver', 'Settled'].includes(
+                String(market.statusName || '')
+              )
+          )
+        : []
+      marketGroups.value = groupsResponse.data || []
+      homeTeam.value = mappedData.competitor1
+      awayTeam.value = mappedData.competitor2
+      scores.homeScore = data.homeScore ?? data.eventInfo?.scores?.home ?? 0
+      scores.awayScore = data.awayScore ?? data.eventInfo?.scores?.away ?? 0
+      periodScores.value = data?.eventInfo?.period_scores || data?.period_scores || []
 
-      if (isLive && mappedData.market?.length > 0) {
-        eventDetail.value = mappedData
-        // Filter out suspended markets
-        eventMarkets.value = mappedData.market.filter(
-          (market) => market.statusName !== 'Suspended' && market.statusName !== 'Deactivated'
-        )
-        groupedMarkets.value = groupByMarketID(eventMarkets.value)
-        homeTeam.value = mappedData.competitor1
-        awayTeam.value = mappedData.competitor2
-        // Get scores from eventInfo.scores if available, fallback to top-level
-        // if (data.eventInfo?.scores) {
-        //   scores.homeScore = data.eventInfo.scores.home !== '' ? data.eventInfo.scores.home : 0
-        //   scores.awayScore = data.eventInfo.scores.away !== '' ? data.eventInfo.scores.away : 0
-        // } else {
-          scores.homeScore = data.homeScore ?? 0
-          scores.awayScore = data.awayScore ?? 0
-        // }
-        // Calculate time from kick-off for more accuracy
-        eventTime.value = getDisplayTime(data)
-
-        if (data.matchID) {
-          setupMqttSubscriptions(data.matchID)
-          setupPeriodicRefetch(data.matchID)
-        }
-      } else {
-        eventDetail.value = mappedData
-        eventMarkets.value = []
-        groupedMarkets.value = []
-        homeTeam.value = mappedData.competitor1
-        awayTeam.value = mappedData.competitor2
-        scores.homeScore = data.homeScore
-        scores.awayScore = data.awayScore
-        // Calculate time from kick-off for more accuracy
-        eventTime.value = getDisplayTime(data)
+      if (!hasMqttTime.value) {
+        eventTime.value = data.eventTime || '00:00'
+      }
+      startTimer()
+      if (mappedData.matchID) {
+        setupMqttSubscriptions(mappedData.matchID, Number(mappedData.sportID || sportId))
       }
     }
   } catch (error) {
-    console.error(`❌ Error fetching event details:`, error)
+    console.log(error)
     eventDetail.value = null
     isLoading.value = false
   }
@@ -788,75 +826,46 @@ function sortByKey(array, key, ascending = true) {
 }
 
 const getChunks = (outcomes) => {
-  let x = uniqueOutcomes(outcomes)
-  return chunks(x)
-}
-
-const uniqueMarkets = (markets) => {
-  // console.log(markets)
-  let x = markets.filter(
-    (market, index, self) =>
-      index ===
-      self.findIndex((o) => o.marketID === market.marketID && o.specifier === market.specifier)
-  )
-  return x
-}
-
-const uniqueOutcomes = (outcomes) => {
-  let x = outcomes.filter(
-    (outcome, index, self) => index === self.findIndex((o) => o.outcomeID === outcome.outcomeID)
-  )
-  return x
+  return outcomes ? chunks(outcomes) : []
 }
 
 function groupByMarketID(data) {
   const groupedMarkets = {}
   data.forEach((marketGroup) => {
     const { marketID, marketName, specifier } = marketGroup
-    if (!groupedMarkets[marketID]) {
-      groupedMarkets[marketID] = {
+    // Clean the name before keying so garbled specifier-prefixed names
+    // (e.g. "hcp=3.5|handicap" and "hcp=-1.5|handicap") collapse into
+    // the same group, while genuinely different markets with the same
+    // marketID (e.g. "1st goal scored" vs "2nd goal scored") stay separate.
+    const cleanedName = cleanMarketName(marketName, specifier)
+    const key = `${marketID}|${cleanedName}`
+    if (!groupedMarkets[key]) {
+      groupedMarkets[key] = {
         marketID,
         marketName,
         specifier,
         markets: [marketGroup]
       }
     } else {
-      groupedMarkets[marketID].markets.push(marketGroup)
+      groupedMarkets[key].markets.push(marketGroup)
     }
   })
   return Object.values(groupedMarkets)
 }
 
 function addToBetslip(market, outcome) {
-  if (outcome.odds <= 1) return
-  let marketId = parseInt(market.marketID)
-  if (couponStore.betslipMode && !SIM_ALLOWED_MARKETS.includes(marketId)) {
-    emitter.emit(
-      'showErrorMessage',
-      'This market is not supported in simulation mode. Exit Simulation mode to add to betslip'
-    )
-    return
-  }
-
-  const id = createID(eventDetail.value.matchID, market.marketID, outcome.outcomeID, market.specifier, market.marketName, outcome.outcomeName)
-
-  const data = {
+  if (outcome.active === 0 || outcome.odds <= 1) return
+  const data = buildCouponSelectionPayload({
     fixture: eventDetail.value,
-    market_name: market.marketName,
-    market_id: market.marketID,
-    ele_id: id,
-    outcome: outcome,
-    odds: outcome.odds,
-    odd_id: outcome.oddID,
-    odd_name: outcome.outcomeName,
-    type: 'live',
-    event_id: eventDetail.value.gameID,
-    specifier: market.specifier
-  }
-  // return couponStore.addToCoupon(data)
-  const existsInBetslip = isSelected(id, couponStore.coupon)
-  return existsInBetslip ? couponStore.removeSelection(id) : couponStore.addToCoupon(data)
+    market,
+    outcome,
+    type: 'live'
+  })
+  return couponStore.toggleCouponSelection(data)
 }
+
+const getSelectionElementId = (fixture, market, outcome) =>
+  buildCouponSelectionElementId({ fixture, market, outcome })
 
 const openWidget = (widgetName) => {
   isLiveTrackerShowing.value = !isLiveTrackerShowing.value
@@ -879,28 +888,54 @@ const openWidget = (widgetName) => {
   }
 }
 
-function getSpecifierValue(specifier) {
-  // Check if the specifier includes 'total=', 'hcp=', 'nr=' or 'variant=' and contains a numeric value after the '='
-  if (!specifier.includes('|') && /total=|hcp=|nr=|variant=/.test(specifier)) {
-    const value = specifier.split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.slice(-2)
+function getHcpFromDisplayName(displayName) {
+  const match = displayName.match(/\(([^)]+)\)/)
+  return match ? match[1] : displayName
+}
+
+function toOrdinal(n) {
+  const num = parseInt(n)
+  if (isNaN(num)) return String(n)
+  const v = num % 100
+  const suffix = (v >= 11 && v <= 13) ? 'th' : ['th', 'st', 'nd', 'rd', 'th'][Math.min(num % 10, 4)]
+  return num + suffix
+}
+
+function cleanMarketName(name, specifier) {
+  const xupName = String(name || '')
+    .replace(/\s*[-–]?\s*(?:xup\s*=\s*)?(1|2|3)\s*up\s*$/i, ' - XUP')
+    .trim()
+  if (xupName !== String(name || '').trim()) return xupName
+
+  if (!name.includes('=') || name.indexOf('=') > 20) return name
+
+  // Parse specifier into key-value map
+  const specMap = {}
+  if (specifier) {
+    specifier.split('|').forEach((part) => {
+      const eqIdx = part.indexOf('=')
+      if (eqIdx > -1) specMap[part.slice(0, eqIdx)] = part.slice(eqIdx + 1)
+    })
   }
 
-  // Check if specifier contains 'total' and includes '|'
-  if (specifier.includes('|') && specifier.includes('total')) {
-    const value = specifier.split('|')[0].split('=').pop()
-    return !isNaN(parseFloat(value)) ? value : specifier.split('=')[1]
+  // Strip the leading specifier junk (everything before the ordinal suffix th/st/nd/rd)
+  let cleaned = name.replace(/^[\d\w|=.\-]+(?=th\s|st\s|nd\s|rd\s)/i, '')
+
+  // Capture ordinal suffix, reconstruct it from specifier (e.g. setnr=2 → "2nd")
+  let ordinalPrefix = ''
+  const ordinalMatch = cleaned.match(/^(th|st|nd|rd)\s/i)
+  if (ordinalMatch) {
+    cleaned = cleaned.replace(/^(?:th|st|nd|rd)\s*/i, '')
+    const setnr = specMap.setnr || Object.values(specMap)[0]
+    if (setnr) ordinalPrefix = toOrdinal(setnr) + ' '
   }
 
-  // Handle combined specifier
-  const specs = specifier.split('|')
-  if (specs.length > 1) {
-    const combo2 = specs[1].split('=').pop()
-    return combo2
-  }
+  // Replace {!key} with ordinal value, {key} with plain value
+  cleaned = cleaned.replace(/\{!(\w+)\}/g, (_, key) => (specMap[key] ? toOrdinal(specMap[key]) : ''))
+  cleaned = cleaned.replace(/\{(\w+)\}/g, (_, key) => specMap[key] ?? '')
 
-  // Default case
-  return specifier.split('=')[0]
+  cleaned = (ordinalPrefix + cleaned).replace(/\s{2,}/g, ' ').trim()
+  return cleaned || name
 }
 
 defineComponent({
@@ -910,6 +945,7 @@ defineComponent({
 
 <style>
 @import url('@/assets/css/theme.css');
+
 .liveMatch-eventView-loading {
   min-height: 15rem;
 }
@@ -917,23 +953,28 @@ defineComponent({
 .m-navbar .nav-change .change-icon:before {
   font-size: 0.83333333rem;
 }
+
 .m-navbar .nav-change .change-icon.active {
   -webkit-transform: rotate(-180deg);
   -ms-transform: rotate(-180deg);
   transform: rotate(-180deg);
 }
+
 .m-event-detail-wrap {
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
   color: #ffffff;
-  /* color: var(--text-type2-primary); */
+  color: var(--text-type2-primary);
 }
+
 .m-event-detail-wrap .m-match-tracker-icons-above-wrapper {
   overflow: auto;
 }
+
 .m-event-detail-wrap .m-match-tracker-icons-above-wrapper.overflow-visible {
   overflow: initial;
 }
+
 .m-event-detail-wrap .m-broadcast {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -950,6 +991,7 @@ defineComponent({
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
 }
+
 .m-event-detail-wrap .m-event-tracker {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -960,11 +1002,13 @@ defineComponent({
   display: -ms-flexbox;
   display: flex;
   font-size: 1rem;
-  margin: 0 0.83333333rem 1.41666667rem 0.83333333rem;
+  margin: 0 0.83333333rem 0rem 0.83333333rem;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper {
   margin-left: auto;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span {
   border-radius: 2px;
   display: inline-block;
@@ -974,13 +1018,16 @@ defineComponent({
   color: #dcdee5;
   color: var(--disable-brand-secondary);
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span:last-child {
   margin-right: 0px;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span::before {
   display: inline-block;
   vertical-align: top;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.live-stream::before {
   background: url(//s.sporty.net/global/main/modules/common-wap/assets/img/stv.b89a6457ad.png);
   background-position: top left;
@@ -991,6 +1038,7 @@ defineComponent({
   padding-right: 0.41666667rem;
   width: 1.06666667rem;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
   content: '\e64f';
   font-family: 'iconfont' !important;
@@ -999,9 +1047,11 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.match-tracker::before {
   color: #ffb404;
 }
+
 .m-event-detail-wrap
   .m-event-tracker
   .event-tracker-button-wrapper
@@ -1013,20 +1063,24 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .m-event-detail-wrap
   .m-event-tracker
   .event-tracker-button-wrapper
   > span.match-statistics::before {
   color: #03bdff;
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active {
   background-color: var(--brand-secondary);
 }
+
 .m-event-detail-wrap .m-event-tracker .event-tracker-button-wrapper > span.active:before {
   color: #353a45;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
 }
+
 .m-event-detail-wrap .tracker-content .m-tracker-wrap {
   background-color: #353a45;
   background-color: var(--background-type2-secondary);
@@ -1034,10 +1088,12 @@ defineComponent({
   box-sizing: border-box;
   margin-bottom: 0.83333333rem;
 }
+
 .m-event-detail-wrap .tracker-content .m-tracker-wrap .m-livetracker {
   background-color: #353a45;
   background-color: var(--background-type2-secondary);
 }
+
 .m-event-detail-wrap .tracker-content .m-tracker-wrap .arro {
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
@@ -1046,6 +1102,7 @@ defineComponent({
   border-top-color: #353a45;
   border-top-color: var(--line-type1-tertiary);
 }
+
 .m-event-detail-wrap .tracker-content .m-tracker-wrap .arro i {
   background: url(//s.sporty.net/global/main/modules/main/mobile/liveBetting/img/arra.7efb3af0fd.svg);
   background-position: top left;
@@ -1060,21 +1117,25 @@ defineComponent({
   top: -3px;
   width: 6.16666667rem;
 }
+
 .m-event-detail-wrap .m-event-title {
   padding-bottom: 1.25rem;
 }
+
 .m-event-detail-wrap .m-event-title .m-event-league {
-  color: var(--brand-primary);
+  color: var(--brand-highlight-text);
   line-height: 1.2;
   overflow: hidden;
   padding: 0.66666667rem 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-detail-wrap .m-event-title .m-event-league .event-time {
   font-size: 1.066rem;
   padding: 0.66666667rem 0.66666667rem 0;
 }
+
 .m-event-detail-wrap .m-event-title .m-event-title-time {
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -1086,12 +1147,15 @@ defineComponent({
   display: flex;
   padding: 0.33333333rem 0.83333333rem 0.33333333rem 0;
 }
+
 .m-event-detail-wrap .m-event-title .m-event-title-time .category-league {
   overflow: hidden;
   padding-left: 0.66666667rem;
+  text-decoration: underline;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .m-event-detail-wrap .m-event-title .m-event-title-time .category-league.disabled {
   color: #9ca0ab;
   text-decoration: none;
@@ -1102,16 +1166,21 @@ defineComponent({
   background-color: var(--brand-background-live);
   border-bottom: 1px solid rgba(234, 236, 239, 0.15);
 }
+
 .m-event-detail-wrap .event-detail .m-sport-market-no-data:before {
   color: rgba(242, 243, 245, 0.15);
 }
+
 .m-event-detail-wrap .event-detail .m-sport-market {
   overflow: hidden;
 }
+
 .m-event-detail-wrap .event-detail .m-sport-market .m-market .m-market-title {
   border-top: 1px solid #353a45;
   color: #ffffff;
+  color: var(--text-type2-primary);
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1119,9 +1188,10 @@ defineComponent({
   .market-content
   .m-table-row
   .m-outcome {
-  background: var(--brand-live-odds-bg);
-  color: #fff;
+  background: rgba(214, 235, 220, 0.13);
+  color: var(--brand-live-odds-text);
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1130,8 +1200,9 @@ defineComponent({
   .m-table-row
   .m-outcome--checked {
   background-color: var(--brand-active-live-odds-bg);
-  color: var(--brand-active-live-odds-text);
+  color: var(--brand-active-live-odds-text);;
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1141,6 +1212,7 @@ defineComponent({
   .m-outcome--checked:before {
   color: #ffffff !important;
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1151,6 +1223,7 @@ defineComponent({
   background: #22252d;
   color: #50545f;
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1167,6 +1240,7 @@ defineComponent({
   .m-outcome--down:before {
   color: #33ea6a;
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1180,6 +1254,7 @@ defineComponent({
   color: #dcdee5;
   font-size: 1rem;
 }
+
 .m-event-detail-wrap
   .event-detail
   .m-sport-market
@@ -1190,30 +1265,37 @@ defineComponent({
   background-color: rgba(234, 236, 239, 0.15);
   color: #f2f3f5;
 }
+
 .m-event-detail-wrap .live-match.event-detail {
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
 }
+
 .m-event-detail-wrap .live-match.event-detail .m-group {
   border-bottom-color: #1b1e25;
 }
+
 .m-event-detail-wrap .live-match.event-detail .m-detail-market-default .m-market-title {
   background-color: #1b1e25;
   background-color: var(--brand-background-live);
 }
+
 .m-event-detail-wrap .live-match.event-detail .m-detail-market-default .count {
   color: #ffffff;
   color: var(--text-type2-primary);
 }
+
 .m-event-team-wrap {
   margin: 0 0.83333333rem;
 }
-.m-event-team-wrap > div {
+
+.m-event-team-wrap > div:not(.score-breakdown-row) {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-}
+} 
+
 .m-event-team-wrap > div > span {
   display: block;
   -webkit-box-flex: 1;
@@ -1221,9 +1303,11 @@ defineComponent({
   -ms-flex: 1;
   flex: 1;
 }
+
 .m-event-team-wrap .home-team-name {
   margin-bottom: 0.16666667rem;
 }
+
 .m-event-team-wrap .home-team-name,
 .m-event-team-wrap .away-team-name {
   display: -webkit-box;
@@ -1235,17 +1319,18 @@ defineComponent({
   -webkit-justify-content: stretch;
   -ms-flex-pack: stretch;
   justify-content: stretch;
-  align-items: center;
 }
+
 .m-event-team-wrap .home-team-name > span,
 .m-event-team-wrap .away-team-name > span {
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
-  /* height: 1.83333333rem;
-  line-height: 1.83333333rem; */
+  height: 1.83333333rem;
+  line-height: 1.83333333rem;
 }
+
 .m-event-team-wrap .home-team-name .score,
 .m-event-team-wrap .away-team-name .score {
   -webkit-box-flex: 0;
@@ -1255,6 +1340,7 @@ defineComponent({
   font-weight: 700;
   text-align: right;
 }
+
 .m-event-team-wrap .home-team-name .score .setScore,
 .m-event-team-wrap .away-team-name .score .setScore,
 .m-event-team-wrap .home-team-name .score .gameScore,
@@ -1267,12 +1353,14 @@ defineComponent({
   text-align: center;
   vertical-align: top;
 }
+
 .m-event-team-wrap .home-team-name .score .setScore,
 .m-event-team-wrap .away-team-name .score .setScore {
   background-color: var(--brand-secondary);
   color: #fff;
   padding: 0.16666667rem 0.5rem;
 }
+
 .m-event-team-wrap .home-team-name .score .gameScore,
 .m-event-team-wrap .away-team-name .score .gameScore {
   background-color: rgba(234, 236, 239, 0.15);
@@ -1280,6 +1368,7 @@ defineComponent({
   min-width: 1.83333333rem;
   padding: 0.16666667rem 0;
 }
+
 .m-event-team-wrap .home-team-name .team,
 .m-event-team-wrap .away-team-name .team {
   background: rgba(234, 236, 239, 0.15);
@@ -1290,20 +1379,73 @@ defineComponent({
   line-height: 1.2;
   margin-right: 0.16666667rem;
   overflow: hidden;
-  padding: 0.85rem;
+  padding: 0.25rem 0 0.25rem 0.41666667rem;
   width: 50%;
+}
+
+.m-event-team-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.33333333rem;
+}
+
+.score-breakdown-header,
+.score-breakdown-row {
+  display: grid !important;
+  gap: 0.16666667rem;
+  align-items: center;
+}
+
+.score-breakdown-header .team-spacer {
+  min-width: 0;
+}
+
+.score-breakdown-header .score-header-cell {
+  color: #9ca0ab;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.score-breakdown-row .team {
+  background: rgba(234, 236, 239, 0.15);
+  box-sizing: border-box;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  padding: 0.25rem 0.41666667rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-breakdown-cell {
+  align-items: center;
+  background-color: rgba(234, 236, 239, 0.15);
+  color: #fff;
+  display: flex;
+  font-size: 1.066rem;
+  font-weight: 700;
+  height: 1.83333333rem;
+  text-align: center;
+}
+
+.score-breakdown-cell.total {
+  background-color: var(--brand-secondary);
 }
 
 .event-detail {
   width: 100%;
 }
+
 .event-detail.live-match .m-group .m-sport-group-item {
   color: #ffffff;
 }
+
 .event-detail.pre-match .m-group .m-sport-group-item {
   color: #000000;
   color: var(--text-default);
 }
+
 .event-detail .m-group {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
@@ -1312,35 +1454,39 @@ defineComponent({
   padding: 0 0.33333333rem;
   width: 100%;
 }
+
 .event-detail .m-group .m-sport-group-item {
   cursor: pointer;
   font-weight: 700;
-  height: 4rem;
-  line-height: 4rem;
+  height: 3rem;
+  line-height: 3rem;
   margin-bottom: -1px;
   padding: 0 0.91666667rem;
 }
+
 .event-detail .m-group .m-sport-group-item .text {
   color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1rem;
 }
+
 .event-detail .m-group .m-sport-group-item.active {
-  border-bottom: 4px solid var(--brand-highlight-text);
-  border-color: var(--brand-highlight-text);
-  border-color: var(--brand-secondary);
+  border-bottom: 4px solid #0d9737;
+  border-color: var(--brand-active-tab-bg);
 }
+
 .event-detail .m-sport-market-no-data {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: #9ca0ab;
-  /* padding: 5rem 2.33333333rem 10rem; */
+  padding: 5rem 2.33333333rem 10rem;
   padding-left: 2.3rem;
   padding-right: 2.3rem;
   text-align: center;
 }
+
 .event-detail .m-sport-market-no-data::before {
   content: '\e624';
   font-family: 'iconfont' !important;
@@ -1349,29 +1495,36 @@ defineComponent({
   -moz-osx-font-smoothing: grayscale;
   font-style: normal;
 }
+
 .event-detail .m-sport-market-no-data p {
   white-space: nowrap;
 }
+
 .event-detail .m-sport-market-no-data .market-favor-empty-text {
   white-space: initial;
 }
+
 .event-detail .m-sport-market-no-data:before {
   color: #f2f3f5;
   color: var(--text-type2-secondary);
   font-size: 2.5rem;
 }
+
 @media only screen and (max-width: 320px) and (max-height: 480px) {
   .event-detail .m-sport-market-no-data br {
     display: none;
   }
 }
+
 .event-detail .m-sport-market-favor-empty {
   margin-top: 3.33333333rem;
   text-align: center;
 }
+
 .event-detail .market-favor-empty-image {
   width: 17.5rem;
 }
+
 .event-detail .market-favor-empty-text {
   color: #9ca0ab;
   color: var(--text-type2-tertiary);
@@ -1380,8 +1533,46 @@ defineComponent({
   padding-bottom: 3.33333333rem;
   width: 22rem;
 }
+
 .event-detail .m-sport-market {
   position: relative;
   z-index: 10;
+}
+
+.m-market-section-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.m-market-section-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.m-market-section-tab {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.91666667rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.5rem 0.85rem;
+  white-space: nowrap;
+}
+
+.m-market-section-tab.active {
+  border-color: var(--brand-secondary);
+  background: color-mix(in srgb, var(--brand-secondary) 18%, rgba(255, 255, 255, 0.06));
+  color: #ffffff;
+}
+
+.m-market-section-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.91666667rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 </style>
