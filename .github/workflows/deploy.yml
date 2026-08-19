@@ -35,6 +35,7 @@ jobs:
 
       - name: Generate version
         run: |
+          # Generate version based on timestamp for now
           VERSION="1.0.$(date +%s)"
           echo "Generated version: $VERSION"
           echo "$VERSION" > .VERSION
@@ -150,7 +151,7 @@ jobs:
   deploy:
     needs: [version]
     runs-on: [self-hosted, linux, x64]
-    environment: GCP CI
+    
     if: github.ref == 'refs/heads/west-zaza' 
     steps:
       - name: Checkout code
@@ -166,31 +167,33 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.zaza_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Prepare deployment files
         run: |
           NEXT_VERSION=$(cat .VERSION | tr -d "[:space:]\"'" | xargs)
           echo "Deploying version: $NEXT_VERSION"
-          cp .env .env.backup 2>/dev/null || echo "No existing .env file to backup"
+          echo "${{ secrets.ENV_ZAZA }}" > .env
 
       - name: Deploy to GCP server
         run: |
-          for i in {1..3}; do
-            if ssh -o ConnectTimeout=10 gcp-server 'echo "Connection successful"'; then
-              break
-            fi
-            echo "Connection attempt $i failed, retrying..."
-            sleep 5
-          done
-          ssh gcp-server 'mkdir -p ~/west-zaza-mobile/'
-          git archive --format=tar.gz HEAD | ssh gcp-server 'cd ~/west-zaza-mobile/ && tar -xzf - && rm -f source.tar.gz'
-          scp -o ConnectTimeout=30 .env gcp-server:~/west-zaza-mobile/.env
-          ssh gcp-server 'ls -la ~/west-zaza-mobile/src/components/ErrorDialogue.vue || echo "ErrorDialogue.vue not found!"'
-          ssh gcp-server '
+          # Create directory on server
+          ssh -o StrictHostKeyChecking=no ${{ secrets.zaza_SERVER_USER }}@${{ secrets.zaza_SERVER_IP }} 'mkdir -p ~/west-zaza-mobile/'
+          
+          # Copy all source files to server for local build
+          tar --exclude='.git' --exclude='node_modules'  -czf /tmp/source.tar.gz .
+          scp -o StrictHostKeyChecking=no /tmp/source.tar.gz ${{ secrets.zaza_SERVER_USER }}@${{ secrets.zaza_SERVER_IP }}:~/west-zaza-mobile/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.zaza_SERVER_USER }}@${{ secrets.zaza_SERVER_IP }} 'cd ~/west-zaza-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
+          
+          # Login to GitHub Container Registry on server and execute deployment
+          ssh -o StrictHostKeyChecking=no ${{ secrets.zaza_SERVER_USER }}@${{ secrets.zaza_SERVER_IP }} '
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             cd ~/west-zaza-mobile/
-            docker builder prune -f
+            echo "Current directory: $(pwd)"
+            echo "Files in directory:"
+            ls -la
+            echo "Checking for Dockerfile:"
+            ls -la Dockerfile || echo "Dockerfile not found"
             chmod +x deploy.sh
             bash deploy.sh
           '
