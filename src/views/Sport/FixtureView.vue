@@ -5,13 +5,20 @@
     <ChooseBarPad :active-sport="getActiveSport" />
     <template v-if="!isLoading && !isEmptyResponse">
       <div v-show="marketsGroup?.length" class="m-snap-nav-container" id="m-sanp-nav-container">
-        <div class="m-snap-nav-wrap m-sport-type has-live" :class="{ 'm-sport-type-fixed': isTop }"
-          style="overflow: auto">
+        <div
+          class="m-snap-nav-wrap m-sport-type has-live"
+          :class="{ 'm-sport-type-fixed': isTop }"
+          style="overflow: auto"
+        >
           <ul class="m-snap-nav flex">
-            <li v-for="(market, m) in marketsGroup" :key="m"
+            <li
+              v-for="(market, m) in marketsGroup"
+              :key="m"
               :class="market.marketID === activeMarket.marketID ? 'active' : ''"
-              class="m-sport-type-item m-snap-nav-item" @click="selectMarket(market)">
-              {{ market.marketName === '1x2' ? '1X2':market.marketName }}
+              class="m-sport-type-item m-snap-nav-item"
+              @click="selectMarket(market)"
+            >
+              {{ market.marketName === '1x2' ? '1X2' : market.marketName }}
             </li>
           </ul>
         </div>
@@ -25,9 +32,16 @@
         />
       </div>
       <div class="m-bet-content" style="position: relative">
-        <FixtureGroupingTournament :fixtures-list="filteredFixtures" :active-market="effectiveMarket"
-          v-if="fixtureGroupingType === 'tournament'" />
-        <FixtureGroupingDefault :fixtures-list="filteredFixtures" :active-market="effectiveMarket" v-else />
+        <FixtureGroupingTournament
+          :fixtures-list="filteredFixtures"
+          :active-market="effectiveMarket"
+          v-if="fixtureGroupingType === 'tournament'"
+        />
+        <FixtureGroupingDefault
+          :fixtures-list="filteredFixtures"
+          :active-market="effectiveMarket"
+          v-else
+        />
         <LoadingSpinner v-show="fetchingMore"></LoadingSpinner>
       </div>
     </template>
@@ -87,25 +101,23 @@ const mergeFixtureCollections = (baseList, derivedList) => {
   if (Array.isArray(baseList) || Array.isArray(derivedList)) {
     const merged = []
     const seenMatchIds = new Set()
-    ;[...(Array.isArray(baseList) ? baseList : []), ...(Array.isArray(derivedList) ? derivedList : [])].forEach(
-      (fixture) => {
-        const matchId = String(
-          fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
-        )
-        const dedupeKey = matchId || JSON.stringify(fixture)
-        if (seenMatchIds.has(dedupeKey)) return
-        seenMatchIds.add(dedupeKey)
-        merged.push(fixture)
-      }
-    )
+    ;[
+      ...(Array.isArray(baseList) ? baseList : []),
+      ...(Array.isArray(derivedList) ? derivedList : [])
+    ].forEach((fixture) => {
+      const matchId = String(
+        fixture?.matchID ?? fixture?.match_id ?? fixture?.gameID ?? fixture?.game_id ?? ''
+      )
+      const dedupeKey = matchId || JSON.stringify(fixture)
+      if (seenMatchIds.has(dedupeKey)) return
+      seenMatchIds.add(dedupeKey)
+      merged.push(fixture)
+    })
     return merged
   }
 
   const merged = {}
-  const allKeys = new Set([
-    ...Object.keys(baseList || {}),
-    ...Object.keys(derivedList || {})
-  ])
+  const allKeys = new Set([...Object.keys(baseList || {}), ...Object.keys(derivedList || {})])
 
   allKeys.forEach((key) => {
     const baseGroup = Array.isArray(baseList?.[key]) ? baseList[key] : []
@@ -169,7 +181,13 @@ const {
 })
 
 watch(
-  () => [route.name, route.params.sport, route.query.period, route.query.startDate, route.query.endDate],
+  () => [
+    route.name,
+    route.params.sport,
+    route.query.period,
+    route.query.startDate,
+    route.query.endDate
+  ],
   () => {
     resetUpMode()
     baseFixturesList.value = null
@@ -240,7 +258,7 @@ watch(
 )
 
 async function getTournamentFixtures(sid) {
-  if (!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const routeExtractedTIds = extractIdsFromURL(route.params.tournaments, 'tournament')
   console.log(routeExtractedTIds)
   const selectedMarketId = Number(activeMarket.value?.marketID || 0)
@@ -286,7 +304,7 @@ async function getTournamentFixtures(sid) {
 }
 
 async function getCategoryFixtures(sid, cid) {
-  if (!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const selectedMarketId = Number(activeMarket.value?.marketID || 0)
   const isDerivedRequest = upMode.value !== 'none'
   try {
@@ -328,7 +346,7 @@ async function getCategoryFixtures(sid, cid) {
 }
 
 async function fetchFixturesByActiveSport(id, period = null) {
-  if (!FEED_TOGGLE) return;
+  if (!FEED_TOGGLE) return
   const selectedMarketId = Number(activeMarket.value?.marketID || 0)
   const isDerivedRequest = upMode.value !== 'none'
   try {
@@ -347,7 +365,7 @@ async function fetchFixturesByActiveSport(id, period = null) {
         payload.today = 1
       } else if (period === 'today_tomorrow') {
         payload.today = 1
-        payload.tomorrow = 1 
+        payload.tomorrow = 1
       } else {
         let { startDate, endDate } = getDateRange(period)
         payload.start = startDate
@@ -368,9 +386,10 @@ async function fetchFixturesByActiveSport(id, period = null) {
     }
     isPaginated.value = true
     const targetFixtures = isDerivedRequest ? derivedFixturesList : baseFixturesList
-    targetFixtures.value = Array.isArray(targetFixtures.value) && targetFixtures.value.length
-      ? [...targetFixtures.value, ...fixtures]
-      : [...fixtures]
+    targetFixtures.value =
+      Array.isArray(targetFixtures.value) && targetFixtures.value.length
+        ? [...targetFixtures.value, ...fixtures]
+        : [...fixtures]
     isLastPage.value = false
     lastPage.value = Math.max(page.value, 1)
     const filteredMarkets = sanitizeMarkets(normalizeFixtureMarkets(markets || []))
@@ -586,7 +605,7 @@ const applyValidatedSelections = (selections) => {
       const active =
         statusName === 'suspended' || statusName === 'deactivated'
           ? 0
-          : match.active ?? outcome.active
+          : (match.active ?? outcome.active)
       return {
         ...outcome,
         odds: match.odds ?? outcome.odds,
@@ -739,13 +758,23 @@ defineComponent({
   color: var(--text-type1-primary);
 }
 
-.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active {
+.m-event-list
+  .m-topnav
+  .trans-select
+  .sport-select.af-select
+  .af-select-list
+  .af-select-item.active {
   background-color: #fafafa;
   background-color: var(--background-general-primary);
   color: var(--brand-secondary);
 }
 
-.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.active:after {
+.m-event-list
+  .m-topnav
+  .trans-select
+  .sport-select.af-select
+  .af-select-list
+  .af-select-item.active:after {
   color: var(--brand-secondary);
   content: '\e611';
   float: right;
@@ -754,7 +783,12 @@ defineComponent({
   padding-right: 1.66666667rem;
 }
 
-.m-event-list .m-topnav .trans-select .sport-select.af-select .af-select-list .af-select-item.hover {
+.m-event-list
+  .m-topnav
+  .trans-select
+  .sport-select.af-select
+  .af-select-list
+  .af-select-item.hover {
   background-color: #f2f3f5;
   background-color: var(--background-type1-primary);
 }
@@ -775,7 +809,7 @@ defineComponent({
   height: 100%;
 }
 
-.m-event-list .m-topnav .slot-container>a {
+.m-event-list .m-topnav .slot-container > a {
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
