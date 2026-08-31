@@ -190,9 +190,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} 'cd ~/west-betcruz-mobile/ && tar -xzf source.tar.gz && rm source.tar.gz'
           
           # Login to GitHub Container Registry on server and execute deployment
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SERVER_USER }}@${{ secrets.GCP_SERVER_IP }} '
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            cd ~/gcp-staging-mobile/
+            cd ~/west-betcruz-mobile/
             echo "Current directory: $(pwd)"
             echo "Files in directory:"
             ls -la
