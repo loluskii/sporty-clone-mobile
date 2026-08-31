@@ -18,11 +18,21 @@
                   style=""
                 />
               </div>
-              <div class="switch-button-left"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
-                  height="10px" width="10px" class="svg-icon-base">
-                  <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
-                    fill="currentColor"></path>
-                </svg></div>
+              <div class="switch-button-left">
+                <svg
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="10px"
+                  width="10px"
+                  class="svg-icon-base"
+                >
+                  <path
+                    d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </div>
             </div>
             <div class="team">
               <div class="team-icon">
@@ -64,49 +74,82 @@
                   style=""
                 />
               </div>
-              <div class="switch-button-right"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"
-                  height="10px" width="10px" class="svg-icon-base">
-                  <path d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
-                    fill="currentColor"></path>
-                </svg></div>
+              <div class="switch-button-right">
+                <svg
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="10px"
+                  width="10px"
+                  class="svg-icon-base"
+                >
+                  <path
+                    d="M5 8.75l.661-.661-2.616-2.62H8.75v-.938H3.045l2.62-2.616L5 1.25 1.25 5 5 8.75z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </div>
             </div>
           </div>
           <div class="m-event-time-wrap">
-            <div class="m-event-time-left"><span class="event-date"><span class="event-gameid">Game ID {{
-              eventDetail.matchID }}</span>
-
-              </span></div>
+            <div class="m-event-time-left">
+              <span class="event-date"
+                ><span class="event-gameid">Game ID {{ eventDetail.matchID }}</span>
+              </span>
+            </div>
           </div>
         </div>
         <div style="position: relative"></div>
         <div class="m-tab-navs-wrap">
           <ul class="m-tab-navs">
-            <li class="m-nav-item" @click="isH2HShowing = false" :class="isH2HShowing ? '' : 'active'">
+            <li
+              class="m-nav-item"
+              @click="isH2HShowing = false"
+              :class="isH2HShowing ? '' : 'active'"
+            >
               <i class="m-icon m-icon-market"></i>
               <span class="m-text">Markets</span>
             </li>
-            <li class="m-nav-item" :class="!isH2HShowing ? '' : 'active'"
-              @click="showFixtureAnalysis(eventDetail.matchID)">
+            <li
+              class="m-nav-item"
+              :class="!isH2HShowing ? '' : 'active'"
+              @click="showFixtureAnalysis(eventDetail.matchID)"
+            >
               <i class="m-icon m-icon-stat"></i>
               <span class="m-text">Stats</span>
             </li>
           </ul>
         </div>
 
-
         <div v-show="!isH2HShowing" class="m-sub-tab">
-          <div class="m-snap-nav-wrap m-group" style="overflow: hidden;">
-            <ul class="m-snap-nav flex"
-              style="transform: translate(0px, 0px) translateZ(0px); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); width: auto;">
-              <li class="m-sport-group-item m-snap-nav-item" :class="{ active: sharedSelectedGroupId === null }"
-                @click="sharedSelectedGroupId = null">
+          <div class="m-snap-nav-wrap m-group" style="overflow: hidden">
+            <ul
+              class="m-snap-nav flex"
+              style="
+                transform: translate(0px, 0px) translateZ(0px);
+                transition-duration: 350ms;
+                transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
+                width: auto;
+              "
+            >
+              <li
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: sharedSelectedGroupId === null }"
+                @click="sharedSelectedGroupId = null"
+              >
                 <span>All</span>
               </li>
-              <li v-for="group in sharedSortedMarketGroups" :key="group.id" class="m-sport-group-item m-snap-nav-item"
-                :class="{ active: sharedSelectedGroupId === group.id }" @click="sharedSelectedGroupId = group.id">
+              <li
+                v-for="group in sharedSortedMarketGroups"
+                :key="group.id"
+                class="m-sport-group-item m-snap-nav-item"
+                :class="{ active: sharedSelectedGroupId === group.id }"
+                @click="sharedSelectedGroupId = group.id"
+              >
                 <span>{{ group.name }}</span>
               </li>
-            </ul> <i class="controls left-controls"></i> <i class="controls right-controls"></i>
+            </ul>
+            <i class="controls left-controls"></i> <i class="controls right-controls"></i>
           </div>
           <div v-if="eventDetail.status === 0" class="m-market-group pre-match event-detail">
             <div v-if="sharedHasNoMarketsInSelectedGroup" class="m-sport-market-no-data">
@@ -114,26 +157,30 @@
                 Sorry, there are no markets available in this category.
               </div>
             </div>
-            <div v-else-if="sharedDisplayGroupedMarkets.length === 0" class="m-sport-market-no-data">
+            <div
+              v-else-if="sharedDisplayGroupedMarkets.length === 0"
+              class="m-sport-market-no-data"
+            >
               <div style="white-space: pre-line">
                 Sorry, there are no markets available in this category.
               </div>
             </div>
             <div v-else class="m-sport-market">
-              <div v-for="(marketGroup, index) in sharedDisplayGroupedMarkets" :key="index"
-                :data-key="'market-' + marketGroup.marketID">
+              <div
+                v-for="(marketGroup, index) in sharedDisplayGroupedMarkets"
+                :key="index"
+                :data-key="'market-' + marketGroup.marketID"
+              >
                 <div class="m-market m-detail-market-default">
                   <div class="m-market-title" style="flex-basis: 100%">
                     <span class="dis-icon"></span>
-                    <span class="text" style="text-transform: capitalize">{{ sharedCleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
+                    <span class="text" style="text-transform: capitalize"
+                      >{{ sharedCleanMarketName(marketGroup.marketName, marketGroup.specifier) }}
                     </span>
                     <span class="m-icon-tips"></span>
                   </div>
                   <div class="m-table market-content">
-                    <div
-                      v-if="sharedHasSectionTabs(marketGroup)"
-                      class="m-market-section-tabs"
-                    >
+                    <div v-if="sharedHasSectionTabs(marketGroup)" class="m-market-section-tabs">
                       <button
                         v-for="option in marketGroup.layout.sections"
                         :key="option.key"
@@ -165,7 +212,7 @@
                               :class="sharedColClass(section.totalCols)"
                             ></div>
                             <div
-                              v-for="column in (section.displayColumns || section.columns)"
+                              v-for="column in section.displayColumns || section.columns"
                               :key="column"
                               class="m-table-cell m-outcome-only-odds m-outcome-combo-column-title"
                               :class="sharedColClass(section.totalCols)"
@@ -180,7 +227,10 @@
                             >
                               <em>{{ row.label }}</em>
                             </div>
-                            <template v-for="cell in row.cells" :key="cell?.key || `${row.key}-empty`">
+                            <template
+                              v-for="cell in row.cells"
+                              :key="cell?.key || `${row.key}-empty`"
+                            >
                               <div
                                 v-if="cell"
                                 class="m-table-cell m-outcome-combo m-outcome-only-odds m-outcome m-detail-outcome-default"
@@ -247,7 +297,9 @@
                             }"
                             @click="addToBetslip(cell.market, cell.outcome)"
                           >
-                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em style="text-transform: capitalize">{{
+                              cell.outcome.displayName
+                            }}</em>
                             <em
                               :class="{
                                 'm-icon-lock':
@@ -287,7 +339,9 @@
                             }"
                             @click="addToBetslip(cell.market, cell.outcome)"
                           >
-                            <em style="text-transform: capitalize">{{ cell.outcome.displayName }}</em>
+                            <em style="text-transform: capitalize">{{
+                              cell.outcome.displayName
+                            }}</em>
                             <em
                               :class="{
                                 'm-icon-lock':
@@ -440,10 +494,12 @@ function setupPeriodicRefetch(matchId) {
       try {
         const res = await getFeedsGameDetail(matchId)
         if (Object.keys(res.data).length && res.data.market.length) {
-          eventMarkets.value = res.data?.market.filter((market) => market.statusName !== 'Suspended')
+          eventMarkets.value = res.data?.market.filter(
+            (market) => market.statusName !== 'Suspended'
+          )
         }
       } catch (error) {
-        console.error(`❌ Error during periodic refetch:`, error);
+        console.error(`❌ Error during periodic refetch:`, error)
       }
     } else {
       // console.log(
@@ -469,8 +525,8 @@ async function getEventDetail(id) {
           name: 'live-fixtures-detail',
           params: {
             sport: route.params.sport,
-            tournament:  route.params.tournament,
-            event_name:  route.params.event_name,
+            tournament: route.params.tournament,
+            event_name: route.params.event_name,
             event_id: route.params.event_id
           }
         })
@@ -479,7 +535,7 @@ async function getEventDetail(id) {
       eventMarkets.value = res[0].data?.market.filter((market) => market.statusName !== 'Suspended')
       marketGroups.value = res[1].data
       setupMqttSubscriptions(res[0].data.matchID, sport_id)
-    }else{
+    } else {
       emitter.emit('showErrorMessage', {
         message: 'This event is no longer available for betting',
         next_route: '/'
@@ -536,59 +592,65 @@ function handleOddsChange(data, match_id) {
         let marketFound = false
         let shouldRemoveMarket = false
 
-        eventMarkets.value = eventMarkets.value.map((market) => {
-          const marketMatches = market.marketID === payload.market_id
-          const specifierMatches = (market.specifier || '') === (payload.specifier || '')
+        eventMarkets.value = eventMarkets.value
+          .map((market) => {
+            const marketMatches = market.marketID === payload.market_id
+            const specifierMatches = (market.specifier || '') === (payload.specifier || '')
 
-          if (!marketMatches || !specifierMatches) {
-            return market
-          }
+            if (!marketMatches || !specifierMatches) {
+              return market
+            }
 
-          marketFound = true
-          if (payload.status_name && payload.status_name.toLowerCase() === 'deactivated') {
-            shouldRemoveMarket = true
-            return null
-          }
+            marketFound = true
+            if (payload.status_name && payload.status_name.toLowerCase() === 'deactivated') {
+              shouldRemoveMarket = true
+              return null
+            }
 
-          const updatedMarket = {
-            ...market,
-            statusName: payload.status_name || market.statusName,
-            outcomes: market.outcomes.map((outcome) => {
-              const updatedOutcome = outcomes.find(
-                (o) => String(o.outcome_id) === String(outcome.outcomeID)
-              )
+            const updatedMarket = {
+              ...market,
+              statusName: payload.status_name || market.statusName,
+              outcomes: market.outcomes.map((outcome) => {
+                const updatedOutcome = outcomes.find(
+                  (o) => String(o.outcome_id) === String(outcome.outcomeID)
+                )
 
-              if (updatedOutcome) {
-                return {
-                  ...outcome,
-                  odds: updatedOutcome.odds,
-                  active: updatedOutcome.active ? 1 : 0,
-                  probability: updatedOutcome.probability || outcome.probability
+                if (updatedOutcome) {
+                  return {
+                    ...outcome,
+                    odds: updatedOutcome.odds,
+                    active: updatedOutcome.active ? 1 : 0,
+                    probability: updatedOutcome.probability || outcome.probability
+                  }
                 }
-              }
 
-              return outcome
-            })
-          }
+                return outcome
+              })
+            }
 
-          return updatedMarket
-        }).filter(market => market !== null)
+            return updatedMarket
+          })
+          .filter((market) => market !== null)
 
-        if (!marketFound && payload.status_name && payload.status_name.toLowerCase() !== 'deactivated') {
+        if (
+          !marketFound &&
+          payload.status_name &&
+          payload.status_name.toLowerCase() !== 'deactivated'
+        ) {
           const newMarket = {
             marketID: payload.market_id,
             marketName: payload.market_name,
             specifier: payload.specifier || '',
             statusName: payload.status_name || 'Active',
             sportID: payload.sport_id || 0,
-            outcomes: outcomes.map(outcome => ({
+            outcomes: outcomes.map((outcome) => ({
               outcomeID: outcome.outcome_id,
               outcomeName: outcome.outcome_name,
               displayName: outcome.alias || outcome.outcome_name,
               odds: outcome.odds,
               active: outcome.active ? 1 : 0,
               probability: outcome.probability || 0
-            })),
+            }))
           }
 
           eventMarkets.value.push(newMarket)
@@ -783,7 +845,7 @@ onMounted(() => {
   width: 100%;
 }
 
-.m-tab-navs>li {
+.m-tab-navs > li {
   background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
   border-radius: 0.16666667rem;
@@ -802,18 +864,18 @@ onMounted(() => {
   width: 33.33%;
 }
 
-.m-tab-navs>li:last-child {
+.m-tab-navs > li:last-child {
   margin-right: 0;
 }
 
-.m-tab-navs>li.active {
+.m-tab-navs > li.active {
   background-color: #1b1e25;
   background-color: var(--c-prematch-active-tab-bg);
   color: #ffffff;
   color: var(--c-prematch-active-tab-text);
 }
 
-.m-tab-navs>li.active .m-icon:before {
+.m-tab-navs > li.active .m-icon:before {
   color: #ffffff;
   color: var(--c-prematch-active-tab-text);
 }
@@ -846,8 +908,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-market::before {
-  content: "\e66e";
-  font-family: "iconfont" !important;
+  content: '\e66e';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -855,8 +917,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-stat::before {
-  content: "\e64a";
-  font-family: "iconfont" !important;
+  content: '\e64a';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -864,8 +926,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-tab-navs .m-icon-comment::before {
-  content: "\e669";
-  font-family: "iconfont" !important;
+  content: '\e669';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -932,19 +994,19 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-title-team {
-  color: #353A45;
+  color: #353a45;
   color: var(--text-default-dark);
   margin-top: 0.75rem;
 }
 
-.x-prematch-detail .m-event-title .m-event-title-team>div {
+.x-prematch-detail .m-event-title .m-event-title-team > div {
   font-size: 1rem;
   font-weight: bold;
   line-height: 1.16666667rem;
 }
 
 .x-prematch-detail .m-event-title .m-event-title-team-horizontal {
-  color: #353A45;
+  color: #353a45;
   color: var(--text-default-dark);
   display: -webkit-box;
   display: -webkit-flex;
@@ -994,10 +1056,10 @@ onMounted(() => {
   -ms-flex-item-align: center;
   align-self: center;
   border-radius: 50%;
-  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
-  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1010,9 +1072,9 @@ onMounted(() => {
   justify-self: center;
   position: relative;
   width: 1.66666667rem;
-  color: #9CA0AB;
+  color: #9ca0ab;
   color: var(--text-type1-secondary);
-  background-color: #FAFAFA;
+  background-color: #fafafa;
   background-color: var(--background-general-tertiary);
 }
 
@@ -1025,10 +1087,10 @@ onMounted(() => {
   -ms-flex-item-align: center;
   align-self: center;
   border-radius: 50%;
-  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
-  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1041,9 +1103,9 @@ onMounted(() => {
   justify-self: center;
   position: relative;
   width: 1.66666667rem;
-  color: #9CA0AB;
+  color: #9ca0ab;
   color: var(--text-type1-secondary);
-  background-color: #FAFAFA;
+  background-color: #fafafa;
   background-color: var(--background-general-tertiary);
 }
 
@@ -1056,10 +1118,10 @@ onMounted(() => {
   -ms-flex-item-align: center;
   align-self: center;
   border-radius: 50%;
-  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  box-shadow: 0.83px 0.83px 1.67px 0px #0000001A;
-  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
-  box-shadow: 0px 0.83px 1.67px 0.83px #0000001A;
+  -webkit-box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  box-shadow: 0.83px 0.83px 1.67px 0px #0000001a;
+  -webkit-box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
+  box-shadow: 0px 0.83px 1.67px 0.83px #0000001a;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1072,13 +1134,18 @@ onMounted(() => {
   justify-self: center;
   position: relative;
   width: 1.66666667rem;
-  color: #9CA0AB;
+  color: #9ca0ab;
   color: var(--text-type1-secondary);
-  background-color: #FAFAFA;
+  background-color: #fafafa;
   background-color: var(--background-general-tertiary);
 }
 
-.x-prematch-detail .m-event-title .m-event-title-team-horizontal .watermark .switch-button-right svg {
+.x-prematch-detail
+  .m-event-title
+  .m-event-title-team-horizontal
+  .watermark
+  .switch-button-right
+  svg {
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
@@ -1168,7 +1235,7 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-title-team-horizontal .date-time .time {
-  background-color: #EAECEF;
+  background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
   border-radius: 2px;
   padding: 0 0.16666667rem;
@@ -1176,7 +1243,7 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-time-wrap {
-  color: #353A45;
+  color: #353a45;
   color: var(--text-default-dark);
   bottom: 0rem;
   font-size: 0.66666667rem;
@@ -1187,7 +1254,7 @@ onMounted(() => {
   width: 100%;
 }
 
-.x-prematch-detail .m-event-title .m-event-time-wrap>span {
+.x-prematch-detail .m-event-title .m-event-time-wrap > span {
   margin-right: 0.66666667rem;
 }
 
@@ -1196,8 +1263,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .m-event-time-wrap .live-in-play::before {
-  content: "\e64e";
-  font-family: "iconfont" !important;
+  content: '\e64e';
+  font-family: 'iconfont' !important;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1234,7 +1301,7 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .event-delay {
-  color: #353A45;
+  color: #353a45;
   color: var(--text-default-dark);
 }
 
@@ -1273,9 +1340,9 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-event-title .labels .switch-match-btn-list {
-  background-color: #EAECEF;
+  background-color: #eaecef;
   background-color: var(--background-type1-tertiary);
-  color: #353A45;
+  color: #353a45;
   color: var(--text-default-dark);
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -1297,8 +1364,8 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-sport-market .m-market .market-content .m-outcome.m-outcome--disabled {
-  color: #9CA0AB !important;
-  background-color: #DCDEE5 !important;
+  color: #9ca0ab !important;
+  background-color: #dcdee5 !important;
 }
 
 .x-prematch-detail .m-footer--preMatch {
@@ -1314,12 +1381,11 @@ onMounted(() => {
 }
 
 .x-prematch-detail .m-outcome.in-range {
-  border: 0.08333333rem solid #0D9737 !important;
+  border: 0.08333333rem solid #0d9737 !important;
 }
 
-
 .m-group {
-  background-color: #FAFAFA;
+  background-color: #fafafa;
   background-color: var(--background-general-primary);
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -1337,7 +1403,7 @@ onMounted(() => {
 }
 
 .m-group .m-sport-group-item .text {
-  color: #353A45;
+  color: #353a45;
   color: var(--text-type1-primary);
   font-size: 1rem;
 }
@@ -1347,7 +1413,7 @@ onMounted(() => {
 }
 
 .m-group .m-sport-group-item.active {
-  border-bottom: 4px solid #0D9737;
+  border-bottom: 4px solid #0d9737;
   border-color: var(--brand-active-tab-bg);
 }
 
