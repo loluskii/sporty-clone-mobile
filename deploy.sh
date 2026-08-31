@@ -21,12 +21,21 @@ env | grep ^VITE_ || echo "No VITE environment variables found"
 # Create network if it doesn't exist
 docker network create sbenet || true
 
-# Stop conflicting container on port 3002
+# Stop any existing app container already bound to this deployment port.
+HOST_PORT="${HOST_PORT:-3007}"
+PORT_CONTAINERS=$(docker ps --filter "publish=${HOST_PORT}" -q || true)
+if [ -n "$PORT_CONTAINERS" ]; then
+    echo "Stopping containers currently using port ${HOST_PORT}: ${PORT_CONTAINERS}"
+    docker stop $PORT_CONTAINERS || true
+    docker rm $PORT_CONTAINERS || true
+fi
+
+# Stop legacy container names from older deploy scripts
 docker stop sporty-clone-mobile || true
 docker rm sporty-clone-mobile || true
 
 # Stop existing containers
-docker compose down || true
+docker compose down --remove-orphans || true
 
 # Build and start services (this will use the local .env file)
 docker compose up -d --build
