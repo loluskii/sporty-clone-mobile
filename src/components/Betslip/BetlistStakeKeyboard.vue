@@ -216,7 +216,7 @@ defineEmits(['button-click'])
   -ms-flex-align: center;
   align-items: center;
   background: var(--brand-highlight-text);
-  background: var(--brand-secondary);
+  /* background: var(--brand-secondary); */
   color: #ffffff;
   display: -webkit-box;
   display: -webkit-flex;

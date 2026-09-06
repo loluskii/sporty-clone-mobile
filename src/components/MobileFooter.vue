@@ -749,7 +749,7 @@ a {
 }
 
 .notification {
-  background: var(--brand-secondary);
+  background: #22ABE1;
   border-radius: 100%;
   /* display: inline-block; */
   color: #fff;

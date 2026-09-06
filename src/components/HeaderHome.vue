@@ -27,7 +27,7 @@
 </svg>
                 </router-link>
                 <div class="avatar-box" @click="$router.push({ name: 'account-me' })">
-                  <span class="currency">{{ SportsbookGlobalVariable.Currency }}</span>
+                  <span class="currency">₦</span>
                   <span> {{ usersStore.balance }}</span>
                 </div>
               </span>

@@ -492,7 +492,6 @@ onUnmounted(() => {})
 .m-choose-odds .m-title.active::before,
 .m-choose-time .m-title.active::before {
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
   font-size: 0.83333333rem;
 }
 .m-choose-sort .m-title.used,
@@ -500,7 +499,6 @@ onUnmounted(() => {})
 .m-choose-odds .m-title.used,
 .m-choose-time .m-title.used {
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
 }
 .m-list {
   background-color: var(--background-type1-secondary);
@@ -527,11 +525,9 @@ onUnmounted(() => {})
 }
 .m-list li.checked {
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
 }
 .m-list li:not(.tournament).checked::before {
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
   position: absolute;
   right: 1.33333333rem;
 }
@@ -725,7 +721,6 @@ onUnmounted(() => {})
   li.tournament.active
   .category-name {
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
 }
 .m-choose-league
   .m-list
@@ -827,7 +822,6 @@ onUnmounted(() => {})
   border-color: var(--brand-highlight-text);
   border-color: var(--brand-secondary);
   color: var(--brand-highlight-text);
-  color: var(--brand-secondary);
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-reset {
   background-color: #fafafa;
@@ -836,7 +830,6 @@ onUnmounted(() => {})
 }
 .m-choose-league .m-list .m-regions-opt > span.m-regions-apply {
   background: var(--brand-highlight-text);
-  background: var(--brand-secondary);
   color: #ffffff;
 }
 </style>

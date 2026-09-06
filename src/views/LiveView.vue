@@ -88,7 +88,7 @@
               <!-- Market Headers Row -->
               <div class="x-table-row m-date-row">
                 <div class="x-table-cell m-date">
-                  <span class="live-indicator">LIVE</span>
+                  <span class="live-indicator"></span>
                 </div>
                 <div class="x-table-cell market-title">
                   <template v-for="(outcome, o) in _.sortBy(effectiveMarket?.outcomes || [], 'outcomeID')" :key="o">
@@ -433,7 +433,7 @@ defineComponent({
 }
 
 .m-sport-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--brand-primary);
+  border-bottom: 3px solid var(--brand-highlight-text);
   color: #ffffff;
 }
 
@@ -507,7 +507,7 @@ defineComponent({
 }
 
 .m-mkt-type .m-sport-type-item.active {
-  border-bottom: 3px solid var(--brand-primary);
+  border-bottom: 3px solid var(--brand-highlight-text);
   color: #ffffff;
 }
 
@@ -524,7 +524,7 @@ defineComponent({
   align-items: center;
   background-color: #0a1628;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--brand-primary);
+  color: var(--brand-highlight-text);
   cursor: pointer;
   display: flex;
   font-size: 0.9rem;
@@ -534,7 +534,7 @@ defineComponent({
 .m-league-title .icon-triangle {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid var(--brand-primary);
+  border-top: 6px solid var(--brand-highlight-text);
   height: 0;
   margin-right: 0.5rem;
   transition: transform 0.2s;
@@ -582,12 +582,12 @@ defineComponent({
 }
 
 .m-date-row .live-indicator {
-  background: var(--brand-primary);
+  background: var(--brand-highlight-text);
   border-radius: 2px;
   color: #fff;
   font-size: 0.7rem;
   font-weight: bold;
-  padding: 0.15rem 0.4rem;
+  /* padding: 0.15rem 0.4rem; */
 }
 
 .m-date-row .market-title {

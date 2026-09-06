@@ -90,7 +90,7 @@
                     <span>Confirm to Pay</span><span>&nbsp;</span>
                     <div>
                       <div class="stake-num">
-                        {{ SportsbookGlobalVariable.Currency }}
+                        ₦
                         {{ totalStake }}
                       </div>
                     </div>

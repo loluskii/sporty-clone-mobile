@@ -20,7 +20,7 @@
     <div class="success-form amount">
       <div class="form-label">
         <span data-cms-key="amount">Amount</span>
-        ({{ SportsbookGlobalVariable.Currency }})
+        (₦)
       </div>
       <div data-op="withdraw-success-amount" class="form-value">
         {{ formatNumber(userData.amount) }}

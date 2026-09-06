@@ -6,7 +6,7 @@
         <div class="m-openbet-header">
           <div v-if="isAuthenticated" class="is-login">
             <span class="balance"
-              ><span>{{ SportsbookGlobalVariable.Currency }} </span>
+              ><span>₦ </span>
               <span>{{ balance }}</span></span
             >
           </div>

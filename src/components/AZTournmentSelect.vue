@@ -110,7 +110,7 @@ defineComponent({
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background: var(--brand-secondary);
+  background: #0B2A45;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #ffffff;
@@ -226,8 +226,8 @@ defineComponent({
   width: 1.25rem;
 }
 .m-azmenu .tournament-pop--body .tournament.checked .checkbox::before {
-  background-color: var(--brand-secondary);
-  border: 1px solid var(--brand-secondary);
+  background-color: var(--brand-highlight-text);
+  border: 1px solid var(--brand-highlight-text);
   color: #ffffff;
   content: '\e611';
   font-size: 0.83333333rem;

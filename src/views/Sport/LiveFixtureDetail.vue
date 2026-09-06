@@ -1356,7 +1356,7 @@ defineComponent({
 
 .m-event-team-wrap .home-team-name .score .setScore,
 .m-event-team-wrap .away-team-name .score .setScore {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-highlight-text);
   color: #fff;
   padding: 0.16666667rem 0.5rem;
 }

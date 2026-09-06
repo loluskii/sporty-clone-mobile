@@ -20,7 +20,7 @@
           <div class="balance-wrap">
             <div class="title">Total Balance</div>
             <div data-op="me_balance" class="value">
-                <span>{{ SportsbookGlobalVariable.Currency }} </span
+                <span>₦ </span
                 ><span> {{ userStore.balance }}</span>
             </div>
           </div>
@@ -137,7 +137,7 @@ defineComponent({
   /* background: var(--brand-background-secondary); */
 
   /* background: rgb(233, 45, 45); */
-  background: linear-gradient(188deg, #6e0d18 0%, #1e1114 62%, #140b0e 100%);
+  background: linear-gradient(188deg, #0B2A45 0%, #121212 62%, #000 100%);
 }
 
 .me-main .header-container {
@@ -291,7 +291,7 @@ defineComponent({
 }
 
 .me-main .header-container .header .w-d-wrap div.deposit {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-primary-button);
   font-weight: 500;
   height: 3rem;
   line-height: 3rem;

@@ -249,8 +249,7 @@ onMounted(getSportCategories)
   text-align: center;
 }
 .m-sports-menu .m-sports-choose .m-sports-choose-item .sprot-icon:before {
-  color: var(--brand-secondary);
-  /* color: var(--c-sport-menu-sport-icon); */
+  color: var(--c-sport-menu-sport-icon);
   font-size: 1.5rem;
   line-height: 1;
   vertical-align: top;

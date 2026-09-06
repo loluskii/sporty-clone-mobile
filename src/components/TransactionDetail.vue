@@ -11,7 +11,7 @@
           <div class="transaction-detail-v2__col data flex">
             <p data-op="trans-detail-status" class="">
               {{ type === 'pending_withdrawals' ? '-' : data.type === 'credit' ? '+' : '-' }}
-              {{ data.amount }} {{ SportsbookGlobalVariable.Currency }}
+              {{ data.amount }} ₦
             </p>
             <!---->
           </div>
@@ -76,7 +76,7 @@
             After Balance
           </p>
           <p data-op="trans-detail-after-balance" class="transaction-detail-v2__col data">
-            {{ data.balance }} {{ SportsbookGlobalVariable.Currency }}
+            {{ data.balance }} ₦
           </p>
         </div>
         <div class="transaction-detail-v2__row" v-else>

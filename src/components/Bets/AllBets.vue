@@ -70,7 +70,7 @@
                       </div>
 
                       <div class="title">
-                        <span>Total Stake({{ SportsbookGlobalVariable.Currency }})</span>
+                        <span>Total Stake(₦)</span>
                         <span class="total_info" style="color: #9ca0ab;">{{ formatNumber(bet.stake) }}</span>
                       </div>
                       <div class="title">

@@ -304,7 +304,7 @@
 
 .af-checkbox input[type='checkbox']:checked + .check-stroke-wrapper {
   background-color: #0d9737;
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-highlight-text);
 }
 
 .af-checkbox input[type='checkbox']:checked + .check-stroke-wrapper svg {
@@ -794,7 +794,7 @@
   -ms-flex: 1;
   flex: 1;
   font-size: 1.066rem;
-  font-weight: bold;
+  font-weight: 500;
   height: 2.83333333rem;
   line-height: 2.83333333rem;
   margin-right: 1px;

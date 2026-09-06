@@ -9,7 +9,7 @@
 
           <span style="text-align: end">
             <span class="currency"
-              ><em>{{ SportsbookGlobalVariable.Currency }}</em></span
+              ><em>₦</em></span
             >
             <span
               tabindex="0"
@@ -21,7 +21,7 @@
         </div>
         <div v-if="balanceLowerThanStake" class="m-error-info">
           <p>
-            You need a balance of {{ SportsbookGlobalVariable.Currency }}
+            You need a balance of ₦
             {{ totalStakeDisplay }} to place this bet. Please deposit an additional
             {{ amountNeededToStake }}
           </p>
@@ -272,7 +272,7 @@
         <div class="bonus mg-b-5">
           <span>Stake After Tax</span>
           <span
-            >{{ SportsbookGlobalVariable.Currency }}
+            >₦
             {{ parseFloat(stakeAfterTax).toFixed(2) }}</span
           >
         </div>
@@ -290,20 +290,20 @@
 
       <div v-if="showMaxBonusRow" class="bonus mg-b-5">
         <span>Max Bonus</span>
-        <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(maxBonus) }}</span>
+        <span>₦ {{ formatNumber(maxBonus) }}</span>
       </div>
 
       <template v-if="taxEnabled && !betslipMode">
         <div class="bonus mg-b-5">
           <span>Excise Tax</span>
           <span
-            >{{ SportsbookGlobalVariable.Currency }} {{ parseFloat(exciseTax).toFixed(2) }}</span
+            >₦ {{ parseFloat(exciseTax).toFixed(2) }}</span
           >
         </div>
 
         <div v-if="wthTax > 0" class="bonus mg-b-5">
           <span>Withholding Tax</span>
-          <span>{{ SportsbookGlobalVariable.Currency }} {{ formatNumber(wthTax) }}</span>
+          <span>₦ {{ formatNumber(wthTax) }}</span>
         </div>
       </template>
 
@@ -325,7 +325,7 @@
             id=""
           />
           <span
-            >{{ SportsbookGlobalVariable.Currency }}
+            >₦
             {{ userStore.currentUser.sportBonusBalance }}</span
           >
         </div>
@@ -357,7 +357,7 @@
         <span data-cms-key="potential_win" data-cms-page="component_betslip">Potential Win</span>
         <span>
           <span class="m-value" :class="{ 'm-value--loading': isPotentialWinLoading }">
-            {{ SportsbookGlobalVariable.Currency }}
+            ₦
             {{ potentialWin }}
             <span v-if="isPotentialWinLoading" class="potential-win-spinner" aria-hidden="true"></span>
           </span>

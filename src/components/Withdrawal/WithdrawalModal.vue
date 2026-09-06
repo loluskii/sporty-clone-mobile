@@ -50,7 +50,7 @@
                     <span data-cms-key="withdrawal_amount" data-cms-page="page_withdraw"
                       >Withdrawal Amount</span
                     >
-                    ({{ SportsbookGlobalVariable.Currency }})
+                    (₦)
                   </div>
                   <div data-op="partner-withdraw-confirm-amount" class="t-b item-content">
                     {{ formatNumber(userData.amount) }}

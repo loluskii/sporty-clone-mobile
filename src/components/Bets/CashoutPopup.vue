@@ -80,7 +80,7 @@
                                 >
                                     <span v-if="!cashingOut"><span>Confirm </span>
                                         <span class="money">
-                                            {{ SportsbookGlobalVariable.Currency }}{{ displayCashout }}
+                                            ₦{{ displayCashout }}
                                         </span>
                                     </span>
                                     <img v-else src="/loader.gif" height="24" width="24" alt="" srcset="" />

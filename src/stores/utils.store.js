@@ -182,20 +182,13 @@ export const useUtilsStore = defineStore({
           const uniqueTournaments = []
 
           for (const tournament of topTournaments) {
-            const tournamentId = tournament.tournament_id || tournament.tournamentID || tournament.id
+            const tournamentId = tournament.tournament_id 
             if (!tournamentId || uniqueTournamentIds.has(tournamentId)) {
               continue
             }
 
             uniqueTournamentIds.add(tournamentId)
-            uniqueTournaments.push({
-              ...tournament,
-              top_tournament_id: tournament.id || tournament.top_tournament_id || tournament.topTournamentID,
-              tournament_id: tournamentId,
-              tournamentID: tournamentId,
-              categoryID: tournament.categoryID || tournament.category_id,
-              categoryName: tournament.categoryName || tournament.category_name || tournament.country || tournament.country_name
-            })
+            uniqueTournaments.push({...tournament})
           }
 
           this.featuredTournaments = uniqueTournaments.sort(
@@ -242,11 +235,8 @@ export const useUtilsStore = defineStore({
           await Promise.all(
             chunk.map(async (tournament) => {
               try {
-                const topTournamentId =
-                  tournament.top_tournament_id ||
-                  tournament.topTournamentID ||
-                  tournament.id ||
-                  tournament.tournament_id
+                console.log(tournament)
+                const topTournamentId = tournament.id
                 const games = await getTopTournamentFixtures(topTournamentId)
 
                 const fixtures = sortFeaturedFixturesByPriority(games?.data?.fixtures || games?.fixtures || [])
